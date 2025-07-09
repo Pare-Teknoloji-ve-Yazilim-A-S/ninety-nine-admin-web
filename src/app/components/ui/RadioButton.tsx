@@ -11,7 +11,7 @@ interface RadioButtonProps extends Omit<InputHTMLAttributes<HTMLInputElement>, '
     error?: string
     helperText?: string
     options: RadioOption[]
-    size?: 'sm' | 'md' | 'lg'
+    radioSize?: 'sm' | 'md' | 'lg'
     direction?: 'horizontal' | 'vertical'
 }
 
@@ -21,7 +21,7 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
         error,
         helperText,
         options,
-        size = 'md',
+        radioSize = 'md',
         direction = 'vertical',
         className = '',
         ...props
@@ -58,7 +58,7 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
                                     disabled={option.disabled}
                                     className={`
                     ${baseClasses}
-                    ${sizeClasses[size]}
+                    ${sizeClasses[radioSize]}
                     ${error ? errorClasses : normalClasses}
                     ${className}
                     appearance-none cursor-pointer

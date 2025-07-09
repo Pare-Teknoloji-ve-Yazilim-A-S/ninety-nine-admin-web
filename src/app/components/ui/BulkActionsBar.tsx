@@ -39,7 +39,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
     showClearButton = true,
     itemName = 'öğe',
     itemNamePlural = 'öğe',
-    position = 'default',
+    position,
 }) => {
     const [showMoreActions, setShowMoreActions] = useState(false);
 
@@ -84,7 +84,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
             case 'warning':
                 return 'secondary';
             default:
-                return 'outline';
+                return 'ghost';
         }
     };
 
@@ -97,7 +97,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
                 'transition-all duration-200',
                 variantClasses[variant],
                 sizeClasses[size],
-                positionClasses[position],
+                position ? positionClasses[position] : undefined,
                 className
             )}
         >
@@ -155,7 +155,7 @@ const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
                     {hiddenActions.length > 0 && (
                         <div className="relative">
                             <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
                                 icon={ChevronDown}
                                 onClick={() => setShowMoreActions(!showMoreActions)}

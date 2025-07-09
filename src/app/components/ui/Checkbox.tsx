@@ -6,7 +6,7 @@ interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'typ
     error?: string
     helperText?: string
     indeterminate?: boolean
-    size?: 'sm' | 'md' | 'lg'
+    checkboxSize?: 'sm' | 'md' | 'lg'
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
@@ -15,7 +15,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         error,
         helperText,
         indeterminate = false,
-        size = 'md',
+        checkboxSize = 'md',
         className = '',
         ...props
     }, ref) => {
@@ -39,7 +39,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
                             type="checkbox"
                             className={`
                 ${baseClasses}
-                ${sizeClasses[size]}
+                ${sizeClasses[checkboxSize]}
                 ${error ? errorClasses : normalClasses}
                 ${props.checked ? checkedClasses : ''}
                 ${className}

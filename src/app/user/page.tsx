@@ -383,7 +383,7 @@ export default function UserDemo() {
                                 actions={
                                     <div className="flex gap-2">
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             size="sm"
                                             onClick={() => showToast('Favorilere eklendi', 'success')}
                                         >
@@ -391,7 +391,7 @@ export default function UserDemo() {
                                             Favorile
                                         </Button>
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             size="sm"
                                             onClick={() => showToast('Proje atandı', 'success')}
                                         >

@@ -413,7 +413,7 @@ export default function UnitsListPage() {
                                 )}
 
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="flex-1" icon={Eye}>
+                                    <Button variant="ghost" size="sm" className="flex-1" icon={Eye}>
                                         Detay
                                     </Button>
                                     <Button variant="ghost" size="sm" icon={MoreVertical} />
@@ -809,16 +809,16 @@ export default function UnitsListPage() {
                                             Hızlı İşlemler
                                         </h3>
                                         <div className="space-y-3">
-                                            <Button variant="outline" className="w-full justify-start" icon={Plus}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={Plus}>
                                                 Yeni Konut Ekle
                                             </Button>
-                                            <Button variant="outline" className="w-full justify-start" icon={UserPlus}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={UserPlus}>
                                                 Toplu Sakin Ata
                                             </Button>
-                                            <Button variant="outline" className="w-full justify-start" icon={DollarSign}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={DollarSign}>
                                                 Borç Analizi
                                             </Button>
-                                            <Button variant="outline" className="w-full justify-start" icon={FileText}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={FileText}>
                                                 Doluluk Raporu
                                             </Button>
                                         </div>

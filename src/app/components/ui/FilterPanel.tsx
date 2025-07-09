@@ -381,7 +381,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex gap-2">
                     <Button
-                        variant="secondary"
+                        variant="ghost"
                         size="md"
                         icon={RotateCcw}
                         onClick={handleResetFilters}

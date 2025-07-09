@@ -146,7 +146,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* First page */}
                 {showFirstLast && !isFirstPage && (
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         icon={ChevronsLeft}
                         onClick={() => onPageChange(1)}
@@ -158,7 +158,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* Previous page */}
                 {showPrevNext && !isFirstPage && (
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         icon={ChevronLeft}
                         onClick={() => onPageChange(currentPage - 1)}
@@ -171,7 +171,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {visiblePages.map((page) => (
                     <Button
                         key={page}
-                        variant={page === currentPage ? 'primary' : 'outline'}
+                        variant={page === currentPage ? 'primary' : 'ghost'}
                         size="sm"
                         onClick={() => onPageChange(page)}
                         className={cn(
@@ -186,7 +186,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* Next page */}
                 {showPrevNext && !isLastPage && (
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         icon={ChevronRight}
                         onClick={() => onPageChange(currentPage + 1)}
@@ -198,7 +198,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* Last page */}
                 {showFirstLast && !isLastPage && (
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         icon={ChevronsRight}
                         onClick={() => onPageChange(totalPages)}

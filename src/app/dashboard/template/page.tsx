@@ -229,16 +229,16 @@ export default function TemplatePage() {
                                             Hızlı İşlemler
                                         </h3>
                                         <div className="space-y-3">
-                                            <Button variant="outline" className="w-full justify-start" icon={Plus}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={Plus}>
                                                 Yeni Öğe Ekle
                                             </Button>
-                                            <Button variant="outline" className="w-full justify-start" icon={Edit}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={Edit}>
                                                 Toplu Düzenle
                                             </Button>
-                                            <Button variant="outline" className="w-full justify-start" icon={Download}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={Download}>
                                                 Rapor İndir
                                             </Button>
-                                            <Button variant="outline" className="w-full justify-start" icon={Settings}>
+                                            <Button variant="ghost" className="w-full justify-start" icon={Settings}>
                                                 Ayarları Düzenle
                                             </Button>
                                         </div>

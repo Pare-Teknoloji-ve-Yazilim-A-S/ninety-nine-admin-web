@@ -90,16 +90,16 @@ const FeedbackDemo = () => {
                     </div>
                     <div className="p-6">
                         <div className="flex flex-wrap gap-2">
-                            <Button onClick={() => addToast('success')} variant="outline" className="border-green-600 text-green-400">
+                            <Button onClick={() => addToast('success')} variant="ghost" className="border-green-600 text-green-400">
                                 Başarı Toast'ı
                             </Button>
-                            <Button onClick={() => addToast('error')} variant="outline" className="border-primary-red text-primary-red">
+                            <Button onClick={() => addToast('error')} variant="ghost" className="border-primary-red text-primary-red">
                                 Hata Toast'ı
                             </Button>
-                            <Button onClick={() => addToast('warning')} variant="outline" className="border-yellow-600 text-yellow-400">
+                            <Button onClick={() => addToast('warning')} variant="ghost" className="border-yellow-600 text-yellow-400">
                                 Uyarı Toast'ı
                             </Button>
-                            <Button onClick={() => addToast('info')} variant="outline" className="border-primary-gold text-primary-gold">
+                            <Button onClick={() => addToast('info')} variant="ghost" className="border-primary-gold text-primary-gold">
                                 Bilgi Toast'ı
                             </Button>
                         </div>
@@ -170,25 +170,25 @@ const FeedbackDemo = () => {
                     <div className="p-6">
                         <div className="flex flex-wrap gap-4 items-center">
                             <Tooltip content="Bu bir yardım ikonu" position="top">
-                                <Button variant="outline" size="sm">
+                                <Button variant="ghost" size="sm">
                                     <HelpCircle className="h-4 w-4" />
                                 </Button>
                             </Tooltip>
 
                             <Tooltip content="Ayarlara git" position="bottom">
-                                <Button variant="outline" size="sm">
+                                <Button variant="ghost" size="sm">
                                     <Settings className="h-4 w-4" />
                                 </Button>
                             </Tooltip>
 
                             <Tooltip content="Kullanıcı profili" position="left">
-                                <Button variant="outline" size="sm">
+                                <Button variant="ghost" size="sm">
                                     <User className="h-4 w-4" />
                                 </Button>
                             </Tooltip>
 
                             <Tooltip content="Sayfayı yenile" position="right">
-                                <Button variant="outline" size="sm">
+                                <Button variant="ghost" size="sm">
                                     <RefreshCw className="h-4 w-4" />
                                 </Button>
                             </Tooltip>
@@ -204,7 +204,7 @@ const FeedbackDemo = () => {
                     </div>
                     <div className="p-6">
                         <div className="mb-4">
-                            <Button onClick={toggleSkeleton} variant="outline" className="border-primary-gold text-primary-gold">
+                            <Button onClick={toggleSkeleton} variant="ghost" className="border-primary-gold text-primary-gold">
                                 {showSkeletons ? 'İçeriği Göster' : 'Skeleton Göster'}
                             </Button>
                         </div>
@@ -328,7 +328,7 @@ const FeedbackDemo = () => {
                                 <div>
                                     <Button
                                         onClick={() => toggleLoading('overlay')}
-                                        variant="outline"
+                                        variant="ghost"
                                         className="border-primary-gold text-primary-gold mb-3"
                                     >
                                         Overlay Göster
@@ -345,7 +345,7 @@ const FeedbackDemo = () => {
                                 <div>
                                     <Button
                                         onClick={() => toggleLoading('button')}
-                                        variant="outline"
+                                        variant="ghost"
                                         className="border-primary-gold text-primary-gold mb-3"
                                     >
                                         Button Loading
@@ -357,7 +357,7 @@ const FeedbackDemo = () => {
                                 <div>
                                     <Button
                                         onClick={() => toggleLoading('inline')}
-                                        variant="outline"
+                                        variant="ghost"
                                         className="border-primary-gold text-primary-gold mb-3"
                                     >
                                         Inline Loading

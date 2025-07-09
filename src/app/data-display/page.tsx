@@ -58,10 +58,10 @@ const DataDisplayDemo = () => {
             width: '100px',
             render: () => (
                 <div className="flex space-x-2">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="ghost">
                         <EditIcon className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" color="red">
+                    <Button size="sm" variant="ghost" color="red">
                         <TrashIcon className="h-4 w-4" />
                     </Button>
                 </div>
@@ -170,7 +170,7 @@ const DataDisplayDemo = () => {
                             title="Henüz veri yok"
                             description="Buraya veri eklendiğinde görüntülenecek"
                             action={
-                                <Button variant="outline" className="border-primary-gold text-text-accent hover:bg-primary-gold/10">
+                                <Button variant="ghost" className="border-primary-gold text-text-accent hover:bg-primary-gold/10">
                                     Veri Ekle
                                 </Button>
                             }
@@ -207,7 +207,7 @@ const DataDisplayDemo = () => {
                             <Badge color="secondary">VIP</Badge>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-4">
-                            <Badge variant="outline" color="gold">Outline</Badge>
+                            <Badge variant="ghost" color="gold">Outline</Badge>
                             <Badge variant="solid" color="gold">Solid</Badge>
                             <Badge variant="soft" color="accent">Soft</Badge>
                             <Badge dot color="gold">Noktalı</Badge>
@@ -240,7 +240,7 @@ const DataDisplayDemo = () => {
                             ))}
                         </div>
                         <div className="flex flex-wrap gap-2 mb-4">
-                            <Chip variant="outline" color="gold">Outline</Chip>
+                            <Chip variant="ghost" color="gold">Outline</Chip>
                             <Chip variant="solid" color="gold">Solid</Chip>
                             <Chip avatar="https://via.placeholder.com/32">Avatar</Chip>
                         </div>

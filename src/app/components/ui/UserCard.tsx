@@ -91,7 +91,7 @@ const UserCard: React.FC<UserCardProps> = ({
             <div className="flex gap-2">
                 {onMessage && (
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={onMessage}
                         className="flex-1"
@@ -102,7 +102,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 )}
                 {onConnect && (
                     <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={onConnect}
                         className="flex-1"
@@ -152,7 +152,7 @@ const UserCard: React.FC<UserCardProps> = ({
                     <Badge
                         key={index}
                         variant={badge.variant || 'soft'}
-                        color={badge.color || 'primary'}
+                        color={badge.color === 'green' ? 'primary' : badge.color === 'blue' ? 'secondary' : badge.color || 'primary'}
                         size="sm"
                     >
                         {badge.label}
@@ -306,7 +306,7 @@ const UserCard: React.FC<UserCardProps> = ({
                         {user.status && (
                             <Badge
                                 variant="soft"
-                                color={user.status === 'online' ? 'green' : 'gray'}
+                                color={user.status === 'online' ? 'primary' : 'secondary'}
                                 size="sm"
                             >
                                 {user.status}

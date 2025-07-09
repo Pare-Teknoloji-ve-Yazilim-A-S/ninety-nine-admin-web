@@ -62,7 +62,7 @@ export { default as Spinner, SpinnerOverlay, SpinnerButton, SpinnerCard, Spinner
 
 // Navigation components
 export { default as Navbar } from './Navbar'
-export { default as Sidebar, SidebarPatterns } from './Sidebar'
+export { default as Sidebar } from './Sidebar'
 export { default as Breadcrumb, BreadcrumbPatterns } from './Breadcrumb'
 export { default as Stepper, StepperPatterns } from './Stepper'
 

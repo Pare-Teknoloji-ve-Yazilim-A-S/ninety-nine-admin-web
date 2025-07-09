@@ -3,11 +3,11 @@
 import React from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
-import { Plus, DollarSign, Users, Settings } from 'lucide-react';
+import { Plus, DollarSign, Users, Settings, LucideIcon } from 'lucide-react';
 
 interface QuickAction {
     label: string;
-    icon: React.ComponentType<any>;
+    icon: LucideIcon;
     variant: 'primary' | 'secondary' | 'danger' | 'ghost';
     onClick?: () => void;
 }

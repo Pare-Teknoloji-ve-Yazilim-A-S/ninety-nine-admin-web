@@ -40,7 +40,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         },
     };
 
-    const iconMap = {
+    const iconMap: Record<'inbox' | 'search' | 'file' | 'users' | 'package', React.ComponentType<{ className?: string }>> = {
         inbox: InboxIcon,
         search: SearchIcon,
         file: FileTextIcon,
@@ -53,8 +53,8 @@ const EmptyState: React.FC<EmptyStateProps> = ({
             return icon;
         }
 
-        if (typeof icon === 'string' && iconMap[icon]) {
-            const IconComponent = iconMap[icon];
+        if (typeof icon === 'string' && icon in iconMap) {
+            const IconComponent = iconMap[icon as keyof typeof iconMap];
             return (
                 <IconComponent
                     className={cn('text-primary-gray-blue', sizeClasses[size].icon)}

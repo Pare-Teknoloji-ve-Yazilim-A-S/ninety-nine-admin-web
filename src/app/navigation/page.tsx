@@ -20,7 +20,6 @@ import {
 import {
     Navbar,
     Sidebar,
-    SidebarPatterns,
     Breadcrumb,
     BreadcrumbPatterns,
     Stepper,
@@ -169,8 +168,7 @@ export default function NavigationDemo() {
         <div className="min-h-screen bg-background-primary">
             <ToastContainer
                 toasts={toasts}
-                position="top-right"
-                onClose={(id) => setToasts(prev => prev.filter(toast => toast.id !== id))}
+                onRemove={(id) => setToasts(prev => prev.filter(toast => toast.id !== id))}
             />
 
             {/* Navbar Demo */}
@@ -198,22 +196,7 @@ export default function NavigationDemo() {
 
             <div className="flex">
                 {/* Sidebar Demo */}
-                <Sidebar
-                    items={sidebarItems}
-                    collapsed={sidebarCollapsed}
-                    onToggle={setSidebarCollapsed}
-                    overlay={showSidebar}
-                    onClose={() => setShowSidebar(false)}
-                    header={{
-                        title: 'Admin Panel',
-                        subtitle: 'Yönetim Paneli',
-                    }}
-                    footer={
-                        <div className="text-sm text-text-secondary">
-                            v1.0.0
-                        </div>
-                    }
-                />
+                <Sidebar isOpen={showSidebar} onClose={() => setShowSidebar(false)} />
 
                 {/* Main Content */}
                 <div className="flex-1 p-8 transition-all duration-300">
@@ -269,14 +252,14 @@ export default function NavigationDemo() {
                                     <h3 className="text-lg font-semibold text-text-primary">Kontroller</h3>
                                     <div className="flex flex-wrap gap-3">
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             size="sm"
                                             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                                         >
                                             {sidebarCollapsed ? 'Genişlet' : 'Daralt'}
                                         </Button>
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             size="sm"
                                             onClick={() => setShowSidebar(!showSidebar)}
                                         >
@@ -290,11 +273,11 @@ export default function NavigationDemo() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="p-4 bg-background-secondary rounded-lg">
                                             <div className="text-sm font-medium text-text-primary mb-2">Admin Sidebar</div>
-                                            {SidebarPatterns.Admin({ collapsed: false })}
+                                            {/* SidebarPatterns.Admin({ collapsed: false }) */}
                                         </div>
                                         <div className="p-4 bg-background-secondary rounded-lg">
                                             <div className="text-sm font-medium text-text-primary mb-2">Basit Sidebar</div>
-                                            {SidebarPatterns.Simple({ collapsed: false })}
+                                            {/* SidebarPatterns.Simple({ collapsed: false }) */}
                                         </div>
                                     </div>
                                 </div>
@@ -394,7 +377,7 @@ export default function NavigationDemo() {
                                         </div>
                                         <div className="flex gap-2">
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                                                 disabled={currentStep === 0}
@@ -402,7 +385,7 @@ export default function NavigationDemo() {
                                                 Önceki
                                             </Button>
                                             <Button
-                                                variant="outline"
+                                                variant="ghost"
                                                 size="sm"
                                                 onClick={() => setCurrentStep(Math.min(orderSteps.length - 1, currentStep + 1))}
                                                 disabled={currentStep === orderSteps.length - 1}

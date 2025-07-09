@@ -245,7 +245,7 @@ export function LoginForm({ onSuccess, onError }: LoginFormProps) {
                                 <Checkbox
                                     {...register('rememberMe')}
                                     label="Beni hatırla"
-                                    size="sm"
+                                    checkboxSize="sm"
                                     disabled={isLoading}
                                 />
 

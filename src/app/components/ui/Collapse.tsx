@@ -3,7 +3,7 @@
 import { forwardRef, HTMLAttributes, ReactNode, useState, useEffect, useRef } from 'react'
 import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, LucideIcon } from 'lucide-react'
 
-interface CollapseProps extends HTMLAttributes<HTMLDivElement> {
+interface CollapseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onToggle'> {
     isOpen?: boolean
     defaultOpen?: boolean
     onToggle?: (isOpen: boolean) => void
