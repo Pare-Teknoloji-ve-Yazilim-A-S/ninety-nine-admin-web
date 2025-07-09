@@ -69,4 +69,7 @@ export { default as Stepper, StepperPatterns } from './Stepper'
 // User components
 export { default as Avatar, AvatarGroup, AvatarPatterns } from './Avatar'
 export { default as UserCard, UserCardPatterns } from './UserCard'
-export { default as ProfileDropdown, ProfileDropdownPatterns } from './ProfileDropdown' 
+export { default as ProfileDropdown, ProfileDropdownPatterns } from './ProfileDropdown'
+
+// Export components
+export { default as ExportDropdown } from './ExportDropdown' 
