@@ -47,8 +47,10 @@ import {
     History,
     CreditCard as PaymentHistory
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function ResidentsPage() {
+    const router = useRouter();
     const { toasts, removeToast } = useToast();
 
     // Initialize filters and UI state
@@ -715,8 +717,7 @@ export default function ResidentsPage() {
 
     const {
         handleRefresh,
-        handleExport,
-        handleAddResident
+        handleExport
     } = uiHook;
 
     // Toast functions
@@ -951,7 +952,7 @@ export default function ResidentsPage() {
                                 <Button variant="secondary" size="md" icon={Download} onClick={handleExport}>
                                     İndir
                                 </Button>
-                                <Button variant="primary" size="md" icon={Plus} onClick={handleAddResident}>
+                                <Button variant="primary" size="md" icon={Plus} onClick={() => router.push('/dashboard/residents/add')}>
                                     Yeni Sakin
                                 </Button>
                             </div>
