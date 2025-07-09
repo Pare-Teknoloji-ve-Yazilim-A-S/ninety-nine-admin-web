@@ -1,7 +1,7 @@
 // API Configuration - Infrastructure Layer
 export const apiConfig = {
     // Base URLs - Next.js proxy kullanıyoruz (CORS bypass için)
-    baseURL: '/api',
+    baseURL: '/api/proxy',
     version: '', // API-99CLUB'da version yok
 
     // Timeout settings
