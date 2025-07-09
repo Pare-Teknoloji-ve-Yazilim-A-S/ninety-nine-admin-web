@@ -1,0 +1,40 @@
+{
+  "name": "NinetyNineAdmin",
+  "description": "NinetyNineAdmin project created with Pare CLI",
+  "context": {
+    "projectType": "web",
+    "techStack": [
+      "Next.js 14",
+      "React 18",
+      "TypeScript",
+      "Tailwind CSS"
+      
+    ],
+    "architecture": {
+      "type": "Next.js App Router",
+      "structure": "src/app routing with components and lib folders"
+      
+    }
+  },
+  "instructions": [
+    "This is a web project built with modern TypeScript stack",
+    "Use Next.js 14 App Router conventions for routing and layouts",
+    "Implement responsive design with Tailwind CSS utilities",
+    "Use React Server Components where appropriate for better performance",
+    "Follow TypeScript best practices with proper typing",
+    "Maintain consistent code style and naming conventions",
+    "Write clean, readable, and maintainable code",
+    "Consider performance and security implications",
+    "Add appropriate error handling and loading states"
+  ],
+  "codeStyle": {
+    "language": "TypeScript",
+    "framework": "Next.js + React",
+    "conventions": {
+      "components": "PascalCase",
+      "functions": "camelCase",
+      "constants": "UPPER_SNAKE_CASE",
+      "files": "kebab-case"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "API-99CLUB": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "apidog-mcp-server@latest",
+        "--oas=http://localhost:5001/api-docs-json"
+      ],
+      "env": {}
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"]
+    }
+  }
+}

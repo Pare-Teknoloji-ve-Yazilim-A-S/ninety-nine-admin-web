@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Font Variables */
+  --font-inter: "Inter", "system-ui", "sans-serif";
+
+  /* 99Club Design System Colors */
+  --primary: #000000;
+  --primary-white: #fff5f5;
+  --primary-gold: #ac8d6a;
+  --primary-gold-light: #f2e7dc;
+  --primary-red: #f21c1f;
+  --primary-gray-blue: #9da6b9;
+  --primary-dark-gray: #201f1d;
+
+  /* Background Colors */
+  --background-primary: #000000;
+  --background-secondary: #201f1d;
+  --background-card: #1a1a1a;
+
+  /* Text Colors */
+  --text-primary: #f2e7dc;
+  --text-secondary: #9da6b9;
+  --text-accent: #ac8d6a;
+
+  /* Gradient Colors */
+  --gradient-gold-start: #f2e7dc;
+  --gradient-gold-end: #ac8d6a;
+  --gradient-dark-start: #5f5f5f;
+  --gradient-dark-end: #1a1a1a;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  font-size: 16px; /* Web standard base font size */
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: "Helvetica", var(--font-inter), "system-ui", "sans-serif";
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.4;
+  min-height: 100vh;
+}
+
+/* Font Face Fallbacks */
+@font-face {
+  font-family: "Helvetica";
+  src: local("Helvetica Neue"), local("Helvetica"), local("Arial");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Selection Styles */
+::selection {
+  background-color: var(--primary-gold);
+  color: var(--primary-dark-gray);
+}
+
+/* Focus Styles */
+:focus-visible {
+  outline: 2px solid var(--primary-gold);
+  outline-offset: 2px;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gradient-gold-end);
+}
+
+/* Input Autofill Styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--background-card) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+}

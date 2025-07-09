@@ -1,0 +1,413 @@
+# NinetyNine Admin Web - Cursor AI Rules
+
+You are an expert React/Next.js developer working on NinetyNine Admin Web Dashboard.
+
+## 🏗️ Project Architecture
+
+**Tech Stack:**
+
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- Lucide React Icons
+
+**Project Structure:**
+
+- Components: `src/app/components/`
+- UI Components: `src/app/components/ui/`
+- Dashboard Components: `src/app/dashboard/components/`
+- Services: `src/services/`
+- Utils: `src/lib/`
+
+## 🎨 NinetyNine Design System
+
+### Color Palette Philosophy
+
+NinetyNine uses a **warm, earthy, premium** color palette inspired by luxury real estate branding. Avoid cold blues, harsh whites, and pure grays.
+
+### 🎯 Primary Brand Colors
+
+```css
+Gold (Main Brand): #AC8D6A
+Gold Light: #F2E7DC
+Warm Red: #E53E3E
+Warm Blue: #718096 (Slate)
+Dark Gray: #201F1D
+```
+
+### 🤍 Warm White System
+
+**NEVER use pure white (#FFFFFF) for text. Always use warm whites:**
+
+```css
+text-on-dark: #FDFCFB (Cream white - primary text on dark)
+text-on-light: #1C1917 (Warm dark - primary text on light)
+text-soft: #F9F8F7 (Pearl white - subtle text)
+text-bright: #FFFFFF (Pure white - only for high contrast)
+```
+
+### 🔴 Warm Red Palette (Terracotta & Rust)
+
+```css
+red-50: #FEF7F7   red-500: #E53E3E   red-900: #4A1515
+red-100: #FDEAEA  red-600: #C53030   red-950: #2D0A0A
+red-200: #FBCFCF  red-700: #9C2A2A
+red-300: #F6A8A8  red-800: #742A2A
+```
+
+### 🔵 Warm Blue Palette (Slate & Steel)
+
+```css
+blue-50: #F7F9FC   blue-500: #718096   blue-900: #171923
+blue-100: #EDF2F7  blue-600: #4A5568   blue-950: #0D0E12
+blue-200: #E2E8F0  blue-700: #2D3748
+blue-300: #CBD5E0  blue-800: #1A202C
+```
+
+### 🌫️ Warm Gray System
+
+```css
+gray-50: #FAFAF9 (Paper white)   gray-600: #57534E
+gray-100: #F5F5F4                gray-700: #44403C
+gray-200: #E7E5E4                gray-800: #292524
+gray-300: #D6D3D1                gray-900: #1C1917
+gray-400: #A8A29E                gray-950: #0C0A09
+gray-500: #78716C (Body text)
+```
+
+### 🎨 Semantic Colors
+
+```css
+Success: #22C55E (Warm green)
+Warning: #F59E0B (Warm amber)
+Info: #718096 (Warm slate)
+Error: #E53E3E (Warm red)
+```
+
+## 📝 Typography Rules
+
+### Text Color Hierarchy
+
+```css
+/* Primary Text */
+text-on-light dark:text-on-dark     /* Headings, important text */
+text-light-secondary dark:text-secondary  /* Body text, labels */
+text-light-muted dark:text-muted    /* Helper text, captions */
+
+/* Semantic Text */
+text-primary-gold                   /* Brand accent text */
+text-semantic-success-600           /* Success messages */
+text-semantic-warning-600           /* Warning messages */
+text-primary-red                    /* Error messages */
+```
+
+### Font Weights
+
+```css
+font-light (300)      /* Large display text */
+font-normal (400)     /* Body text */
+font-medium (500)     /* Emphasis */
+font-semibold (600)   /* Subheadings */
+font-bold (700)       /* Headings */
+```
+
+### Font Sizes
+
+```css
+text-xs (12px)        /* Captions, helper text */
+text-sm (14px)        /* Small text, labels */
+text-base (16px)      /* Body text */
+text-lg (18px)        /* Large body text */
+text-xl (20px)        /* Small headings */
+text-2xl (24px)       /* Section headings */
+text-3xl (30px)       /* Page headings */
+```
+
+## 🎭 Component Guidelines
+
+### Card Components
+
+```tsx
+// ✅ Good
+<Card variant="elevated" hover={true}>
+  <CardTitle className="text-text-on-light dark:text-on-dark">
+    Title
+  </CardTitle>
+</Card>
+
+// ❌ Bad - Don't use pure white or cold colors
+<Card className="bg-white text-black">
+```
+
+### Button Components
+
+```tsx
+// ✅ Good - Use semantic variants
+<Button variant="primary" size="md" icon={Plus}>
+  Action
+</Button>
+
+// ✅ Good - Warm colors for states
+<Button variant="danger">  // Uses warm red
+  Delete
+</Button>
+```
+
+### Badge Components
+
+```tsx
+// ✅ Good - Semantic colors
+<Badge variant="soft" color="gold">Admin</Badge>
+<Badge variant="soft" color="red">Error</Badge>
+
+// ❌ Bad - Don't use cold blue
+<Badge color="blue">Status</Badge>
+```
+
+## 🌈 Background System
+
+### Light Mode Backgrounds
+
+```css
+bg-background-light-primary (#FAFAF9)    /* Page background */
+bg-background-light-secondary (#F5F5F4)  /* Section background */
+bg-background-light-card (#FDFCFB)       /* Card background */
+bg-background-light-soft (#FCFBFA)       /* Soft background */
+```
+
+### Dark Mode Backgrounds
+
+```css
+bg-background-primary (#000000)          /* Page background */
+bg-background-secondary (#201F1D)        /* Section background */
+bg-background-card (#1C1917)             /* Card background */
+bg-background-soft (#292524)             /* Soft background */
+```
+
+## 🖱️ Interactive States
+
+### Hover Effects
+
+```css
+/* Gold Theme Hovers */
+hover:bg-hover-light-cream dark:hover:bg-hover-gold-bg
+hover:border-primary-gold/60
+hover:text-primary-gold
+
+/* Button Hovers */
+hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20
+```
+
+### Focus States
+
+```css
+focus:ring-2 focus:ring-primary-gold/30
+focus:border-primary-gold
+```
+
+## 🧱 Component Creation Rules
+
+### 1. TypeScript Interface Pattern
+
+```tsx
+interface ComponentProps {
+  children?: React.ReactNode;
+  className?: string;
+  variant?: "default" | "elevated" | "outlined";
+  size?: "sm" | "md" | "lg";
+  // Always include optional styling props
+}
+```
+
+### 2. Color Prop Pattern
+
+```tsx
+interface ComponentProps {
+  color?: "primary" | "gold" | "red" | "secondary";
+  // Use semantic color names, not specific colors
+}
+```
+
+### 3. Default Props Pattern
+
+```tsx
+export default function Component({
+  variant = "default",
+  size = "md",
+  className,
+  ...props
+}: ComponentProps) {
+  // Always provide sensible defaults
+}
+```
+
+### 4. Styling Pattern
+
+```tsx
+const variantClasses = {
+  default: 'bg-background-light-card dark:bg-background-card',
+  elevated: 'bg-background-light-card dark:bg-background-card shadow-lg',
+};
+
+return (
+  <div className={cn(
+    'base-classes',
+    variantClasses[variant],
+    className // Allow override
+  )}>
+);
+```
+
+## 📋 Dashboard Component Rules
+
+### Metric Cards
+
+```tsx
+// ✅ Good - Use semantic colors
+<div className="bg-primary-gold-light/30 dark:bg-primary-gold/20">
+  <Icon className="text-primary-gold" />
+</div>
+
+// ✅ Good - Warm success/error indicators
+<TrendingUp className="text-semantic-success-500" />
+<TrendingDown className="text-primary-red" />
+```
+
+### Data Tables
+
+```tsx
+// ✅ Good - Semantic headers and content
+<th className="text-text-on-light dark:text-text-on-dark">
+<td className="text-text-light-secondary dark:text-text-secondary">
+```
+
+### Status Badges
+
+```tsx
+// ✅ Good - Map status to warm colors
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "success":
+      return "primary"; // Uses warm blue
+    case "warning":
+      return "gold"; // Uses brand gold
+    case "error":
+      return "red"; // Uses warm red
+    default:
+      return "secondary";
+  }
+};
+```
+
+## 🎨 Design Principles
+
+### 1. Warm Over Cold
+
+- Always prefer warm grays over cool grays
+- Use warm whites instead of pure white
+- Choose warm blues (slate) over cold blues (cyan)
+
+### 2. Brand Consistency
+
+- Gold (#AC8D6A) is the primary brand color
+- Use gold for accents, CTAs, and brand elements
+- Secondary actions use warm slate blue
+
+### 3. Premium Feel
+
+- Use subtle gradients: `bg-gradient-to-r from-primary-gold-light/30`
+- Add soft shadows: `shadow-lg`
+- Prefer rounded corners: `rounded-xl`, `rounded-2xl`
+
+### 4. Accessibility
+
+- Maintain WCAG AA contrast ratios
+- Use semantic HTML elements
+- Provide proper alt texts and labels
+
+## 🚫 What NOT to Do
+
+### ❌ Color Mistakes
+
+```css
+/* Don't use these */
+text-white           /* Use text-on-dark instead */
+bg-blue-500         /* Use bg-primary-blue instead */
+text-gray-900       /* Use text-on-light instead */
+border-gray-300     /* Use border-gray-200 instead */
+```
+
+### ❌ Component Mistakes
+
+```tsx
+// Don't use hardcoded colors
+<div className="bg-white text-black">
+
+// Don't skip TypeScript interfaces
+function Component(props: any) {
+
+// Don't forget responsive design
+<div className="w-96"> // Use responsive widths
+```
+
+### ❌ Typography Mistakes
+
+```tsx
+// Don't mix font weights randomly
+<h1 className="font-light">  // Headings should be bold
+<p className="font-bold">    // Body text should be normal/medium
+```
+
+## 🔄 Migration Guidelines
+
+When updating existing components:
+
+1. Replace `text-white` → `text-on-dark`
+2. Replace `text-gray-900` → `text-on-light`
+3. Replace `bg-blue-*` → `bg-primary-blue*`
+4. Replace `text-red-*` → `text-primary-red*`
+5. Add proper TypeScript interfaces
+6. Use semantic color props
+
+## 📚 Component Library Reference
+
+All UI components are in `src/app/components/ui/`:
+
+- `Button.tsx` - Actions and CTAs
+- `Card.tsx` - Content containers
+- `Badge.tsx` - Status indicators
+- `Modal.tsx` - Overlays
+- `ProfileDropdown.tsx` - User menus
+- `Table.tsx` - Data display
+
+Always import from existing components before creating new ones.
+
+## 🎯 Dashboard Specific Rules
+
+### Page Structure
+
+```tsx
+<ProtectedRoute>
+  <div className="min-h-screen bg-background-primary">
+    <DashboardHeader />
+    <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      {/* Content */}
+    </main>
+  </div>
+</ProtectedRoute>
+```
+
+### Grid Layouts
+
+```tsx
+// Metrics grid
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+// Two-column layout
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div className="lg:col-span-2">{/* Main content */}</div>
+  <div>{/* Sidebar */}</div>
+</div>
+```
+
+Remember: NinetyNine is a premium real estate brand. Every design decision should reflect luxury, warmth, and professionalism. When in doubt, choose the warmer, more premium option.
