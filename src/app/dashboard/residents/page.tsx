@@ -15,6 +15,7 @@ import FilterPanel, { commonFilterGroups } from '@/app/components/ui/FilterPanel
 import ExportDropdown from '@/app/components/ui/ExportDropdown';
 import { ToastContainer } from '@/app/components/ui/Toast';
 import BulkMessageModal from '@/app/components/ui/BulkMessageModal';
+import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 import { useToast } from '@/hooks/useToast';
 import { useResidentsData } from '@/hooks/useResidentsData';
 import { useResidentsFilters } from '@/hooks/useResidentsFilters';
@@ -60,6 +61,17 @@ export default function ResidentsPage() {
         isOpen: false,
         type: null,
         recipients: []
+    });
+
+    // Add confirmation modal state
+    const [confirmationState, setConfirmationState] = useState<{
+        isOpen: boolean;
+        resident: Resident | null;
+        loading: boolean;
+    }>({
+        isOpen: false,
+        resident: null,
+        loading: false
     });
 
     // Initialize all hooks for data management
@@ -114,7 +126,35 @@ export default function ResidentsPage() {
     // Generate configuration data
     const statsData = generateStatsCardsData(dataHook.stats);
     const bulkActions = bulkActionHandlers.getBulkActions();
-    const tableColumns = getTableColumns(residentActionHandlers);
+    
+    // Create wrapper for table actions that uses modal for delete
+    const tableActionHandlers = {
+        ...residentActionHandlers,
+        handleDeleteResident: (resident: Resident) => {
+            // Open confirmation modal instead of direct deletion
+            setConfirmationState({
+                isOpen: true,
+                resident: resident,
+                loading: false
+            });
+        }
+    };
+    
+    const tableColumns = getTableColumns(tableActionHandlers);
+
+    // Handle delete confirmation
+    const handleDeleteConfirmation = useCallback(async () => {
+        if (!confirmationState.resident) return;
+
+        setConfirmationState(prev => ({ ...prev, loading: true }));
+        
+        try {
+            await residentActionHandlers.handleDeleteResident(confirmationState.resident);
+            setConfirmationState({ isOpen: false, resident: null, loading: false });
+        } catch (error) {
+            setConfirmationState(prev => ({ ...prev, loading: false }));
+        }
+    }, [confirmationState.resident, residentActionHandlers]);
 
     // Create unified action handler for view components
     const handleResidentAction = useCallback((action: string, resident: Resident) => {
@@ -126,7 +166,12 @@ export default function ResidentsPage() {
                 residentActionHandlers.handleEditResident(resident);
                 break;
             case 'delete':
-                residentActionHandlers.handleDeleteResident(resident);
+                // Open confirmation modal instead of direct deletion
+                setConfirmationState({
+                    isOpen: true,
+                    resident: resident,
+                    loading: false
+                });
                 break;
             case 'call':
                 residentActionHandlers.handleCallResident(resident);
@@ -392,6 +437,18 @@ export default function ResidentsPage() {
                     onSend={bulkActionHandlers.handleSendMessage}
                     type={messageState.type || 'email'}
                     recipientCount={messageState.recipients.length}
+                />
+
+                {/* Confirmation Modal */}
+                <ConfirmationModal
+                    isOpen={confirmationState.isOpen}
+                    onClose={() => setConfirmationState({ isOpen: false, resident: null, loading: false })}
+                    onConfirm={handleDeleteConfirmation}
+                    title="Sakin Silme"
+                    variant="danger"
+                    loading={confirmationState.loading}
+                    itemName={confirmationState.resident?.fullName}
+                    itemType="sakin"
                 />
 
                 {/* Toast Container */}

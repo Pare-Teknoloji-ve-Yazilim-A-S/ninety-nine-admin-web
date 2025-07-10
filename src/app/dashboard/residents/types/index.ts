@@ -84,7 +84,7 @@ export interface MembershipConfig {
 export interface ResidentActionHandlers {
     handleViewResident: (resident: Resident) => void;
     handleEditResident: (resident: Resident) => void;
-    handleDeleteResident: (resident: Resident) => void;
+    handleDeleteResident: (resident: Resident) => void | Promise<void>;
     handleCallResident: (resident: Resident) => void;
     handleMessageResident: (resident: Resident) => void;
     handleGenerateQR: (resident: Resident) => void;

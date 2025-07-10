@@ -16,6 +16,7 @@ export { default as FloatingActionButton } from './FloatingActionButton'
 // Layout & Content Components
 export { default as Card, CardHeader, CardBody, CardFooter, CardTitle, CardSubtitle } from './Card'
 export { default as Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle, ModalSubtitle } from './Modal'
+export { default as ConfirmationModal } from './ConfirmationModal'
 export { default as Drawer, DrawerHeader, DrawerBody, DrawerFooter, DrawerTitle, DrawerSubtitle } from './Drawer'
 export { default as Tabs, TabList, Tab, TabPanel, TabPanels } from './Tabs'
 export { default as Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './Accordion'

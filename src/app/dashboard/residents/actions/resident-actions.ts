@@ -1,5 +1,6 @@
 import { Resident } from '@/app/components/ui/ResidentRow';
 import { ResidentActionHandlers as IResidentActionHandlers } from '../types';
+import { residentService } from '@/services';
 
 /**
  * Toast notification functions interface
@@ -63,15 +64,27 @@ export class ResidentActionHandlers {
     /**
      * Handle delete resident action
      */
-    handleDeleteResident = (resident: Resident): void => {
-        if (confirm(`${resident.fullName} sakinini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) {
-            // Remove resident from local state
+    handleDeleteResident = async (resident: Resident): Promise<void> => {
+        try {
+            // Call the API to delete the resident
+            await residentService.deleteResident(resident.id.toString());
+            
+            // Remove resident from local state after successful API call
             const updatedResidents = this.residents.filter(r => r.id !== resident.id);
             this.dataUpdate.setResidents(updatedResidents);
+            
+            // Refresh data to ensure consistency
+            this.dataUpdate.refreshData();
             
             this.toast.success(
                 'Sakin Silindi', 
                 `${resident.fullName} başarıyla silindi`
+            );
+        } catch (error) {
+            console.error('Delete resident failed:', error);
+            this.toast.error(
+                'Silme Hatası', 
+                error instanceof Error ? error.message : 'Silme işlemi başarısız oldu'
             );
         }
     };
