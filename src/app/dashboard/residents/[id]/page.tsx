@@ -64,11 +64,11 @@ export default function ResidentViewPage() {
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'Aktif':
-                return 'success';
+                return 'gold';
             case 'Beklemede':
-                return 'warning';
+                return 'secondary';
             case 'Pasif':
-                return 'danger';
+                return 'red';
             default:
                 return 'secondary';
         }
@@ -77,7 +77,7 @@ export default function ResidentViewPage() {
     const getTypeColor = (type: string) => {
         switch (type) {
             case 'owner':
-                return 'success';
+                return 'primary';
             case 'tenant':
                 return 'primary';
             default:
@@ -452,16 +452,16 @@ export default function ResidentViewPage() {
                                         
                                         <div className="space-y-3">
                                             <Link href={`/dashboard/residents/${resident.id}/edit`}>
-                                                <Button variant="outline" className="w-full justify-start" icon={Edit}>
+                                                <Button variant="secondary" className="w-full justify-start" icon={Edit}>
                                                     Bilgileri Düzenle
                                                 </Button>
                                             </Link>
                                             
-                                            <Button variant="outline" className="w-full justify-start" icon={QrCode}>
+                                            <Button variant="secondary" className="w-full justify-start" icon={QrCode}>
                                                 QR Kod Oluştur
                                             </Button>
                                             
-                                            <Button variant="outline" className="w-full justify-start" icon={FileText}>
+                                            <Button variant="secondary" className="w-full justify-start" icon={FileText}>
                                                 Rapor Oluştur
                                             </Button>
                                         </div>

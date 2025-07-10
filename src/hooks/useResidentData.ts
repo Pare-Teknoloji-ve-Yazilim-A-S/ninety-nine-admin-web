@@ -30,6 +30,8 @@ interface UseResidentDataReturn {
 
 // Transform API resident to component resident (Iraq-specific)
 const transformApiResidentToComponentResident = (apiResident: ApiResident): Resident => {
+    const property = apiResident.property;
+
     return {
         id: apiResident.id.toString(),
         firstName: apiResident.firstName,
@@ -39,14 +41,14 @@ const transformApiResidentToComponentResident = (apiResident: ApiResident): Resi
 
         // Property information from API
         residentType: {
-            type: apiResident.property?.ownershipType || 'owner',
-            label: apiResident.property?.ownershipType === 'tenant' ? 'Kiracı' : 'Malik',
-            color: apiResident.property?.ownershipType === 'tenant' ? 'blue' : 'green'
+            type: property?.ownershipType || 'owner',
+            label: property?.ownershipType === 'tenant' ? 'Kiracı' : 'Malik',
+            color: property?.ownershipType === 'tenant' ? 'blue' : 'green'
         },
         address: {
-            building: apiResident.property?.block || 'Belirtilmemiş',
-            apartment: apiResident.property?.apartment || 'Belirtilmemiş',
-            roomType: apiResident.property?.propertyNumber || 'Belirtilmemiş'
+            building: property?.block || 'Belirtilmemiş',
+            apartment: property?.apartment || 'Belirtilmemiş',
+            roomType: property?.propertyNumber || 'Belirtilmemiş'
         },
         contact: {
             phone: apiResident.phone || 'Belirtilmemiş',
@@ -91,8 +93,8 @@ export const useResidentData = ({
 
             const response = await residentService.getResidentById(id);
             
-            if (response.data) {
-                const transformedResident = transformApiResidentToComponentResident(response.data);
+            if (response) {
+                const transformedResident = transformApiResidentToComponentResident(response);
                 setResident(transformedResident);
             } else {
                 setError('Sakin bulunamadı');
