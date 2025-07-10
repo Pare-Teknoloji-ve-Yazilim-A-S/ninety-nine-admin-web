@@ -20,44 +20,97 @@ interface ToastFunctions {
     error: (title: string, message: string) => void;
 }
 
+interface BulkMessageState {
+    isOpen: boolean;
+    type: 'email' | 'sms' | null;
+    recipients: Resident[];
+}
+
 /**
  * Bulk action handlers class
  */
 export class BulkActionHandlers {
     private toast: ToastFunctions;
+    private messageState: BulkMessageState;
+    private setMessageState: (state: BulkMessageState) => void;
 
-    constructor(toast: ToastFunctions) {
+    constructor(
+        toast: ToastFunctions,
+        messageState: BulkMessageState,
+        setMessageState: (state: BulkMessageState) => void
+    ) {
         this.toast = toast;
+        this.messageState = messageState;
+        this.setMessageState = setMessageState;
     }
 
     /**
      * Handle bulk email action
      */
     handleBulkMail = (residents: Resident[]): void => {
-        const emails = residents
-            .filter(r => r.contact.email && r.contact.email !== 'Belirtilmemiş')
-            .map(r => r.contact.email)
-            .join(', ');
+        const validRecipients = residents.filter(r => r.contact.email && r.contact.email !== 'Belirtilmemiş');
         
-        this.toast.info(
-            'Toplu Mail', 
-            `${residents.length} sakine mail gönderiliyor. ${emails ? 'E-postalar: ' + emails : 'Email adresi bulunamadı'}`
-        );
+        if (validRecipients.length === 0) {
+            this.toast.error(
+                'Hata',
+                'Seçili sakinler arasında geçerli e-posta adresi bulunamadı.'
+            );
+            return;
+        }
+
+        this.setMessageState({
+            isOpen: true,
+            type: 'email',
+            recipients: validRecipients
+        });
     };
 
     /**
      * Handle bulk SMS action
      */
     handleBulkSMS = (residents: Resident[]): void => {
-        const phones = residents
-            .filter(r => r.contact.phone && r.contact.phone !== 'Belirtilmemiş')
-            .map(r => r.contact.phone)
-            .join(', ');
+        const validRecipients = residents.filter(r => r.contact.phone && r.contact.phone !== 'Belirtilmemiş');
         
-        this.toast.info(
-            'Toplu SMS', 
-            `${residents.length} sakine SMS gönderiliyor. ${phones ? 'Telefonlar: ' + phones : 'Telefon numarası bulunamadı'}`
-        );
+        if (validRecipients.length === 0) {
+            this.toast.error(
+                'Hata',
+                'Seçili sakinler arasında geçerli telefon numarası bulunamadı.'
+            );
+            return;
+        }
+
+        this.setMessageState({
+            isOpen: true,
+            type: 'sms',
+            recipients: validRecipients
+        });
+    };
+
+    /**
+     * Handle message sending
+     */
+    handleSendMessage = async (message: string): Promise<void> => {
+        const { type, recipients } = this.messageState;
+        const isEmail = type === 'email';
+        
+        try {
+            // TODO: Implement actual sending logic
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const recipientList = recipients
+                .map(r => isEmail ? r.contact.email : r.contact.phone)
+                .join(', ');
+            
+            this.toast.success(
+                isEmail ? 'E-posta Gönderildi' : 'SMS Gönderildi',
+                `${recipients.length} alıcıya başarıyla gönderildi: ${recipientList}`
+            );
+        } catch (error) {
+            this.toast.error(
+                'Gönderim Hatası',
+                'Mesaj gönderimi sırasında bir hata oluştu.'
+            );
+        }
     };
 
     /**
@@ -76,19 +129,6 @@ export class BulkActionHandlers {
                 'Sakin raporu başarıyla oluşturuldu ve indiriliyor'
             );
         }, 2000);
-    };
-
-    /**
-     * Handle bulk tag assignment
-     */
-    handleBulkTag = (residents: Resident[]): void => {
-        const tags = prompt('Atanacak etiketleri virgülle ayırarak yazın:');
-        if (tags && tags.trim()) {
-            this.toast.success(
-                'Etiketler Atandı', 
-                `${residents.length} sakine "${tags}" etiketleri başarıyla atandı`
-            );
-        }
     };
 
     /**
@@ -145,7 +185,6 @@ export class BulkActionHandlers {
                 icon: FileText,
                 onClick: this.handleBulkPDF
             },
-
             {
                 id: BULK_ACTION_IDS.ACTIVATE,
                 label: 'Aktif Yap',
@@ -173,6 +212,10 @@ export class BulkActionHandlers {
 /**
  * Create bulk action handlers instance
  */
-export const createBulkActionHandlers = (toast: ToastFunctions): BulkActionHandlers => {
-    return new BulkActionHandlers(toast);
+export const createBulkActionHandlers = (
+    toast: ToastFunctions,
+    messageState: BulkMessageState,
+    setMessageState: (state: BulkMessageState) => void
+): BulkActionHandlers => {
+    return new BulkActionHandlers(toast, messageState, setMessageState);
 }; 

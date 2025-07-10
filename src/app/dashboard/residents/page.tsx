@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
@@ -14,6 +14,7 @@ import DataTable from '@/app/components/ui/DataTable';
 import FilterPanel, { commonFilterGroups } from '@/app/components/ui/FilterPanel';
 import ExportDropdown from '@/app/components/ui/ExportDropdown';
 import { ToastContainer } from '@/app/components/ui/Toast';
+import BulkMessageModal from '@/app/components/ui/BulkMessageModal';
 import { useToast } from '@/hooks/useToast';
 import { useResidentsData } from '@/hooks/useResidentsData';
 import { useResidentsFilters } from '@/hooks/useResidentsFilters';
@@ -49,6 +50,17 @@ import { getTableColumns } from './components/table-columns';
 export default function ResidentsPage() {
     const router = useRouter();
     const { toasts, removeToast } = useToast();
+
+    // Add message modal state
+    const [messageState, setMessageState] = useState<{
+        isOpen: boolean;
+        type: 'email' | 'sms' | null;
+        recipients: Resident[];
+    }>({
+        isOpen: false,
+        type: null,
+        recipients: []
+    });
 
     // Initialize all hooks for data management
     const filtersHook = useResidentsFilters();
@@ -87,7 +99,11 @@ export default function ResidentsPage() {
     };
 
     // Initialize action handlers
-    const bulkActionHandlers = createBulkActionHandlers(toastFunctions);
+    const bulkActionHandlers = createBulkActionHandlers(
+        toastFunctions,
+        messageState,
+        setMessageState
+    );
     const residentActionHandlers = createResidentActionHandlers(
         toastFunctions, 
         dataUpdateFunctions, 
@@ -362,6 +378,15 @@ export default function ResidentsPage() {
                         />
                     </div>
                 </div>
+
+                {/* Bulk Message Modal */}
+                <BulkMessageModal
+                    isOpen={messageState.isOpen}
+                    onClose={() => setMessageState(prev => ({ ...prev, isOpen: false }))}
+                    onSend={bulkActionHandlers.handleSendMessage}
+                    type={messageState.type || 'email'}
+                    recipientCount={messageState.recipients.length}
+                />
 
                 {/* Toast Container */}
                 <ToastContainer toasts={toasts} onRemove={removeToast} />
