@@ -25,6 +25,7 @@ import {
     Smartphone,
     QrCode
 } from 'lucide-react';
+import { useResidentData } from '@/hooks/useResidentData';
 
 interface FormData {
     // Identity
@@ -90,6 +91,14 @@ export default function AddResidentPage() {
 
     const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    // Yeni eklenen: useResidentData hook'u
+    const {
+        createResident,
+        saving,
+        saveError,
+        clearSaveError
+    } = useResidentData();
 
     // Breadcrumb for add resident page
     const breadcrumbItems = [
@@ -197,13 +206,28 @@ export default function AddResidentPage() {
     };
 
     // Handle form submission
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (validateForm()) {
-            // Mock successful save
-            console.log('Form submitted:', formData);
-            setShowSuccess(true);
+            // API'ye uygun CreateResidentDto oluştur
+            const dto = {
+                email: formData.email || '',
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phone: formData.mobilePhone,
+                tcKimlikNo: formData.identityNumber,
+                propertyIdentification: `${formData.block}-${formData.apartmentNumber}`,
+                roleId: 'resident', // Gerekirse dinamik yapabilirsin
+                status: 'ACTIVE' as const,
+                membershipTier: 'STANDARD' as const,
+            };
+            try {
+                await createResident(dto);
+                setShowSuccess(true);
+            } catch (err) {
+                // Hata zaten saveError ile gösterilecek
+            }
         }
     };
 
@@ -621,10 +645,13 @@ export default function AddResidentPage() {
 
                                     {/* Submit Button */}
                                     <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                        <div className="flex justify-center">
-                                            <Button variant="primary" size="lg" type="submit" className="px-12">
-                                                Sakini Kaydet
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Button variant="primary" size="lg" type="submit" className="px-12" disabled={saving}>
+                                                {saving ? 'Kaydediliyor...' : 'Sakini Kaydet'}
                                             </Button>
+                                            {saveError && (
+                                                <p className="text-sm text-red-600 dark:text-red-400 mt-2">{saveError}</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
