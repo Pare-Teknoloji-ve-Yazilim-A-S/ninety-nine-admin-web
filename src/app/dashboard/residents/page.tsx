@@ -332,10 +332,16 @@ export default function ResidentsPage() {
                             <ResidentGridView
                                 residents={dataHook.residents}
                                 loading={dataHook.loading}
-                                onSelectionChange={filtersHook.handleSelectionChange}
-                                bulkActions={bulkActions}
+                                onSelectionChange={(selectedIds) => {
+                                    const selectedResidents = dataHook.residents.filter(r => selectedIds.includes(r.id));
+                                    filtersHook.handleSelectionChange(selectedResidents);
+                                }}
+                                bulkActions={bulkActions.map(action => ({
+                                    ...action,
+                                    onClick: (residents) => action.onClick(residents)
+                                }))}
                                 onAction={handleResidentAction}
-                                selectedResidents={filtersHook.selectedResidents}
+                                selectedResidents={filtersHook.selectedResidents.map(r => r.id)}
                                 pagination={{
                                     currentPage: filtersHook.currentPage,
                                     totalPages: dataHook.totalPages,

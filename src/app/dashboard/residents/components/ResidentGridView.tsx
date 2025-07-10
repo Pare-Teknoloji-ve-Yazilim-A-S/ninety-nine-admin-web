@@ -5,7 +5,7 @@ import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import Checkbox from '@/app/components/ui/Checkbox';
 import TablePagination from '@/app/components/ui/TablePagination';
-import { Resident } from '@/services/types/resident.types';
+import { Resident } from '@/app/components/ui/ResidentRow';
 import { MoreHorizontal, Phone, Mail } from 'lucide-react';
 import EmptyState from '@/app/components/ui/EmptyState';
 import Skeleton from '@/app/components/ui/Skeleton';
@@ -118,7 +118,7 @@ export default function ResidentGridView({
                                         {resident.firstName} {resident.lastName}
                                     </h3>
                                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                        {resident.property?.apartment}
+                                        {resident.address.apartment}
                                     </p>
                                 </div>
                             </div>
@@ -132,15 +132,15 @@ export default function ResidentGridView({
 
                         <div className="mt-4">
                             <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                {resident.status === 'ACTIVE' ? 'Aktif Sakin' : 'Pasif Sakin'}
+                                {resident.status.label}
                             </p>
                             <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                {resident.property?.ownershipType === 'owner' ? 'Malik' : 'Kiracı'}
+                                {resident.residentType.label}
                             </p>
                         </div>
 
                         <div className="mt-4 flex gap-2">
-                            {resident.phone && (
+                            {resident.contact.phone && (
                                 <Button
                                     variant="secondary"
                                     size="sm"
