@@ -54,10 +54,10 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
     const [recordsPerPage, setRecordsPerPage] = useState(10);
     
     // Sorting
-    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' as const });
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
     
     // View and selection
-    const [selectedView, setSelectedView] = useState('list');
+    const [selectedView, setSelectedView] = useState('table');
     const [selectedResidents, setSelectedResidents] = useState<Resident[]>([]);
 
     // Event handlers

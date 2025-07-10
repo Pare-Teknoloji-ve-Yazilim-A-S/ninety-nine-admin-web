@@ -20,6 +20,11 @@ import { useResidentsFilters } from '@/hooks/useResidentsFilters';
 import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
 import { Filter, Download, Plus, RefreshCw } from 'lucide-react';
+import { Resident } from '@/app/components/ui/ResidentRow';
+
+// Import view components
+import ResidentListView from './components/ResidentListView';
+import ResidentGridView from './components/ResidentGridView';
 
 // Import our extracted utilities and configurations
 import { 
@@ -94,6 +99,33 @@ export default function ResidentsPage() {
     const statsData = generateStatsCardsData(dataHook.stats);
     const bulkActions = bulkActionHandlers.getBulkActions();
     const tableColumns = getTableColumns(residentActionHandlers);
+
+    // Create unified action handler for view components
+    const handleResidentAction = useCallback((action: string, resident: Resident) => {
+        switch (action) {
+            case 'view':
+                residentActionHandlers.handleViewResident(resident);
+                break;
+            case 'edit':
+                residentActionHandlers.handleEditResident(resident);
+                break;
+            case 'delete':
+                residentActionHandlers.handleDeleteResident(resident);
+                break;
+            case 'call':
+                residentActionHandlers.handleCallResident(resident);
+                break;
+            case 'message':
+                residentActionHandlers.handleMessageResident(resident);
+                break;
+            case 'more':
+                // Handle more actions menu
+                console.log('More actions for resident:', resident.fullName);
+                break;
+            default:
+                console.warn('Unknown action:', action);
+        }
+    }, [residentActionHandlers]);
 
     // Filter groups configuration
     const filterGroups = [
@@ -253,32 +285,57 @@ export default function ResidentsPage() {
                             </div>
                         )}
 
-                        {/* Data Table with Bulk Actions */}
-                        <DataTable
-                            columns={tableColumns}
-                            data={dataHook.residents}
-                            loading={dataHook.loading}
-                            selectable={true}
-                            onSelectionChange={filtersHook.handleSelectionChange}
-                            bulkActions={bulkActions}
-                            rowActions={[]}
-                            sortConfig={filtersHook.sortConfig}
-                            onSortChange={filtersHook.handleSort}
-                            pagination={{
-                                currentPage: filtersHook.currentPage,
-                                totalPages: dataHook.totalPages,
-                                totalRecords: dataHook.totalRecords,
-                                recordsPerPage: filtersHook.recordsPerPage,
-                                onPageChange: filtersHook.handlePageChange,
-                                onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
-                            }}
-                            emptyStateMessage={
-                                dataHook.apiError ? 'Veri yüklenirken hata oluştu.' :
-                                    filtersHook.searchQuery ?
-                                        `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
-                                        'Henüz sakin kaydı bulunmuyor.'
-                            }
-                        />
+                        {/* Residents Views */}
+                        {filtersHook.selectedView === 'table' && (
+                            <ResidentListView
+                                residents={dataHook.residents}
+                                loading={dataHook.loading}
+                                onSelectionChange={filtersHook.handleSelectionChange}
+                                bulkActions={bulkActions}
+                                columns={tableColumns}
+                                sortConfig={filtersHook.sortConfig}
+                                onSortChange={filtersHook.handleSort}
+                                pagination={{
+                                    currentPage: filtersHook.currentPage,
+                                    totalPages: dataHook.totalPages,
+                                    totalRecords: dataHook.totalRecords,
+                                    recordsPerPage: filtersHook.recordsPerPage,
+                                    onPageChange: filtersHook.handlePageChange,
+                                    onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
+                                }}
+                                emptyStateMessage={
+                                    dataHook.apiError ? 'Veri yüklenirken hata oluştu.' :
+                                        filtersHook.searchQuery ?
+                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
+                                            'Henüz sakin kaydı bulunmuyor.'
+                                }
+                            />
+                        )}
+
+                        {filtersHook.selectedView === 'grid' && (
+                            <ResidentGridView
+                                residents={dataHook.residents}
+                                loading={dataHook.loading}
+                                onSelectionChange={filtersHook.handleSelectionChange}
+                                bulkActions={[]}
+                                onAction={handleResidentAction}
+                                selectedResidents={filtersHook.selectedResidents}
+                                pagination={{
+                                    currentPage: filtersHook.currentPage,
+                                    totalPages: dataHook.totalPages,
+                                    totalRecords: dataHook.totalRecords,
+                                    recordsPerPage: filtersHook.recordsPerPage,
+                                    onPageChange: filtersHook.handlePageChange,
+                                    onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
+                                }}
+                                emptyStateMessage={
+                                    dataHook.apiError ? 'Veri yüklenirken hata oluştu.' :
+                                        filtersHook.searchQuery ?
+                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
+                                            'Henüz sakin kaydı bulunmuyor.'
+                                }
+                            />
+                        )}
                     </main>
                 </div>
 

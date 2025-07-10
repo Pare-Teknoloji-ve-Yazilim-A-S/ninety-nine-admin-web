@@ -1,6 +1,5 @@
 import { 
     Grid, 
-    List, 
     Layers, 
     Mail, 
     MessageSquare, 
@@ -11,7 +10,8 @@ import {
     UserX, 
     Users, 
     Home, 
-    CreditCard 
+    CreditCard, 
+    List
 } from 'lucide-react';
 import { StatusConfig, MembershipConfig, ViewOption } from '../types';
 
@@ -45,8 +45,7 @@ export const VERIFICATION_CONFIG: Record<string, StatusConfig> = {
 // View Options
 export const VIEW_OPTIONS: ViewOption[] = [
     { id: 'grid', label: 'Kart Görünümü', icon: Grid },
-    { id: 'list', label: 'Liste Görünümü', icon: List },
-    { id: 'table', label: 'Tablo Görünümü', icon: Layers },
+    { id: 'table', label: 'Tablo Görünümü', icon: List },
 ];
 
 // Breadcrumb Items
