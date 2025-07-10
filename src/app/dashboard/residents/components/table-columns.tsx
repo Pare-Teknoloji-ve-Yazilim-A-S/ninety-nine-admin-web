@@ -211,11 +211,11 @@ export const getTableColumns = (actionHandlers: {
         {
             id: TABLE_COLUMN_IDS.NAME,
             header: 'Ad Soyad',
-            accessor: 'fullName',
+            accessor: 'firstName', // fullName yerine firstName
             sortable: true,
             render: (value: string, row: Resident) => (
                 <div>
-                    <p className="font-medium text-text-on-light dark:text-text-on-dark">{value}</p>
+                    <p className="font-medium text-text-on-light dark:text-text-on-dark">{row.fullName}</p>
                     <p className="text-sm text-text-light-muted dark:text-text-muted">
                         Kimlik: {maskNationalId(row.nationalId)}
                     </p>

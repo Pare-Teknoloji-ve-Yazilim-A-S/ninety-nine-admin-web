@@ -14,6 +14,7 @@ import {
     ResidentApprovalResponse,
     BulkActionDto,
     BulkActionResponse,
+    ResidentStatsResponse,
 } from './types/resident.types';
 import { ApiResponse, PaginatedResponse } from './core/types';
 
@@ -73,23 +74,10 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
         try {
             this.logger.info(`Uploading avatar for resident ID: ${id}`);
 
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            const response = await apiClient.put<AvatarUploadResponse>(
+            const response = await apiClient.uploadFile<AvatarUploadResponse>(
                 apiConfig.endpoints.residents.mobile.uploadAvatar(id),
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    onUploadProgress: (progressEvent) => {
-                        if (onProgress && progressEvent.total) {
-                            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                            onProgress(progress);
-                        }
-                    },
-                }
+                file,
+                onProgress
             );
 
             this.logger.info('Avatar uploaded successfully');
@@ -136,10 +124,11 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
             // API response yapısını kontrol edelim
             console.log('API Response:', response.data);
             
-            // Eğer response.data.users yoksa, response.data'nın kendisi array olabilir
-            const users = response.data.users || response.data || [];
-            const pagination = response.data.pagination || {
-                total: Array.isArray(users) ? users.length : 0,
+            // response.data: {users: Resident[], pagination: {total, page, limit, totalPages}}
+            const residentListData = response.data;
+            const users = residentListData.users || [];
+            const pagination = residentListData.pagination || {
+                total: 0,
                 page: params?.page || 1,
                 limit: params?.limit || 10,
                 totalPages: 1
@@ -195,10 +184,11 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
                 `${apiConfig.endpoints.residents.admin.pendingVerification}${queryParams}`
             );
 
-            // API response yapısını kontrol edelim
-            const users = response.data.users || response.data || [];
-            const pagination = response.data.pagination || {
-                total: Array.isArray(users) ? users.length : 0,
+            // response.data: {users: Resident[], pagination: {total, page, limit, totalPages}}
+            const pendingResidentsData = response.data;
+            const users = pendingResidentsData.users || [];
+            const pagination = pendingResidentsData.pagination || {
+                total: 0,
                 page: params?.page || 1,
                 limit: params?.limit || 10,
                 totalPages: 1
@@ -257,6 +247,26 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
             return response;
         } catch (error) {
             this.logger.error('Failed to perform bulk action', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get resident statistics
+     * GET /admin/users/stats
+     */
+    async getResidentStats(): Promise<ResidentStatsResponse> {
+        try {
+            this.logger.info('Fetching resident statistics');
+
+            const response = await apiClient.get<ResidentStatsResponse>(
+                `${apiConfig.endpoints.residents.admin.base}/stats`
+            );
+
+            this.logger.info('Resident statistics fetched successfully');
+            return response.data;
+        } catch (error) {
+            this.logger.error('Failed to fetch resident statistics', error);
             throw error;
         }
     }
@@ -347,19 +357,22 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
         try {
             this.logger.info(`Uploading ${documents.length} documents for resident ID: ${id}`);
 
+            // Since we need to upload multiple files, we can't use uploadFile method
+            // We'll handle this manually with axios directly
             const formData = new FormData();
             documents.forEach((file, index) => {
                 formData.append(`documents[${index}]`, file);
             });
 
-            const response = await apiClient.post<Resident>(
+            // Use axios client directly for multiple file upload
+            const axiosResponse = await apiClient['client'].post(
                 apiConfig.endpoints.residents.mobile.uploadDocuments(id),
                 formData,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
-                    onUploadProgress: (progressEvent) => {
+                    onUploadProgress: (progressEvent: any) => {
                         if (onProgress && progressEvent.total) {
                             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                             onProgress(progress);
@@ -369,7 +382,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
             );
 
             this.logger.info('Documents uploaded successfully');
-            return response;
+            return axiosResponse.data;
         } catch (error) {
             this.logger.error('Failed to upload documents', error);
             throw error;

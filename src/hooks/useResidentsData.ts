@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { residentService } from '@/services/resident.service';
 import { Resident } from '@/app/components/ui/ResidentRow';
-import { ResidentFilterParams, ResidentStatsResponse } from '@/services/types/resident.types';
+import { ResidentFilterParams, ResidentStatsResponse, Resident as ServiceResident } from '@/services/types/resident.types';
 
 interface UseResidentsDataProps {
     currentPage: number;
@@ -27,96 +27,51 @@ interface UseResidentsDataReturn {
     setResidents: React.Dispatch<React.SetStateAction<Resident[]>>;
 }
 
-// API types for transformation
-interface ApiResident {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-    phone?: string;
-    tcKimlikNo?: string;
-    nationalId?: string;
-    passportNumber?: string;
-    property?: {
-        ownershipType?: 'owner' | 'tenant';
-        block?: string;
-        apartment?: string;
-        roomType?: string;
-        governorate?: string;
-        district?: string;
-        neighborhood?: string;
-    };
-    registrationDate?: string;
-    lastActivity?: string;
-    financial?: {
-        totalDebt?: number;
-        lastPaymentDate?: string;
-        balance?: number;
-    };
-    status?: string;
-    membershipTier?: string;
-    notes?: string;
-    avatar?: string;
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-// Convert API types to component types (Iraq-specific)
-const transformApiResidentToComponentResident = (apiResident: ApiResident): Resident => {
+// Convert Service types to component types (Iraq-specific)
+const transformServiceResidentToComponentResident = (serviceResident: ServiceResident): Resident => {
     return {
-        id: apiResident.id,
-        firstName: apiResident.firstName,
-        lastName: apiResident.lastName,
-        fullName: `${apiResident.firstName} ${apiResident.lastName}`,
-        // Iraq-specific: National ID could be Iraqi National ID or Passport
-        nationalId: apiResident.tcKimlikNo || apiResident.nationalId || apiResident.passportNumber,
-        email: apiResident.email,
-        phone: apiResident.phone,
+        id: serviceResident.id,
+        firstName: serviceResident.firstName,
+        lastName: serviceResident.lastName,
+        fullName: `${serviceResident.firstName} ${serviceResident.lastName}`,
+        // Iraq-specific: Use phone as national ID fallback
+        nationalId: serviceResident.phone || 'Belirtilmemiş',
+        profileImage: serviceResident.avatar,
+        avatar: serviceResident.avatar,
 
-        // Property information from API
+        // Property information from service
         residentType: {
-            type: apiResident.property?.ownershipType || 'owner',
-            label: apiResident.property?.ownershipType === 'tenant' ? 'Kiracı' : 'Malik',
-            color: apiResident.property?.ownershipType === 'tenant' ? 'blue' : 'green'
+            type: serviceResident.property?.ownershipType || 'owner',
+            label: serviceResident.property?.ownershipType === 'tenant' ? 'Kiracı' : 'Malik',
+            color: serviceResident.property?.ownershipType === 'tenant' ? 'blue' : 'green'
         },
         address: {
-            building: apiResident.property?.block || 'Belirtilmemiş',
-            apartment: apiResident.property?.apartment || 'Belirtilmemiş',
-            roomType: apiResident.property?.roomType || 'Belirtilmemiş',
-            // Iraq-specific location fields
-            governorate: apiResident.property?.governorate || 'Belirtilmemiş',
-            district: apiResident.property?.district || 'Belirtilmemiş',
-            neighborhood: apiResident.property?.neighborhood || 'Belirtilmemiş'
+            building: serviceResident.property?.block || 'Belirtilmemiş',
+            apartment: serviceResident.property?.apartment || 'Belirtilmemiş',
+            roomType: serviceResident.property?.propertyNumber || 'Belirtilmemiş'
         },
         contact: {
-            phone: apiResident.phone || 'Belirtilmemiş',
-            email: apiResident.email || 'Belirtilmemiş',
-            formattedPhone: apiResident.phone ? `+964 ${apiResident.phone}` : 'Belirtilmemiş'
+            phone: serviceResident.phone || 'Belirtilmemiş',
+            email: serviceResident.email || 'Belirtilmemiş',
+            formattedPhone: serviceResident.phone ? `+964 ${serviceResident.phone}` : 'Belirtilmemiş'
         },
         financial: {
-            balance: apiResident.financial?.balance || 0,
-            totalDebt: apiResident.financial?.totalDebt || 0,
-            lastPaymentDate: apiResident.financial?.lastPaymentDate
+            balance: 0,
+            totalDebt: 0,
+            lastPaymentDate: undefined
         },
         status: {
-            type: 'active',
-            label: 'Aktif',
-            color: 'green'
+            type: serviceResident.status === 'ACTIVE' ? 'active' : 'inactive',
+            label: serviceResident.status === 'ACTIVE' ? 'Aktif' : 'Pasif',
+            color: serviceResident.status === 'ACTIVE' ? 'green' : 'red'
         },
-        membershipTier: {
-            type: 'BRONZE',
-            label: 'Bronz Üye'
-        },
-        verificationStatus: {
-            color: 'green',
-            label: 'Doğrulandı'
-        },
-        registrationDate: apiResident.registrationDate || new Date().toISOString(),
-        lastActivity: apiResident.lastActivity,
-        notes: apiResident.notes,
-        profileImage: apiResident.avatar,
-        createdAt: apiResident.createdAt,
-        updatedAt: apiResident.updatedAt
+        registrationDate: serviceResident.registrationDate || serviceResident.createdAt || new Date().toISOString(),
+        lastActivity: serviceResident.lastLoginDate,
+        notes: '',
+        membershipTier: serviceResident.membershipTier === 'GOLD' ? 'Altın Üye' : 
+                       serviceResident.membershipTier === 'SILVER' ? 'Gümüş Üye' : 'Standart Üye',
+        verificationStatus: serviceResident.verificationStatus === 'APPROVED' ? 'Onaylandı' : 
+                           serviceResident.verificationStatus === 'REJECTED' ? 'Reddedildi' : 'Beklemede'
     };
 };
 
@@ -144,15 +99,16 @@ export const useResidentsData = ({
                 page: currentPage,
                 limit: recordsPerPage,
                 search: searchQuery || undefined,
-                sortBy: sortConfig.key,
-                sortOrder: sortConfig.direction,
+                orderColumn: sortConfig.key,
+                orderBy: sortConfig.direction === 'asc' ? 'ASC' : 'DESC',
                 ...filters
             };
 
             const response = await residentService.getAllResidents(filterParams);
             
             if (response.data) {
-                const transformedResidents = response.data.map(transformApiResidentToComponentResident);
+                // Transform service residents to component residents
+                const transformedResidents = response.data.map(transformServiceResidentToComponentResident);
                 setResidents(transformedResidents);
                 setTotalRecords(response.pagination?.total || 0);
                 setTotalPages(response.pagination?.totalPages || 0);
