@@ -21,18 +21,10 @@ import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import Checkbox from '@/app/components/ui/Checkbox';
 import { Resident } from '@/app/components/ui/ResidentRow';
-
-interface BulkAction {
-    id: string;
-    label: string;
-    icon: React.ComponentType<any>;
-    onClick: () => void;
-    variant?: 'default' | 'danger' | 'success' | 'warning';
-    disabled?: boolean;
-    loading?: boolean;
-}
+import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import Pagination from '@/app/components/ui/Pagination';
 import Skeleton from '@/app/components/ui/Skeleton';
+import { BulkAction } from '../types';
 
 interface ResidentGridViewProps {
     residents: Resident[];
@@ -194,8 +186,20 @@ const ResidentGridView: React.FC<ResidentGridViewProps> = ({
 
     return (
         <div className="space-y-6">
+            {/* Bulk Actions Bar */}
+            {selectedResidents.length > 0 && bulkActions.length > 0 && (
+                <BulkActionsBar
+                    selectedCount={selectedResidents.length}
+                    actions={bulkActions.map(action => ({
+                        ...action,
+                        onClick: () => action.onClick(selectedResidents)
+                    }))}
+                    onClearSelection={() => handleSelectAll(false)}
+                />
+            )}
+
             {/* Selection Info */}
-            {selectedResidents.length > 0 && (
+            {selectedResidents.length > 0 && bulkActions.length === 0 && (
                 <div className="bg-primary-gold/10 border border-primary-gold/30 rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-text-on-light dark:text-text-on-dark">

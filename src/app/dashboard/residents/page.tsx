@@ -317,7 +317,7 @@ export default function ResidentsPage() {
                                 residents={dataHook.residents}
                                 loading={dataHook.loading}
                                 onSelectionChange={filtersHook.handleSelectionChange}
-                                bulkActions={[]}
+                                bulkActions={bulkActions}
                                 onAction={handleResidentAction}
                                 selectedResidents={filtersHook.selectedResidents}
                                 pagination={{
