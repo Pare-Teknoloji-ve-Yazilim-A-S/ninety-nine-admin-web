@@ -66,8 +66,9 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
                         ${baseClasses}
                         ${sizeClasses[radioSize]}
                         ${error ? errorClasses : normalClasses}
+                        ${props.value === option.value ? checkedClasses : ''}
                         ${className}
-                        appearance-none cursor-pointer
+                         cursor-pointer
                         ${option.disabled ? 'opacity-50 cursor-not-allowed' : ''}
                         peer
                     `}
@@ -77,10 +78,12 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
                                     <span
                                         className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-150
                         ${props.value === option.value ?
-                            radioSize === 'lg' ? 'w-3 h-3' : radioSize === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2'
-                            : 'w-0 h-0'}
-                        ${props.value === option.value ? 'bg-primary-gold' : ''}
+                                                radioSize === 'lg' ? 'w-3 h-3' : radioSize === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2'
+                                                : 'w-0 h-0'}
                     `}
+                                        style={{
+                                            backgroundColor: props.value === option.value ? '#ac8d6a' : 'transparent'
+                                        }}
                                     />
                                 </span>
                                 <span className="ml-2 select-none flex items-center" style={{ minHeight: '1.5rem' }}>{option.label}</span>
@@ -103,4 +106,4 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
 
 RadioButton.displayName = 'RadioButton'
 
-export default RadioButton 
+export default RadioButton
