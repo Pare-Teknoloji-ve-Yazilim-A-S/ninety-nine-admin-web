@@ -6,6 +6,9 @@ import Button from './Button';
 import Input from './Input';
 import Select from './Select';
 import Badge from './Badge';
+import Checkbox from './Checkbox';
+import RadioButton from './RadioButton';
+import DatePicker from './DatePicker';
 
 export interface FilterOption {
     id: string;
@@ -148,90 +151,74 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     return (
                         <div className="space-y-2">
                             {group.options?.map((option) => (
-                                <label key={option.id} className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={currentValue?.includes(option.value) || false}
-                                        onChange={(e) => {
-                                            const current = currentValue || [];
-                                            if (e.target.checked) {
-                                                updateFilter(group.id, [...current, option.value]);
-                                            } else {
-                                                updateFilter(group.id, current.filter((v: any) => v !== option.value));
-                                            }
-                                        }}
-                                        className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold/50"
-                                    />
-                                    <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                        {option.label}
-                                        {showFilterCount && option.count && (
-                                            <span className="text-text-light-muted dark:text-text-muted ml-1">
-                                                ({option.count})
-                                            </span>
-                                        )}
-                                    </span>
-                                </label>
+                                <Checkbox
+                                    key={option.id}
+                                    id={`${group.id}-${option.id}`}
+                                    checked={currentValue?.includes(option.value) || false}
+                                    onChange={(e) => {
+                                        const current = currentValue || [];
+                                        if (e.target.checked) {
+                                            updateFilter(group.id, [...current, option.value]);
+                                        } else {
+                                            updateFilter(group.id, current.filter((v: any) => v !== option.value));
+                                        }
+                                    }}
+                                    label={
+                                        <>
+                                            {option.label}
+                                            {showFilterCount && option.count && (
+                                                <span className="text-text-light-muted dark:text-text-muted ml-1">
+                                                    ({option.count})
+                                                </span>
+                                            )}
+                                        </>
+                                    }
+                                    checkboxSize="sm"
+                                />
                             ))}
                         </div>
                     );
 
                 case 'radio':
                     return (
-                        <div className="space-y-2">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name={group.id}
-                                    checked={!currentValue}
-                                    onChange={() => updateFilter(group.id, undefined)}
-                                    className="border-gray-300 text-primary-gold focus:ring-primary-gold/50"
-                                />
-                                <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                    Tümü
-                                </span>
-                            </label>
-                            {group.options?.map((option) => (
-                                <label key={option.id} className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name={group.id}
-                                        checked={currentValue === option.value}
-                                        onChange={() => updateFilter(group.id, option.value)}
-                                        className="border-gray-300 text-primary-gold focus:ring-primary-gold/50"
-                                    />
-                                    <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                        {option.label}
-                                        {showFilterCount && option.count && (
-                                            <span className="text-text-light-muted dark:text-text-muted ml-1">
-                                                ({option.count})
-                                            </span>
-                                        )}
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
+                        <RadioButton
+                            name={group.id}
+                            value={currentValue}
+                            onChange={(e) => updateFilter(group.id, e.target.value)}
+                            options={[
+                                { value: '', label: 'Tümü' },
+                                ...(group.options?.map(option => ({
+                                    value: option.value,
+                                    label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
+                                })) || [])
+                            ]}
+                            radioSize="sm"
+                            direction="vertical"
+                        />
                     );
 
                 case 'daterange':
                     return (
                         <div className="space-y-2">
-                            <Input
-                                type="date"
+                            <DatePicker
                                 label="Başlangıç"
                                 value={currentValue?.start || ''}
                                 onChange={(e) => updateFilter(group.id, {
                                     ...currentValue,
                                     start: e.target.value
                                 })}
+                                variant="default"
+                                showIcon
                             />
-                            <Input
-                                type="date"
+                            <DatePicker
                                 label="Bitiş"
                                 value={currentValue?.end || ''}
                                 onChange={(e) => updateFilter(group.id, {
                                     ...currentValue,
                                     end: e.target.value
                                 })}
+                                variant="default"
+                                showIcon
                             />
                         </div>
                     );
@@ -264,20 +251,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     return (
                         <div className="space-y-2">
                             {group.options?.map((option) => (
-                                <label key={option.id} className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={currentValue?.[option.id] || false}
-                                        onChange={(e) => updateFilter(group.id, {
-                                            ...currentValue,
-                                            [option.id]: e.target.checked
-                                        })}
-                                        className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold/50"
-                                    />
-                                    <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                        {option.label}
-                                    </span>
-                                </label>
+                                <Checkbox
+                                    key={option.id}
+                                    id={`${group.id}-${option.id}`}
+                                    checked={currentValue?.[option.id] || false}
+                                    onChange={(e) => updateFilter(group.id, {
+                                        ...currentValue,
+                                        [option.id]: e.target.checked
+                                    })}
+                                    label={option.label}
+                                    checkboxSize="sm"
+                                />
                             ))}
                         </div>
                     );

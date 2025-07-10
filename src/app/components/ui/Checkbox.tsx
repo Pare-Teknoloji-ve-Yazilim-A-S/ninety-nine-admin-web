@@ -1,8 +1,8 @@
-import { forwardRef, InputHTMLAttributes } from 'react'
+import { forwardRef, InputHTMLAttributes, ReactNode } from 'react'
 import { Check } from 'lucide-react'
 
 interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
-    label?: string
+    label?: ReactNode
     error?: string
     helperText?: string
     indeterminate?: boolean
