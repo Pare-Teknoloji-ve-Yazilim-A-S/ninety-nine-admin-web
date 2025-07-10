@@ -145,12 +145,7 @@ export class BulkActionHandlers {
                 icon: FileText,
                 onClick: this.handleBulkPDF
             },
-            {
-                id: BULK_ACTION_IDS.TAG,
-                label: 'Etiket Ata',
-                icon: Tag,
-                onClick: this.handleBulkTag
-            },
+
             {
                 id: BULK_ACTION_IDS.ACTIVATE,
                 label: 'Aktif Yap',
