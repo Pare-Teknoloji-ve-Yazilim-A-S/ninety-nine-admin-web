@@ -600,7 +600,7 @@ export default function AddResidentPage() {
                                                     <Checkbox
                                                         checked={formData.useStandardDues}
                                                         onChange={(e) => handleInputChange('useStandardDues', e.target.checked)}
-                                                        label="Standart aidat tutarını uygula (250,000 د.ع)"
+                                                        label="Standart aidat tutarını uygula (250,000)"
                                                     />
 
                                                     <Checkbox

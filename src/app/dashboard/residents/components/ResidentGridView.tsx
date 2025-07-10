@@ -66,34 +66,34 @@ interface ActionMenuProps {
 }
 
 const ActionMenu: React.FC<ActionMenuProps> = ({ resident, onAction }) => {
+    const [isOpen, setIsOpen] = React.useState(false);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+    const buttonRef = React.useRef<HTMLButtonElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current && 
+                buttonRef.current && 
+                !dropdownRef.current.contains(event.target as Node) && 
+                !buttonRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const handleDropdownToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        const dropdown = e.currentTarget.nextElementSibling as HTMLElement;
-        if (dropdown) {
-            dropdown.classList.toggle('hidden');
-            
-            // Close dropdown when clicking outside
-            const closeOnClickOutside = (event: MouseEvent) => {
-                if (!event.target || !dropdown || !e.currentTarget) {
-                    return;
-                }
-
-                const target = event.target as Node;
-                if (!dropdown.contains(target) && !e.currentTarget.contains(target)) {
-                    dropdown.classList.add('hidden');
-                    document.removeEventListener('click', closeOnClickOutside);
-                }
-            };
-            
-            setTimeout(() => {
-                document.addEventListener('click', closeOnClickOutside);
-            }, 0);
-        }
+        setIsOpen(!isOpen);
     };
 
     const handleAction = (action: string) => (e: React.MouseEvent) => {
         e.stopPropagation();
-        e.currentTarget.closest('.absolute')?.classList.add('hidden');
+        setIsOpen(false);
         onAction(action, resident);
     };
 
@@ -101,6 +101,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ resident, onAction }) => {
         <div className="flex items-center justify-center">
             <div className="relative group">
                 <Button
+                    ref={buttonRef}
                     variant="ghost"
                     size="sm"
                     icon={MoreVertical}
@@ -109,7 +110,10 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ resident, onAction }) => {
                 />
 
                 {/* Dropdown Menu */}
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 hidden">
+                <div 
+                    ref={dropdownRef}
+                    className={`absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${isOpen ? '' : 'hidden'}`}
+                >
                     <div className="py-1">
                         {/* Primary Actions */}
                         <button

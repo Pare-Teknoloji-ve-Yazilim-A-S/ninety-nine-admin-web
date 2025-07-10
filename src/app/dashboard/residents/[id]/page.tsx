@@ -419,14 +419,14 @@ export default function ResidentViewPage() {
                                             <div className="flex justify-between items-center">
                                                 <span className="text-sm text-text-light-muted dark:text-text-muted">Bakiye</span>
                                                 <span className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                    {resident.financial.balance.toLocaleString('tr-TR')} د.ع
+                                                    {resident.financial.balance.toLocaleString('tr-TR')}
                                                 </span>
                                             </div>
                                             
                                             <div className="flex justify-between items-center">
                                                 <span className="text-sm text-text-light-muted dark:text-text-muted">Borç</span>
                                                 <span className={`font-medium ${resident.financial.totalDebt > 0 ? 'text-primary-red' : 'text-semantic-success-600'}`}>
-                                                    {resident.financial.totalDebt.toLocaleString('tr-TR')} د.ع
+                                                    {resident.financial.totalDebt.toLocaleString('tr-TR')}
                                                 </span>
                                             </div>
                                             
