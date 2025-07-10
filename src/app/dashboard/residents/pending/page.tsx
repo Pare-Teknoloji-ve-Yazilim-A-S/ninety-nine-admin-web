@@ -242,7 +242,11 @@ export default function PendingApprovalsPage() {
                                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
                                                                 {application.firstName} {application.lastName}
                                                             </h3>
-                                                            <Badge variant="soft" color={getPriorityColor(application.priority)}>
+                                                            <Badge variant="soft" color={
+                                                                getPriorityColor(application.priority) === 'green' ? 'secondary' : 
+                                                                getPriorityColor(application.priority) === 'gold' ? 'gold' : 
+                                                                getPriorityColor(application.priority) === 'red' ? 'red' : 'primary'
+                                                            }>
                                                                 <Clock className="h-3 w-3 mr-1" />
                                                                 {application.waitingTime} bekliyor
                                                             </Badge>
