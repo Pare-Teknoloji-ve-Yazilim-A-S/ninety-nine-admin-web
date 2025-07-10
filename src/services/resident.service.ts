@@ -138,7 +138,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
             
             // Eğer response.data.users yoksa, response.data'nın kendisi array olabilir
             const users = response.data.users || response.data || [];
-            const pagination = response.data.pagination || {
+            const pagination = response.data.pagination || response.pagination || {
                 total: Array.isArray(users) ? users.length : 0,
                 page: params?.page || 1,
                 limit: params?.limit || 10,
