@@ -5,6 +5,7 @@ import Card from './Card';
 import Button from './Button';
 import TablePagination from './TablePagination';
 import BulkActionsBar from './BulkActionsBar';
+import Checkbox from './Checkbox';
 
 export interface ColumnAction {
     id: string;
@@ -258,50 +259,25 @@ const DataTable: React.FC<DataTableProps> = ({
         </tr>
     );
 
-    const tableContent = (
-        <div className={cn(
-            'overflow-x-auto',
-            maxHeight && 'overflow-y-auto',
-            maxHeight && `max-h-[${maxHeight}]`
+    // Render table header
+    const renderTableHeader = () => (
+        <thead className={cn(
+            'bg-background-light-secondary dark:bg-background-secondary',
+            stickyHeader && 'sticky top-0'
         )}>
-            <table className="w-full">
-                <thead className={cn(
-                    'bg-background-light-soft dark:bg-background-soft',
-                    stickyHeader && 'sticky top-0 z-10'
-                )}>
-                    <tr>
-                        {/* Expand column */}
-                        {expandable && (
-                            <th className={cn(
-                                'text-left font-medium text-text-light-secondary dark:text-text-secondary',
-                                paddingClasses[size],
-                                sizeClasses[size]
-                            )}>
-                                {/* Empty header for expand column */}
-                            </th>
-                        )}
-                        
-                        {/* Selection column */}
-                        {selectable && (
-                            <th className={cn(
-                                'text-left font-medium text-text-light-secondary dark:text-text-secondary',
-                                paddingClasses[size],
-                                sizeClasses[size]
-                            )}>
-                                <input
-                                    type="checkbox"
-                                    checked={isAllSelected}
-                                    ref={(el) => {
-                                        if (el) el.indeterminate = isIndeterminate;
-                                    }}
-                                    onChange={handleSelectAll}
-                                    className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold/50"
-                                />
-                            </th>
-                        )}
-                        
-                        {/* Data columns */}
-                        {columns.map((column) => (
+            <tr>
+                {selectable && (
+                    <th className={cn('w-10', paddingClasses[size])}>
+                        <Checkbox
+                            checked={isAllSelected}
+                            indeterminate={isIndeterminate}
+                            onChange={handleSelectAll}
+                            checkboxSize={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'}
+                        />
+                    </th>
+                )}
+                {expandable && <th className={cn('w-10', paddingClasses[size])} />}
+                {columns.map((column) => (
                             <th
                                 key={column.id}
                                 className={cn(
@@ -328,72 +304,57 @@ const DataTable: React.FC<DataTableProps> = ({
                         
                         {/* Actions column */}
                         {rowActions.length > 0 && (
-                            <th className={cn(
-                                'text-left font-medium text-text-light-secondary dark:text-text-secondary',
-                                paddingClasses[size],
-                                sizeClasses[size]
-                            )}>
-                                İşlemler
-                            </th>
+                            <th className={cn('w-20', paddingClasses[size])} />
                         )}
-                    </tr>
-                </thead>
-                <tbody>
-                    {loading ? (
-                        renderLoadingRow()
-                    ) : data.length === 0 ? (
-                        renderEmptyRow()
-                    ) : (
-                        data.map((row, index) => {
-                            const isSelected = selectedRows.some(selected => selected.id === row.id);
-                            const isExpanded = isRowExpanded(row);
-                            
-                            return (
-                                <React.Fragment key={row.id || index}>
-                                    <tr
-                                        className={cn(
-                                            'border-t border-gray-200 dark:border-gray-700 transition-colors',
-                                            'hover:bg-background-light-soft dark:hover:bg-background-soft',
-                                            isSelected && 'bg-primary-gold/10',
-                                            onRowClick && 'cursor-pointer',
-                                            rowClassName?.(row)
-                                        )}
-                                        onClick={() => onRowClick?.(row)}
-                                        onDoubleClick={() => onRowDoubleClick?.(row)}
+            </tr>
+        </thead>
+    );
+
+    // Render table body
+    const renderTableBody = () => (
+        <tbody>
+            {loading ? (
+                renderLoadingRow()
+            ) : data.length === 0 ? (
+                renderEmptyRow()
+            ) : (
+                data.map((row, rowIndex) => (
+                    <React.Fragment key={row.id || rowIndex}>
+                        <tr
+                            className={cn(
+                                'border-b border-gray-200 dark:border-gray-700 hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors',
+                                rowClassName?.(row),
+                                (onRowClick || onRowDoubleClick) && 'cursor-pointer'
+                            )}
+                            onClick={(e) => onRowClick?.(row)}
+                            onDoubleClick={(e) => onRowDoubleClick?.(row)}
+                        >
+                            {selectable && (
+                                <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
+                                    <Checkbox
+                                        checked={selectedRows.some(selected => selected.id === row.id)}
+                                        onChange={() => handleSelectRow(row)}
+                                        checkboxSize={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'}
+                                    />
+                                </td>
+                            )}
+                            {expandable && (
+                                <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleExpandRow(row)}
+                                        className="p-1"
                                     >
-                                        {/* Expand column */}
-                                        {expandable && (
-                                            <td className={paddingClasses[size]}>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    icon={isExpanded ? ChevronDown : ChevronRight}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleExpandRow(row);
-                                                    }}
-                                                    className="h-6 w-6 p-0"
-                                                />
-                                            </td>
+                                        {isRowExpanded(row) ? (
+                                            <ChevronDown size={16} />
+                                        ) : (
+                                            <ChevronRight size={16} />
                                         )}
-                                        
-                                        {/* Selection column */}
-                                        {selectable && (
-                                            <td className={paddingClasses[size]}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isSelected}
-                                                    onChange={(e) => {
-                                                        e.stopPropagation();
-                                                        handleSelectRow(row);
-                                                    }}
-                                                    className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold/50"
-                                                />
-                                            </td>
-                                        )}
-                                        
-                                        {/* Data columns */}
-                                        {columns.map((column) => {
+                                    </Button>
+                                </td>
+                            )}
+                            {columns.map((column) => {
                                             const value = getCellValue(row, column);
                                             return (
                                                 <td
@@ -419,23 +380,31 @@ const DataTable: React.FC<DataTableProps> = ({
                                                 {renderRowActions(row)}
                                             </td>
                                         )}
-                                    </tr>
-                                    
-                                    {/* Expanded content row */}
-                                    {expandable && isExpanded && expandedContent && (
-                                        <tr>
-                                            <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)}>
-                                                <div className="bg-background-light-soft dark:bg-background-soft p-4 border-t border-gray-200 dark:border-gray-700">
-                                                    {expandedContent(row)}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </React.Fragment>
-                            );
-                        })
-                    )}
-                </tbody>
+                        </tr>
+                        {expandable && isRowExpanded(row) && expandedContent && (
+                            <tr>
+                                <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)}>
+                                    <div className="bg-background-light-soft dark:bg-background-soft p-4 border-t border-gray-200 dark:border-gray-700">
+                                        {expandedContent(row)}
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
+                    </React.Fragment>
+                ))
+            )}
+        </tbody>
+    );
+
+    const tableContent = (
+        <div className={cn(
+            'overflow-x-auto',
+            maxHeight && 'overflow-y-auto',
+            maxHeight && `max-h-[${maxHeight}]`
+        )}>
+            <table className="w-full">
+                {renderTableHeader()}
+                {renderTableBody()}
             </table>
         </div>
     );
