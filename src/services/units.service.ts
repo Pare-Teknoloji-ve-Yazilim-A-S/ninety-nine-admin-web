@@ -8,8 +8,9 @@ import {
 } from './types/property.types';
 import { ApiResponse, PaginatedResponse } from './core/types';
 import { apiConfig } from './config/api.config';
+import { apiClient } from './api/client';
 
-export class UnitsService extends BaseService {
+export class UnitsService extends BaseService<Property, Partial<Property>, Partial<Property>> {
     protected baseEndpoint = apiConfig.endpoints.properties.admin.base;
 
     constructor() {
@@ -17,64 +18,76 @@ export class UnitsService extends BaseService {
     }
 
     async getAllUnits(filters: PropertyFilterParams = {}): Promise<PaginatedResponse<Property>> {
-        const params = this.buildFilterParams(filters);
-        const response = await this.apiClient.get<PaginatedResponse<Property>>(`${this.baseEndpoint}`, { params });
-        return response.data;
+        try {
+            const params = this.buildFilterParams(filters);
+            const queryParams = this.buildQueryParams(params);
+            const response = await apiClient.get(`${this.baseEndpoint}${queryParams}`);
+            
+            return {
+                data: response.data.data || response.data,
+                pagination: response.data.pagination || response.pagination || {
+                    total: response.data.length || 0,
+                    page: filters.page || 1,
+                    limit: filters.limit || 20,
+                    totalPages: Math.ceil((response.data.length || 0) / (filters.limit || 20))
+                }
+            };
+        } catch (error) {
+            throw error;
+        }
     }
 
     async getUnitById(id: string): Promise<ApiResponse<Property>> {
-        const response = await this.apiClient.get<ApiResponse<Property>>(`${this.baseEndpoint}/${id}`);
-        return response.data;
+        const response = await apiClient.get(`${this.baseEndpoint}/${id}`);
+        return response;
     }
 
     async createUnit(unitData: Partial<Property>): Promise<ApiResponse<Property>> {
-        const response = await this.apiClient.post<ApiResponse<Property>>(`${this.baseEndpoint}`, unitData);
-        return response.data;
+        const response = await apiClient.post(`${this.baseEndpoint}`, unitData);
+        return response;
     }
 
     async updateUnit(id: string, unitData: Partial<Property>): Promise<ApiResponse<Property>> {
-        const response = await this.apiClient.put<ApiResponse<Property>>(`${this.baseEndpoint}/${id}`, unitData);
-        return response.data;
+        const response = await apiClient.put(`${this.baseEndpoint}/${id}`, unitData);
+        return response;
     }
 
     async deleteUnit(id: string): Promise<ApiResponse<void>> {
-        const response = await this.apiClient.delete<ApiResponse<void>>(`${this.baseEndpoint}/${id}`);
-        return response.data;
+        const response = await apiClient.delete(`${this.baseEndpoint}/${id}`);
+        return response;
     }
 
     async getQuickStats(): Promise<ApiResponse<QuickStats>> {
-        const response = await this.apiClient.get<ApiResponse<QuickStats>>(`${apiConfig.endpoints.properties.admin.quickStats}`);
-        return response.data;
+        const response = await apiClient.get(`${apiConfig.endpoints.properties.admin.quickStats}`);
+        return response;
     }
 
     async getRecentActivities(limit: number = 10, days: number = 7): Promise<ApiResponse<PropertyActivity[]>> {
-        const response = await this.apiClient.get<ApiResponse<PropertyActivity[]>>(`${apiConfig.endpoints.properties.admin.recentActivities}`, {
-            params: { limit, days }
-        });
-        return response.data;
+        const queryParams = this.buildQueryParams({ limit, days });
+        const response = await apiClient.get(`${apiConfig.endpoints.properties.admin.recentActivities}${queryParams}`);
+        return response;
     }
 
     async getStatistics(filters: PropertyFilterParams = {}): Promise<ApiResponse<PropertyStatistics>> {
         const params = this.buildFilterParams(filters);
-        const response = await this.apiClient.get<ApiResponse<PropertyStatistics>>(`${apiConfig.endpoints.properties.admin.statistics}`, { params });
-        return response.data;
+        const queryParams = this.buildQueryParams(params);
+        const response = await apiClient.get(`${apiConfig.endpoints.properties.admin.statistics}${queryParams}`);
+        return response;
     }
 
     async exportUnits(filters: PropertyFilterParams = {}, format: 'csv' | 'excel' = 'excel'): Promise<Blob> {
         const params = { ...this.buildFilterParams(filters), format };
-        const response = await this.apiClient.get(`${apiConfig.endpoints.properties.admin.export}`, {
-            params,
-            responseType: 'blob'
-        });
+        const queryParams = this.buildQueryParams(params);
+        const response = await apiClient.get(`${apiConfig.endpoints.properties.admin.export}${queryParams}`);
         return response.data;
     }
 
     async bulkUpdateUnits(unitIds: string[], updateData: Partial<Property>): Promise<ApiResponse<void>> {
-        const response = await this.apiClient.patch<ApiResponse<void>>(`${apiConfig.endpoints.properties.admin.bulkUpdate}`, {
+        const response = await apiClient.patch(`${apiConfig.endpoints.properties.admin.bulkUpdate}`, {
             ids: unitIds,
             data: updateData
         });
-        return response.data;
+        return response;
     }
 
     private buildFilterParams(filters: PropertyFilterParams): Record<string, any> {

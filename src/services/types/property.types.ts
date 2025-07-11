@@ -72,7 +72,10 @@ export interface PropertyFilterParams {
     type?: 'RESIDENCE' | 'VILLA' | 'COMMERCIAL' | 'OFFICE';
     status?: 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED';
     blockNumber?: string;
+    floor?: number;
+    area?: number;
     rooms?: string;
+    search?: string;
     debtStatus?: string;
 }
 
