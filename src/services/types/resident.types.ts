@@ -75,6 +75,28 @@ export interface CreateResidentDto {
     documents?: File[];
 }
 
+// Yeni API formatı için:
+export interface CreateResidentRequest {
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    password?: string;
+  };
+  propertyInfo: {
+    name?: string;
+    block: string;
+    propertyNumber: string;
+    propertyType: 'RESIDENCE';
+    ownershipType: 'owner' | 'tenant';
+  };
+  documents?: {
+    type: string;
+    url: string;
+  }[];
+}
+
 export interface UpdateResidentDto {
     email?: string;
     firstName?: string;

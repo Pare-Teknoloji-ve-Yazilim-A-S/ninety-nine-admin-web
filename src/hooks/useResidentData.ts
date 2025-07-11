@@ -6,7 +6,8 @@ import { Resident } from '@/app/components/ui/ResidentRow';
 import { 
     Resident as ApiResident, 
     UpdateResidentDto, 
-    CreateResidentDto 
+    CreateResidentDto,
+    CreateResidentRequest // yeni tip eklendi
 } from '@/services/types/resident.types';
 
 interface UseResidentDataProps {
@@ -22,7 +23,7 @@ interface UseResidentDataReturn {
     saveError: string | null;
     fetchResident: (id: string) => Promise<void>;
     updateResident: (id: string, data: UpdateResidentDto) => Promise<void>;
-    createResident: (data: CreateResidentDto) => Promise<string>;
+    createResident: (data: CreateResidentRequest) => Promise<string>; // tip güncellendi
     refreshData: () => Promise<void>;
     clearError: () => void;
     clearSaveError: () => void;
@@ -129,17 +130,18 @@ export const useResidentData = ({
         }
     }, []);
 
-    const createResident = useCallback(async (data: CreateResidentDto): Promise<string> => {
+    const createResident = useCallback(async (data: CreateResidentRequest): Promise<string> => {
         try {
             setSaving(true);
             setSaveError(null);
 
+            // Yeni API formatına uygun çağrı
             const response = await residentService.createResident(data);
             
             if (response.data) {
                 const transformedResident = transformApiResidentToComponentResident(response.data);
                 setResident(transformedResident);
-                return response.data.id.toString();
+                return response.data.id?.toString?.() || '';
             }
 
             throw new Error('Sakin oluşturulamadı');

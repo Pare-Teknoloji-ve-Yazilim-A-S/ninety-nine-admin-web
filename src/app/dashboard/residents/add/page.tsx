@@ -26,6 +26,7 @@ import {
     QrCode
 } from 'lucide-react';
 import { useResidentData } from '@/hooks/useResidentData';
+import { CreateResidentRequest } from '@/services/types/resident.types';
 
 interface FormData {
     // Identity
@@ -210,17 +211,23 @@ export default function AddResidentPage() {
         e.preventDefault();
 
         if (validateForm()) {
-            // API'ye uygun CreateResidentDto oluştur
-            const dto = {
-                email: formData.email || '',
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                phone: formData.mobilePhone,
-                tcKimlikNo: formData.identityNumber,
-                propertyIdentification: `${formData.block}-${formData.apartmentNumber}`,
-                roleId: 'resident', // Gerekirse dinamik yapabilirsin
-                status: 'ACTIVE' as const,
-                membershipTier: 'STANDARD' as const,
+            // Yeni API'ye uygun CreateResidentRequest oluştur
+            const dto: CreateResidentRequest = {
+                personalInfo: {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    phone: formData.mobilePhone,
+                    email: formData.email,
+                    password: '', // Eğer şifre isteniyorsa ekle
+                },
+                propertyInfo: {
+                    name: '', // Apartman adı gerekiyorsa ekle
+                    block: formData.block,
+                    propertyNumber: formData.apartmentNumber,
+                    propertyType: 'RESIDENCE',
+                    ownershipType: formData.residentType === 'owner' ? 'owner' : 'tenant',
+                },
+                documents: [], // Belgeler ekleniyorsa doldur
             };
             try {
                 await createResident(dto);

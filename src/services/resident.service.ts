@@ -14,6 +14,7 @@ import {
     ResidentApprovalResponse,
     BulkActionDto,
     BulkActionResponse,
+    CreateResidentRequest // yeni tip eklendi
 } from './types/resident.types';
 import { ApiResponse, PaginatedResponse } from './core/types';
 
@@ -265,12 +266,10 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
      * Create new resident (admin)
      * POST /admin/users
      */
-    async createResident(data: CreateResidentDto): Promise<ApiResponse<Resident>> {
+    async createResident(data: CreateResidentRequest): Promise<ApiResponse<Resident>> {
         try {
-            this.logger.info('Creating new resident (admin)', { email: data.email });
-
+            this.logger.info('Creating new resident (admin)', { personalInfo: data.personalInfo });
             const response = await apiClient.post<Resident>(apiConfig.endpoints.residents.admin.base, data);
-
             this.logger.info('Resident created successfully');
             return response;
         } catch (error) {
