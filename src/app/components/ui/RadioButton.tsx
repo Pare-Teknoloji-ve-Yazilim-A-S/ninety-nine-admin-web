@@ -32,12 +32,13 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
             lg: 'w-6 h-6'
         }
 
-        const baseClasses = 'rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-gold/50 focus:ring-offset-1 focus:ring-offset-background-primary'
-        const normalClasses = 'border-primary-gold/30 hover:border-primary-gold/50'
-        const checkedClasses = 'bg-primary-gold border-primary-gold'
-        const errorClasses = error ? 'border-primary-red focus:ring-primary-red/50' : ''
+        // Border ve focus efektleri kaldırıldı
+        const baseClasses = 'rounded-full transition-colors';
+        const normalClasses = '';
+        const checkedClasses = 'bg-primary-gold';
+        const errorClasses = error ? 'bg-primary-red' : '';
 
-        const containerClasses = direction === 'horizontal' ? 'flex flex-wrap gap-6' : 'space-y-3'
+        const containerClasses = direction === 'horizontal' ? 'flex flex-wrap gap-6' : 'space-y-3';
 
         return (
             <div className="space-y-2">
@@ -68,18 +69,21 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
                         ${error ? errorClasses : normalClasses}
                         ${props.value === option.value ? checkedClasses : ''}
                         ${className}
-                         cursor-pointer
+                        cursor-pointer
                         ${option.disabled ? 'opacity-50 cursor-not-allowed' : ''}
                         peer
                     `}
-                                        {...props}
+                                        checked={props.value === option.value}
+                                        onChange={props.onChange}
+                                        name={props.name}
                                     />
-                                    {/* Custom dot for checked state */}
+                                    {/* Custom dot for checked state, premium gold */}
                                     <span
                                         className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-150
                         ${props.value === option.value ?
                                                 radioSize === 'lg' ? 'w-3 h-3' : radioSize === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2'
                                                 : 'w-0 h-0'}
+                        ${props.value === option.value ? 'bg-primary-dark-gray' : ''}
                     `}
                                         style={{
                                             backgroundColor: props.value === option.value ? '#ac8d6a' : 'transparent'
