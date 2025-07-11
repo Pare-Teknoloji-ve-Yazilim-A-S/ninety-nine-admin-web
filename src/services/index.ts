@@ -27,6 +27,7 @@ export { default as userService, userService as UserService } from './user.servi
 export { default as adminResidentService, adminResidentService as AdminResidentService } from './admin-resident.service';
 export { default as residentService, residentService as ResidentService } from './resident.service';
 export { default as propertyService, PropertyService } from './property.service';
+export { unitsService, UnitsService } from './units.service';
 
 // Re-export commonly used types for convenience
 export type {

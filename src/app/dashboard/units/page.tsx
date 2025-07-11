@@ -7,7 +7,7 @@ import Sidebar from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import {
-    propertyService,
+    unitsService,
     Property,
     PropertyFilterParams,
     PropertyStatistics,
@@ -67,7 +67,7 @@ export default function UnitsListPage() {
             setLoading(true);
             setError(null);
 
-            const response = await propertyService.getAllProperties(filters);
+            const response = await unitsService.getAllUnits(filters);
             setProperties(response.data);
             setPagination(response.pagination);
         } catch (err: any) {
@@ -82,7 +82,7 @@ export default function UnitsListPage() {
 
     const loadQuickStats = async () => {
         try {
-            const response = await propertyService.getQuickStats();
+            const response = await unitsService.getQuickStats();
             setQuickStats(response.data);
         } catch (err: any) {
             console.error('Failed to load quick stats:', err);
@@ -98,7 +98,7 @@ export default function UnitsListPage() {
 
     const loadRecentActivities = async () => {
         try {
-            const response = await propertyService.getRecentActivities(10, 7);
+            const response = await unitsService.getRecentActivities(10, 7);
             setRecentActivities(response.data);
         } catch (err: any) {
             console.error('Failed to load recent activities:', err);

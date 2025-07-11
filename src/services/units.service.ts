@@ -7,45 +7,48 @@ import {
     PropertyActivity 
 } from './types/property.types';
 import { ApiResponse, PaginatedResponse } from './core/types';
+import { apiConfig } from './config/api.config';
 
 export class UnitsService extends BaseService {
+    protected baseEndpoint = apiConfig.endpoints.properties.admin.base;
+
     constructor() {
-        super('/properties');
+        super('UnitsService');
     }
 
     async getAllUnits(filters: PropertyFilterParams = {}): Promise<PaginatedResponse<Property>> {
         const params = this.buildFilterParams(filters);
-        const response = await this.apiClient.get<PaginatedResponse<Property>>(`${this.baseUrl}`, { params });
+        const response = await this.apiClient.get<PaginatedResponse<Property>>(`${this.baseEndpoint}`, { params });
         return response.data;
     }
 
     async getUnitById(id: string): Promise<ApiResponse<Property>> {
-        const response = await this.apiClient.get<ApiResponse<Property>>(`${this.baseUrl}/${id}`);
+        const response = await this.apiClient.get<ApiResponse<Property>>(`${this.baseEndpoint}/${id}`);
         return response.data;
     }
 
     async createUnit(unitData: Partial<Property>): Promise<ApiResponse<Property>> {
-        const response = await this.apiClient.post<ApiResponse<Property>>(`${this.baseUrl}`, unitData);
+        const response = await this.apiClient.post<ApiResponse<Property>>(`${this.baseEndpoint}`, unitData);
         return response.data;
     }
 
     async updateUnit(id: string, unitData: Partial<Property>): Promise<ApiResponse<Property>> {
-        const response = await this.apiClient.put<ApiResponse<Property>>(`${this.baseUrl}/${id}`, unitData);
+        const response = await this.apiClient.put<ApiResponse<Property>>(`${this.baseEndpoint}/${id}`, unitData);
         return response.data;
     }
 
     async deleteUnit(id: string): Promise<ApiResponse<void>> {
-        const response = await this.apiClient.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`);
+        const response = await this.apiClient.delete<ApiResponse<void>>(`${this.baseEndpoint}/${id}`);
         return response.data;
     }
 
     async getQuickStats(): Promise<ApiResponse<QuickStats>> {
-        const response = await this.apiClient.get<ApiResponse<QuickStats>>(`${this.baseUrl}/stats/quick`);
+        const response = await this.apiClient.get<ApiResponse<QuickStats>>(`${apiConfig.endpoints.properties.admin.quickStats}`);
         return response.data;
     }
 
     async getRecentActivities(limit: number = 10, days: number = 7): Promise<ApiResponse<PropertyActivity[]>> {
-        const response = await this.apiClient.get<ApiResponse<PropertyActivity[]>>(`${this.baseUrl}/activities/recent`, {
+        const response = await this.apiClient.get<ApiResponse<PropertyActivity[]>>(`${apiConfig.endpoints.properties.admin.recentActivities}`, {
             params: { limit, days }
         });
         return response.data;
@@ -53,13 +56,13 @@ export class UnitsService extends BaseService {
 
     async getStatistics(filters: PropertyFilterParams = {}): Promise<ApiResponse<PropertyStatistics>> {
         const params = this.buildFilterParams(filters);
-        const response = await this.apiClient.get<ApiResponse<PropertyStatistics>>(`${this.baseUrl}/stats`, { params });
+        const response = await this.apiClient.get<ApiResponse<PropertyStatistics>>(`${apiConfig.endpoints.properties.admin.statistics}`, { params });
         return response.data;
     }
 
     async exportUnits(filters: PropertyFilterParams = {}, format: 'csv' | 'excel' = 'excel'): Promise<Blob> {
         const params = { ...this.buildFilterParams(filters), format };
-        const response = await this.apiClient.get(`${this.baseUrl}/export`, {
+        const response = await this.apiClient.get(`${apiConfig.endpoints.properties.admin.export}`, {
             params,
             responseType: 'blob'
         });
@@ -67,7 +70,7 @@ export class UnitsService extends BaseService {
     }
 
     async bulkUpdateUnits(unitIds: string[], updateData: Partial<Property>): Promise<ApiResponse<void>> {
-        const response = await this.apiClient.patch<ApiResponse<void>>(`${this.baseUrl}/bulk-update`, {
+        const response = await this.apiClient.patch<ApiResponse<void>>(`${apiConfig.endpoints.properties.admin.bulkUpdate}`, {
             ids: unitIds,
             data: updateData
         });
