@@ -23,6 +23,7 @@ import EmptyState from '@/app/components/ui/EmptyState';
 import Skeleton from '@/app/components/ui/Skeleton';
 import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import { LucideIcon } from 'lucide-react';
+import Badge from '@/app/components/ui/Badge';
 
 interface BulkAction {
     id: string;
@@ -203,6 +204,34 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ resident, onAction }) => {
     );
 };
 
+// Helper functions for badge color mapping
+const getStatusColor = (status: Resident['status']): 'primary' | 'gold' | 'red' | 'secondary' | 'accent' => {
+    switch (status.color) {
+        case 'green':
+            return 'primary'; // Use primary for active/green
+        case 'yellow':
+            return 'gold'; // Use gold for warning/yellow
+        case 'red':
+            return 'red';
+        case 'blue':
+            return 'accent';
+        default:
+            return 'secondary';
+    }
+};
+const getTypeColor = (type: Resident['residentType']): 'primary' | 'gold' | 'red' | 'secondary' | 'accent' => {
+    switch (type.color) {
+        case 'blue':
+            return 'primary';
+        case 'green':
+            return 'accent';
+        case 'purple':
+            return 'accent';
+        default:
+            return 'secondary';
+    }
+};
+
 export default function ResidentGridView({
     residents,
     loading,
@@ -229,9 +258,9 @@ export default function ResidentGridView({
 
     if (loading) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                    <Skeleton key={i} className="h-48" />
+                    <Skeleton key={i} className="h-56 rounded-2xl" />
                 ))}
             </div>
         );
@@ -248,7 +277,7 @@ export default function ResidentGridView({
     }));
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Bulk Actions Bar */}
             {selectedResidents.length > 0 && (
                 <BulkActionsBar
@@ -259,62 +288,89 @@ export default function ResidentGridView({
             )}
 
             {/* Grid Layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {residents.map((resident) => (
-                    <Card key={resident.id} className="p-4 bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                                <Checkbox
-                                    checked={selectedResidents.includes(resident.id)}
-                                    onChange={() => handleSelect(resident.id)}
-                                />
-                                <div>
-                                    <h3 className="text-text-on-light dark:text-text-on-dark font-medium">
-                                        {resident.firstName} {resident.lastName}
-                                    </h3>
-                                    <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                        {resident.address.apartment}
-                                    </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {residents.map((resident) => {
+                    return (
+                        <Card
+                            key={resident.id}
+                            className="p-6 rounded-2xl shadow-md bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 transition-transform hover:scale-[1.01] hover:shadow-lg group"
+                        >
+                            {/* Üst Alan: Checkbox + İsim + Menü */}
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-4">
+                                    <Checkbox
+                                        checked={selectedResidents.includes(resident.id)}
+                                        onChange={() => handleSelect(resident.id)}
+                                        className="focus:ring-2 focus:ring-primary-gold/30" // remove mt-1 for vertical centering
+                                    />
+                                    <div>
+                                        <h3 className="text-xl font-semibold text-on-dark tracking-tight">
+                                            {resident.firstName} {resident.lastName}
+                                        </h3>
+                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary font-medium mt-1">
+                                            {resident.address.apartment}
+                                        </p>
+                                    </div>
                                 </div>
+                                <ActionMenu resident={resident} onAction={onAction} />
                             </div>
-                            <ActionMenu resident={resident} onAction={onAction} />
-                        </div>
 
-                        <div className="mt-4">
-                            <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                {resident.status.label}
-                            </p>
-                            <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                {resident.residentType.label}
-                            </p>
-                        </div>
+                            {/* Orta Alan: Durum ve Tip Badge'leri */}
+                            <div className="mt-4 flex flex-wrap gap-2 items-center">
+                                <Badge variant="soft" color={getStatusColor(resident.status)} className="text-xs px-3 py-1 rounded-full font-medium">
+                                    {resident.status.label}
+                                </Badge>
+                                <Badge variant="soft" color={getTypeColor(resident.residentType)} className="text-xs px-3 py-1 rounded-full font-semibold text-on-dark">
+                                    {resident.residentType.label}
+                                </Badge>
+                            </div>
 
-                        <div className="mt-4 flex gap-2">
-                            {resident.contact.phone && (
+                            {/* İletişim Bilgileri */}
+                            <div className="mt-4 flex flex-col gap-1 text-sm text-text-light-secondary dark:text-text-secondary">
+                                {resident.contact.phone && (
+                                    <div className="flex items-center gap-2">
+                                        <Phone className="w-4 h-4 text-primary-gold" />
+                                        <span>{resident.contact.phone}</span>
+                                    </div>
+                                )}
+                                {resident.contact.email && (
+                                    <div className="flex items-center gap-2">
+                                        <Mail className="w-4 h-4 text-primary-gold" />
+                                        <span>{resident.contact.email}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Alt Alan: Aksiyon Butonları */}
+                            <div className="mt-6 flex gap-3">
+                                {resident.contact.phone && (
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        icon={Phone}
+                                        onClick={() => onAction('call', resident)}
+                                        className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
+                                    >
+                                        Ara
+                                    </Button>
+                                )}
                                 <Button
                                     variant="secondary"
                                     size="sm"
-                                    icon={Phone}
-                                    onClick={() => onAction('call', resident)}
+                                    icon={MessageSquare}
+                                    onClick={() => onAction('message', resident)}
+                                    className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
                                 >
-                                    Ara
+                                    Mesaj
                                 </Button>
-                            )}
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                icon={MessageSquare}
-                                onClick={() => onAction('message', resident)}
-                            >
-                                Mesaj
-                            </Button>
-                        </div>
-                    </Card>
-                ))}
+                            </div>
+                        </Card>
+                    );
+                })}
             </div>
 
             {/* Pagination */}
-            <div className="mt-4">
+            <div className="mt-6">
                 <TablePagination
                     currentPage={pagination.currentPage}
                     totalPages={pagination.totalPages}
