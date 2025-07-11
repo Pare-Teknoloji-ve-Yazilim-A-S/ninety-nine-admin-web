@@ -25,7 +25,7 @@ import { Filter, Download, Plus, RefreshCw } from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
 // Import view components
-import ResidentListView from './components/ResidentListView';
+import ListView from '@/app/components/templates/ListView';
 import ResidentGridView from './components/ResidentGridView';
 
 // Import our extracted utilities and configurations
@@ -348,8 +348,8 @@ export default function ResidentsPage() {
 
                         {/* Residents Views */}
                         {filtersHook.selectedView === 'table' && (
-                            <ResidentListView
-                                residents={dataHook.residents}
+                            <ListView
+                                data={dataHook.residents}
                                 loading={dataHook.loading}
                                 onSelectionChange={filtersHook.handleSelectionChange}
                                 bulkActions={bulkActions}
