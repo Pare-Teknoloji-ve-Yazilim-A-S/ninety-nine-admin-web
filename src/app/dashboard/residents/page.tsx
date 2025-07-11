@@ -25,8 +25,14 @@ import { Filter, Download, Plus, RefreshCw } from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
 // Import view components
+import ResidentGridTemplate, { ActionMenuProps } from '@/app/components/templates/GridList';
+import Checkbox from '@/app/components/ui/Checkbox';
+import TablePagination from '@/app/components/ui/TablePagination';
+import Badge from '@/app/components/ui/Badge';
+import EmptyState from '@/app/components/ui/EmptyState';
+import Skeleton from '@/app/components/ui/Skeleton';
+import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import ListView from '@/app/components/templates/ListView';
-import ResidentGridView from './components/ResidentGridView';
 
 // Import our extracted utilities and configurations
 import { 
@@ -230,6 +236,105 @@ export default function ResidentsPage() {
         };
     }, [filtersHook.showFilterPanel]);
 
+    // Copy ActionMenu and color helpers from ResidentGridView:
+    const ResidentActionMenu: React.FC<ActionMenuProps> = ({ resident, onAction }) => {
+        const [isOpen, setIsOpen] = React.useState(false);
+        const dropdownRef = React.useRef<HTMLDivElement>(null);
+        const buttonRef = React.useRef<HTMLButtonElement>(null);
+
+        React.useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+                if (
+                    dropdownRef.current && 
+                    buttonRef.current && 
+                    !dropdownRef.current.contains(event.target as Node) && 
+                    !buttonRef.current.contains(event.target as Node)
+                ) {
+                    setIsOpen(false);
+                }
+            };
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+        const handleDropdownToggle = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+        };
+        const handleAction = (action: string) => (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(false);
+            onAction(action, resident);
+        };
+        return (
+            <div className="flex items-center justify-center">
+                <div className="relative group">
+                    <Button
+                        ref={buttonRef}
+                        variant="ghost"
+                        size="sm"
+                        icon={require('lucide-react').MoreVertical}
+                        className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={handleDropdownToggle}
+                    />
+                    <div 
+                        ref={dropdownRef}
+                        className={`absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${isOpen ? '' : 'hidden'}`}
+                    >
+                        <div className="py-1">
+                            <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').Eye({ className: 'w-5 h-5' })} Görüntüle
+                            </button>
+                            <button onClick={handleAction('edit')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').Edit({ className: 'w-5 h-5' })} Düzenle
+                            </button>
+                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
+                            <button onClick={handleAction('call')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').Phone({ className: 'w-5 h-5' })} Ara
+                            </button>
+                            <button onClick={handleAction('message')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').MessageSquare({ className: 'w-5 h-5' })} Mesaj
+                            </button>
+                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
+                            <button onClick={handleAction('qr')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').QrCode({ className: 'w-5 h-5' })} QR Kod
+                            </button>
+                            <button onClick={handleAction('notes')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').StickyNote({ className: 'w-5 h-5' })} Notlar
+                            </button>
+                            <button onClick={handleAction('history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').History({ className: 'w-5 h-5' })} Geçmiş
+                            </button>
+                            <button onClick={handleAction('payment-history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                {require('lucide-react').CreditCard({ className: 'w-5 h-5' })} Ödeme Geçmişi
+                            </button>
+                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
+                            <button onClick={handleAction('delete')} className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3">
+                                {require('lucide-react').Trash2({ className: 'w-5 h-5' })} Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+    const getStatusColor = (status: any) => {
+        switch (status?.color) {
+            case 'green': return 'primary';
+            case 'yellow': return 'gold';
+            case 'red': return 'red';
+            case 'blue': return 'accent';
+            default: return 'secondary';
+        }
+    };
+    const getTypeColor = (type: any) => {
+        switch (type?.color) {
+            case 'blue': return 'primary';
+            case 'green': return 'accent';
+            case 'purple': return 'accent';
+            default: return 'secondary';
+        }
+    };
+
     return (
         <ProtectedRoute>
             <div className="min-h-screen bg-background-primary">
@@ -374,7 +479,7 @@ export default function ResidentsPage() {
                         )}
 
                         {filtersHook.selectedView === 'grid' && (
-                            <ResidentGridView
+                            <ResidentGridTemplate
                                 residents={dataHook.residents}
                                 loading={dataHook.loading}
                                 onSelectionChange={(selectedIds) => {
@@ -401,6 +506,19 @@ export default function ResidentsPage() {
                                             `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
                                             'Henüz sakin kaydı bulunmuyor.'
                                 }
+                                ui={{
+                                    Card,
+                                    Button,
+                                    Checkbox,
+                                    TablePagination,
+                                    Badge,
+                                    EmptyState,
+                                    Skeleton,
+                                    BulkActionsBar,
+                                }}
+                                ActionMenu={ResidentActionMenu}
+                                getStatusColor={getStatusColor}
+                                getTypeColor={getTypeColor}
                             />
                         )}
                     </main>
