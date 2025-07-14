@@ -91,6 +91,7 @@ export interface ResidentActionHandlers {
     handleViewNotes: (resident: Resident) => void;
     handleViewHistory: (resident: Resident) => void;
     handleViewPaymentHistory: (resident: Resident) => void;
+    handleUpdateResidentStatus: (resident: Resident, newStatus: 'ACTIVE' | 'INACTIVE') => void | Promise<void>;
 }
 
 export interface BulkActionHandlers {

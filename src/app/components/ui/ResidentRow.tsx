@@ -24,7 +24,7 @@ interface ResidentFinancial {
     lastPaymentDate?: string;
 }
 
-interface ResidentStatus {
+export interface ResidentStatus {
     type: 'active' | 'pending' | 'inactive' | 'suspended';
     label: string;
     color: 'green' | 'yellow' | 'red' | 'gray' | 'blue';

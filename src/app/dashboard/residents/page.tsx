@@ -23,7 +23,7 @@ import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
 import {
     Filter, Download, Plus, RefreshCw,
-    MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2
+    MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX
 } from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
@@ -192,6 +192,14 @@ export default function ResidentsPage() {
                 // Handle more actions menu
                 console.log('More actions for resident:', resident.fullName);
                 break;
+            case 'deactivate':
+                residentActionHandlers.handleUpdateResidentStatus &&
+                    residentActionHandlers.handleUpdateResidentStatus(resident, 'INACTIVE');
+                break;
+            case 'activate':
+                residentActionHandlers.handleUpdateResidentStatus &&
+                    residentActionHandlers.handleUpdateResidentStatus(resident, 'ACTIVE');
+                break;
             default:
                 console.warn('Unknown action:', action);
         }
@@ -268,6 +276,17 @@ export default function ResidentsPage() {
             setIsOpen(false);
             onAction(action, resident);
         };
+        // Yeni: Aktif/Pasif butonu için handler
+        const handleToggleStatus = async (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(false);
+            // Handler'ı parent'a ilet
+            if (resident.status.type === 'active') {
+                onAction('deactivate', resident);
+            } else if (resident.status.type === 'inactive') {
+                onAction('activate', resident);
+            }
+        };
         return (
             <div className="flex items-center justify-center">
                 <div className="relative group">
@@ -298,15 +317,17 @@ export default function ResidentsPage() {
                                 <MessageSquare className="w-5 h-5" /> Mesaj
                             </button>
                             <hr className="border-gray-200 dark:border-gray-600 my-1" />
-                            {/* <button onClick={handleAction('qr')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <QrCode className="w-5 h-5" /> QR Kod
-                            </button>
-                            <button onClick={handleAction('notes')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <StickyNote className="w-5 h-5" /> Notlar
-                            </button>
-                            <button onClick={handleAction('history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <History className="w-5 h-5" /> Geçmiş
-                            </button> */}
+                            {/* Aktif/Pasif butonu */}
+                            {resident.status.type === 'active' && (
+                                <button onClick={handleToggleStatus} className="w-full px-4 py-2 text-left text-sm text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 flex items-center gap-3">
+                                    <UserX className="w-5 h-5" /> Pasif Yap
+                                </button>
+                            )}
+                            {resident.status.type === 'inactive' && (
+                                <button onClick={handleToggleStatus} className="w-full px-4 py-2 text-left text-sm text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-3">
+                                    <UserCheck className="w-5 h-5" /> Aktif Yap
+                                </button>
+                            )}
                             <button onClick={handleAction('payment-history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
                                 <CreditCard className="w-5 h-5" /> Ödeme Geçmişi
                             </button>

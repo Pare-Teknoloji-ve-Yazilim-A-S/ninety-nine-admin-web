@@ -1,6 +1,7 @@
 import { Resident } from '@/app/components/ui/ResidentRow';
 import { ResidentActionHandlers as IResidentActionHandlers } from '../types';
 import { residentService } from '@/services';
+import type { ResidentStatus } from '@/app/components/ui/ResidentRow';
 
 /**
  * Toast notification functions interface
@@ -180,6 +181,42 @@ export class ResidentActionHandlers {
     };
 
     /**
+     * Handle update resident status (active/passive)
+     */
+    handleUpdateResidentStatus = async (resident: Resident, newStatus: 'ACTIVE' | 'INACTIVE') => {
+        try {
+            // Call the API to update the resident's status
+            await residentService.updateResident(resident.id.toString(), { status: newStatus });
+
+            // Update local state
+            const updatedResidents = this.residents.map(r =>
+                r.id === resident.id ? {
+                        ...r,
+                        status: {
+                            ...(r.status as ResidentStatus),
+                            type: newStatus === 'ACTIVE' ? 'active' : 'inactive',
+                            label: newStatus === 'ACTIVE' ? 'Aktif' : 'Pasif',
+                            color: newStatus === 'ACTIVE' ? 'green' : 'gray',
+                        } as ResidentStatus,
+                    }
+                    : r
+            );
+            this.dataUpdate.setResidents(updatedResidents);
+            this.dataUpdate.refreshData();
+
+            this.toast.success(
+                'Durum Güncellendi',
+                `${resident.fullName} artık ${newStatus === 'ACTIVE' ? 'Aktif' : 'Pasif'}`
+            );
+        } catch (error) {
+            this.toast.error(
+                'Durum Güncellenemedi',
+                error instanceof Error ? error.message : 'Durum güncelleme işlemi başarısız oldu'
+            );
+        }
+    };
+
+    /**
      * Get all resident action handlers
      */
     getActionHandlers = (): IResidentActionHandlers => {
@@ -193,6 +230,7 @@ export class ResidentActionHandlers {
             handleViewNotes: this.handleViewNotes,
             handleViewHistory: this.handleViewHistory,
             handleViewPaymentHistory: this.handleViewPaymentHistory,
+            handleUpdateResidentStatus: this.handleUpdateResidentStatus,
         };
     };
 }
