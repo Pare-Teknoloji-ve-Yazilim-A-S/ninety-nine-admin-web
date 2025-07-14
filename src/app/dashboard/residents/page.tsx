@@ -21,7 +21,10 @@ import { useResidentsData } from '@/hooks/useResidentsData';
 import { useResidentsFilters } from '@/hooks/useResidentsFilters';
 import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
-import { Filter, Download, Plus, RefreshCw } from 'lucide-react';
+import {
+  Filter, Download, Plus, RefreshCw,
+  MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2
+} from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
 // Import view components
@@ -272,7 +275,7 @@ export default function ResidentsPage() {
                         ref={buttonRef}
                         variant="ghost"
                         size="sm"
-                        icon={require('lucide-react').MoreVertical}
+                        icon={MoreVertical}
                         className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={handleDropdownToggle}
                     />
@@ -282,34 +285,34 @@ export default function ResidentsPage() {
                     >
                         <div className="py-1">
                             <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').Eye({ className: 'w-5 h-5' })} Görüntüle
+                                <Eye className="w-5 h-5" /> Görüntüle
                             </button>
                             <button onClick={handleAction('edit')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').Edit({ className: 'w-5 h-5' })} Düzenle
+                                <Edit className="w-5 h-5" /> Düzenle
                             </button>
                             <hr className="border-gray-200 dark:border-gray-600 my-1" />
                             <button onClick={handleAction('call')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').Phone({ className: 'w-5 h-5' })} Ara
+                                <Phone className="w-5 h-5" /> Ara
                             </button>
                             <button onClick={handleAction('message')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').MessageSquare({ className: 'w-5 h-5' })} Mesaj
+                                <MessageSquare className="w-5 h-5" /> Mesaj
                             </button>
                             <hr className="border-gray-200 dark:border-gray-600 my-1" />
                             <button onClick={handleAction('qr')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').QrCode({ className: 'w-5 h-5' })} QR Kod
+                                <QrCode className="w-5 h-5" /> QR Kod
                             </button>
                             <button onClick={handleAction('notes')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').StickyNote({ className: 'w-5 h-5' })} Notlar
+                                <StickyNote className="w-5 h-5" /> Notlar
                             </button>
                             <button onClick={handleAction('history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').History({ className: 'w-5 h-5' })} Geçmiş
+                                <History className="w-5 h-5" /> Geçmiş
                             </button>
                             <button onClick={handleAction('payment-history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                {require('lucide-react').CreditCard({ className: 'w-5 h-5' })} Ödeme Geçmişi
+                                <CreditCard className="w-5 h-5" /> Ödeme Geçmişi
                             </button>
                             <hr className="border-gray-200 dark:border-gray-600 my-1" />
                             <button onClick={handleAction('delete')} className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3">
-                                {require('lucide-react').Trash2({ className: 'w-5 h-5' })} Sil
+                                <Trash2 className="w-5 h-5" /> Sil
                             </button>
                         </div>
                     </div>
@@ -518,7 +521,12 @@ export default function ResidentsPage() {
                                 }}
                                 ActionMenu={ResidentActionMenu}
                                 getStatusColor={getStatusColor}
-                                getTypeColor={getTypeColor}
+                                getTypeColor={(type) => {
+                                    if (!type) return 'gray';
+                                    if (type.type === 'owner') return 'green';
+                                    if (type.type === 'tenant') return 'blue';
+                                    return 'gray';
+                                }}
                             />
                         )}
                     </main>
