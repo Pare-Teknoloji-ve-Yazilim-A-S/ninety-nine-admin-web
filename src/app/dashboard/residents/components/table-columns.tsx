@@ -4,6 +4,7 @@ import { TableColumn } from '../types';
 import { TABLE_COLUMN_IDS } from '../constants';
 import { maskNationalId } from '../utils/transformations';
 import Button from '@/app/components/ui/Button';
+import Badge from '@/app/components/ui/Badge';
 import { 
     Phone, 
     MoreVertical, 
@@ -312,15 +313,33 @@ export const getTableColumns = (
             render: (value: string | any) => {
                 // Handle case where value might not be a string
                 const membershipTier = typeof value === 'string' ? value : 'Standart';
-                return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        membershipTier === 'Altın' ? 'bg-yellow-100 text-yellow-800' :
-                        membershipTier === 'Gümüş' ? 'bg-gray-100 text-gray-800' :
-                            'bg-blue-100 text-blue-800'
-                    }`}>
-                        {membershipTier}
-                    </span>
-                );
+                if (membershipTier === 'Altın') {
+                    return (
+                        <Badge
+                            variant="soft"
+                            color="gold"
+                            className="min-w-[88px] text-center justify-center"
+                        >
+                            {membershipTier}
+                        </Badge>
+                    );
+                } else if (membershipTier === 'Gümüş') {
+                    return (
+                        <Badge
+                            variant="soft"
+                            color="secondary"
+                            className="min-w-[88px] text-center justify-center"
+                        >
+                            {membershipTier}
+                        </Badge>
+                    );
+                } else {
+                    return (
+                        <Badge className="min-w-[88px] text-center justify-center">
+                            {membershipTier}
+                        </Badge>
+                    );
+                }
             },
         },
         {
