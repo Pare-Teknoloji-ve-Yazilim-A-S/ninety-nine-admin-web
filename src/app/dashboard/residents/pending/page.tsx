@@ -9,6 +9,8 @@ import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import Checkbox from '@/app/components/ui/Checkbox';
 import Modal from '@/app/components/ui/Modal';
+import SearchBar from '@/app/components/ui/SearchBar';
+import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import {
     RefreshCw,
     AlertTriangle,
@@ -123,22 +125,61 @@ export default function PendingApprovalsPage() {
                 <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
                 <div className="lg:ml-72">
                     <DashboardHeader
-                        title={`Onay Bekleyen Sakinler (${cardResidents.length})`}
+                        title=""
                         breadcrumbItems={breadcrumbItems}
                     />
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        {/* Summary */}
-                        <div className="flex justify-between items-center mb-8">
+                        {/* Page Header with Actions */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                             <div>
-                                <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-                                    Son 24 saat: {todayCount} | Bu hafta: -- | Bu ay: {cardResidents.length}
+                                <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
+                                    Onay Bekleyen Sakinler <span className="text-primary-gold">
+                                        ({cardResidents.length})
+                                    </span>
                                 </h2>
+                                <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                                    Son 24 saat: {todayCount}
+                                </p>
                             </div>
-                            <Button variant="secondary" size="sm" icon={RefreshCw} onClick={refresh} disabled={loading}>
-                                {loading ? 'Yükleniyor...' : 'Yenile'}
-                            </Button>
+                            <div className="flex gap-3">
+                                <Button variant="ghost" size="md" icon={RefreshCw} onClick={refresh} disabled={loading}>
+                                    {loading ? 'Yükleniyor...' : 'Yenile'}
+                                </Button>
+                            </div>
                         </div>
-                        {/* Hata */}
+                        {/* Search and Filters */}
+                        <Card className="mb-6">
+                            <div className="p-6">
+                                <div className="flex flex-col lg:flex-row gap-4">
+                                    {/* Search Bar */}
+                                    <div className="flex-1">
+                                        <SearchBar
+                                            placeholder="İsim, telefon veya daire no ile ara..."
+                                            value={searchTerm}
+                                            onChange={setSearchTerm}
+                                        />
+                                    </div>
+                                    {/* Filter Buttons */}
+                                    <div className="flex gap-2 items-center">
+                                        <Button
+                                            variant={filterType === 'all' ? 'primary' : 'secondary'}
+                                            size="sm"
+                                            onClick={() => setFilterType('all')}
+                                        >
+                                            Tümü ({cardResidents.length})
+                                        </Button>
+                                        <Button
+                                            variant={filterType === 'today' ? 'primary' : 'secondary'}
+                                            size="sm"
+                                            onClick={() => setFilterType('today')}
+                                        >
+                                            Bugün ({todayCount})
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                        {/* Error Message */}
                         {error && (
                             <Card className="mb-6 border-l-4 border-l-red-500">
                                 <div className="p-4">
@@ -153,172 +194,106 @@ export default function PendingApprovalsPage() {
                                 </div>
                             </Card>
                         )}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Main Content */}
-                            <div className="lg:col-span-2 space-y-6">
-                                {/* Filters */}
-                                <Card>
-                                    <div className="p-6">
-                                        <div className="relative mb-4">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                            <input
-                                                type="text"
-                                                placeholder="İsim, TC, telefon veya daire no ile ara..."
-                                                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg"
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant={filterType === 'all' ? 'primary' : 'secondary'}
-                                                size="sm"
-                                                onClick={() => setFilterType('all')}
-                                            >
-                                                Tümü ({cardResidents.length})
-                                            </Button>
-                                            <Button
-                                                variant={filterType === 'today' ? 'primary' : 'secondary'}
-                                                size="sm"
-                                                onClick={() => setFilterType('today')}
-                                            >
-                                                Bugün ({todayCount})
-                                            </Button>
+                        {/* Applications List (Grid) */}
+                        <div className="space-y-4">
+                            {loading && (
+                                <Card className="text-center py-12">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-gold" />
+                                        <div>
+                                            <h3 className="text-lg font-medium mb-2">Yükleniyor...</h3>
                                         </div>
                                     </div>
                                 </Card>
-                                {/* Applications List */}
-                                <div className="space-y-4">
-                                    {loading && (
-                                        <Card className="text-center py-12">
-                                            <div className="flex flex-col items-center gap-4">
-                                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-gold" />
-                                                <div>
-                                                    <h3 className="text-lg font-medium mb-2">Yükleniyor...</h3>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    )}
-                                    {!loading && filteredApplications.map((application) => (
-                                        <Card key={application.id} className="hover:shadow-lg transition-shadow">
-                                            <div className="p-6">
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <Checkbox
-                                                            checked={selectedApplications.includes(application.id)}
-                                                            onChange={() => toggleSelection(application.id)}
-                                                        />
-                                                        <div>
-                                                            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-                                                                {application.firstName} {application.lastName}
-                                                            </h3>
-                                                            <Badge variant="soft" color="secondary">
+                            )}
+                            {!loading && filteredApplications.length === 0 && (
+                                <Card className="text-center py-12">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <FileX className="h-16 w-16 text-gray-400" />
+                                        <div>
+                                            <h3 className="text-lg font-medium mb-2">Başvuru bulunamadı</h3>
+                                            <p className="text-text-light-secondary">
+                                                Arama kriterlerinize uygun başvuru yok.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Card>
+                            )}
+                            {/* Grid Layout for Applications */}
+                            {!loading && filteredApplications.length > 0 && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+                                    {filteredApplications.map((application) => (
+                                        <Card
+                                            key={application.id}
+                                            className="bg-background-light-card dark:bg-background-card shadow-lg rounded-2xl transition-all hover:shadow-2xl hover:-translate-y-1 border border-background-light-soft dark:border-background-soft flex flex-col justify-between min-h-[320px]"
+                                        >
+                                            <div className="flex flex-col h-full p-6 gap-4">
+                                                {/* Üst: Avatar ve İsim */}
+                                                <div className="flex items-center gap-4 mb-2">
+                                                    <div className="shrink-0 w-16 h-16 bg-gradient-to-br from-primary-gold-light/40 to-background-light-soft dark:from-primary-gold/20 dark:to-background-soft rounded-xl flex items-center justify-center border border-primary-gold/20">
+                                                        <User className="h-8 w-8 text-primary-gold" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-lg font-bold text-text-on-light dark:text-text-on-dark truncate">
+                                                            {application.firstName} {application.lastName}
+                                                        </h3>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <Badge variant="soft" color="secondary" className="text-xs px-2 py-0.5">
                                                                 <Clock className="h-3 w-3 mr-1" />
                                                                 {application.createdAt ? `${Math.floor((Date.now() - new Date(application.createdAt).getTime()) / (1000 * 60 * 60 * 24))} gün önce` : 'Bekliyor'}
                                                             </Badge>
+                                                            <Badge variant="soft" color={application.residentType === 'owner' ? 'gold' : application.residentType === 'tenant' ? 'primary' : 'secondary'} className="text-xs px-2 py-0.5">
+                                                                {application.residentType === 'owner' ? 'Malik' : application.residentType === 'tenant' ? 'Kiracı' : 'Diğer'}
+                                                            </Badge>
                                                         </div>
+                                                    </div>
+                                                    <Checkbox
+                                                        checked={selectedApplications.includes(application.id)}
+                                                        onChange={() => toggleSelection(application.id)}
+                                                        className="ml-2 mt-1"
+                                                    />
+                                                </div>
+                                                {/* Orta: Bilgi Alanları */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <Phone className="h-4 w-4 text-primary-gold" />
+                                                        <span className="text-text-on-light dark:text-text-on-dark font-medium truncate">{application.phone || '-'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Mail className="h-4 w-4 text-primary-gold" />
+                                                        <span className="text-text-on-light dark:text-text-on-dark font-medium truncate">{application.email || '-'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Home className="h-4 w-4 text-primary-gold" />
+                                                        <span className="truncate">{application.block} Blok, Daire {application.apartment}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4 text-primary-gold" />
+                                                        <span className="text-text-light-secondary">Kayıt: {application.createdAt ? new Date(application.createdAt).toLocaleString('tr-TR') : '-'}</span>
                                                     </div>
                                                 </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                                                    <div className="flex items-center justify-center">
-                                                        <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                                            <User className="h-8 w-8 text-gray-400" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="md:col-span-3">
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-text-light-secondary">Telefon:</span>
-                                                                <span className="text-text-on-light dark:text-text-on-dark font-medium">
-                                                                    {application.phone}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <Home className="h-4 w-4 text-gray-400" />
-                                                                <span>
-                                                                    {application.block} Blok, Daire {application.apartment}
-                                                                    ({application.residentType === 'owner' ? 'Malik' : application.residentType === 'tenant' ? 'Kiracı' : 'Diğer'})
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <Calendar className="h-4 w-4 text-gray-400" />
-                                                                <span className="text-text-light-secondary">
-                                                                    Kayıt: {application.createdAt ? new Date(application.createdAt).toLocaleString('tr-TR') : '-'}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-2">
+                                                {/* Alt: Aksiyonlar */}
+                                                <div className="flex flex-wrap gap-2 mt-auto pt-2 border-t border-background-light-soft dark:border-background-soft">
                                                     <Button variant="primary" size="sm" icon={Check}
+                                                        className="flex-1 min-w-[110px]"
                                                         onClick={() => handleApprove(application)}>
                                                         Onayla
                                                     </Button>
-                                                    <Button variant="danger" size="sm" icon={X}>
+                                                    <Button variant="danger" size="sm" icon={X} className="flex-1 min-w-[110px]">
                                                         Reddet
                                                     </Button>
-                                                    <Button variant="secondary" size="sm" icon={MessageSquare}>
-                                                        Not Ekle
-                                                    </Button>
-                                                    <Button variant="secondary" size="sm" icon={Mail}>
+                                                    <Button variant="secondary" size="sm" icon={Mail} className="flex-1 min-w-[110px]">
                                                         Bilgi İste
                                                     </Button>
-                                                    <Button variant="ghost" size="sm" icon={Eye}>
+                                                    <Button variant="ghost" size="sm" icon={Eye} className="flex-1 min-w-[110px]">
                                                         İncele
                                                     </Button>
                                                 </div>
                                             </div>
                                         </Card>
                                     ))}
-                                    {!loading && filteredApplications.length === 0 && (
-                                        <Card className="text-center py-12">
-                                            <div className="flex flex-col items-center gap-4">
-                                                <FileX className="h-16 w-16 text-gray-400" />
-                                                <div>
-                                                    <h3 className="text-lg font-medium mb-2">Başvuru bulunamadı</h3>
-                                                    <p className="text-text-light-secondary">
-                                                        Arama kriterlerinize uygun başvuru yok.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    )}
                                 </div>
-                            </div>
-                            {/* Sidebar Stats */}
-                            <div className="space-y-6">
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold mb-4">📈 Bugünün İstatistikleri</h3>
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-text-light-secondary">Toplam Başvuru:</span>
-                                                <span className="text-sm font-medium">{cardResidents.length}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-text-light-secondary">Onaylanan:</span>
-                                                <span className="text-sm font-medium text-green-600">-</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-text-light-secondary">Reddedilen:</span>
-                                                <span className="text-sm font-medium text-red-600">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold mb-4">⏱️ Ortalama İşlem Süresi</h3>
-                                        <div className="text-center">
-                                            <p className="text-2xl font-bold text-primary-gold">-</p>
-                                            <div className="flex items-center justify-center gap-1 mt-2">
-                                                <TrendingDown className="h-4 w-4 text-green-500" />
-                                                <span className="text-sm text-green-600">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </div>
+                            )}
                         </div>
                     </main>
                 </div>
