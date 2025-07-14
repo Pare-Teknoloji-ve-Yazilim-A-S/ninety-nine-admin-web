@@ -178,6 +178,37 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
                   <p className="text-sm text-text-light-secondary dark:text-text-secondary font-medium mt-1">
                     {resident.address?.apartment}
                   </p>
+                  {/* Üyelik Türü Badge - üst satıra taşındı */}
+                  {(() => {
+                    const membershipTier = resident.membershipTier || 'Standart';
+                    if (membershipTier === 'Altın') {
+                      return (
+                        <ui.Badge
+                          variant="soft"
+                          color="gold"
+                          className="min-w-[88px] text-center justify-center text-xs px-3 py-1 rounded-full font-medium mt-2"
+                        >
+                          {membershipTier}
+                        </ui.Badge>
+                      );
+                    } else if (membershipTier === 'Gümüş') {
+                      return (
+                        <ui.Badge
+                          variant="soft"
+                          color="secondary"
+                          className="min-w-[88px] text-center justify-center text-xs px-3 py-1 rounded-full font-medium mt-2"
+                        >
+                          {membershipTier}
+                        </ui.Badge>
+                      );
+                    } else {
+                      return (
+                        <ui.Badge className="min-w-[88px] text-center justify-center text-xs px-3 py-1 rounded-full font-medium mt-2">
+                          {membershipTier}
+                        </ui.Badge>
+                      );
+                    }
+                  })()}
                 </div>
               </div>
               {/* ActionMenu: Hem eski hem yeni tip desteklenir */}
@@ -232,6 +263,7 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
               >
                 {resident.residentType?.label}
               </ui.Badge>
+              {/* Üyelik Türü Badge kaldırıldı */}
             </div>
             {/* İletişim Bilgileri */}
             <div className="mt-4 flex flex-col gap-1 text-sm text-text-light-secondary dark:text-text-secondary">
