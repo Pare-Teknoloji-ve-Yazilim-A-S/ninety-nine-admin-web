@@ -167,8 +167,8 @@ export default function PendingApprovalsPage() {
         totalPages: 1,
         totalRecords: filteredApplications.length,
         recordsPerPage: filteredApplications.length,
-        onPageChange: () => {},
-        onRecordsPerPageChange: () => {},
+        onPageChange: () => { },
+        onRecordsPerPageChange: () => { },
     };
 
     // ActionMenu: üç nokta ile açılan menü
@@ -192,7 +192,7 @@ export default function PendingApprovalsPage() {
         }, []);
         return (
             <div className="relative flex items-center justify-center">
-                <Button
+                {/* <Button
                     ref={buttonRef}
                     variant="ghost"
                     size="sm"
@@ -224,7 +224,7 @@ export default function PendingApprovalsPage() {
                     >
                         <Eye className="w-5 h-5" /> İncele
                     </button>
-                </div>
+                </div> */}
             </div>
         );
     };
@@ -339,8 +339,8 @@ export default function PendingApprovalsPage() {
                                 pagination={pagination}
                                 emptyStateMessage={
                                     error ? 'Veri yüklenirken hata oluştu.' :
-                                    searchTerm ? `"${searchTerm}" araması için sonuç bulunamadı.` :
-                                    'Henüz başvuru bulunmuyor.'
+                                        searchTerm ? `"${searchTerm}" araması için sonuç bulunamadı.` :
+                                            'Henüz başvuru bulunmuyor.'
                                 }
                                 ui={{
                                     Card,
@@ -354,6 +354,7 @@ export default function PendingApprovalsPage() {
                                 }}
                                 ActionMenu={PendingActionMenu}
                                 renderCardActions={renderCardActions}
+                                getStatusColor={() => 'gold'}
                             />
                         </div>
                     </main>

@@ -85,12 +85,14 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
 }) => {
   // Checkbox seçimleri
   const handleSelect = (residentId: string | number) => {
+    if (loading) return;
     const newSelection = selectedResidents.includes(residentId)
       ? selectedResidents.filter(id => id !== residentId)
       : [...selectedResidents, residentId];
     onSelectionChange(newSelection);
   };
   const handleSelectAll = () => {
+    if (loading) return;
     const allIds = residents.map(resident => resident.id);
     onSelectionChange(selectedResidents.length === residents.length ? [] : allIds);
   };
@@ -104,10 +106,17 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
   // Yükleniyor durumu
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <ui.Skeleton key={i} className="h-56 rounded-2xl" />
-        ))}
+      <div className="space-y-4">
+        {/* Tümünü Seç checkbox skeleton */}
+        <div className="flex items-center mb-2">
+          <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded mr-2 animate-pulse" />
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <ui.Skeleton key={i} className="h-56 rounded-2xl" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -116,6 +125,10 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
   if (!loading && residents.length === 0) {
     return <ui.EmptyState title="Kayıt Bulunamadı" description={emptyStateMessage} />;
   }
+
+  // Tümünü seç checkbox indeterminate durumu
+  const isAllSelected = residents.length > 0 && selectedResidents.length === residents.length;
+  const isIndeterminate = selectedResidents.length > 0 && selectedResidents.length < residents.length;
 
   return (
     <div className="space-y-6">
@@ -127,6 +140,21 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
           onClearSelection={() => onSelectionChange([])}
         />
       )}
+      {/* Tümünü Seç Checkbox */}
+      <div className="flex items-center mb-2 gap-2">
+        <div className="flex items-center justify-center">
+          <ui.Checkbox
+            checked={isAllSelected}
+            indeterminate={isIndeterminate}
+            onChange={handleSelectAll}
+            disabled={loading || residents.length === 0}
+            className="focus:ring-2 focus:ring-primary-gold/30"
+          />
+        </div>
+        <span className="text-sm text-text-light-secondary dark:text-text-secondary select-none leading-none">
+          Tümünü Seç
+        </span>
+      </div>
       {/* Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {residents.map((resident) => (
@@ -141,6 +169,7 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
                   checked={selectedResidents.includes(resident.id)}
                   onChange={() => handleSelect(resident.id)}
                   className="focus:ring-2 focus:ring-primary-gold/30"
+                  disabled={loading}
                 />
                 <div>
                   <h3 className="text-xl font-semibold text-on-dark tracking-tight">
@@ -160,7 +189,19 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
             </div>
             {/* Orta Alan: Durum ve Tip Badge'leri */}
             <div className="mt-4 flex flex-wrap gap-2 items-center">
-              <ui.Badge variant="soft" color={getStatusColor(resident.status)} className="text-xs px-3 py-1 rounded-full font-medium">
+              <ui.Badge variant="soft" color={getStatusColor(resident.status)} className="text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1">
+                <span
+                  className="w-2 h-2 rounded-full inline-block border border-gray-300 dark:border-gray-700 mr-1"
+                  style={{
+                    backgroundColor:
+                      getStatusColor(resident.status) === 'primary' ? '#22C55E' :
+                      getStatusColor(resident.status) === 'gold' ? '#AC8D6A' :
+                      getStatusColor(resident.status) === 'red' ? '#E53E3E' :
+                      getStatusColor(resident.status) === 'accent' ? '#718096' :
+                      '#A8A29E', // secondary (warm gray)
+                  }}
+                  title={resident.status?.label}
+                />
                 {resident.status?.label}
               </ui.Badge>
               <ui.Badge
