@@ -89,7 +89,12 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
     }, []);
 
     const handleFiltersApply = useCallback((appliedFilters: Record<string, unknown>) => {
-        setFilters(appliedFilters);
+        // Map status filter values to uppercase if present
+        let mappedFilters = { ...appliedFilters };
+        if (mappedFilters.status && Array.isArray(mappedFilters.status)) {
+            mappedFilters.status = mappedFilters.status.map((v: string) => v.toUpperCase());
+        }
+        setFilters(mappedFilters);
         setCurrentPage(1); // Reset to first page when applying filters
         handleCloseDrawer();
     }, []);
