@@ -94,6 +94,19 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
         if (mappedFilters.status && Array.isArray(mappedFilters.status)) {
             mappedFilters.status = mappedFilters.status.map((v: string) => v.toUpperCase());
         }
+        // Map resident type to API values (owner -> resident, tenant -> tenant, guest -> guest)
+        if (mappedFilters.type) {
+            const typeMap: Record<string, string> = {
+                'owner': 'resident',
+                'tenant': 'tenant',
+                'guest': 'guest',
+            };
+            if (Array.isArray(mappedFilters.type)) {
+                mappedFilters.type = mappedFilters.type.map((v: string) => typeMap[v.toLowerCase()] || v.toLowerCase());
+            } else if (typeof mappedFilters.type === 'string') {
+                mappedFilters.type = typeMap[mappedFilters.type.toLowerCase()] || mappedFilters.type.toLowerCase();
+            }
+        }
         setFilters(mappedFilters);
         setCurrentPage(1); // Reset to first page when applying filters
         handleCloseDrawer();
