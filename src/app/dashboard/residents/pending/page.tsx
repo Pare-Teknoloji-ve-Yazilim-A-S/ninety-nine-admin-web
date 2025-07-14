@@ -58,6 +58,7 @@ interface ResidentCardData {
     residentType?: any;
     createdAt?: string;
     status?: any;
+    membershipTier?: string; // Yeni eklenen alan
 }
 
 function mapApiResidentToGridData(resident: ApiResident) {
@@ -80,6 +81,7 @@ function mapApiResidentToGridData(resident: ApiResident) {
             ? { label: String(resident.status), value: resident.status }
             : { label: 'Bekliyor', value: 'pending' },
         createdAt: resident.createdAt,
+        membershipTier: resident.membershipTier, // Yeni eklenen alan
     };
 }
 
@@ -192,19 +194,19 @@ export default function PendingApprovalsPage() {
         }, []);
         return (
             <div className="relative flex items-center justify-center">
-                {/* <Button
+                <Button
                     ref={buttonRef}
                     variant="ghost"
                     size="sm"
                     icon={MoreVertical}
                     className="h-8 w-8 p-0"
                     onClick={() => setOpen((v) => !v)}
-                />
+                /> 
                 <div
                     ref={menuRef}
                     className={`absolute right-0 top-full mt-1 w-40 bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${open ? '' : 'hidden'}`}
                 >
-                    <button
+                    {/* <button
                         onClick={() => {
                             setOpen(false);
                             setShowInfoModal(true);
@@ -213,7 +215,7 @@ export default function PendingApprovalsPage() {
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
                     >
                         <Mail className="w-5 h-5" /> Bilgi İste
-                    </button>
+                    </button> */}
                     <button
                         onClick={() => {
                             setOpen(false);
@@ -224,7 +226,7 @@ export default function PendingApprovalsPage() {
                     >
                         <Eye className="w-5 h-5" /> İncele
                     </button>
-                </div> */}
+                </div>
             </div>
         );
     };
@@ -440,14 +442,68 @@ export default function PendingApprovalsPage() {
             >
                 {selectedApplication && (
                     <div className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-medium">
-                                {selectedApplication.firstName} {selectedApplication.lastName} - {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
-                            </h3>
+                        {/* Header: İsim ve Membership Tier */}
+                        <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0 bg-primary-gold-light/30 dark:bg-primary-gold/20 rounded-xl p-3">
+                                <User className="w-8 h-8 text-primary-gold" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
+                                    {selectedApplication.firstName} {selectedApplication.lastName}
+                                </h3>
+                                {/* Membership Tier Badge */}
+                                {selectedApplication.membershipTier && (
+                                    <Badge variant="soft" color="gold" className="text-xs font-medium">
+                                        {selectedApplication.membershipTier}
+                                    </Badge>
+                                )}
+                            </div>
                         </div>
-                        <div>
-                            <p>Burada başvuru detay modal içeriği olacak.</p>
+                        {/* Bilgi Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {/* Sol Sütun */}
+                            <div className="space-y-4">
+                                {/* Bina Bilgisi */}
+                                <div className="flex items-center gap-3">
+                                    <Home className="w-5 h-5 text-primary-gold" />
+                                    <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                        {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
+                                    </span>
+                                </div>
+                                {/* Başvuru Tarihi */}
+                                {selectedApplication.createdAt && (
+                                    <div className="flex items-center gap-3">
+                                        <Calendar className="w-5 h-5 text-primary-gold" />
+                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                            {new Date(selectedApplication.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            {/* Sağ Sütun */}
+                            <div className="space-y-4">
+                                {/* Telefon */}
+                                {(selectedApplication.contact?.phone || selectedApplication.phone) && (
+                                    <div className="flex items-center gap-3">
+                                        <Phone className="w-5 h-5 text-primary-gold" />
+                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                            {selectedApplication.contact?.phone || selectedApplication.phone}
+                                        </span>
+                                    </div>
+                                )}
+                                {/* E-posta */}
+                                {(selectedApplication.contact?.email || selectedApplication.email) && (
+                                    <div className="flex items-center gap-3">
+                                        <Mail className="w-5 h-5 text-primary-gold" />
+                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                            {selectedApplication.contact?.email || selectedApplication.email}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+                        {/* Diğer Bilgiler veya Açıklama Alanı */}
+                        {/* Buraya ek bilgi veya açıklama eklenebilir */}
                         <div className="flex justify-end gap-3">
                             <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
                                 Kapat
