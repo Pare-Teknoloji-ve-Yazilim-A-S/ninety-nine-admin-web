@@ -521,12 +521,7 @@ export default function ResidentsPage() {
                                 }}
                                 ActionMenu={ResidentActionMenu}
                                 getStatusColor={getStatusColor}
-                                getTypeColor={(type) => {
-                                    if (!type) return 'gray';
-                                    if (type.type === 'owner') return 'green';
-                                    if (type.type === 'tenant') return 'blue';
-                                    return 'gray';
-                                }}
+                               
                             />
                         )}
                     </main>

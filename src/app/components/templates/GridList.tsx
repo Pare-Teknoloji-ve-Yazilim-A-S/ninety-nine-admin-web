@@ -40,7 +40,7 @@ export interface ResidentGridTemplateProps {
   ui: ResidentGridTemplateUI;
   ActionMenu?: React.ComponentType<ActionMenuProps>;
   getStatusColor?: (status: any) => string;
-  getTypeColor?: (type: any) => string;
+
 }
 
 export interface ActionMenuProps {
@@ -72,7 +72,6 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
   ui,
   ActionMenu = DefaultActionMenu,
   getStatusColor = defaultGetStatusColor,
-  getTypeColor = defaultGetTypeColor,
 }) => {
   // Checkbox seçimleri
   const handleSelect = (residentId: string | number) => {
@@ -149,7 +148,17 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
               <ui.Badge variant="soft" color={getStatusColor(resident.status)} className="text-xs px-3 py-1 rounded-full font-medium">
                 {resident.status?.label}
               </ui.Badge>
-              <ui.Badge variant="soft" color={getTypeColor(resident.residentType)} className="text-xs px-3 py-1 rounded-full font-semibold text-on-dark">
+              <ui.Badge
+                variant="soft"
+                className={
+                  `text-xs px-3 py-1 rounded-full font-medium text-black ` +
+                  (resident.residentType?.label === "Malik"
+                    ? "bg-green-100"
+                    : resident.residentType?.label === "Kiracı"
+                    ? "bg-blue-100"
+                    : "")
+                }
+              >
                 {resident.residentType?.label}
               </ui.Badge>
             </div>
