@@ -40,7 +40,7 @@ export interface ResidentGridTemplateProps {
   ui: ResidentGridTemplateUI;
   ActionMenu?: React.ComponentType<{ row: any }>;
   getStatusColor?: (status: any) => string;
-
+  renderCardActions?: (resident: any) => React.ReactNode;
 }
 
 export interface ActionMenuProps {
@@ -81,6 +81,7 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
   ui,
   ActionMenu = DefaultActionMenu,
   getStatusColor = defaultGetStatusColor,
+  renderCardActions,
 }) => {
   // Checkbox seçimleri
   const handleSelect = (residentId: string | number) => {
@@ -191,26 +192,30 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
               )}
             </div>
             {/* Alt Alan: Aksiyon Butonları */}
-            <div className="mt-6 flex gap-3">
-              {resident.contact?.phone && (
-                <ui.Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => onAction('call', resident)}
-                  className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
-                >
-                  Ara
-                </ui.Button>
+            {renderCardActions
+              ? renderCardActions(resident)
+              : (
+                <div className="mt-6 flex gap-3">
+                  {resident.contact?.phone && (
+                    <ui.Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => onAction('call', resident)}
+                      className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
+                    >
+                      Ara
+                    </ui.Button>
+                  )}
+                  <ui.Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onAction('message', resident)}
+                    className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
+                  >
+                    Mesaj
+                  </ui.Button>
+                </div>
               )}
-              <ui.Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onAction('message', resident)}
-                className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
-              >
-                Mesaj
-              </ui.Button>
-            </div>
           </ui.Card>
         ))}
       </div>

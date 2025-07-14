@@ -11,6 +11,10 @@ import Checkbox from '@/app/components/ui/Checkbox';
 import Modal from '@/app/components/ui/Modal';
 import SearchBar from '@/app/components/ui/SearchBar';
 import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
+import ResidentGridTemplate from '@/app/components/templates/GridList';
+import TablePagination from '@/app/components/ui/TablePagination';
+import EmptyState from '@/app/components/ui/EmptyState';
+import Skeleton from '@/app/components/ui/Skeleton';
 import {
     RefreshCw,
     AlertTriangle,
@@ -28,7 +32,8 @@ import {
     Calendar,
     Download,
     TrendingDown,
-    FileX
+    FileX,
+    MoreVertical
 } from 'lucide-react';
 import { usePendingResidents } from '@/hooks/usePendingResidents';
 import type { Resident as ApiResident } from '@/services/types/resident.types';
@@ -38,27 +43,43 @@ interface ResidentCardData {
     id: string | number;
     firstName: string;
     lastName: string;
+    address?: {
+        block?: string;
+        apartment?: string;
+    };
+    contact?: {
+        phone?: string;
+        email?: string;
+    };
     phone?: string;
     email?: string;
     block?: string;
     apartment?: string;
-    residentType?: string;
+    residentType?: any;
     createdAt?: string;
-    status?: string;
+    status?: any;
 }
 
-function mapApiResidentToCardData(resident: ApiResident): ResidentCardData {
+function mapApiResidentToGridData(resident: ApiResident) {
     return {
         id: resident.id,
         firstName: resident.firstName,
         lastName: resident.lastName,
-        phone: resident.phone,
-        email: resident.email,
-        block: resident.property?.block,
-        apartment: resident.property?.apartment,
-        residentType: resident.property?.ownershipType,
+        address: {
+            block: resident.property?.block,
+            apartment: resident.property?.apartment,
+        },
+        contact: {
+            phone: resident.phone,
+            email: resident.email,
+        },
+        residentType: resident.property?.ownershipType
+            ? { label: resident.property.ownershipType === 'owner' ? 'Malik' : resident.property.ownershipType === 'tenant' ? 'Kiracı' : 'Diğer', value: resident.property.ownershipType }
+            : { label: 'Diğer', value: 'other' },
+        status: resident.status
+            ? { label: String(resident.status), value: resident.status }
+            : { label: 'Bekliyor', value: 'pending' },
         createdAt: resident.createdAt,
-        status: resident.status,
     };
 }
 
@@ -69,10 +90,12 @@ export default function PendingApprovalsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showApprovalModal, setShowApprovalModal] = useState(false);
     const [selectedApplication, setSelectedApplication] = useState<ResidentCardData | null>(null);
+    const [showInfoModal, setShowInfoModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
 
     // API'den veri çek
     const { residents, loading, error, refresh } = usePendingResidents();
-    const cardResidents: ResidentCardData[] = residents.map(mapApiResidentToCardData);
+    const gridResidents = residents.map(mapApiResidentToGridData);
     console.log("residents", residents);
     // Breadcrumb
     const breadcrumbItems = [
@@ -82,12 +105,11 @@ export default function PendingApprovalsPage() {
     ];
 
     // Filtreleme
-    const filteredApplications = cardResidents.filter(app => {
+    const filteredApplications = gridResidents.filter(app => {
         const matchesSearch = searchTerm === '' ||
             app.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            app.phone?.includes(searchTerm);
-
+            app.contact?.phone?.includes(searchTerm);
         // "today" filtresi için başvuru tarihi bugüne ait mi?
         const isToday = (() => {
             if (!app.createdAt) return false;
@@ -95,29 +117,140 @@ export default function PendingApprovalsPage() {
             const created = new Date(app.createdAt);
             return today.toDateString() === created.toDateString();
         })();
-
         const matchesFilter = filterType === 'all' || (filterType === 'today' && isToday);
         return matchesSearch && matchesFilter;
     });
-
     // Sayaçlar
-    const todayCount = cardResidents.filter(app => {
+    const todayCount = gridResidents.filter(app => {
         if (!app.createdAt) return false;
         const today = new Date();
         const created = new Date(app.createdAt);
         return today.toDateString() === created.toDateString();
     }).length;
+    // Bulk actions örnek (isteğe göre düzenlenebilir)
+    const bulkActions = [
+        {
+            id: 'approve',
+            label: 'Toplu Onayla',
+            icon: Check,
+            onClick: (selected: any[]) => {
+                // Toplu onay işlemi
+            },
+            variant: 'success' as const,
+        },
+        {
+            id: 'reject',
+            label: 'Toplu Reddet',
+            icon: X,
+            onClick: (selected: any[]) => {
+                // Toplu reddet işlemi
+            },
+            variant: 'danger' as const,
+        },
+    ];
+    // Action handler
+    const handleGridAction = (action: string, resident: any) => {
+        if (action === 'approve') {
+            setSelectedApplication(resident);
+            setShowApprovalModal(true);
+        } else if (action === 'reject') {
+            // Reddet işlemi
+        } else if (action === 'message') {
+            // Bilgi iste
+        } else if (action === 'view') {
+            // İncele
+        }
+    };
+    // Pagination dummy (isteğe göre gerçek pagination eklenebilir)
+    const pagination = {
+        currentPage: 1,
+        totalPages: 1,
+        totalRecords: filteredApplications.length,
+        recordsPerPage: filteredApplications.length,
+        onPageChange: () => {},
+        onRecordsPerPageChange: () => {},
+    };
 
-    const toggleSelection = (id: string | number) => {
-        setSelectedApplications(prev =>
-            prev.includes(id) ? prev.filter(appId => appId !== id) : [...prev, id]
+    // ActionMenu: üç nokta ile açılan menü
+    const PendingActionMenu: React.FC<{ row: any }> = ({ row }) => {
+        const [open, setOpen] = useState(false);
+        const menuRef = React.useRef<HTMLDivElement>(null);
+        const buttonRef = React.useRef<HTMLButtonElement>(null);
+        React.useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+                if (
+                    menuRef.current &&
+                    buttonRef.current &&
+                    !menuRef.current.contains(event.target as Node) &&
+                    !buttonRef.current.contains(event.target as Node)
+                ) {
+                    setOpen(false);
+                }
+            };
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+        return (
+            <div className="relative flex items-center justify-center">
+                <Button
+                    ref={buttonRef}
+                    variant="ghost"
+                    size="sm"
+                    icon={MoreVertical}
+                    className="h-8 w-8 p-0"
+                    onClick={() => setOpen((v) => !v)}
+                />
+                <div
+                    ref={menuRef}
+                    className={`absolute right-0 top-full mt-1 w-40 bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${open ? '' : 'hidden'}`}
+                >
+                    <button
+                        onClick={() => {
+                            setOpen(false);
+                            setShowInfoModal(true);
+                            setSelectedApplication(row);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+                    >
+                        <Mail className="w-5 h-5" /> Bilgi İste
+                    </button>
+                    <button
+                        onClick={() => {
+                            setOpen(false);
+                            setShowDetailModal(true);
+                            setSelectedApplication(row);
+                        }}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
+                    >
+                        <Eye className="w-5 h-5" /> İncele
+                    </button>
+                </div>
+            </div>
         );
     };
-
-    const handleApprove = (application: ResidentCardData) => {
-        setSelectedApplication(application);
-        setShowApprovalModal(true);
-    };
+    // Kart altı custom butonlar
+    const renderCardActions = (resident: any) => (
+        <div className="mt-6 flex gap-3">
+            <Button
+                variant="primary"
+                size="sm"
+                icon={Check}
+                className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
+                onClick={() => handleGridAction('approve', resident)}
+            >
+                Onayla
+            </Button>
+            <Button
+                variant="danger"
+                size="sm"
+                icon={X}
+                className="rounded-lg font-medium shadow-sm hover:bg-primary-red/10 dark:hover:bg-primary-red/20 focus:ring-2 focus:ring-primary-red/30"
+                onClick={() => handleGridAction('reject', resident)}
+            >
+                Reddet
+            </Button>
+        </div>
+    );
 
     return (
         <ProtectedRoute>
@@ -134,7 +267,7 @@ export default function PendingApprovalsPage() {
                             <div>
                                 <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
                                     Onay Bekleyen Sakinler <span className="text-primary-gold">
-                                        ({cardResidents.length})
+                                        ({gridResidents.length})
                                     </span>
                                 </h2>
                                 <p className="text-sm text-text-light-secondary dark:text-text-secondary">
@@ -166,7 +299,7 @@ export default function PendingApprovalsPage() {
                                             size="sm"
                                             onClick={() => setFilterType('all')}
                                         >
-                                            Tümü ({cardResidents.length})
+                                            Tümü ({gridResidents.length})
                                         </Button>
                                         <Button
                                             variant={filterType === 'today' ? 'primary' : 'secondary'}
@@ -196,104 +329,32 @@ export default function PendingApprovalsPage() {
                         )}
                         {/* Applications List (Grid) */}
                         <div className="space-y-4">
-                            {loading && (
-                                <Card className="text-center py-12">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-gold" />
-                                        <div>
-                                            <h3 className="text-lg font-medium mb-2">Yükleniyor...</h3>
-                                        </div>
-                                    </div>
-                                </Card>
-                            )}
-                            {!loading && filteredApplications.length === 0 && (
-                                <Card className="text-center py-12">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <FileX className="h-16 w-16 text-gray-400" />
-                                        <div>
-                                            <h3 className="text-lg font-medium mb-2">Başvuru bulunamadı</h3>
-                                            <p className="text-text-light-secondary">
-                                                Arama kriterlerinize uygun başvuru yok.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Card>
-                            )}
-                            {/* Grid Layout for Applications */}
-                            {!loading && filteredApplications.length > 0 && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
-                                    {filteredApplications.map((application) => (
-                                        <Card
-                                            key={application.id}
-                                            className="bg-background-light-card dark:bg-background-card shadow-lg rounded-2xl transition-all hover:shadow-2xl hover:-translate-y-1 border border-background-light-soft dark:border-background-soft flex flex-col justify-between min-h-[320px]"
-                                        >
-                                            <div className="flex flex-col h-full p-6 gap-4">
-                                                {/* Üst: Avatar ve İsim */}
-                                                <div className="flex items-center gap-4 mb-2">
-                                                    <div className="shrink-0 w-16 h-16 bg-gradient-to-br from-primary-gold-light/40 to-background-light-soft dark:from-primary-gold/20 dark:to-background-soft rounded-xl flex items-center justify-center border border-primary-gold/20">
-                                                        <User className="h-8 w-8 text-primary-gold" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h3 className="text-lg font-bold text-text-on-light dark:text-text-on-dark truncate">
-                                                            {application.firstName} {application.lastName}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <Badge variant="soft" color="secondary" className="text-xs px-2 py-0.5">
-                                                                <Clock className="h-3 w-3 mr-1" />
-                                                                {application.createdAt ? `${Math.floor((Date.now() - new Date(application.createdAt).getTime()) / (1000 * 60 * 60 * 24))} gün önce` : 'Bekliyor'}
-                                                            </Badge>
-                                                            <Badge variant="soft" color={application.residentType === 'owner' ? 'gold' : application.residentType === 'tenant' ? 'primary' : 'secondary'} className="text-xs px-2 py-0.5">
-                                                                {application.residentType === 'owner' ? 'Malik' : application.residentType === 'tenant' ? 'Kiracı' : 'Diğer'}
-                                                            </Badge>
-                                                        </div>
-                                                    </div>
-                                                    <Checkbox
-                                                        checked={selectedApplications.includes(application.id)}
-                                                        onChange={() => toggleSelection(application.id)}
-                                                        className="ml-2 mt-1"
-                                                    />
-                                                </div>
-                                                {/* Orta: Bilgi Alanları */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <Phone className="h-4 w-4 text-primary-gold" />
-                                                        <span className="text-text-on-light dark:text-text-on-dark font-medium truncate">{application.phone || '-'}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Mail className="h-4 w-4 text-primary-gold" />
-                                                        <span className="text-text-on-light dark:text-text-on-dark font-medium truncate">{application.email || '-'}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Home className="h-4 w-4 text-primary-gold" />
-                                                        <span className="truncate">{application.block} Blok, Daire {application.apartment}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Calendar className="h-4 w-4 text-primary-gold" />
-                                                        <span className="text-text-light-secondary">Kayıt: {application.createdAt ? new Date(application.createdAt).toLocaleString('tr-TR') : '-'}</span>
-                                                    </div>
-                                                </div>
-                                                {/* Alt: Aksiyonlar */}
-                                                <div className="flex flex-wrap gap-2 mt-auto pt-2 border-t border-background-light-soft dark:border-background-soft">
-                                                    <Button variant="primary" size="sm" icon={Check}
-                                                        className="flex-1 min-w-[110px]"
-                                                        onClick={() => handleApprove(application)}>
-                                                        Onayla
-                                                    </Button>
-                                                    <Button variant="danger" size="sm" icon={X} className="flex-1 min-w-[110px]">
-                                                        Reddet
-                                                    </Button>
-                                                    <Button variant="secondary" size="sm" icon={Mail} className="flex-1 min-w-[110px]">
-                                                        Bilgi İste
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" icon={Eye} className="flex-1 min-w-[110px]">
-                                                        İncele
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
+                            <ResidentGridTemplate
+                                residents={filteredApplications}
+                                loading={loading}
+                                onSelectionChange={setSelectedApplications}
+                                bulkActions={bulkActions}
+                                onAction={handleGridAction}
+                                selectedResidents={selectedApplications}
+                                pagination={pagination}
+                                emptyStateMessage={
+                                    error ? 'Veri yüklenirken hata oluştu.' :
+                                    searchTerm ? `"${searchTerm}" araması için sonuç bulunamadı.` :
+                                    'Henüz başvuru bulunmuyor.'
+                                }
+                                ui={{
+                                    Card,
+                                    Button,
+                                    Checkbox,
+                                    TablePagination,
+                                    Badge,
+                                    EmptyState,
+                                    Skeleton,
+                                    BulkActionsBar,
+                                }}
+                                ActionMenu={PendingActionMenu}
+                                renderCardActions={renderCardActions}
+                            />
                         </div>
                     </main>
                 </div>
@@ -309,7 +370,7 @@ export default function PendingApprovalsPage() {
                     <div className="space-y-6">
                         <div>
                             <h3 className="text-lg font-medium">
-                                {selectedApplication.firstName} {selectedApplication.lastName} - {selectedApplication.block} Blok, Daire {selectedApplication.apartment}
+                                {selectedApplication.firstName} {selectedApplication.lastName} - {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
                             </h3>
                         </div>
                         <div>
@@ -339,6 +400,56 @@ export default function PendingApprovalsPage() {
                             </Button>
                             <Button variant="primary" icon={Check}>
                                 Onayla ve Bilgilendir
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+            {/* Bilgi İste Modal */}
+            <Modal
+                isOpen={showInfoModal}
+                onClose={() => setShowInfoModal(false)}
+                title="Bilgi İste"
+                size="md"
+            >
+                {selectedApplication && (
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium">
+                                {selectedApplication.firstName} {selectedApplication.lastName} - {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
+                            </h3>
+                        </div>
+                        <div>
+                            <p>Burada bilgi iste modal içeriği olacak.</p>
+                        </div>
+                        <div className="flex justify-end gap-3">
+                            <Button variant="secondary" onClick={() => setShowInfoModal(false)}>
+                                Kapat
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+            {/* İncele Modal */}
+            <Modal
+                isOpen={showDetailModal}
+                onClose={() => setShowDetailModal(false)}
+                title="Başvuru İncele"
+                size="md"
+            >
+                {selectedApplication && (
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium">
+                                {selectedApplication.firstName} {selectedApplication.lastName} - {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
+                            </h3>
+                        </div>
+                        <div>
+                            <p>Burada başvuru detay modal içeriği olacak.</p>
+                        </div>
+                        <div className="flex justify-end gap-3">
+                            <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+                                Kapat
                             </Button>
                         </div>
                     </div>
