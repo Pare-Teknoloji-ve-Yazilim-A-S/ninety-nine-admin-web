@@ -10,7 +10,7 @@
       ],
       "env": {}
     },
-    "sequential-thinking": {
+    "thinking": {
       "command": "npx",
       "args": [
         "-y",

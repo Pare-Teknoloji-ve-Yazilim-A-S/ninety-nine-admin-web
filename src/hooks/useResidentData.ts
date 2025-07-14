@@ -62,9 +62,18 @@ const transformApiResidentToComponentResident = (apiResident: ApiResident): Resi
             lastPaymentDate: undefined
         },
         status: {
-            type: apiResident.status === 'ACTIVE' ? 'active' : 'inactive',
-            label: apiResident.status === 'ACTIVE' ? 'Aktif' : 'Pasif',
-            color: apiResident.status === 'ACTIVE' ? 'green' : 'red'
+            type: apiResident.status?.toLowerCase() === 'pending' ? 'pending'
+                : apiResident.status?.toLowerCase() === 'inactive' ? 'inactive'
+                : apiResident.status?.toLowerCase() === 'suspended' ? 'suspended'
+                : 'active',
+            label: apiResident.status?.toLowerCase() === 'pending' ? 'Beklemede'
+                : apiResident.status?.toLowerCase() === 'inactive' ? 'Pasif'
+                : apiResident.status?.toLowerCase() === 'suspended' ? 'Askıda'
+                : 'Aktif',
+            color: apiResident.status?.toLowerCase() === 'pending' ? 'yellow'
+                : apiResident.status?.toLowerCase() === 'inactive' ? 'red'
+                : apiResident.status?.toLowerCase() === 'suspended' ? 'red'
+                : 'green',
         },
         membershipTier: apiResident.membershipTier === 'GOLD' ? 'Altın Üye' : 
                        apiResident.membershipTier === 'SILVER' ? 'Gümüş Üye' : 'Standart Üye',

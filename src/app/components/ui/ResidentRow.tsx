@@ -55,7 +55,7 @@ export interface Resident {
     tags?: string[];
     isGoldMember?: boolean;
     membershipTier?: string;
-    verificationStatus?: string;
+    verificationStatus?: { label: string; color: string };
 }
 
 interface ResidentRowProps {

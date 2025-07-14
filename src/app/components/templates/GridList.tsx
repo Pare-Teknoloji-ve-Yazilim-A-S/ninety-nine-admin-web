@@ -204,6 +204,21 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
                 />
                 {resident.status?.label}
               </ui.Badge>
+              {/* VerificationStatus Badge */}
+              {resident.verificationStatus && (
+                <ui.Badge
+                  variant="outline"
+                  color={
+                    resident.verificationStatus.color === 'green' ? 'primary' :
+                    resident.verificationStatus.color === 'yellow' ? 'gold' :
+                    resident.verificationStatus.color === 'red' ? 'red' :
+                    'secondary'
+                  }
+                  className="text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1"
+                >
+                  {resident.verificationStatus.label}
+                </ui.Badge>
+              )}
               <ui.Badge
                 variant="soft"
                 className={

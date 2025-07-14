@@ -327,18 +327,20 @@ export const getTableColumns = (
             id: TABLE_COLUMN_IDS.VERIFICATION,
             header: 'Doğrulama',
             accessor: 'verificationStatus',
-            render: (value: string | any) => {
-                // Handle case where value might not be a string
-                const verificationStatus = typeof value === 'string' ? value : 'İnceleniyor';
+            render: (value: any) => {
+                if (!value || typeof value !== 'object') {
+                    return <span className="text-gray-500">-</span>;
+                }
                 return (
                     <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${
-                            verificationStatus === 'Onaylandı' ? 'bg-green-500' :
-                            verificationStatus === 'Reddedildi' ? 'bg-red-500' :
-                                'bg-yellow-500'
+                            value.color === 'green' ? 'bg-green-500' :
+                            value.color === 'red' ? 'bg-red-500' :
+                            value.color === 'yellow' ? 'bg-yellow-500' :
+                            'bg-gray-500'
                         }`} />
                         <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                            {verificationStatus}
+                            {value.label}
                         </span>
                     </div>
                 );

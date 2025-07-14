@@ -48,26 +48,29 @@ export default function ResidentViewPage() {
         { label: resident?.fullName || 'Sakin Detayı', active: true }
     ];
 
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'Aktif':
+    // Yeni: Status ikonunu type'a göre göster
+    const getStatusIcon = (type: string) => {
+        switch (type) {
+            case 'active':
                 return <CheckCircle className="h-4 w-4 text-semantic-success-500" />;
-            case 'Beklemede':
+            case 'pending':
                 return <Clock className="h-4 w-4 text-semantic-warning-500" />;
-            case 'Pasif':
+            case 'inactive':
+            case 'suspended':
                 return <AlertCircle className="h-4 w-4 text-primary-red" />;
             default:
                 return <AlertCircle className="h-4 w-4 text-gray-500" />;
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'Aktif':
-                return 'gold';
-            case 'Beklemede':
+    // Yeni: Status badge rengini color'a göre göster
+    const getStatusColor = (color: string) => {
+        switch (color) {
+            case 'green':
+                return 'primary';
+            case 'yellow':
                 return 'secondary';
-            case 'Pasif':
+            case 'red':
                 return 'red';
             default:
                 return 'secondary';
@@ -237,16 +240,21 @@ export default function ResidentViewPage() {
                                                 </div>
 
                                                 <div className="flex items-center gap-2 mb-3">
-                                                    {getStatusIcon(resident.status.label)}
+                                                    {getStatusIcon(resident.status.type)}
                                                     <Badge 
                                                         variant="soft" 
-                                                        color={getStatusColor(resident.status.label)}
+                                                        color={getStatusColor(resident.status.color)}
                                                     >
                                                         {resident.status.label}
                                                     </Badge>
                                                     {resident.verificationStatus && (
-                                                        <Badge variant="outline" color="secondary">
-                                                            {resident.verificationStatus}
+                                                        <Badge variant="outline" color={
+                                                            resident.verificationStatus.color === 'green' ? 'primary' :
+                                                            resident.verificationStatus.color === 'yellow' ? 'secondary' :
+                                                            resident.verificationStatus.color === 'red' ? 'red' :
+                                                            'secondary'
+                                                        }>
+                                                            {resident.verificationStatus.label}
                                                         </Badge>
                                                     )}
                                                 </div>

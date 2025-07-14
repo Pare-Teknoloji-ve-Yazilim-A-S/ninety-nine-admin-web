@@ -25,7 +25,16 @@ export const getMembershipConfig = (tier: string) => {
  * Get verification label and color based on verification status
  */
 export const getVerificationConfig = (status: string) => {
-    return VERIFICATION_CONFIG[status] || VERIFICATION_CONFIG.default;
+    switch ((status || '').toUpperCase()) {
+        case 'APPROVED':
+            return { label: 'Onaylandı', color: 'green' };
+        case 'REJECTED':
+            return { label: 'Reddedildi', color: 'red' };
+        case 'PENDING':
+        case 'UNDER_REVIEW':
+        default:
+            return { label: 'İnceleniyor', color: 'yellow' };
+    }
 };
 
 /**
@@ -73,10 +82,10 @@ export const maskNationalId = (nationalId?: string): string => {
 export const transformApiResidentToComponentResident = (apiResident: ApiResident): Resident => {
     const statusConfig = getStatusConfig(apiResident.status || '');
     const membershipConfig = getMembershipConfig(apiResident.membershipTier || '');
-    const verificationConfig = getVerificationConfig('PENDING'); // Default to pending
+    const verificationConfig = getVerificationConfig(apiResident.verificationStatus || 'PENDING');
 
     return {
-        id: apiResident.id,
+        id: String(apiResident.id),
         firstName: apiResident.firstName,
         lastName: apiResident.lastName,
         fullName: `${apiResident.firstName} ${apiResident.lastName}`,
@@ -110,14 +119,20 @@ export const transformApiResidentToComponentResident = (apiResident: ApiResident
         },
         
         status: {
-            type: (apiResident.status?.toLowerCase() || 'active') as 'active' | 'pending' | 'inactive' | 'suspended',
+            type: (
+                apiResident.status?.toLowerCase() === 'pending' ? 'pending' :
+                apiResident.status?.toLowerCase() === 'inactive' ? 'inactive' :
+                apiResident.status?.toLowerCase() === 'banned' ? 'suspended' :
+                apiResident.status?.toLowerCase() === 'suspended' ? 'suspended' :
+                'active'
+            ) as 'active' | 'pending' | 'inactive' | 'suspended',
             label: statusConfig.label,
             color: statusConfig.color
         },
         
         // Membership and verification - Note: We need to check if these fields exist in Resident type
         membershipTier: membershipConfig.label,
-        verificationStatus: verificationConfig.label,
+        verificationStatus: verificationConfig,
         
         registrationDate: apiResident.createdAt || '',
         lastActivity: apiResident.updatedAt || new Date().toISOString(),
