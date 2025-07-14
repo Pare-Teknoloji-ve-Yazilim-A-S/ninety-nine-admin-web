@@ -39,6 +39,7 @@ export function usePendingResidents({
         orderBy
       };
       const response = await adminResidentService.getPendingResidents(params);
+      console.log("GELEN RESPONSE", response);
       setResidents(response.data || []);
       setPagination(response.pagination || null);
     } catch (err: any) {

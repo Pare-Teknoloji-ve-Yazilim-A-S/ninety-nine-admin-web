@@ -65,10 +65,10 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
                 `${apiConfig.endpoints.residents.admin.pendingVerification}${queryParams}`
             );
 
-            this.logger.info(`Fetched ${response.data.users.length} pending residents`);
+            this.logger.info(`Fetched ${response.data.length} pending residents`);
             return {
-                data: response.data.users,
-                pagination: response.data.pagination,
+                data: response.data,
+                pagination: response.pagination,
             };
         } catch (error) {
             this.logger.error('Failed to fetch pending residents', error);
