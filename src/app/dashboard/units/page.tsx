@@ -187,13 +187,6 @@ export default function UnitsListPage() {
                             </div>
                         </div>
 
-                        {/* Quick Stats Cards */}
-                        <div className="mb-8">
-                            <UnitsQuickStats
-                                quickStats={quickStats}
-                                loading={loading}
-                            />
-                        </div>
 
                         {/* Search and Filters */}
                         <div className="mb-6">
@@ -209,6 +202,13 @@ export default function UnitsListPage() {
                             />
                         </div>
 
+                        {/* Quick Stats Cards */}
+                        <div className="mb-8">
+                            <UnitsQuickStats
+                                quickStats={quickStats}
+                                loading={loading}
+                            />
+                        </div>
                         {/* Content Area */}
                         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                             {/* Main Content */}

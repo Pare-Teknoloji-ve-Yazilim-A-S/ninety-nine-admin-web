@@ -155,29 +155,29 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ resident, onAction }) => {
                         <hr className="border-gray-200 dark:border-gray-600 my-1" />
 
                         {/* Utility Actions */}
-                        <button
+                        {/* <button
                             onClick={handleAction('qr')}
                             className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
                         >
                             <QrCode className="w-5 h-5" />
                             QR Kod
-                        </button>
+                        </button> */}
 
-                        <button
+                        {/* <button
                             onClick={handleAction('notes')}
                             className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
                         >
                             <StickyNote className="w-5 h-5" />
                             Notlar
-                        </button>
+                        </button> */}
 
-                        <button
+                        {/* <button
                             onClick={handleAction('history')}
                             className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
                         >
                             <History className="w-5 h-5" />
                             Geçmiş
-                        </button>
+                        </button> */}
 
                         <button
                             onClick={handleAction('payment-history')}

@@ -22,8 +22,8 @@ import { useResidentsFilters } from '@/hooks/useResidentsFilters';
 import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
 import {
-  Filter, Download, Plus, RefreshCw,
-  MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2
+    Filter, Download, Plus, RefreshCw,
+    MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2
 } from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
@@ -38,10 +38,10 @@ import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import ListView from '@/app/components/templates/ListView';
 
 // Import our extracted utilities and configurations
-import { 
-    VIEW_OPTIONS, 
-    BREADCRUMB_ITEMS, 
-    DEFAULT_VALUES 
+import {
+    VIEW_OPTIONS,
+    BREADCRUMB_ITEMS,
+    DEFAULT_VALUES
 } from './constants';
 import { generateStatsCardsData } from './utils/stats';
 import { createBulkActionHandlers } from './actions/bulk-actions';
@@ -126,8 +126,8 @@ export default function ResidentsPage() {
         setMessageState
     );
     const residentActionHandlers = createResidentActionHandlers(
-        toastFunctions, 
-        dataUpdateFunctions, 
+        toastFunctions,
+        dataUpdateFunctions,
         dataHook.residents
     );
     const exportActionHandlers = createExportActionHandlers(toastFunctions);
@@ -135,7 +135,7 @@ export default function ResidentsPage() {
     // Generate configuration data
     const statsData = generateStatsCardsData(dataHook.stats);
     const bulkActions = bulkActionHandlers.getBulkActions();
-    
+
     // Create wrapper for table actions that uses modal for delete
     const tableActionHandlers = {
         ...residentActionHandlers,
@@ -148,7 +148,7 @@ export default function ResidentsPage() {
             });
         }
     };
-    
+
     const tableColumns = getTableColumns(tableActionHandlers);
 
     // Handle delete confirmation
@@ -156,7 +156,7 @@ export default function ResidentsPage() {
         if (!confirmationState.resident) return;
 
         setConfirmationState(prev => ({ ...prev, loading: true }));
-        
+
         try {
             await residentActionHandlers.handleDeleteResident(confirmationState.resident);
             setConfirmationState({ isOpen: false, resident: null, loading: false });
@@ -248,9 +248,9 @@ export default function ResidentsPage() {
         React.useEffect(() => {
             const handleClickOutside = (event: MouseEvent) => {
                 if (
-                    dropdownRef.current && 
-                    buttonRef.current && 
-                    !dropdownRef.current.contains(event.target as Node) && 
+                    dropdownRef.current &&
+                    buttonRef.current &&
+                    !dropdownRef.current.contains(event.target as Node) &&
                     !buttonRef.current.contains(event.target as Node)
                 ) {
                     setIsOpen(false);
@@ -279,7 +279,7 @@ export default function ResidentsPage() {
                         className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                         onClick={handleDropdownToggle}
                     />
-                    <div 
+                    <div
                         ref={dropdownRef}
                         className={`absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${isOpen ? '' : 'hidden'}`}
                     >
@@ -298,7 +298,7 @@ export default function ResidentsPage() {
                                 <MessageSquare className="w-5 h-5" /> Mesaj
                             </button>
                             <hr className="border-gray-200 dark:border-gray-600 my-1" />
-                            <button onClick={handleAction('qr')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                            {/* <button onClick={handleAction('qr')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
                                 <QrCode className="w-5 h-5" /> QR Kod
                             </button>
                             <button onClick={handleAction('notes')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
@@ -306,7 +306,7 @@ export default function ResidentsPage() {
                             </button>
                             <button onClick={handleAction('history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
                                 <History className="w-5 h-5" /> Geçmiş
-                            </button>
+                            </button> */}
                             <button onClick={handleAction('payment-history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
                                 <CreditCard className="w-5 h-5" /> Ödeme Geçmişi
                             </button>
@@ -521,7 +521,7 @@ export default function ResidentsPage() {
                                 }}
                                 ActionMenu={ResidentActionMenu}
                                 getStatusColor={getStatusColor}
-                               
+
                             />
                         )}
                     </main>
@@ -531,16 +531,14 @@ export default function ResidentsPage() {
                 <div className={`fixed inset-0 z-50 ${filtersHook.showFilterPanel ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                     {/* Backdrop */}
                     <div
-                        className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${
-                            filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'opacity-50' : 'opacity-0'
-                        }`}
+                        className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'opacity-50' : 'opacity-0'
+                            }`}
                         onClick={filtersHook.handleCloseDrawer}
                     />
 
                     {/* Drawer */}
-                    <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${
-                        filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'translate-x-0' : 'translate-x-full'
-                    }`}>
+                    <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'translate-x-0' : 'translate-x-full'
+                        }`}>
                         <FilterPanel
                             filterGroups={filterGroups}
                             onApplyFilters={filtersHook.handleFiltersApply}
