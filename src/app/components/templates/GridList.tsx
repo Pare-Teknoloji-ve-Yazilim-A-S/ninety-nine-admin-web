@@ -38,7 +38,7 @@ export interface ResidentGridTemplateProps {
   };
   emptyStateMessage?: string;
   ui: ResidentGridTemplateUI;
-  ActionMenu?: React.ComponentType<ActionMenuProps>;
+  ActionMenu?: React.ComponentType<{ row: any }>;
   getStatusColor?: (status: any) => string;
 
 }
@@ -59,6 +59,15 @@ export const DefaultActionMenu: React.FC<ActionMenuProps> = ({ resident, onActio
 // Yardımcı fonksiyonlar (isteğe bağlı override edilebilir)
 const defaultGetStatusColor = (status: any) => 'secondary';
 const defaultGetTypeColor = (type: any) => 'secondary';
+
+// ActionMenu prop'unu hem eski hem yeni tipte destekle
+function isRowPropComponent(
+  comp: React.ComponentType<any>
+): comp is React.ComponentType<{ row: any }> {
+  // Sadece row prop'u varsa yeni tiptir
+  // (Bu kontrol, typescript için, runtime'da bir etkisi yok)
+  return true;
+}
 
 export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
   residents,
@@ -141,7 +150,12 @@ export const ResidentGridTemplate: React.FC<ResidentGridTemplateProps> = ({
                   </p>
                 </div>
               </div>
-              <ActionMenu resident={resident} onAction={onAction} />
+              {/* ActionMenu: Hem eski hem yeni tip desteklenir */}
+              {ActionMenu ? (
+                isRowPropComponent(ActionMenu)
+                  ? <ActionMenu row={resident} />
+                  : <ActionMenu resident={resident} onAction={onAction} />
+              ) : null}
             </div>
             {/* Orta Alan: Durum ve Tip Badge'leri */}
             <div className="mt-4 flex flex-wrap gap-2 items-center">

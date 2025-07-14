@@ -72,6 +72,7 @@ export interface DataTableProps {
     expandedContent?: (row: any) => React.ReactNode;
     stickyHeader?: boolean;
     maxHeight?: string;
+    ActionMenuComponent?: React.ComponentType<{ row: any }>;
 }
 
 const DataTable: React.FC<DataTableProps> = ({
@@ -96,6 +97,7 @@ const DataTable: React.FC<DataTableProps> = ({
     expandedContent,
     stickyHeader = false,
     maxHeight,
+    ActionMenuComponent,
 }) => {
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
@@ -206,10 +208,11 @@ const DataTable: React.FC<DataTableProps> = ({
 
     // Render row actions
     const renderRowActions = (row: any) => {
+        if (ActionMenuComponent) {
+            return <ActionMenuComponent row={row} />;
+        }
         if (rowActions.length === 0) return null;
-        
         const visibleActions = rowActions.filter(action => action.visible?.(row) ?? true);
-        
         return (
             <div className="flex items-center gap-1">
                 {visibleActions.map((action) => (
@@ -278,34 +281,33 @@ const DataTable: React.FC<DataTableProps> = ({
                 )}
                 {expandable && <th className={cn('w-10', paddingClasses[size])} />}
                 {columns.map((column) => (
-                            <th
-                                key={column.id}
-                                className={cn(
-                                    'text-left font-medium text-text-light-secondary dark:text-text-secondary',
-                                    paddingClasses[size],
-                                    sizeClasses[size],
-                                    column.headerClassName,
-                                    column.sortable && 'cursor-pointer hover:bg-background-light-soft dark:hover:bg-background-soft'
-                                )}
-                                style={{
-                                    width: column.width,
-                                    minWidth: column.minWidth,
-                                    maxWidth: column.maxWidth,
-                                    textAlign: column.align || 'left'
-                                }}
-                                onClick={() => column.sortable && handleSort(column.id)}
-                            >
-                                <div className="flex items-center gap-2">
-                                    {column.headerRender ? column.headerRender() : column.header}
-                                    {renderSortIcon(column)}
-                                </div>
-                            </th>
-                        ))}
-                        
-                        {/* Actions column */}
-                        {rowActions.length > 0 && (
-                            <th className={cn('w-20', paddingClasses[size])} />
+                    <th
+                        key={column.id}
+                        className={cn(
+                            'text-left font-medium text-text-light-secondary dark:text-text-secondary',
+                            paddingClasses[size],
+                            sizeClasses[size],
+                            column.headerClassName,
+                            column.sortable && 'cursor-pointer hover:bg-background-light-soft dark:hover:bg-background-soft'
                         )}
+                        style={{
+                            width: column.width,
+                            minWidth: column.minWidth,
+                            maxWidth: column.maxWidth,
+                            textAlign: column.align || 'left'
+                        }}
+                        onClick={() => column.sortable && handleSort(column.id)}
+                    >
+                        <div className="flex items-center gap-2">
+                            {column.headerRender ? column.headerRender() : column.header}
+                            {renderSortIcon(column)}
+                        </div>
+                    </th>
+                ))}
+                {/* Actions column */}
+                {(rowActions.length > 0 || ActionMenuComponent) && (
+                    <th className={cn('w-20', paddingClasses[size])} />
+                )}
             </tr>
         </thead>
     );
@@ -355,35 +357,34 @@ const DataTable: React.FC<DataTableProps> = ({
                                 </td>
                             )}
                             {columns.map((column) => {
-                                            const value = getCellValue(row, column);
-                                            return (
-                                                <td
-                                                    key={column.id}
-                                                    className={cn(
-                                                        'text-text-on-light dark:text-text-on-dark',
-                                                        paddingClasses[size],
-                                                        sizeClasses[size],
-                                                        column.className
-                                                    )}
-                                                    style={{
-                                                        textAlign: column.align || 'left'
-                                                    }}
-                                                >
-                                                    {column.render ? column.render(value, row) : value}
-                                                </td>
-                                            );
-                                        })}
-                                        
-                                        {/* Actions column */}
-                                        {rowActions.length > 0 && (
-                                            <td className={paddingClasses[size]}>
-                                                {renderRowActions(row)}
-                                            </td>
+                                const value = getCellValue(row, column);
+                                return (
+                                    <td
+                                        key={column.id}
+                                        className={cn(
+                                            'text-text-on-light dark:text-text-on-dark',
+                                            paddingClasses[size],
+                                            sizeClasses[size],
+                                            column.className
                                         )}
+                                        style={{
+                                            textAlign: column.align || 'left'
+                                        }}
+                                    >
+                                        {column.render ? column.render(value, row) : value}
+                                    </td>
+                                );
+                            })}
+                            {/* Actions column */}
+                            {(rowActions.length > 0 || ActionMenuComponent) && (
+                                <td className={paddingClasses[size]}>
+                                    {renderRowActions(row)}
+                                </td>
+                            )}
                         </tr>
                         {expandable && isRowExpanded(row) && expandedContent && (
                             <tr>
-                                <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)}>
+                                <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + ((rowActions.length > 0 || ActionMenuComponent) ? 1 : 0)}>
                                     <div className="bg-background-light-soft dark:bg-background-soft p-4 border-t border-gray-200 dark:border-gray-700">
                                         {expandedContent(row)}
                                     </div>

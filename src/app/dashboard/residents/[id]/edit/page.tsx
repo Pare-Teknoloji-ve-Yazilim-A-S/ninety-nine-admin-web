@@ -121,10 +121,27 @@ export default function ResidentEditPage() {
 
     // Handle input changes
     const handleInputChange = (field: keyof FormData, value: any) => {
+        // Telefon için özel formatlama
+        if (field === 'phone') {
+            // Sadece rakamları al
+            let digits = value.replace(/\D/g, '').slice(0, 10);
+            // Otomatik boşluk ekle: 750 123 4567
+            let formatted = digits
+                .replace(/(\d{3})(\d{0,3})(\d{0,4})/, (match: string, p1?: string, p2?: string, p3?: string) => {
+                    let result = p1;
+                    if (p2) result += ' ' + p2;
+                    if (p3) result += ' ' + p3;
+                    return result;
+                });
+            setFormData(prev => ({ ...prev, [field]: formatted }));
+            setHasChanges(true);
+            if (errors[field]) {
+                setErrors(prev => ({ ...prev, [field]: '' }));
+            }
+            return;
+        }
         setFormData(prev => ({ ...prev, [field]: value }));
         setHasChanges(true);
-
-        // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
@@ -145,8 +162,12 @@ export default function ResidentEditPage() {
         // Phone validation (Iraqi format)
         if (!formData.phone) {
             newErrors.phone = 'Cep telefonu zorunludur';
-        } else if (!/^7\d{9}$/.test(formData.phone.replace(/\s/g, ''))) {
-            newErrors.phone = 'Geçerli bir Irak telefon numarası giriniz (7 ile başlamalı)';
+        } else {
+            // Sadece rakamları kontrol et
+            const digits = formData.phone.replace(/\D/g, '');
+            if (!/^7\d{9}$/.test(digits)) {
+                newErrors.phone = 'Telefon numarası 10 haneli olmalı ve 7 ile başlamalı. Örn: 750 123 4567';
+            }
         }
 
         // Email validation
@@ -452,10 +473,11 @@ export default function ResidentEditPage() {
                                                                 placeholder="750 123 4567"
                                                                 value={formData.phone}
                                                                 onChange={(e) => handleInputChange('phone', e.target.value)}
+                                                                maxLength={12}
                                                             />
                                                         </div>
                                                         {errors.phone && (
-                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.phone}</p>
+                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">Telefon numarası 10 haneli olmalı ve 7 ile başlamalı. Örn: 750 123 4567</p>
                                                         )}
                                                     </div>
 
@@ -620,7 +642,7 @@ export default function ResidentEditPage() {
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
                                                 {hasChanges && (
-                                                    <Badge variant="soft" color="warning">
+                                                    <Badge variant="soft" color="gold">
                                                         Kaydedilmemiş değişiklikler
                                                     </Badge>
                                                 )}

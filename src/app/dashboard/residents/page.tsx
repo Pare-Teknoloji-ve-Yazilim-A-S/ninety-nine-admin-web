@@ -338,6 +338,11 @@ export default function ResidentsPage() {
         }
     };
 
+    // Wrapper: ActionMenuComponent tipi { row: Resident }
+    const ResidentActionMenuWrapper: React.FC<{ row: Resident }> = ({ row }) => (
+        <ResidentActionMenu resident={row} onAction={handleResidentAction} />
+    );
+
     return (
         <ProtectedRoute>
             <div className="min-h-screen bg-background-primary">
@@ -461,7 +466,7 @@ export default function ResidentsPage() {
                                 loading={dataHook.loading}
                                 onSelectionChange={filtersHook.handleSelectionChange}
                                 bulkActions={bulkActions}
-                                columns={tableColumns}
+                                columns={getTableColumns(tableActionHandlers, ResidentActionMenuWrapper)}
                                 sortConfig={filtersHook.sortConfig}
                                 onSortChange={filtersHook.handleSort}
                                 pagination={{
@@ -478,6 +483,7 @@ export default function ResidentsPage() {
                                             `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
                                             'Henüz sakin kaydı bulunmuyor.'
                                 }
+                                ActionMenuComponent={ResidentActionMenuWrapper}
                             />
                         )}
 
@@ -519,7 +525,7 @@ export default function ResidentsPage() {
                                     Skeleton,
                                     BulkActionsBar,
                                 }}
-                                ActionMenu={ResidentActionMenu}
+                                ActionMenu={ResidentActionMenuWrapper}
                                 getStatusColor={getStatusColor}
 
                             />

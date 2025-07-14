@@ -185,7 +185,8 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
 /**
  * Get table columns configuration
  */
-export const getTableColumns = (actionHandlers: {
+export const getTableColumns = (
+  actionHandlers: {
     handleViewResident: (resident: Resident) => void;
     handleEditResident: (resident: Resident) => void;
     handleDeleteResident: (resident: Resident) => void;
@@ -195,8 +196,10 @@ export const getTableColumns = (actionHandlers: {
     handleViewNotes: (resident: Resident) => void;
     handleViewHistory: (resident: Resident) => void;
     handleViewPaymentHistory: (resident: Resident) => void;
-}): TableColumn[] => {
-    return [
+  },
+  ActionMenuComponent?: React.ComponentType<{ row: Resident }>
+): TableColumn[] => {
+  const columns: TableColumn[] = [
         {
             id: TABLE_COLUMN_IDS.PHOTO,
             header: 'Fotoğraf',
@@ -367,25 +370,30 @@ export const getTableColumns = (actionHandlers: {
                 );
             },
         },
-        {
-            id: TABLE_COLUMN_IDS.ACTIONS,
-            header: 'İşlemler',
-            accessor: 'actions',
-            width: '80px',
-            render: (value: undefined, row: Resident) => (
-                <ActionMenu
-                    resident={row}
-                    onViewResident={actionHandlers.handleViewResident}
-                    onEditResident={actionHandlers.handleEditResident}
-                    onDeleteResident={actionHandlers.handleDeleteResident}
-                    onCallResident={actionHandlers.handleCallResident}
-                    onMessageResident={actionHandlers.handleMessageResident}
-                    onGenerateQR={actionHandlers.handleGenerateQR}
-                    onViewNotes={actionHandlers.handleViewNotes}
-                    onViewHistory={actionHandlers.handleViewHistory}
-                    onViewPaymentHistory={actionHandlers.handleViewPaymentHistory}
-                />
-            ),
-        },
     ];
+  // Eğer ActionMenuComponent varsa, aksiyon sütunu ekleme gerekmiyor, çünkü DataTable bunu kendisi ekleyecek.
+  // Eğer yoksa, eski aksiyon sütununu ekle.
+  if (!ActionMenuComponent) {
+    columns.push({
+      id: 'actions',
+      header: '',
+      accessor: '',
+      width: '60px',
+      render: (_: any, row: Resident) => (
+        <ActionMenu
+          resident={row}
+          onViewResident={actionHandlers.handleViewResident}
+          onEditResident={actionHandlers.handleEditResident}
+          onDeleteResident={actionHandlers.handleDeleteResident}
+          onCallResident={actionHandlers.handleCallResident}
+          onMessageResident={actionHandlers.handleMessageResident}
+          onGenerateQR={actionHandlers.handleGenerateQR}
+          onViewNotes={actionHandlers.handleViewNotes}
+          onViewHistory={actionHandlers.handleViewHistory}
+          onViewPaymentHistory={actionHandlers.handleViewPaymentHistory}
+        />
+      ),
+    });
+  }
+  return columns;
 }; 

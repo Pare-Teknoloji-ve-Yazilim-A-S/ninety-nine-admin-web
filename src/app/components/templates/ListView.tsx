@@ -18,6 +18,7 @@ export interface ListViewProps<T> {
     onRecordsPerPageChange: (records: number) => void;
   };
   emptyStateMessage?: string;
+  ActionMenuComponent?: React.ComponentType<{ row: T }>;
 }
 
 function ListView<T>({
@@ -30,6 +31,7 @@ function ListView<T>({
   onSortChange,
   pagination,
   emptyStateMessage,
+  ActionMenuComponent,
 }: ListViewProps<T>) {
   return (
     <DataTable
@@ -44,6 +46,7 @@ function ListView<T>({
       onSortChange={onSortChange}
       pagination={pagination}
       emptyStateMessage={emptyStateMessage}
+      ActionMenuComponent={ActionMenuComponent}
     />
   );
 }
