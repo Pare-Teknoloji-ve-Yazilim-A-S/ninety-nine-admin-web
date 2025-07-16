@@ -370,7 +370,7 @@ export default function UnitsListPage() {
 
                         {/* Quick Stats Cards */}
                         <div className="mb-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-4">
                                 <StatsCard
                                     title="Apartman Dairesi"
                                     value={quickStats?.apartmentUnits.total || 0}
@@ -406,9 +406,9 @@ export default function UnitsListPage() {
                             </div>
                         </div>
                         {/* Content Area */}
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                             {/* Main Content */}
-                            <div className="lg:col-span-3">
+                            <div className="lg:col-span-1">
                                 {viewMode === 'table' && (
                                     <UnitsTableView
                                         units={properties}
@@ -447,15 +447,6 @@ export default function UnitsListPage() {
                                         </div>
                                     </Card>
                                 )}
-                            </div>
-
-                            {/* Analytics Sidebar */}
-                            <div>
-                                <UnitsAnalytics
-                                    units={properties}
-                                    quickStats={quickStats}
-                                    onQuickAction={handleQuickAction}
-                                />
                             </div>
                         </div>
                     </main>
