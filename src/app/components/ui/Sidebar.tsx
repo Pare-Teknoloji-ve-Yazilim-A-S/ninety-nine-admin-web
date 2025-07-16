@@ -77,7 +77,7 @@ const menuItems: MenuItemProps[] = [
         icon: Home,
         children: [
             { title: 'Daire/Villa Listesi', icon: Building, href: '/dashboard/units' },
-            { title: 'Boş Konutlar', icon: MapPin, href: '/dashboard/units/vacant' },
+            { title: 'Boş Konutlar', icon: MapPin, href: '/dashboard/units/empty' },
             { title: 'Bakım Durumu', icon: RotateCcw, href: '/dashboard/units/maintenance' }
         ]
     },
