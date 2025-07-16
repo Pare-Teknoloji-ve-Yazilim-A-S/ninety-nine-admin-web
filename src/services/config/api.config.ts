@@ -35,6 +35,11 @@ export const apiConfig = {
         },
         admin: {
             users: '/admin/users',
+            goldResidentsCount: '/admin/users/gold-residents/count',
+            activeResidentsCount: '/admin/users/active-residents/count',
+            activeUsersCount: '/admin/users/active-users/count',
+            tenantsCount: '/admin/users/tenants/count',
+            ownersCount: '/admin/users/owners/count',
             roles: '/admin/roles',
             permissions: '/admin/permissions',
             configs: '/admin/configs',

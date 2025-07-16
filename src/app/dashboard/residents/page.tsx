@@ -21,6 +21,8 @@ import { useResidentsData } from '@/hooks/useResidentsData';
 import { useResidentsFilters } from '@/hooks/useResidentsFilters';
 import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
+import { useResidentsStats } from '@/hooks/useResidentsStats';
+import { generateStatsCardsDataFromCounts } from './utils/stats';
 import {
     Filter, Download, Plus, RefreshCw,
     MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX, CheckCircle, Users, Home, DollarSign, Calendar
@@ -45,7 +47,6 @@ import {
     BREADCRUMB_ITEMS,
     DEFAULT_VALUES
 } from './constants';
-import { generateStatsCardsData } from './utils/stats';
 import { createBulkActionHandlers } from './actions/bulk-actions';
 import { createResidentActionHandlers } from './actions/resident-actions';
 import { createExportActionHandlers } from './actions/export-actions';
@@ -157,6 +158,10 @@ export default function ResidentsPage() {
         refreshData: dataHook.refreshData
     });
 
+    // NEW: Use the new stats hook
+    const stats = useResidentsStats();
+    const statsData = generateStatsCardsDataFromCounts(stats);
+
     // Create action handlers with dependency injection
     const toastFunctions = {
         success: useCallback((title: string, message: string) => {
@@ -189,7 +194,6 @@ export default function ResidentsPage() {
     const exportActionHandlers = createExportActionHandlers(toastFunctions);
 
     // Generate configuration data
-    const statsData = generateStatsCardsData(dataHook.stats);
     const bulkActions = bulkActionHandlers.getBulkActions();
 
     // Create wrapper for table actions that uses modal for delete
@@ -704,7 +708,7 @@ export default function ResidentsPage() {
                                     color={stat.color}
                                     icon={stat.icon}
                                     size="md"
-                                    loading={dataHook.loading && !dataHook.stats}
+                                    loading={stats.loading}
                                 />
                             ))}
                         </div>

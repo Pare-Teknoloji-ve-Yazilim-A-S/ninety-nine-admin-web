@@ -6,6 +6,7 @@ export interface BaseEntity {
 }
 
 export interface ApiResponse<T = any> {
+    count: ApiResponse<{ count: number; }> | PromiseLike<ApiResponse<{ count: number; }>>;
     data: T;
     message?: string;
     success: boolean;

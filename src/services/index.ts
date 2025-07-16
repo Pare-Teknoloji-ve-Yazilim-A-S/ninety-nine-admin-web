@@ -28,6 +28,7 @@ export { default as adminResidentService, adminResidentService as AdminResidentS
 export { default as residentService, residentService as ResidentService } from './resident.service';
 export { default as propertyService, PropertyService } from './property.service';
 export { unitsService, UnitsService } from './units.service';
+export { residentsStatsService } from './residents-stats.service';
 
 // Re-export commonly used types for convenience
 export type {

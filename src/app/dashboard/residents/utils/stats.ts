@@ -133,6 +133,70 @@ export const generateStatsCardsData = (stats: ResidentStatsResponse | null): Sta
     ];
 };
 
+export const generateStatsCardsDataFromCounts = ({
+  goldCount,
+  totalCount,
+  activeCount,
+  tenantsCount,
+  ownersCount,
+  loading,
+  error,
+}: {
+  goldCount: number;
+  totalCount: number;
+  activeCount: number;
+  tenantsCount: number;
+  ownersCount: number;
+  loading: boolean;
+  error: string | null;
+}): StatsData[] => {
+  if (loading || error) {
+    return [
+      { title: 'Toplam Sakin', value: '---', color: STATS_CONFIG.colors.PRIMARY, icon: STATS_CONFIG.icons.USERS },
+      { title: 'Malik', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.SUCCESS, icon: STATS_CONFIG.icons.HOME },
+      { title: 'Kiracı', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.INFO, icon: STATS_CONFIG.icons.USERS },
+      { title: 'Aktif', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.DANGER, icon: STATS_CONFIG.icons.CREDIT_CARD },
+      { title: 'Gold Üye', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.GOLD, icon: STATS_CONFIG.icons.USERS },
+    ];
+  }
+  return [
+    {
+      title: 'Toplam Sakin',
+      value: totalCount.toLocaleString('tr-TR'),
+      color: STATS_CONFIG.colors.PRIMARY,
+      icon: STATS_CONFIG.icons.USERS,
+    },
+    {
+      title: 'Malik',
+      value: ownersCount.toLocaleString('tr-TR'),
+      subtitle: totalCount > 0 ? `%${Math.round((ownersCount / totalCount) * 100)}` : '%0',
+      color: STATS_CONFIG.colors.SUCCESS,
+      icon: STATS_CONFIG.icons.HOME,
+    },
+    {
+      title: 'Kiracı',
+      value: tenantsCount.toLocaleString('tr-TR'),
+      subtitle: totalCount > 0 ? `%${Math.round((tenantsCount / totalCount) * 100)}` : '%0',
+      color: STATS_CONFIG.colors.INFO,
+      icon: STATS_CONFIG.icons.USERS,
+    },
+    {
+      title: 'Aktif',
+      value: activeCount.toLocaleString('tr-TR'),
+      subtitle: totalCount > 0 ? `%${Math.round((activeCount / totalCount) * 100)}` : '%0',
+      color: STATS_CONFIG.colors.DANGER,
+      icon: STATS_CONFIG.icons.CREDIT_CARD,
+    },
+    {
+      title: 'Gold Üye',
+      value: goldCount.toLocaleString('tr-TR'),
+      subtitle: totalCount > 0 ? `%${Math.round((goldCount / totalCount) * 100)}` : '%0',
+      color: STATS_CONFIG.colors.GOLD,
+      icon: STATS_CONFIG.icons.USERS,
+    },
+  ];
+};
+
 /**
  * Calculate percentage
  * @param value - Numerator
