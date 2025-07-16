@@ -25,18 +25,31 @@ import {
     Grid3X3,
     Home,
     Store,
-    Car
+    Car,
+    CheckCircle,
+    AlertCircle,
+    RotateCcw,
+    Calendar,
+    Eye,
+    MoreVertical,
+    User
 } from 'lucide-react';
 import { UnitsQuickStats } from './components/UnitsQuickStats';
 import { UnitsFilters } from './components/UnitsFilters';
-import { UnitsTableView } from './components/UnitsTableView';
-import { UnitsGridView } from './components/UnitsGridView';
 import { UnitsAnalytics } from './components/UnitsAnalytics';
+import GenericListView from '@/app/components/templates/GenericListView';
+import GenericGridView from '@/app/components/templates/GenericGridView';
 import { ExportDropdown } from '@/app/components/ui';
 import SearchBar from '@/app/components/ui/SearchBar';
 import ViewToggle from '@/app/components/ui/ViewToggle';
 import FilterPanel from '@/app/components/ui/FilterPanel';
 import StatsCard from '@/app/components/ui/StatsCard';
+import Badge from '@/app/components/ui/Badge';
+import EmptyState from '@/app/components/ui/EmptyState';
+import Skeleton from '@/app/components/ui/Skeleton';
+import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
+import TablePagination from '@/app/components/ui/TablePagination';
+import Checkbox from '@/app/components/ui/Checkbox';
 
 
 export default function UnitsListPage() {
@@ -46,6 +59,7 @@ export default function UnitsListPage() {
     const [searchInput, setSearchInput] = useState("");
     const [viewMode, setViewMode] = useState<'table' | 'grid' | 'block' | 'map'>('table');
     const [showFilters, setShowFilters] = useState(false);
+    const [selectedUnits, setSelectedUnits] = useState<Property[]>([]);
     const [filters, setFilters] = useState<PropertyFilterParams>({
         type: undefined,
         status: undefined,
@@ -152,6 +166,193 @@ export default function UnitsListPage() {
         // Handle quick actions here
     };
 
+    // Status configuration
+    const statusConfig = {
+        OCCUPIED: { label: 'Dolu', color: 'green', icon: CheckCircle },
+        AVAILABLE: { label: 'Boş', color: 'blue', icon: AlertCircle },
+        UNDER_MAINTENANCE: { label: 'Bakım', color: 'orange', icon: RotateCcw },
+        RESERVED: { label: 'Rezerve', color: 'purple', icon: Calendar }
+    };
+
+    // Table columns configuration
+    const getTableColumns = () => [
+        {
+            key: 'property',
+            header: 'Konut',
+            render: (_value: any, unit: Property) => (
+                <div>
+                    <div className="font-medium text-text-on-light dark:text-text-on-dark">
+                        {unit?.propertyNumber || unit?.name || 'N/A'}
+                    </div>
+                    <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+                        {unit?.blockNumber && `Blok ${unit.blockNumber}`}
+                        {unit?.floor && ` • ${unit.floor}. kat`}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            key: 'type',
+            header: 'Tip',
+            render: (_value: any, unit: Property) => (
+                <Badge variant="soft" color="secondary">
+                    {unit?.type ? unitsService.getTypeInfo(unit.type).label : 'N/A'}
+                </Badge>
+            ),
+        },
+        {
+            key: 'area',
+            header: 'm²',
+            render: (_value: any, unit: Property) => unit?.area || '--',
+        },
+        {
+            key: 'resident',
+            header: 'Sakin',
+            render: (_value: any, unit: Property) => {
+                const currentResident = unit?.tenant || unit?.owner;
+                if (currentResident) {
+                    return (
+                        <div>
+                            <div className="font-medium text-text-on-light dark:text-text-on-dark">
+                                {currentResident.firstName} {currentResident.lastName}
+                            </div>
+                            <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+                                {unit?.tenant ? 'Kiracı' : 'Malik'}
+                            </div>
+                        </div>
+                    );
+                }
+                return (
+                    <span className="text-text-light-muted dark:text-text-muted">
+                        Boş
+                    </span>
+                );
+            },
+        },
+        {
+            key: 'status',
+            header: 'Durum',
+            render: (_value: any, unit: Property) => {
+                const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
+                if (!statusInfo) {
+                    return <span className="text-text-light-muted dark:text-text-muted">N/A</span>;
+                }
+                const StatusIcon = statusInfo.icon;
+                return (
+                    <div className="flex items-center gap-2">
+                        <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
+                        <Badge variant="soft" color={statusInfo.color as any}>
+                            {statusInfo.label}
+                        </Badge>
+                    </div>
+                );
+            },
+        },
+        {
+            key: 'debt',
+            header: 'Borç',
+            render: (_value: any, unit: Property) => (
+                unit?.bills && unit.bills.length > 0 ? (
+                    <span className="text-primary-red font-medium">
+                        Var
+                    </span>
+                ) : (
+                    <span className="text-semantic-success-500">
+                        Temiz
+                    </span>
+                )
+            ),
+        },
+        {
+            key: 'lastPayment',
+            header: 'Son Ödeme',
+            render: (_value: any, _unit: Property) => '--',
+        },
+    ];
+
+    // Unit card renderer for grid view
+    const renderUnitCard = (unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any) => {
+        if (!unit) return null;
+        
+        const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
+        if (!statusInfo) return null;
+        
+        const StatusIcon = statusInfo.icon;
+        const typeInfo = unit?.type ? unitsService.getTypeInfo(unit.type) : { label: 'N/A' };
+        const currentResident = unit?.tenant || unit?.owner;
+
+        return (
+            <ui.Card key={unit.id} className="p-4 rounded-2xl shadow-md bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 transition-transform hover:scale-[1.01] hover:shadow-lg">
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                        <ui.Checkbox
+                            checked={selectedItems.includes(unit.id)}
+                            onChange={() => onSelect(unit.id)}
+                            className="focus:ring-2 focus:ring-primary-gold/30"
+                        />
+                        <h4 className="font-semibold text-text-on-light dark:text-text-on-dark">
+                            {unit?.propertyNumber || unit?.name || 'N/A'}
+                        </h4>
+                    </div>
+                    <Badge variant="soft" color={statusInfo.color as any}>
+                        {statusInfo.label}
+                    </Badge>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                        <Home className="h-4 w-4" />
+                        <span>{typeInfo.label}</span>
+                    </div>
+                    {unit?.area && (
+                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                            <Map className="h-4 w-4" />
+                            <span>{unit.area} m²</span>
+                        </div>
+                    )}
+                    {unit?.blockNumber && (
+                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                            <Building className="h-4 w-4" />
+                            <span>Blok {unit.blockNumber}</span>
+                        </div>
+                    )}
+                    {currentResident && (
+                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                            <User className="h-4 w-4" />
+                            <span>{currentResident.firstName} {currentResident.lastName}</span>
+                        </div>
+                    )}
+                </div>
+
+                {unit?.bills && unit.bills.length > 0 && (
+                    <div className="mb-4 p-2 bg-primary-red/10 dark:bg-primary-red/20 rounded-lg">
+                        <div className="text-sm text-primary-red font-medium">
+                            Ödenmemiş Faturalar Var
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex gap-2">
+                    <ui.Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="flex-1" 
+                        icon={Eye}
+                        onClick={() => handleUnitAction(unit, 'view')}
+                    >
+                        Detay
+                    </ui.Button>
+                    <ui.Button 
+                        variant="ghost" 
+                        size="sm" 
+                        icon={MoreVertical}
+                        onClick={() => handleUnitAction(unit, 'menu')}
+                    />
+                </div>
+            </ui.Card>
+        );
+    };
+
     const handleExport = () => {
         console.log('Export triggered');
         // Handle export here
@@ -181,6 +382,11 @@ export default function UnitsListPage() {
         handleExportExcel: () => { console.log('Export Excel'); },
         handleExportCSV: () => { console.log('Export CSV'); },
         handleExportJSON: () => { console.log('Export JSON'); },
+    };
+
+    // Selection handler
+    const handleSelectionChange = (selected: Property[]) => {
+        setSelectedUnits(selected);
     };
 
     // Define filter groups for units
@@ -410,21 +616,60 @@ export default function UnitsListPage() {
                             {/* Main Content */}
                             <div className="lg:col-span-1">
                                 {viewMode === 'table' && (
-                                    <UnitsTableView
-                                        units={properties}
+                                    <GenericListView
+                                        data={properties}
                                         loading={loading}
                                         error={error}
-                                        totalCount={pagination.total || properties.length}
-                                        onUnitAction={handleUnitAction}
-                                        onExport={handleExport}
+                                        onSelectionChange={handleSelectionChange}
+                                        bulkActions={[]}
+                                        columns={getTableColumns()}
+                                        pagination={{
+                                            currentPage: pagination.page,
+                                            totalPages: pagination.totalPages,
+                                            totalRecords: pagination.total,
+                                            recordsPerPage: pagination.limit,
+                                            onPageChange: (page) => setFilters(prev => ({ ...prev, page })),
+                                            onRecordsPerPageChange: (limit) => setFilters(prev => ({ ...prev, limit, page: 1 })),
+                                        }}
+                                        emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                        selectable={true}
+                                        showPagination={true}
                                     />
                                 )}
                                 {viewMode === 'grid' && (
-                                    <UnitsGridView
-                                        units={properties}
+                                    <GenericGridView
+                                        data={properties}
                                         loading={loading}
                                         error={error}
-                                        onUnitAction={handleUnitAction}
+                                        onSelectionChange={(selectedIds) => {
+                                            const selectedProperties = properties.filter(p => selectedIds.includes(p.id));
+                                            setSelectedUnits(selectedProperties);
+                                        }}
+                                        bulkActions={[]}
+                                        onAction={handleUnitAction}
+                                        selectedItems={selectedUnits.map(u => u.id)}
+                                        pagination={{
+                                            currentPage: pagination.page,
+                                            totalPages: pagination.totalPages,
+                                            totalRecords: pagination.total,
+                                            recordsPerPage: pagination.limit,
+                                            onPageChange: (page) => setFilters(prev => ({ ...prev, page })),
+                                            onRecordsPerPageChange: (limit) => setFilters(prev => ({ ...prev, limit, page: 1 })),
+                                        }}
+                                        emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                        ui={{
+                                            Card,
+                                            Button,
+                                            Checkbox,
+                                            TablePagination,
+                                            Badge,
+                                            EmptyState,
+                                            Skeleton,
+                                            BulkActionsBar,
+                                        }}
+                                        renderCard={renderUnitCard}
+                                        getItemId={(unit) => unit.id}
+                                        gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                                     />
                                 )}
                                 {viewMode === 'block' && (

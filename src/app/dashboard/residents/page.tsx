@@ -28,14 +28,14 @@ import {
 import { Resident } from '@/app/components/ui/ResidentRow';
 
 // Import view components
-import ResidentGridTemplate, { ActionMenuProps } from '@/app/components/templates/GridList';
+import GenericListView from '@/app/components/templates/GenericListView';
+import GenericGridView from '@/app/components/templates/GenericGridView';
 import Checkbox from '@/app/components/ui/Checkbox';
 import TablePagination from '@/app/components/ui/TablePagination';
 import Badge from '@/app/components/ui/Badge';
 import EmptyState from '@/app/components/ui/EmptyState';
 import Skeleton from '@/app/components/ui/Skeleton';
 import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
-import ListView from '@/app/components/templates/ListView';
 import PaymentHistoryModal from '@/app/components/ui/PaymentHistoryModal';
 import { Bill } from '@/services/billing.service';
 
@@ -335,8 +335,170 @@ export default function ResidentsPage() {
         };
     }, [filtersHook.showFilterPanel]);
 
-    // Copy ActionMenu and color helpers from ResidentGridView:
-    const ResidentActionMenu: React.FC<ActionMenuProps> = ({ resident, onAction }) => {
+    // Resident card renderer for grid view
+    const renderResidentCard = (resident: Resident, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Resident }>) => {
+        return (
+            <ui.Card
+                key={resident.id}
+                className="p-6 rounded-2xl shadow-md bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 transition-transform hover:scale-[1.01] hover:shadow-lg group"
+            >
+                {/* Header: Checkbox + Name + Menu */}
+                <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-4">
+                        <ui.Checkbox
+                            checked={selectedItems.includes(resident.id)}
+                            onChange={() => onSelect(resident.id)}
+                            className="focus:ring-2 focus:ring-primary-gold/30"
+                        />
+                        <div>
+                            <h3 className="text-xl font-semibold text-on-dark tracking-tight">
+                                {resident.firstName} {resident.lastName}
+                            </h3>
+                            <p className="text-sm text-text-light-secondary dark:text-text-secondary font-medium mt-1">
+                                {resident.address?.apartment}
+                            </p>
+                            {/* Membership Tier Badge */}
+                            {(() => {
+                                const membershipTier = resident.membershipTier || 'Standart';
+                                if (membershipTier === 'Altın') {
+                                    return (
+                                        <ui.Badge
+                                            variant="soft"
+                                            color="gold"
+                                            className="min-w-[88px] text-center justify-center text-xs px-3 py-1 rounded-full font-medium mt-2"
+                                        >
+                                            {membershipTier}
+                                        </ui.Badge>
+                                    );
+                                } else if (membershipTier === 'Gümüş') {
+                                    return (
+                                        <ui.Badge
+                                            variant="soft"
+                                            color="secondary"
+                                            className="min-w-[88px] text-center justify-center text-xs px-3 py-1 rounded-full font-medium mt-2"
+                                        >
+                                            {membershipTier}
+                                        </ui.Badge>
+                                    );
+                                } else {
+                                    return (
+                                        <ui.Badge className="min-w-[88px] text-center justify-center text-xs px-3 py-1 rounded-full font-medium mt-2">
+                                            {membershipTier}
+                                        </ui.Badge>
+                                    );
+                                }
+                            })()}
+                        </div>
+                    </div>
+                    {ActionMenu && <ActionMenu row={resident} />}
+                </div>
+                
+                {/* Status and Type Badges */}
+                <div className="mt-4 flex flex-wrap gap-2 items-center">
+                    <ui.Badge variant="soft" color={getStatusColor(resident.status)} className="text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1">
+                        <span
+                            className="w-2 h-2 rounded-full inline-block border border-gray-300 dark:border-gray-700 mr-1"
+                            style={{
+                                backgroundColor:
+                                    getStatusColor(resident.status) === 'primary' ? '#22C55E' :
+                                    getStatusColor(resident.status) === 'gold' ? '#AC8D6A' :
+                                    getStatusColor(resident.status) === 'red' ? '#E53E3E' :
+                                    getStatusColor(resident.status) === 'accent' ? '#718096' :
+                                    '#A8A29E',
+                            }}
+                            title={resident.status?.label}
+                        />
+                        {resident.status?.label}
+                    </ui.Badge>
+                    
+                    {resident.verificationStatus && (
+                        <ui.Badge
+                            variant="outline"
+                            color={
+                                resident.verificationStatus.color === 'green' ? 'primary' :
+                                resident.verificationStatus.color === 'yellow' ? 'gold' :
+                                resident.verificationStatus.color === 'red' ? 'red' :
+                                'secondary'
+                            }
+                            className="text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1"
+                        >
+                            {resident.verificationStatus.label}
+                        </ui.Badge>
+                    )}
+                    
+                    <ui.Badge
+                        variant="soft"
+                        className={
+                            `text-xs px-3 py-1 rounded-full font-medium text-black ` +
+                            (resident.residentType?.label === "Malik"
+                                ? "bg-green-100"
+                                : resident.residentType?.label === "Kiracı"
+                                ? "bg-blue-100"
+                                : "")
+                        }
+                    >
+                        {resident.residentType?.label}
+                    </ui.Badge>
+                </div>
+                
+                {/* Contact Information */}
+                <div className="mt-4 flex flex-col gap-1 text-sm text-text-light-secondary dark:text-text-secondary">
+                    {resident.contact?.phone && (
+                        <div className="flex items-center gap-2">
+                            <span>{resident.contact.phone}</span>
+                        </div>
+                    )}
+                    {resident.contact?.email && (
+                        <div className="flex items-center gap-2">
+                            <span>{resident.contact.email}</span>
+                        </div>
+                    )}
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="mt-6 flex gap-3">
+                    {resident.contact?.phone && (
+                        <ui.Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleResidentAction('call', resident)}
+                            className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
+                        >
+                            Ara
+                        </ui.Button>
+                    )}
+                    <ui.Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleResidentAction('message', resident)}
+                        className="rounded-lg font-medium shadow-sm hover:bg-primary-gold/10 dark:hover:bg-primary-gold/20 focus:ring-2 focus:ring-primary-gold/30"
+                    >
+                        Mesaj
+                    </ui.Button>
+                </div>
+            </ui.Card>
+        );
+    };
+    const getStatusColor = (status: any) => {
+        switch (status?.color) {
+            case 'green': return 'primary';
+            case 'yellow': return 'gold';
+            case 'red': return 'red';
+            case 'blue': return 'accent';
+            default: return 'secondary';
+        }
+    };
+    const getTypeColor = (type: any) => {
+        switch (type?.color) {
+            case 'blue': return 'primary';
+            case 'green': return 'accent';
+            case 'purple': return 'accent';
+            default: return 'secondary';
+        }
+    };
+
+    // Resident Action Menu Component
+    const ResidentActionMenu: React.FC<{ resident: Resident; onAction: (action: string, resident: Resident) => void }> = ({ resident, onAction }) => {
         const [isOpen, setIsOpen] = React.useState(false);
         const dropdownRef = React.useRef<HTMLDivElement>(null);
         const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -355,26 +517,28 @@ export default function ResidentsPage() {
             document.addEventListener('mousedown', handleClickOutside);
             return () => document.removeEventListener('mousedown', handleClickOutside);
         }, []);
+
         const handleDropdownToggle = (e: React.MouseEvent) => {
             e.stopPropagation();
             setIsOpen(!isOpen);
         };
+
         const handleAction = (action: string) => (e: React.MouseEvent) => {
             e.stopPropagation();
             setIsOpen(false);
             onAction(action, resident);
         };
-        // Yeni: Aktif/Pasif butonu için handler
+
         const handleToggleStatus = async (e: React.MouseEvent) => {
             e.stopPropagation();
             setIsOpen(false);
-            // Handler'ı parent'a ilet
             if (resident.status.type === 'active') {
                 onAction('deactivate', resident);
             } else if (resident.status.type === 'inactive') {
                 onAction('activate', resident);
             }
         };
+
         return (
             <div className="flex items-center justify-center">
                 <div className="relative group">
@@ -405,7 +569,6 @@ export default function ResidentsPage() {
                                 <MessageSquare className="w-5 h-5" /> Mesaj
                             </button>
                             <hr className="border-gray-200 dark:border-gray-600 my-1" />
-                            {/* Aktif/Pasif butonu */}
                             {resident.status.type === 'active' && (
                                 <button onClick={handleToggleStatus} className="w-full px-4 py-2 text-left text-sm text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 flex items-center gap-3">
                                     <UserX className="w-5 h-5" /> Pasif Yap
@@ -428,23 +591,6 @@ export default function ResidentsPage() {
                 </div>
             </div>
         );
-    };
-    const getStatusColor = (status: any) => {
-        switch (status?.color) {
-            case 'green': return 'primary';
-            case 'yellow': return 'gold';
-            case 'red': return 'red';
-            case 'blue': return 'accent';
-            default: return 'secondary';
-        }
-    };
-    const getTypeColor = (type: any) => {
-        switch (type?.color) {
-            case 'blue': return 'primary';
-            case 'green': return 'accent';
-            case 'purple': return 'accent';
-            default: return 'secondary';
-        }
     };
 
     // Wrapper: ActionMenuComponent tipi { row: Resident }
@@ -572,9 +718,10 @@ export default function ResidentsPage() {
 
                         {/* Residents Views */}
                         {filtersHook.selectedView === 'table' && (
-                            <ListView
+                            <GenericListView
                                 data={dataHook.residents}
                                 loading={dataHook.loading}
+                                error={dataHook.apiError}
                                 onSelectionChange={filtersHook.handleSelectionChange}
                                 bulkActions={bulkActions}
                                 columns={getTableColumns(tableActionHandlers, ResidentActionMenuWrapper)}
@@ -589,19 +736,19 @@ export default function ResidentsPage() {
                                     onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
                                 }}
                                 emptyStateMessage={
-                                    dataHook.apiError ? 'Veri yüklenirken hata oluştu.' :
-                                        filtersHook.searchQuery ?
-                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
-                                            'Henüz sakin kaydı bulunmuyor.'
+                                    filtersHook.searchQuery ?
+                                        `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
+                                        'Henüz sakin kaydı bulunmuyor.'
                                 }
                                 ActionMenuComponent={ResidentActionMenuWrapper}
                             />
                         )}
 
                         {filtersHook.selectedView === 'grid' && (
-                            <ResidentGridTemplate
-                                residents={dataHook.residents}
+                            <GenericGridView
+                                data={dataHook.residents}
                                 loading={dataHook.loading}
+                                error={dataHook.apiError}
                                 onSelectionChange={(selectedIds) => {
                                     const selectedResidents = dataHook.residents.filter(r => selectedIds.includes(r.id));
                                     filtersHook.handleSelectionChange(selectedResidents);
@@ -611,7 +758,7 @@ export default function ResidentsPage() {
                                     onClick: (residents) => action.onClick(residents)
                                 }))}
                                 onAction={handleResidentAction}
-                                selectedResidents={filtersHook.selectedResidents.map(r => r.id)}
+                                selectedItems={filtersHook.selectedResidents.map(r => r.id)}
                                 pagination={{
                                     currentPage: filtersHook.currentPage,
                                     totalPages: dataHook.totalPages,
@@ -621,10 +768,9 @@ export default function ResidentsPage() {
                                     onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
                                 }}
                                 emptyStateMessage={
-                                    dataHook.apiError ? 'Veri yüklenirken hata oluştu.' :
-                                        filtersHook.searchQuery ?
-                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
-                                            'Henüz sakin kaydı bulunmuyor.'
+                                    filtersHook.searchQuery ?
+                                        `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
+                                        'Henüz sakin kaydı bulunmuyor.'
                                 }
                                 ui={{
                                     Card,
@@ -637,8 +783,8 @@ export default function ResidentsPage() {
                                     BulkActionsBar,
                                 }}
                                 ActionMenu={ResidentActionMenuWrapper}
-                                getStatusColor={getStatusColor}
-
+                                renderCard={renderResidentCard}
+                                getItemId={(resident) => resident.id}
                             />
                         )}
                     </main>
