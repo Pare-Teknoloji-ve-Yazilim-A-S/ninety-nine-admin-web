@@ -37,6 +37,8 @@ import {
 } from 'lucide-react';
 import { usePendingResidents } from '@/hooks/usePendingResidents';
 import type { Resident as ApiResident } from '@/services/types/resident.types';
+import { adminResidentService } from '@/services/admin-resident.service';
+import { useToast } from '@/hooks/useToast';
 
 // UI Resident tipi
 interface ResidentCardData {
@@ -94,11 +96,15 @@ export default function PendingApprovalsPage() {
     const [selectedApplication, setSelectedApplication] = useState<ResidentCardData | null>(null);
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [approvalLoading, setApprovalLoading] = useState(false);
+    const [approvalError, setApprovalError] = useState<string | null>(null);
+    const [showRejectModal, setShowRejectModal] = useState(false);
 
     // API'den veri çek
     const { residents, loading, error, refresh } = usePendingResidents();
     const gridResidents = residents.map(mapApiResidentToGridData);
     console.log("residents", residents);
+    const { success: showSuccessToast, error: showErrorToast } = useToast();
     // Breadcrumb
     const breadcrumbItems = [
         { label: 'Ana Sayfa', href: '/dashboard' },
@@ -150,17 +156,63 @@ export default function PendingApprovalsPage() {
             variant: 'danger' as const,
         },
     ];
+    // Approve handler
+    const handleApprove = async () => {
+        if (!selectedApplication) return;
+        setApprovalLoading(true);
+        setApprovalError(null);
+        try {
+            await adminResidentService.approveResident(String(selectedApplication.id), {
+                decision: 'approved',
+                reason: 'All documents verified successfully',
+                assignedRole: 'resident',
+                initialMembershipTier: 'SILVER',
+            });
+            showSuccessToast('Başvuru onaylandı', `${selectedApplication.firstName} ${selectedApplication.lastName} başarıyla onaylandı.`);
+            setShowApprovalModal(false);
+            refresh();
+        } catch (err: any) {
+            setApprovalError(err?.message || 'Onaylama işlemi başarısız oldu.');
+            showErrorToast('Onaylama Hatası', err?.message || 'Onaylama işlemi başarısız oldu.');
+        } finally {
+            setApprovalLoading(false);
+        }
+    };
+    // Reject handler
+    const handleReject = async () => {
+        if (!selectedApplication) return;
+        setApprovalLoading(true);
+        setApprovalError(null);
+        try {
+            await adminResidentService.approveResident(String(selectedApplication.id), {
+                decision: 'rejected',
+                reason: 'Eksik veya hatalı bilgi',
+                assignedRole: 'resident',
+                initialMembershipTier: 'SILVER',
+            });
+            showSuccessToast('Başvuru reddedildi', `${selectedApplication.firstName} ${selectedApplication.lastName} başvurusu reddedildi.`);
+            setShowRejectModal(false);
+            refresh();
+        } catch (err: any) {
+            setApprovalError(err?.message || 'Reddetme işlemi başarısız oldu.');
+            showErrorToast('Reddetme Hatası', err?.message || 'Reddetme işlemi başarısız oldu.');
+        } finally {
+            setApprovalLoading(false);
+        }
+    };
     // Action handler
     const handleGridAction = (action: string, resident: any) => {
         if (action === 'approve') {
             setSelectedApplication(resident);
             setShowApprovalModal(true);
         } else if (action === 'reject') {
-            // Reddet işlemi
+            setSelectedApplication(resident);
+            setShowRejectModal(true);
         } else if (action === 'message') {
             // Bilgi iste
         } else if (action === 'view') {
-            // İncele
+            setSelectedApplication(resident);
+            setShowDetailModal(true);
         }
     };
     // Pagination dummy (isteğe göre gerçek pagination eklenebilir)
@@ -365,7 +417,7 @@ export default function PendingApprovalsPage() {
             {/* Approval Modal */}
             <Modal
                 isOpen={showApprovalModal}
-                onClose={() => setShowApprovalModal(false)}
+                onClose={() => { setShowApprovalModal(false); setApprovalError(null); }}
                 title="Başvuru Onaylama"
                 size="md"
             >
@@ -398,13 +450,16 @@ export default function PendingApprovalsPage() {
                             </div>
                         </div>
                         <div className="flex justify-end gap-3">
-                            <Button variant="secondary" onClick={() => setShowApprovalModal(false)}>
+                            <Button variant="secondary" onClick={() => { setShowApprovalModal(false); setApprovalError(null); }} disabled={approvalLoading}>
                                 İptal
                             </Button>
-                            <Button variant="primary" icon={Check}>
-                                Onayla ve Bilgilendir
+                            <Button variant="primary" icon={Check} onClick={handleApprove} disabled={approvalLoading}>
+                                {approvalLoading ? 'Onaylanıyor...' : 'Onayla ve Bilgilendir'}
                             </Button>
                         </div>
+                        {approvalError && (
+                            <div className="text-primary-red text-sm mt-2">{approvalError}</div>
+                        )}
                     </div>
                 )}
             </Modal>
@@ -509,6 +564,37 @@ export default function PendingApprovalsPage() {
                                 Kapat
                             </Button>
                         </div>
+                    </div>
+                )}
+            </Modal>
+            {/* Reject Modal */}
+            <Modal
+                isOpen={showRejectModal}
+                onClose={() => { setShowRejectModal(false); setApprovalError(null); }}
+                title="Başvuru Reddet"
+                size="md"
+            >
+                {selectedApplication && (
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="text-lg font-medium">
+                                {selectedApplication.firstName} {selectedApplication.lastName} - {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
+                            </h3>
+                        </div>
+                        <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+                            Bu başvuru <span className="text-primary-red font-semibold">reddedilecektir</span>. Varsayılan neden: <span className="italic">Eksik veya hatalı bilgi</span>
+                        </div>
+                        <div className="flex justify-end gap-3">
+                            <Button variant="secondary" onClick={() => { setShowRejectModal(false); setApprovalError(null); }} disabled={approvalLoading}>
+                                İptal
+                            </Button>
+                            <Button variant="danger" icon={X} onClick={handleReject} disabled={approvalLoading}>
+                                {approvalLoading ? 'Reddediliyor...' : 'Reddet'}
+                            </Button>
+                        </div>
+                        {approvalError && (
+                            <div className="text-primary-red text-sm mt-2">{approvalError}</div>
+                        )}
                     </div>
                 )}
             </Modal>

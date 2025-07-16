@@ -112,7 +112,7 @@ export interface UpdateResidentDto {
 
 // Approval DTOs
 export interface ResidentApprovalDto {
-    decision: 'APPROVED' | 'REJECTED';
+    decision: 'approved' | 'rejected';
     reason?: string;
     assignedRole?: string;
     initialMembershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
