@@ -5,6 +5,7 @@ import { residentService } from '@/services/resident.service';
 import { Resident } from '@/app/components/ui/ResidentRow';
 import { useToast } from '@/hooks/useToast';
 import adminResidentService from '@/services/admin-resident.service';
+import billingService, { Bill } from '@/services/billing.service';
 
 interface UseResidentsActionsProps {
     refreshData: () => Promise<void>;
@@ -29,7 +30,7 @@ interface UseResidentsActionsReturn {
     handleGenerateQR: (resident: Resident) => void;
     handleViewNotes: (resident: Resident) => void;
     handleViewHistory: (resident: Resident) => void;
-    handleViewPaymentHistory: (resident: Resident) => void;
+    handleViewPaymentHistory: (resident: Resident) => Promise<{ bills: Bill[]; error?: string }>;
     handleDeleteResident: (resident: Resident) => Promise<void>;
     handleSetResidentStatus: (resident: Resident, status: 'ACTIVE' | 'INACTIVE') => Promise<void>;
     
@@ -170,11 +171,16 @@ export const useResidentsActions = ({
         info('Aktivite Geçmişi', `${resident.fullName} - Kayıt: ${registration}, Son aktivite: ${lastActivity}`);
     }, [info]);
 
-    const handleViewPaymentHistory = useCallback((resident: Resident) => {
-        const debt = Number(resident.financial.totalDebt);
-        const balance = Number(resident.financial.balance);
-        info('Ödeme Geçmişi', `${resident.fullName} - Borç: ₺${debt.toLocaleString()}, Bakiye: ₺${balance.toLocaleString()}`);
-    }, [info]);
+    // Yeni: Ödeme geçmişi modalı için async handler
+    const handleViewPaymentHistory = async (resident: Resident): Promise<{ bills: Bill[]; error?: string }> => {
+        try {
+            const bills = await billingService.getBillsByUser(String(resident.id));
+            console.log("bills GELDİ Mİ ALOO", bills);
+            return { bills };
+        } catch (err: any) {
+            return { bills: [], error: err?.message || 'Ödeme geçmişi alınamadı.' };
+        }
+    };
 
     const handleDeleteResident = useCallback(async (resident: Resident) => {
         if (confirm(`${resident.fullName} sakinini kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {

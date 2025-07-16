@@ -36,6 +36,8 @@ import EmptyState from '@/app/components/ui/EmptyState';
 import Skeleton from '@/app/components/ui/Skeleton';
 import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import ListView from '@/app/components/templates/ListView';
+import PaymentHistoryModal from '@/app/components/ui/PaymentHistoryModal';
+import { Bill } from '@/services/billing.service';
 
 // Import our extracted utilities and configurations
 import {
@@ -122,6 +124,21 @@ export default function ResidentsPage() {
         loading: false
     });
 
+    // Ödeme geçmişi modalı için state
+    const [paymentHistoryModal, setPaymentHistoryModal] = useState<{
+        isOpen: boolean;
+        resident: Resident | null;
+        bills: Bill[];
+        loading: boolean;
+        error: string | null;
+    }>({
+        isOpen: false,
+        resident: null,
+        bills: [],
+        loading: false,
+        error: null,
+    });
+
     // Initialize all hooks for data management
     const filtersHook = useResidentsFilters();
     const dataHook = useResidentsData({
@@ -205,7 +222,7 @@ export default function ResidentsPage() {
     }, [confirmationState.resident, residentActionHandlers]);
 
     // Create unified action handler for view components
-    const handleResidentAction = useCallback((action: string, resident: Resident) => {
+    const handleResidentAction = useCallback(async (action: string, resident: Resident) => {
         switch (action) {
             case 'view':
                 residentActionHandlers.handleViewResident(resident);
@@ -239,10 +256,35 @@ export default function ResidentsPage() {
                 residentActionHandlers.handleUpdateResidentStatus &&
                     residentActionHandlers.handleUpdateResidentStatus(resident, 'ACTIVE');
                 break;
+            case 'payment-history': {
+                setPaymentHistoryModal({
+                    isOpen: true,
+                    resident,
+                    bills: [],
+                    loading: true,
+                    error: null,
+                });
+                try {
+                    const { bills, error } = await actionsHook.handleViewPaymentHistory(resident);
+                    setPaymentHistoryModal(prev => ({
+                        ...prev,
+                        bills,
+                        loading: false,
+                        error: error || null,
+                    }));
+                } catch (err: any) {
+                    setPaymentHistoryModal(prev => ({
+                        ...prev,
+                        loading: false,
+                        error: err?.message || 'Ödeme geçmişi alınamadı.',
+                    }));
+                }
+                break;
+            }
             default:
                 console.warn('Unknown action:', action);
         }
-    }, [residentActionHandlers]);
+    }, [residentActionHandlers, actionsHook]);
 
     // Filter groups configuration
     const filterGroups = residentFilterGroups;
@@ -628,6 +670,16 @@ export default function ResidentsPage() {
                     loading={confirmationState.loading}
                     itemName={confirmationState.resident?.fullName}
                     itemType="sakin"
+                />
+
+                {/* Payment History Modal */}
+                <PaymentHistoryModal
+                    isOpen={paymentHistoryModal.isOpen}
+                    onClose={() => setPaymentHistoryModal(prev => ({ ...prev, isOpen: false }))}
+                    bills={paymentHistoryModal.bills}
+                    residentName={paymentHistoryModal.resident?.fullName || ''}
+                    loading={paymentHistoryModal.loading}
+                    error={paymentHistoryModal.error}
                 />
 
                 {/* Toast Container */}
