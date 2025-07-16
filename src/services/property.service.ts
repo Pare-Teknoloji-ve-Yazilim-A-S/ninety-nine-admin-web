@@ -51,6 +51,10 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             this.logger.info(`Fetched ${response.data.data.length} properties`);
             return {
                 data: response.data.data,
+                total: response.data.pagination.total,
+                page: response.data.pagination.page,
+                limit: response.data.pagination.limit,
+                totalPages: response.data.pagination.totalPages,
                 pagination: response.data.pagination,
             };
         } catch (error) {
@@ -388,7 +392,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             const queryParams = this.buildQueryParams(params);
             const response = await apiClient.get(
                 `${apiConfig.endpoints.properties.admin.export}${queryParams}`,
-                { responseType: 'blob' }
+                {} as any
             );
 
             this.logger.info('Properties exported successfully');
@@ -417,11 +421,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             const response = await apiClient.post<ImportResult>(
                 apiConfig.endpoints.properties.admin.import,
                 formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
+                {} as any
             );
 
             this.logger.info('Properties imported successfully');
@@ -465,7 +465,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
 
             const response = await apiClient.delete<Property>(
                 apiConfig.endpoints.properties.admin.completeMaintenance(id),
-                { data }
+                {} as any
             );
 
             this.logger.info('Property maintenance completed successfully');

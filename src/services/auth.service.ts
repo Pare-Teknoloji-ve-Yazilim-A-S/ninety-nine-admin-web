@@ -54,12 +54,12 @@ class AuthService {
 
             // Store tokens
             this.tokenManager.setTokens(
-                response.accessToken,
-                response.refreshToken
+                response.data.accessToken,
+                response.data.refreshToken
             );
 
             this.logger.info('Login successful');
-            return response;
+            return response.data;
         } catch (error) {
             this.logger.error('Login failed', error);
             throw error;
@@ -78,12 +78,12 @@ class AuthService {
 
             // Store tokens
             this.tokenManager.setTokens(
-                response.accessToken,
-                response.refreshToken
+                response.data.accessToken,
+                response.data.refreshToken
             );
 
             this.logger.info('Registration successful');
-            return response;
+            return response.data;
         } catch (error) {
             this.logger.error('Registration failed', error);
             throw error;
@@ -126,12 +126,12 @@ class AuthService {
 
             // Update stored tokens
             this.tokenManager.setTokens(
-                response.accessToken,
-                response.refreshToken
+                response.data.accessToken,
+                response.data.refreshToken
             );
 
             this.logger.info('Tokens refreshed successfully');
-            return response;
+            return response.data;
         } catch (error) {
             this.logger.error('Token refresh failed', error);
             this.tokenManager.clearTokens();
@@ -146,7 +146,7 @@ class AuthService {
             const response = await apiClient.get<User>(this.endpoints.me);
 
             this.logger.info('Current user fetched successfully');
-            return response;
+            return response.data;
         } catch (error) {
             this.logger.error('Failed to fetch current user', error);
             throw error;

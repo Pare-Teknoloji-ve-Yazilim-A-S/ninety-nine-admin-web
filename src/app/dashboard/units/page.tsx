@@ -156,10 +156,10 @@ export default function UnitsListPage() {
     const commercialUnits = quickStats?.commercialUnits.total || properties.filter(p => p.type === 'COMMERCIAL').length;
 
     const viewModeOptions = [
-        { value: 'table', label: 'Tablo', icon: List },
-        { value: 'grid', label: 'Kart', icon: Grid3X3 },
-        { value: 'block', label: 'Blok', icon: Building },
-        { value: 'map', label: 'Harita', icon: Map }
+        { id: 'table', label: 'Tablo', icon: List },
+        { id: 'grid', label: 'Kart', icon: Grid3X3 },
+        { id: 'block', label: 'Blok', icon: Building },
+        { id: 'map', label: 'Harita', icon: Map }
     ];
 
     const formatCurrency = (amount: number) => {
@@ -554,8 +554,8 @@ export default function UnitsListPage() {
                                         Filtrele
                                     </Button>
                                     <ViewToggle
-                                        value={viewMode}
-                                        onChange={setViewMode}
+                                        activeView={viewMode}
+                                        onViewChange={(viewId: string) => setViewMode(viewId as typeof viewMode)}
                                         options={viewModeOptions}
                                     />
                                 </div>
@@ -588,7 +588,7 @@ export default function UnitsListPage() {
                                             <select
                                                 className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
                                                 value={filters.status}
-                                                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                                                onChange={(e) => setFilters({ ...filters, status: e.target.value as 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED' })}
                                             >
                                                 <option value="all">Tümü</option>
                                                 <option value="occupied">Dolu</option>

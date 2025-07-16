@@ -54,7 +54,7 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
     const [recordsPerPage, setRecordsPerPage] = useState(10);
     
     // Sorting
-    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' as const });
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
     
     // View and selection
     const [selectedView, setSelectedView] = useState('list');
@@ -130,7 +130,7 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
         setShowFilterPanel,
         setCurrentPage,
         setRecordsPerPage,
-        setSortConfig,
+        setSortConfig: (config: { key: string; direction: 'asc' | 'desc' }) => setSortConfig(config),
         setSelectedView,
         setSelectedResidents,
         

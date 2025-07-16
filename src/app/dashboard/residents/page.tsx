@@ -19,7 +19,7 @@ import { useResidentsFilters } from '@/hooks/useResidentsFilters';
 import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
 import { residentService } from '@/services/resident.service';
-import { ResidentFilterParams, ResidentStatsResponse } from '@/services/types/resident.types';
+import { ResidentFilterParams, ResidentStatsResponse, Resident as ApiResident } from '@/services/types/resident.types';
 import {
     Filter,
     Download,
@@ -82,51 +82,43 @@ export default function ResidentsPage() {
         { label: 'Sakin Listesi', active: true }
     ];
 
-    // API types for transformation
-    interface ApiResident {
-        id: string;
-        firstName: string;
-        lastName: string;
-        email?: string;
-        phone?: string;
+    // Additional properties that might come from API but not in the type
+    interface ExtendedApiResident extends Omit<ApiResident, 'property'> {
         tcKimlikNo?: string;
         nationalId?: string;
         passportNumber?: string;
         property?: {
-            ownershipType?: 'owner' | 'tenant';
-            block?: string;
-            apartment?: string;
+            id?: string;
+            block: string;
+            apartment: string;
+            ownershipType: 'owner' | 'tenant';
+            propertyNumber?: string;
+            floor?: number;
+            area?: number;
+            registrationDate?: string;
             roomType?: string;
             governorate?: string;
             district?: string;
             neighborhood?: string;
         };
-        registrationDate?: string;
-        lastActivity?: string;
         financial?: {
             totalDebt?: number;
             lastPaymentDate?: string;
             balance?: number;
         };
-        status?: string;
-        membershipTier?: string;
         notes?: string;
-        avatar?: string;
-        createdAt?: string;
-        updatedAt?: string;
     }
 
     // Convert API types to component types (Iraq-specific)
-    const transformApiResidentToComponentResident = (apiResident: ApiResident): Resident => {
+    const transformApiResidentToComponentResident = (apiResident: ApiResident | ExtendedApiResident): Resident => {
+        const extended = apiResident as ExtendedApiResident;
         return {
-            id: apiResident.id,
+            id: String(apiResident.id),
             firstName: apiResident.firstName,
             lastName: apiResident.lastName,
             fullName: `${apiResident.firstName} ${apiResident.lastName}`,
             // Iraq-specific: National ID could be Iraqi National ID or Passport
-            nationalId: apiResident.tcKimlikNo || apiResident.nationalId || apiResident.passportNumber,
-            email: apiResident.email || 'Belirtilmemiş',
-            phone: apiResident.phone || 'Belirtilmemiş',
+            nationalId: extended.tcKimlikNo || extended.nationalId || extended.passportNumber,
 
             // Property information from API
             residentType: {
@@ -137,7 +129,7 @@ export default function ResidentsPage() {
             address: {
                 building: apiResident.property?.block || 'Belirtilmemiş',
                 apartment: apiResident.property?.apartment || 'Belirtilmemiş',
-                roomType: apiResident.property?.roomType || 'Belirtilmemiş',
+                roomType: extended.property?.roomType || 'Belirtilmemiş',
                 // Iraq-specific location fields (commented out until ResidentAddress type is updated)
                 // governorate: apiResident.property?.governorate || 'Belirtilmemiş',
                 // district: apiResident.property?.district || 'Belirtilmemiş',
@@ -145,14 +137,13 @@ export default function ResidentsPage() {
             },
             contact: {
                 phone: apiResident.phone || 'Belirtilmemiş',
-                email: apiResident.email || 'Belirtilmemiş'
-                // Iraq phone format: +964XXXXXXXXX (commented out until ResidentContact type is updated)
-                // formattedPhone: apiResident.phone ? formatIraqPhone(apiResident.phone) : 'Belirtilmemiş'
+                email: apiResident.email || 'Belirtilmemiş',
+                formattedPhone: apiResident.phone || 'Belirtilmemiş'
             },
             financial: {
-                balance: 0,
-                totalDebt: 0,
-                lastPaymentDate: undefined
+                balance: extended.financial?.balance || 0,
+                totalDebt: extended.financial?.totalDebt || 0,
+                lastPaymentDate: extended.financial?.lastPaymentDate
             },
             status: {
                 type: (apiResident.status?.toLowerCase() || 'active') as 'active' | 'pending' | 'inactive' | 'suspended',
@@ -174,8 +165,8 @@ export default function ResidentsPage() {
             registrationDate: apiResident.createdAt || '',
             lastActivity: apiResident.updatedAt || new Date().toISOString(),
             isGoldMember: apiResident.membershipTier === 'GOLD',
-            avatar: apiResident.avatar,
-            notes: '',
+            profileImage: apiResident.avatar,
+            notes: extended.notes || '',
             tags: []
         };
     };
@@ -748,7 +739,8 @@ export default function ResidentsPage() {
 
             const response = await residentService.getAllResidents(filterParams);
 
-            const transformedResidents = response.data.map(transformApiResidentToComponentResident);
+            // Transform API residents to component residents
+            const transformedResidents = response.data.map((apiResident) => transformApiResidentToComponentResident(apiResident));
             setResidents(transformedResidents);
             setTotalRecords();
             setTotalPages();

@@ -71,6 +71,10 @@ export interface PropertyFilterParams {
     orderBy?: 'ASC' | 'DESC';
     type?: 'RESIDENCE' | 'VILLA' | 'COMMERCIAL' | 'OFFICE';
     status?: 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED';
+    unitType?: string;
+    block?: string;
+    rooms?: string;
+    debtStatus?: string;
 }
 
 export interface PropertySearchParams {

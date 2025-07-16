@@ -136,7 +136,7 @@ export default function PendingApprovalsPage() {
         switch (priority) {
             case 'high': return 'red';
             case 'medium': return 'gold';
-            default: return 'green';
+            default: return 'secondary';
         }
     };
 
