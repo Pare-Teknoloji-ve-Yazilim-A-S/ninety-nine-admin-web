@@ -52,6 +52,8 @@ import Skeleton from '@/app/components/ui/Skeleton';
 import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import TablePagination from '@/app/components/ui/TablePagination';
 import Checkbox from '@/app/components/ui/Checkbox';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 
 export default function UnitsListPage() {
@@ -160,9 +162,15 @@ export default function UnitsListPage() {
     const villaUnits = quickStats?.villaUnits.total || properties.filter(p => p.type === 'VILLA').length;
     const commercialUnits = quickStats?.commercialUnits.total || properties.filter(p => p.type === 'COMMERCIAL').length;
 
+    const router = useRouter();
+
     const handleUnitAction = (action: string, unit: Property) => {
+        if (action === 'view') {
+            router.push(`/dashboard/units/${unit.id}`);
+            return;
+        }
         console.log('Unit action:', action, unit);
-        // Handle unit actions here
+        // Handle other unit actions here
     };
 
     const handleQuickAction = (action: string) => {
@@ -559,9 +567,11 @@ export default function UnitsListPage() {
                                     variant="secondary"
                                     size="md"
                                 />
+                                <Link href="/dashboard/units/add">
                                   <Button variant="primary" size="md" icon={Plus}>
                                     Yeni Konut
-                                </Button>
+                                  </Button>
+                                </Link>
                                 
                             </div>
 

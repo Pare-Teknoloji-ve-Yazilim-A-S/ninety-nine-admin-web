@@ -22,15 +22,25 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
             const params = this.buildFilterParams(filters);
             const queryParams = this.buildQueryParams(params);
             const response = await apiClient.get(`${this.baseEndpoint}${queryParams}`);
-            
+            const data = response.data.data || response.data;
+            const pagination = response.data.pagination || {
+                total: data.length || 0,
+                page: filters.page || 1,
+                limit: filters.limit || 20,
+                totalPages: Math.ceil((data.length || 0) / (filters.limit || 20))
+            };
             return {
-                data: response.data.data || response.data,
-                pagination: response.data.pagination || response.pagination || {
-                    total: response.data.length || 0,
-                    page: filters.page || 1,
-                    limit: filters.limit || 20,
-                    totalPages: Math.ceil((response.data.length || 0) / (filters.limit || 20))
-                }
+                data,
+                pagination: {
+                    page: pagination.page,
+                    limit: pagination.limit,
+                    total: pagination.total,
+                    totalPages: pagination.totalPages
+                },
+                total: pagination.total,
+                page: pagination.page,
+                limit: pagination.limit,
+                totalPages: pagination.totalPages
             };
         } catch (error) {
             throw error;
@@ -88,6 +98,12 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
             data: updateData
         });
         return response;
+    }
+
+    async getPropertyById(id: string): Promise<ApiResponse<Property>> {
+        // Fetch property details from /admin/properties/{id}
+        const response = await apiClient.get(`/admin/properties/${id}`);
+        return response; // Return the full API response as required
     }
 
     private buildFilterParams(filters: PropertyFilterParams): Record<string, any> {
