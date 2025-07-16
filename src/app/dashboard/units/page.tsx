@@ -170,10 +170,10 @@ export default function UnitsListPage() {
 
     // Status configuration
     const statusConfig = {
-        OCCUPIED: { label: 'Dolu', color: 'green', icon: CheckCircle },
-        AVAILABLE: { label: 'Boş', color: 'blue', icon: AlertCircle },
-        UNDER_MAINTENANCE: { label: 'Bakım', color: 'orange', icon: RotateCcw },
-        RESERVED: { label: 'Rezerve', color: 'purple', icon: Calendar }
+        AVAILABLE: { label: 'Boş', color: 'info', icon: AlertCircle },
+        OCCUPIED: { label: 'Dolu', color: 'success', icon: CheckCircle },
+        UNDER_MAINTENANCE: { label: 'Bakımda', color: 'warning', icon: RotateCcw },
+        RESERVED: { label: 'Rezerve', color: 'primary', icon: Calendar }
     };
 
     // Table columns configuration
