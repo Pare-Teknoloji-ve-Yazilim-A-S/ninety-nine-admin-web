@@ -95,8 +95,10 @@ export default function UnitsListPage() {
         try {
             setLoading(true);
             setError(null);
-
+            // Pagination ve filtreleri logla
+            console.log('Filters:', filters);
             const response = await unitsService.getAllUnits(filters);
+            console.log('API Pagination:', response.pagination);
             setProperties(response.data);
             setPagination(response.pagination);
         } catch (err: any) {
