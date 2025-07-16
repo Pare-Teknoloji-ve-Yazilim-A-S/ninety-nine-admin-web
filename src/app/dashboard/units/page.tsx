@@ -22,7 +22,10 @@ import {
     RefreshCw,
     Filter,
     List,
-    Grid3X3
+    Grid3X3,
+    Home,
+    Store,
+    Car
 } from 'lucide-react';
 import { UnitsQuickStats } from './components/UnitsQuickStats';
 import { UnitsFilters } from './components/UnitsFilters';
@@ -33,6 +36,7 @@ import { ExportDropdown } from '@/app/components/ui';
 import SearchBar from '@/app/components/ui/SearchBar';
 import ViewToggle from '@/app/components/ui/ViewToggle';
 import FilterPanel from '@/app/components/ui/FilterPanel';
+import StatsCard from '@/app/components/ui/StatsCard';
 
 
 export default function UnitsListPage() {
@@ -366,10 +370,40 @@ export default function UnitsListPage() {
 
                         {/* Quick Stats Cards */}
                         <div className="mb-8">
-                            <UnitsQuickStats
-                                quickStats={quickStats}
-                                loading={loading}
-                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <StatsCard
+                                    title="Apartman Dairesi"
+                                    value={quickStats?.apartmentUnits.total || 0}
+                                    icon={Building}
+                                    color="primary"
+                                    loading={loading}
+                                    size="md"
+                                />
+                                <StatsCard
+                                    title="Villa"
+                                    value={quickStats?.villaUnits.total || 0}
+                                    icon={Home}
+                                    color="success"
+                                    loading={loading}
+                                    size="md"
+                                />
+                                <StatsCard
+                                    title="Ticari Alan"
+                                    value={quickStats?.commercialUnits.total || 0}
+                                    icon={Store}
+                                    color="info"
+                                    loading={loading}
+                                    size="md"
+                                />
+                                <StatsCard
+                                    title="Otopark Alanı"
+                                    value={quickStats?.parkingSpaces.total || 0}
+                                    icon={Car}
+                                    color="danger"
+                                    loading={loading}
+                                    size="md"
+                                />
+                            </div>
                         </div>
                         {/* Content Area */}
                         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
