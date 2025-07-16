@@ -397,10 +397,10 @@ export const commonFilterGroups = {
         type: 'multiselect' as const,
         icon: CheckCircle,
         options: [
-            { id: 'active', label: 'Aktif', value: 'active', count: 1856 },
-            { id: 'pending', label: 'Beklemede', value: 'pending', count: 234 },
-            { id: 'inactive', label: 'Pasif', value: 'inactive', count: 123 },
-            { id: 'suspended', label: 'Askıya Alınmış', value: 'suspended', count: 12 },
+            { id: 'active', label: 'Aktif', value: 'active',  },
+            { id: 'pending', label: 'Beklemede', value: 'pending',  },
+            { id: 'inactive', label: 'Pasif', value: 'inactive',  },
+            { id: 'suspended', label: 'Askıya Alınmış', value: 'suspended',}
         ],
     },
     residentType: {
@@ -409,9 +409,9 @@ export const commonFilterGroups = {
         type: 'radio' as const,
         icon: Users,
         options: [
-            { id: 'owner', label: 'Malik', value: 'owner', count: 1856 },
-            { id: 'tenant', label: 'Kiracı', value: 'tenant', count: 492 },
-            { id: 'guest', label: 'Misafir', value: 'guest', count: 45 },
+            { id: 'owner', label: 'Malik', value: 'owner',  },
+            { id: 'tenant', label: 'Kiracı', value: 'tenant', },
+            { id: 'guest', label: 'Misafir', value: 'guest',  },
         ],
     },
     building: {
@@ -421,9 +421,9 @@ export const commonFilterGroups = {
         icon: Home,
         placeholder: 'Blok seçiniz...',
         options: [
-            { id: 'a', label: 'A Blok', value: 'A', count: 234 },
-            { id: 'b', label: 'B Blok', value: 'B', count: 198 },
-            { id: 'c', label: 'C Blok', value: 'C', count: 167 },
+            { id: 'a', label: 'A Blok', value: 'A', },
+            { id: 'b', label: 'B Blok', value: 'B', },
+            { id: 'c', label: 'C Blok', value: 'C', },
         ],
     },
     debtRange: {

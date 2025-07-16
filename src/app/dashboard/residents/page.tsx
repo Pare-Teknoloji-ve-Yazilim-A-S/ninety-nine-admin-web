@@ -11,7 +11,7 @@ import SearchBar from '@/app/components/ui/SearchBar';
 import StatsCard from '@/app/components/ui/StatsCard';
 import ViewToggle from '@/app/components/ui/ViewToggle';
 import DataTable from '@/app/components/ui/DataTable';
-import FilterPanel, { commonFilterGroups } from '@/app/components/ui/FilterPanel';
+import FilterPanel from '@/app/components/ui/FilterPanel';
 import ExportDropdown from '@/app/components/ui/ExportDropdown';
 import { ToastContainer } from '@/app/components/ui/Toast';
 import BulkMessageModal from '@/app/components/ui/BulkMessageModal';
@@ -23,7 +23,7 @@ import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
 import {
     Filter, Download, Plus, RefreshCw,
-    MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX
+    MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX, CheckCircle, Users, Home, DollarSign, Calendar
 } from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
@@ -48,6 +48,45 @@ import { createBulkActionHandlers } from './actions/bulk-actions';
 import { createResidentActionHandlers } from './actions/resident-actions';
 import { createExportActionHandlers } from './actions/export-actions';
 import { getTableColumns } from './components/table-columns';
+
+const residentFilterGroups = [
+    {
+        id: 'status',
+        label: 'Durum',
+        type: 'multiselect' as const,
+        icon: CheckCircle,
+        options: [
+            { id: 'active', label: 'Aktif', value: 'active' },
+            { id: 'pending', label: 'Beklemede', value: 'pending' },
+            { id: 'inactive', label: 'Pasif', value: 'inactive' },
+            { id: 'suspended', label: 'Askıya Alınmış', value: 'suspended' },
+        ],
+    },
+    {
+        id: 'type',
+        label: 'Sakin Tipi',
+        type: 'radio' as const,
+        icon: Users,
+        options: [
+            { id: 'owner', label: 'Malik', value: 'owner' },
+            { id: 'tenant', label: 'Kiracı', value: 'tenant' },
+            { id: 'guest', label: 'Misafir', value: 'guest' },
+        ],
+    },
+ 
+    {
+        id: 'debt',
+        label: 'Borç Miktarı',
+        type: 'numberrange' as const,
+        icon: DollarSign,
+    },
+    {
+        id: 'registrationDate',
+        label: 'Kayıt Tarihi',
+        type: 'daterange' as const,
+        icon: Calendar,
+    },
+];
 
 /**
  * Main Residents Page Component
@@ -206,13 +245,7 @@ export default function ResidentsPage() {
     }, [residentActionHandlers]);
 
     // Filter groups configuration
-    const filterGroups = [
-        commonFilterGroups.residentStatus,
-        commonFilterGroups.residentType,
-        commonFilterGroups.building,
-        commonFilterGroups.debtRange,
-        commonFilterGroups.registrationDate,
-    ];
+    const filterGroups = residentFilterGroups;
 
     // Event handlers (orchestration only)
     const handleAddNewResident = useCallback(() => {
