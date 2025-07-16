@@ -38,7 +38,8 @@ import FilterPanel from '@/app/components/ui/FilterPanel';
 export default function UnitsListPage() {
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    // 1. Local search input state
+    const [searchInput, setSearchInput] = useState("");
     const [viewMode, setViewMode] = useState<'table' | 'grid' | 'block' | 'map'>('table');
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState<PropertyFilterParams>({
@@ -157,6 +158,17 @@ export default function UnitsListPage() {
         loadProperties();
         loadQuickStats();
         loadRecentActivities();
+    };
+
+    // 2. Input değişimini yöneten handler
+    const handleSearchInputChange = (value: string) => {
+        setSearchInput(value);
+    };
+
+    // 3. Debounce sonrası filtreleme (API çağrısı) yapan handler
+    const handleSearchSubmit = (value: string) => {
+        setSearchInput(value);
+        setFilters((prev) => ({ ...prev, search: value, page: 1 }));
     };
 
     // Export action handlers (placeholder functions)
@@ -290,8 +302,10 @@ export default function UnitsListPage() {
                                     <div className="flex-1">
                                         <SearchBar
                                             placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
-                                            value={searchQuery}
-                                            onChange={setSearchQuery}
+                                            value={searchInput}
+                                            onChange={handleSearchInputChange}
+                                            onSearch={handleSearchSubmit}
+                                            debounceMs={500}
                                         />
                                     </div>
                                     {/* Filter and View Toggle */}
