@@ -18,13 +18,20 @@ import {
     Building,
     Map,
     Plus,
-    Download
+    Download,
+    RefreshCw,
+    Filter,
+    List,
+    Grid3X3
 } from 'lucide-react';
 import { UnitsQuickStats } from './components/UnitsQuickStats';
 import { UnitsFilters } from './components/UnitsFilters';
 import { UnitsTableView } from './components/UnitsTableView';
 import { UnitsGridView } from './components/UnitsGridView';
 import { UnitsAnalytics } from './components/UnitsAnalytics';
+import { ExportDropdown } from '@/app/components/ui';
+import SearchBar from '@/app/components/ui/SearchBar';
+import ViewToggle from '@/app/components/ui/ViewToggle';
 
 
 export default function UnitsListPage() {
@@ -144,6 +151,20 @@ export default function UnitsListPage() {
         // Handle export here
     };
 
+    // Refresh handler eklendi
+    const handleRefresh = () => {
+        loadProperties();
+        loadQuickStats();
+        loadRecentActivities();
+    };
+
+    // Export action handlers (placeholder functions)
+    const exportActionHandlers = {
+        handleExportPDF: () => { console.log('Export PDF'); },
+        handleExportExcel: () => { console.log('Export Excel'); },
+        handleExportCSV: () => { console.log('Export CSV'); },
+        handleExportJSON: () => { console.log('Export JSON'); },
+    };
 
 
     return (
@@ -166,41 +187,86 @@ export default function UnitsListPage() {
                     {/* Main Content */}
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Page Header with Summary */}
-                        <div className="bg-background-light-card dark:bg-background-card rounded-xl p-6 mb-8">
-                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                                <div>
-                                    <h2 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-2">
-                                        Konut Listesi ({totalUnits.toLocaleString()} toplam)
-                                    </h2>
-                                    <p className="text-text-light-secondary dark:text-text-secondary">
-                                        Dolu: {occupiedUnits} ({occupancyRate}%) | Boş: {vacantUnits} | Bakımda: {maintenanceUnits}
-                                    </p>
-                                </div>
-                                <div className="flex gap-3">
-                                    <Button variant="secondary" size="sm" icon={Plus}>
-                                        Yeni Konut
-                                    </Button>
-                                    <Button variant="secondary" size="sm" icon={Download}>
-                                        İndir
-                                    </Button>
-                                </div>
+
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                            <div>
+                                <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
+                                    Konut Listesi <span className="text-primary-gold">({totalUnits.toLocaleString()} Konut)
+                                    </span>
+                                </h2>
+                                <p className="text-text-light-secondary dark:text-text-secondary">
+                                    Dolu: {occupiedUnits} ({occupancyRate}%) | Boş: {vacantUnits} | Bakımda: {maintenanceUnits}
+                                </p>
                             </div>
+                            <div className="flex gap-3">
+                                <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
+                                    Yenile
+                                </Button>
+                                <ExportDropdown
+                                    onExportPDF={exportActionHandlers.handleExportPDF}
+                                    onExportExcel={exportActionHandlers.handleExportExcel}
+                                    onExportCSV={exportActionHandlers.handleExportCSV}
+                                    onExportJSON={exportActionHandlers.handleExportJSON}
+                                    variant="secondary"
+                                    size="md"
+                                />
+                                  <Button variant="primary" size="md" icon={Plus}>
+                                    Yeni Konut
+                                </Button>
+                                
+                            </div>
+
                         </div>
 
 
                         {/* Search and Filters */}
-                        <div className="mb-6">
-                            <UnitsFilters
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                                filters={filters}
-                                onFiltersChange={setFilters}
-                                showFilters={showFilters}
-                                onToggleFilters={() => setShowFilters(!showFilters)}
-                                viewMode={viewMode}
-                                onViewModeChange={setViewMode}
-                            />
-                        </div>
+                        <Card className="mb-6">
+                            <div className="p-6">
+                                <div className="flex flex-col lg:flex-row gap-4">
+                                    {/* Search Bar */}
+                                    <div className="flex-1">
+                                        <SearchBar
+                                            placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
+                                            value={searchQuery}
+                                            onChange={setSearchQuery}
+                                        />
+                                    </div>
+                                    {/* Filter and View Toggle */}
+                                    <div className="flex gap-2 items-center">
+                                        <Button
+                                            variant={showFilters ? "primary" : "secondary"}
+                                            size="md"
+                                            icon={Filter}
+                                            onClick={() => setShowFilters(!showFilters)}
+                                        >
+                                            Filtreler
+                                        </Button>
+                                        <ViewToggle
+                                            options={[
+                                                { id: 'table', label: 'Tablo', icon: List },
+                                                { id: 'grid', label: 'Kart', icon: Grid3X3 },
+                                                { id: 'block', label: 'Blok', icon: Building },
+                                                { id: 'map', label: 'Harita', icon: Map }
+                                            ]}
+                                            activeView={viewMode}
+                                            onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
+                                            size="sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                        {/* Only filter controls (dropdowns) */}
+                        <UnitsFilters
+                            filters={filters}
+                            onFiltersChange={setFilters}
+                            showFilters={showFilters}
+                            onToggleFilters={() => setShowFilters(!showFilters)}
+                            viewMode={viewMode}
+                            onViewModeChange={setViewMode}
+                            searchQuery={searchQuery}
+                            onSearchChange={setSearchQuery}
+                        />
 
                         {/* Quick Stats Cards */}
                         <div className="mb-8">
