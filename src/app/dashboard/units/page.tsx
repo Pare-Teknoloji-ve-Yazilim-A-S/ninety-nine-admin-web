@@ -32,6 +32,7 @@ import { UnitsAnalytics } from './components/UnitsAnalytics';
 import { ExportDropdown } from '@/app/components/ui';
 import SearchBar from '@/app/components/ui/SearchBar';
 import ViewToggle from '@/app/components/ui/ViewToggle';
+import FilterPanel from '@/app/components/ui/FilterPanel';
 
 
 export default function UnitsListPage() {
@@ -166,6 +167,68 @@ export default function UnitsListPage() {
         handleExportJSON: () => { console.log('Export JSON'); },
     };
 
+    // Define filter groups for units
+    const unitFilterGroups = [
+        {
+            id: 'type',
+            label: 'Konut Tipi',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'RESIDENCE', label: 'Daire', value: 'RESIDENCE' },
+                { id: 'VILLA', label: 'Villa', value: 'VILLA' },
+                { id: 'COMMERCIAL', label: 'Ticari', value: 'COMMERCIAL' },
+            ],
+        },
+        {
+            id: 'status',
+            label: 'Durum',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'OCCUPIED', label: 'Dolu', value: 'OCCUPIED' },
+                { id: 'AVAILABLE', label: 'Boş', value: 'AVAILABLE' },
+                { id: 'UNDER_MAINTENANCE', label: 'Bakımda', value: 'UNDER_MAINTENANCE' },
+                { id: 'RESERVED', label: 'Rezerve', value: 'RESERVED' },
+            ],
+        },
+        {
+            id: 'blockNumber',
+            label: 'Blok',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'A', label: 'A Blok', value: 'A' },
+                { id: 'B', label: 'B Blok', value: 'B' },
+                { id: 'C', label: 'C Blok', value: 'C' },
+                { id: 'D', label: 'D Blok', value: 'D' },
+                { id: 'Villa', label: 'Villa', value: 'Villa' },
+            ],
+        },
+        {
+            id: 'rooms',
+            label: 'Oda Sayısı',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: '1+1', label: '1+1', value: '1+1' },
+                { id: '2+1', label: '2+1', value: '2+1' },
+                { id: '3+1', label: '3+1', value: '3+1' },
+                { id: '4+1', label: '4+1', value: '4+1' },
+            ],
+        },
+        {
+            id: 'debtStatus',
+            label: 'Borç Durumu',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'clean', label: 'Temiz Hesap', value: 'clean' },
+                { id: 'indebted', label: 'Borçlu', value: 'indebted' },
+            ],
+        },
+    ];
+
 
     return (
         <ProtectedRoute>
@@ -237,7 +300,7 @@ export default function UnitsListPage() {
                                             variant={showFilters ? "primary" : "secondary"}
                                             size="md"
                                             icon={Filter}
-                                            onClick={() => setShowFilters(!showFilters)}
+                                            onClick={() => setShowFilters(true)}
                                         >
                                             Filtreler
                                         </Button>
@@ -256,17 +319,36 @@ export default function UnitsListPage() {
                                 </div>
                             </div>
                         </Card>
-                        {/* Only filter controls (dropdowns) */}
-                        <UnitsFilters
-                            filters={filters}
-                            onFiltersChange={setFilters}
-                            showFilters={showFilters}
-                            onToggleFilters={() => setShowFilters(!showFilters)}
-                            viewMode={viewMode}
-                            onViewModeChange={setViewMode}
-                            searchQuery={searchQuery}
-                            onSearchChange={setSearchQuery}
-                        />
+                        {/* Filter Sidebar (Drawer) */}
+                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}> 
+                            {/* Backdrop */}
+                            <div
+                                className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'}`}
+                                onClick={() => setShowFilters(false)}
+                            />
+                            {/* Drawer */}
+                            <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
+                                <FilterPanel
+                                    filterGroups={unitFilterGroups}
+                                    onApplyFilters={(newFilters) => {
+                                        setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+                                        setShowFilters(false);
+                                    }}
+                                    onResetFilters={() => {
+                                        setFilters({
+                                            type: undefined,
+                                            status: undefined,
+                                            page: 1,
+                                            limit: 20,
+                                            orderColumn: 'name',
+                                            orderBy: 'ASC',
+                                        });
+                                    }}
+                                    onClose={() => setShowFilters(false)}
+                                    variant="sidebar"
+                                />
+                            </div>
+                        </div>
 
                         {/* Quick Stats Cards */}
                         <div className="mb-8">
