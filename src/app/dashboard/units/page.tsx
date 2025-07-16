@@ -361,9 +361,20 @@ export default function UnitsListPage() {
                             onChange={() => onSelect(unit.id)}
                             className="focus:ring-2 focus:ring-primary-gold/30"
                         />
-                        <h4 className="font-semibold text-text-on-light dark:text-text-on-dark">
-                            {unit?.propertyNumber || unit?.name || 'N/A'}
-                        </h4>
+                        <div>
+                            <h4 className="font-semibold text-text-on-light dark:text-text-on-dark">
+                                {unit?.propertyNumber || unit?.name || 'N/A'}
+                            </h4>
+                            {/* Durum satırı: Daire isminin hemen altında */}
+                            {statusInfo && (
+                                <div className="flex items-center">
+                                    <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
+                                    <ui.Badge variant="soft" color={statusInfo.color as any}>
+                                        {statusInfo.label}
+                                    </ui.Badge>
+                                </div>
+                            )}
+                        </div>
                     </div>
                     {ActionMenu && <ActionMenu row={unit} />}
                 </div>
