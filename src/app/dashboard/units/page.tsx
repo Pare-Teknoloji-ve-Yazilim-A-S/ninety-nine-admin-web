@@ -32,7 +32,9 @@ import {
     Calendar,
     Eye,
     MoreVertical,
-    User
+    User,
+    Edit,
+    Trash2
 } from 'lucide-react';
 import { UnitsQuickStats } from './components/UnitsQuickStats';
 import { UnitsFilters } from './components/UnitsFilters';
@@ -156,7 +158,7 @@ export default function UnitsListPage() {
     const villaUnits = quickStats?.villaUnits.total || properties.filter(p => p.type === 'VILLA').length;
     const commercialUnits = quickStats?.commercialUnits.total || properties.filter(p => p.type === 'COMMERCIAL').length;
 
-    const handleUnitAction = (unit: Property, action: string) => {
+    const handleUnitAction = (action: string, unit: Property) => {
         console.log('Unit action:', action, unit);
         // Handle unit actions here
     };
@@ -270,8 +272,77 @@ export default function UnitsListPage() {
         },
     ];
 
+    // UnitActionMenu
+    const UnitActionMenu: React.FC<{ unit: Property; onAction: (action: string, unit: Property) => void }> = ({ unit, onAction }) => {
+        const [isOpen, setIsOpen] = React.useState(false);
+        const dropdownRef = React.useRef<HTMLDivElement>(null);
+        const buttonRef = React.useRef<HTMLButtonElement>(null);
+
+        React.useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+                if (
+                    dropdownRef.current &&
+                    buttonRef.current &&
+                    !dropdownRef.current.contains(event.target as Node) &&
+                    !buttonRef.current.contains(event.target as Node)
+                ) {
+                    setIsOpen(false);
+                }
+            };
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }, []);
+
+        const handleDropdownToggle = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+        };
+
+        const handleAction = (action: string) => (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(false);
+            onAction(action, unit);
+        };
+
+        return (
+            <div className="flex items-center justify-center">
+                <div className="relative group">
+                    <Button
+                        ref={buttonRef}
+                        variant="ghost"
+                        size="sm"
+                        icon={MoreVertical}
+                        className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={handleDropdownToggle}
+                    />
+                    <div
+                        ref={dropdownRef}
+                        className={`absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${isOpen ? '' : 'hidden'}`}
+                    >
+                        <div className="py-1">
+                            <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                <Eye className="w-5 h-5" /> Detay
+                            </button>
+                            <button onClick={handleAction('edit')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                <Edit className="w-5 h-5" /> Düzenle
+                            </button>
+                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
+                            <button onClick={handleAction('delete')} className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3">
+                                <Trash2 className="w-5 h-5" /> Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const UnitActionMenuWrapper: React.FC<{ row: Property }> = ({ row }) => (
+        <UnitActionMenu unit={row} onAction={handleUnitAction} />
+    );
+
     // Unit card renderer for grid view
-    const renderUnitCard = (unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any) => {
+    const renderUnitCard = (unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Property }>) => {
         if (!unit) return null;
         
         const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
@@ -294,9 +365,7 @@ export default function UnitsListPage() {
                             {unit?.propertyNumber || unit?.name || 'N/A'}
                         </h4>
                     </div>
-                    <Badge variant="soft" color={statusInfo.color as any}>
-                        {statusInfo.label}
-                    </Badge>
+                    {ActionMenu && <ActionMenu row={unit} />}
                 </div>
 
                 <div className="space-y-2 mb-4">
@@ -331,24 +400,6 @@ export default function UnitsListPage() {
                         </div>
                     </div>
                 )}
-
-                <div className="flex gap-2">
-                    <ui.Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="flex-1" 
-                        icon={Eye}
-                        onClick={() => handleUnitAction(unit, 'view')}
-                    >
-                        Detay
-                    </ui.Button>
-                    <ui.Button 
-                        variant="ghost" 
-                        size="sm" 
-                        icon={MoreVertical}
-                        onClick={() => handleUnitAction(unit, 'menu')}
-                    />
-                </div>
             </ui.Card>
         );
     };
@@ -634,6 +685,7 @@ export default function UnitsListPage() {
                                         emptyStateMessage="Henüz konut kaydı bulunmuyor."
                                         selectable={true}
                                         showPagination={true}
+                                        ActionMenuComponent={UnitActionMenuWrapper}
                                     />
                                 )}
                                 {viewMode === 'grid' && (
@@ -667,6 +719,7 @@ export default function UnitsListPage() {
                                             Skeleton,
                                             BulkActionsBar,
                                         }}
+                                        ActionMenu={UnitActionMenuWrapper}
                                         renderCard={renderUnitCard}
                                         getItemId={(unit) => unit.id}
                                         gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
