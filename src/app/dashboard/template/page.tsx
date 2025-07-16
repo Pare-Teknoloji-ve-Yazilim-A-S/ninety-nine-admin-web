@@ -167,7 +167,7 @@ export default function TemplatePage() {
                                                     <div className="flex items-center gap-3">
                                                         <Badge
                                                             variant="soft"
-                                                            color={item % 2 === 0 ? "green" : "gold"}
+                                                            color={item % 2 === 0 ? "secondary" : "gold"}
                                                         >
                                                             {item % 2 === 0 ? "Aktif" : "Beklemede"}
                                                         </Badge>
@@ -198,7 +198,7 @@ export default function TemplatePage() {
                                                 <span className="text-sm text-text-light-secondary dark:text-text-secondary">
                                                     Durum:
                                                 </span>
-                                                <Badge variant="soft" color="green">
+                                                <Badge variant="soft" color="secondary">
                                                     Aktif
                                                 </Badge>
                                             </div>

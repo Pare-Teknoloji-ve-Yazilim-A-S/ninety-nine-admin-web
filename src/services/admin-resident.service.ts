@@ -44,6 +44,10 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
             this.logger.info(`Fetched ${response.data.users.length} residents`);
             return {
                 data: response.data.users,
+                total: response.data.pagination.total,
+                page: response.data.pagination.page,
+                limit: response.data.pagination.limit,
+                totalPages: response.data.pagination.totalPages,
                 pagination: response.data.pagination,
             };
         } catch (error) {
@@ -68,6 +72,10 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
             this.logger.info(`Fetched ${response.data.users.length} pending residents`);
             return {
                 data: response.data.users,
+                total: response.data.pagination.total,
+                page: response.data.pagination.page,
+                limit: response.data.pagination.limit,
+                totalPages: response.data.pagination.totalPages,
                 pagination: response.data.pagination,
             };
         } catch (error) {
