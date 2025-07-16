@@ -114,80 +114,105 @@ export default function PropertyDetailPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background-primary">
+      <div className="min-h-screen bg-gradient-to-br from-background-light-primary via-background-light-secondary to-primary-gold-light/30 dark:from-background-primary dark:via-background-secondary dark:to-background-card flex flex-col min-h-screen">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="lg:ml-72">
+        <div className="lg:ml-72 flex flex-col flex-1">
           <DashboardHeader title={property.name} breadcrumbItems={breadcrumbItems} />
-          <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex items-center gap-4 mb-8">
-              <Link href="/dashboard/units">
-                <Button variant="ghost" icon={ArrowLeft}>
-                  Geri Dön
-                </Button>
-              </Link>
-              <h1 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                {property.name}
-              </h1>
-              <Badge variant="soft" color={mapBadgeColor(typeInfo?.color)}>
-                {typeInfo?.label || property.type}
-              </Badge>
-              {statusInfo && (
-                <Badge variant="soft" color={mapBadgeColor(statusInfo.color)} className="flex items-center gap-1">
-                  <statusInfo.icon className="h-4 w-4 mr-1" />
-                  {statusInfo.label}
-                </Badge>
-              )}
-            </div>
-
-            <Card>
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-text-light-muted dark:text-text-muted">Konut Numarası</p>
-                    <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                      {property.propertyNumber || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-text-light-muted dark:text-text-muted">Konut Grubu</p>
-                    <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                      {property.propertyGroup || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-text-light-muted dark:text-text-muted">Alan (m²)</p>
-                    <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                      {property.area || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-text-light-muted dark:text-text-muted">Blok</p>
-                    <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                      {property.blockNumber || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-text-light-muted dark:text-text-muted">Kat</p>
-                    <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                      {property.floor ?? "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-text-light-muted dark:text-text-muted">Durum</p>
-                    <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                      {statusInfo?.label || property.status}
-                    </p>
+          <main className="flex flex-col items-center flex-1 w-full py-12 px-4 sm:px-8 lg:px-16">
+            <div className="w-full max-w-5xl">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-10">
+                <Link href="/dashboard/units">
+                  <Button variant="ghost" icon={ArrowLeft}>
+                    Geri Dön
+                  </Button>
+                </Link>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-text-on-light dark:text-on-dark tracking-tight mb-1 flex items-center gap-3">
+                    <span className="text-primary-gold">{property.name}</span>
+                    <span className="inline-block">
+                      <Badge variant="soft" color={mapBadgeColor(typeInfo?.color)} className="text-lg px-4 py-1 rounded-xl shadow-md flex items-center gap-2">
+                        {typeInfo?.icon && <typeInfo.icon className="h-5 w-5 mr-1" />}
+                        {typeInfo?.label || property.type}
+                      </Badge>
+                    </span>
+                  </h1>
+                  <div className="flex items-center gap-3 mt-2">
+                    {statusInfo && (
+                      <Badge variant="soft" color={mapBadgeColor(statusInfo.color)} className="flex items-center gap-2 px-3 py-1 rounded-lg shadow-sm text-base">
+                        <statusInfo.icon className="h-4 w-4 mr-1" />
+                        {statusInfo.label}
+                      </Badge>
+                    )}
                   </div>
                 </div>
-                {property.bills && property.bills.length > 0 && (
-                  <div className="mt-6 p-4 bg-primary-red/10 dark:bg-primary-red/20 rounded-lg">
-                    <div className="text-sm text-primary-red font-medium">
-                      Ödenmemiş Faturalar Var
+              </div>
+
+              <Card className="rounded-2xl shadow-xl border border-primary-gold/10 bg-background-light-card/80 dark:bg-background-card/80 backdrop-blur-md">
+                <div className="p-8 space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
+                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Konut Numarası</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.propertyNumber || "-"}</p>
+                    </div>
+                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
+                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Konut Grubu</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.propertyGroup || "-"}</p>
+                    </div>
+                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
+                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Alan (m²)</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.area || "-"}</p>
+                    </div>
+                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
+                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Blok</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.blockNumber || "-"}</p>
+                    </div>
+                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
+                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Kat</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.floor ?? "-"}</p>
+                    </div>
+                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
+                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Durum</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{statusInfo?.label || property.status}</p>
                     </div>
                   </div>
-                )}
-              </div>
-            </Card>
+                  {/* Fatura Durumu */}
+                  {property.bills && property.bills.length > 0 && (() => {
+                    const unpaidBills = property.bills.filter((bill: any) => bill.status !== "PAID");
+                    const allPaid = unpaidBills.length === 0;
+                    if (allPaid) {
+                      return (
+                        <div className="mt-8 p-6 bg-semantic-success/10 dark:bg-semantic-success/20 rounded-xl border border-semantic-success/20 flex items-center gap-4">
+                          <CheckCircle className="h-6 w-6 text-semantic-success-600" />
+                          <div className="text-base text-semantic-success-600 font-semibold">
+                            Tüm faturalar ödendi
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="mt-8 p-6 bg-primary-red/10 dark:bg-primary-red/20 rounded-xl border border-primary-red/20">
+                          <div className="flex items-center gap-4 mb-2">
+                            <AlertCircle className="h-6 w-6 text-primary-red" />
+                            <div className="text-base text-primary-red font-semibold">
+                              Ödenmemiş Faturalar Var
+                            </div>
+                          </div>
+                          <ul className="space-y-2 mt-2">
+                            {unpaidBills.map((bill: any) => (
+                              <li key={bill.id} className="flex flex-col md:flex-row md:items-center md:gap-6 bg-background-light-soft dark:bg-background-soft rounded-lg p-3 border border-primary-red/10">
+                                <span className="font-medium text-text-on-dark">{bill.title}</span>
+                                <span className="text-text-light-secondary dark:text-text-secondary">Tutar: <span className="font-semibold">₺{bill.amount}</span></span>
+                                <span className="text-text-light-secondary dark:text-text-secondary">Son Tarih: <span className="font-semibold">{bill.dueDate}</span></span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    }
+                  })()}
+                </div>
+              </Card>
+            </div>
           </main>
         </div>
       </div>
