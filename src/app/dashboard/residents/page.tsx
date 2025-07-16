@@ -298,6 +298,19 @@ export default function ResidentsPage() {
         uiHook.handleRefresh();
     }, [uiHook]);
 
+    // 1. Local search input state
+    const [searchInput, setSearchInput] = useState(filtersHook.searchQuery || "");
+
+    // 2. Input değişimini yöneten handler
+    const handleSearchInputChange = useCallback((value: string) => {
+        setSearchInput(value);
+    }, []);
+
+    // 3. Debounce sonrası API çağrısını tetikleyen handler
+    const handleSearchSubmit = useCallback((value: string) => {
+        filtersHook.handleSearch(value); // Sadece burada API çağrısı yapılmalı
+    }, [filtersHook]);
+
     // Lifecycle effects
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -497,10 +510,12 @@ export default function ResidentsPage() {
                                     <div className="flex-1">
                                         <SearchBar
                                             placeholder="Ad, soyad, pasaport, telefon, daire no ile ara..."
-                                            value={filtersHook.searchQuery}
-                                            onChange={filtersHook.handleSearch}
+                                            value={searchInput}
+                                            onChange={handleSearchInputChange}
+                                            onSearch={handleSearchSubmit}
                                             showAdvancedFilter={true}
                                             onAdvancedFilterClick={filtersHook.handleOpenDrawer}
+                                            debounceMs={500}
                                         />
                                     </div>
 
