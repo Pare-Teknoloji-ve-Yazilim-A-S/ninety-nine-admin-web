@@ -44,15 +44,11 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
             this.logger.info(`Fetched ${response.data.users.length} residents`);
             return {
                 data: response.data.users,
-                total: response.data.pagination.total,
-                page: response.data.pagination.page,
-                limit: response.data.pagination.limit,
-                totalPages: response.data.pagination.totalPages,
-                total: response.data.pagination.total,
-                page: response.data.pagination.page,
-                limit: response.data.pagination.limit,
-                totalPages: response.data.pagination.totalPages,
-                pagination: response.data.pagination,
+                total: response.pagination.total,
+                page: response.pagination.page,
+                limit: response.pagination.limit,
+                totalPages: response.pagination.totalPages,
+                pagination: response.pagination,
             };
         } catch (error) {
             this.logger.error('Failed to fetch residents', error);
