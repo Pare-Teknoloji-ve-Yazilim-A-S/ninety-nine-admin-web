@@ -36,18 +36,54 @@ export default function QrPage() {
     return () => clearInterval(interval);
   }, [JSON.stringify(paramsObj)]);
 
+  // Responsive QR code size
+  const [qrSize, setQrSize] = useState(220);
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth < 640) {
+        setQrSize(300); // Mobilde daha büyük
+      } else {
+        setQrSize(220);
+      }
+    }
+    if (typeof window !== "undefined") {
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-light-primary dark:bg-background-primary">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background-light-primary dark:bg-background-primary">
+      {/* Logo ve Hoşgeldiniz Alanı */}
+     
+      {/* Kart Alanı */}
       <div className="bg-background-light-card dark:bg-background-card rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="w-full flex flex-col items-center mt-8 mb-4">
+        <div className="flex items-center gap-3">
+          <img
+            src="/images/NinetyNine Logo.png"
+            alt="NinetyNine Logo"
+            className="h-20 w-auto"
+          />
+          <div>
+            <h1 className="text-xl font-bold gradient-gold-start text-primary-gold">NinetyNine</h1>
+            <p className="text-xs text-text-light-muted dark:text-text-muted">Admin Panel</p>
+          </div>
+        </div>
+        <div className="mt-3 text-center">
+          
+        </div>
+      </div>
         <h1 className="text-2xl font-bold text-text-on-light dark:text-on-dark mb-4">QR İşlemleri</h1>
         <p className="text-base text-text-light-secondary dark:text-text-secondary mb-2">
           QR kodunu aşağıda görebilirsiniz. Bu kodu güvenliğe okutunuz.
         </p>
         <div className="flex justify-center my-6">
-          <div className="bg-background-light-soft dark:bg-background-soft p-8 rounded-xl inline-block">
+          <div className="bg-background-light-soft dark:bg-background-soft p-4 sm:p-8 rounded-xl inline-block">
             <QRCode
               value={qrData}
-              size={220}
+              size={qrSize}
               bgColor="#FFFFFF"
               fgColor="#000000"
               style={{ background: "#FFFFFF", padding: 8, borderRadius: 16 }}
