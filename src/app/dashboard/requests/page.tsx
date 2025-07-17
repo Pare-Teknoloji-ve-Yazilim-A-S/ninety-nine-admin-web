@@ -20,7 +20,8 @@ import {
     MoreVertical,
     User,
     Edit,
-    Trash2
+    Trash2,
+    PauseCircle
 } from 'lucide-react';
 import SearchBar from '@/app/components/ui/SearchBar';
 import ViewToggle from '@/app/components/ui/ViewToggle';
@@ -60,7 +61,7 @@ export default function RequestsListPage() {
     const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
 
     // Fetch tickets from API
-    React.useEffect(() => {
+    const fetchRequests = React.useCallback(() => {
         setLoading(true);
         setError(null);
         ticketService.getOpenTickets()
@@ -73,6 +74,9 @@ export default function RequestsListPage() {
                 setLoading(false);
             });
     }, []);
+    React.useEffect(() => {
+        fetchRequests();
+    }, [fetchRequests]);
 
     // Breadcrumb
     const breadcrumbItems = [
@@ -84,7 +88,8 @@ export default function RequestsListPage() {
     // Status config (placeholder)
     const statusConfig = {
         OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
-        IN_PROGRESS: { label: 'İşlemde', color: 'warning', icon: RotateCcw },
+        IN_PROGRESS: { label: 'İşlemde', color: 'success', icon: RotateCcw },
+        WAITING: { label: 'Beklemede', color: 'warning', icon: PauseCircle },
         COMPLETED: { label: 'Tamamlandı', color: 'success', icon: CheckCircle },
         SCHEDULED: { label: 'Planlandı', color: 'primary', icon: Calendar }
     };
@@ -330,6 +335,7 @@ export default function RequestsListPage() {
                 { id: 'all', label: 'Tümü', value: '' },
                 { id: 'OPEN', label: 'Açık', value: 'OPEN' },
                 { id: 'IN_PROGRESS', label: 'İşlemde', value: 'IN_PROGRESS' },
+                { id: 'WAITING', label: 'Beklemede', value: 'WAITING' },
                 { id: 'COMPLETED', label: 'Tamamlandı', value: 'COMPLETED' },
             ],
         },
@@ -355,7 +361,7 @@ export default function RequestsListPage() {
 
     // Refresh handler (placeholder)
     const handleRefresh = () => {
-        // Placeholder
+        fetchRequests();
     };
 
     // Table columns (API'den gelen Ticket yapısına göre)
@@ -556,6 +562,10 @@ export default function RequestsListPage() {
                         open={detailModal.open}
                         onClose={() => setDetailModal({ open: false, item: null })}
                         item={detailModal.item}
+                        onActionComplete={() => {
+                            setDetailModal({ open: false, item: null });
+                            fetchRequests();
+                        }}
                     />
                 </div>
             </div>
