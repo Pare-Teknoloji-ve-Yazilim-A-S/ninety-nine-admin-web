@@ -5,9 +5,15 @@ import QRCode from "react-qr-code";
 import { useSearchParams, usePathname } from "next/navigation";
 
 export default function QrPage() {
-  // Next.js App Router'da searchParams ve pathname hook'ları
-  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-  const qrData = searchParams?.get("data") || "NinetyNine Club";
+  // Tüm query parametrelerini obje olarak topla
+  let paramsObj = {};
+  if (typeof window !== "undefined") {
+    const searchParams = new URLSearchParams(window.location.search);
+    paramsObj = Array.from(searchParams.entries()).reduce((acc, [key, value]) => {
+      acc[key] = value;
+      return acc;
+    }, {} as Record<string, string>);
+  }
 
   // Paylaşım linki için tam URL'i client-side'da al
   const [shareUrl, setShareUrl] = useState("");
@@ -16,6 +22,19 @@ export default function QrPage() {
       setShareUrl(window.location.href);
     }
   }, []);
+
+  // QR kodunu 1.5 sn'de bir güncelle (paramsObj + timestamp)
+  const [qrData, setQrData] = useState("");
+  useEffect(() => {
+    const getQrString = () => {
+      return JSON.stringify({ ...paramsObj, ts: Date.now() });
+    };
+    setQrData(getQrString());
+    const interval = setInterval(() => {
+      setQrData(getQrString());
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [JSON.stringify(paramsObj)]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-light-primary dark:bg-background-primary">
@@ -35,8 +54,8 @@ export default function QrPage() {
             />
           </div>
         </div>
-        <p className="text-xs text-text-light-muted dark:text-text-muted break-all mb-4">{qrData}</p>
-        
+        {/* <p className="text-xs text-text-light-muted dark:text-text-muted break-all mb-4">{qrData}</p> */}
+
       </div>
     </div>
   );
