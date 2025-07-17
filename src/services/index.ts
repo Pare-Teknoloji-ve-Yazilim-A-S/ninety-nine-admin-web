@@ -17,6 +17,18 @@ export * from './utils/logger';
 
 // Domain Types
 export * from './types/auth.types';
+
+
+// Services
+export { default as authService, authService as AuthService } from './auth.service';
+export { default as userService, userService as UserService } from './user.service';
+export { default as adminResidentService, adminResidentService as AdminResidentService } from './admin-resident.service';
+export { default as residentService, residentService as ResidentService } from './resident.service';
+export { default as propertyService, PropertyService } from './property.service';
+export { unitsService, UnitsService } from './units.service';
+export { residentsStatsService } from './residents-stats.service';
+
+// Re-export commonly used types for convenience
 export type {
     // Export specific types from user.types to avoid Permission conflict
     User,
@@ -72,12 +84,7 @@ export type {
     BulkActionResult as PropertyBulkActionResult,
 } from './types/property.types';
 
-// Services
-export { default as authService, authService as AuthService } from './auth.service';
-export { default as userService, userService as UserService } from './user.service';
-export { default as adminResidentService, adminResidentService as AdminResidentService } from './admin-resident.service';
-export { default as residentService, residentService as ResidentService } from './resident.service';
-export { default as propertyService, PropertyService } from './property.service';
+
 
 // Re-export commonly used types for convenience
 export type {

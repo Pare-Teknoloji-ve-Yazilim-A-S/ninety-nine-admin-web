@@ -16,6 +16,7 @@ export { default as FloatingActionButton } from './FloatingActionButton'
 // Layout & Content Components
 export { default as Card, CardHeader, CardBody, CardFooter, CardTitle, CardSubtitle } from './Card'
 export { default as Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle, ModalSubtitle } from './Modal'
+export { default as ConfirmationModal } from './ConfirmationModal'
 export { default as Drawer, DrawerHeader, DrawerBody, DrawerFooter, DrawerTitle, DrawerSubtitle } from './Drawer'
 export { default as Tabs, TabList, Tab, TabPanel, TabPanels } from './Tabs'
 export { default as Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './Accordion'
@@ -69,4 +70,7 @@ export { default as Stepper, StepperPatterns } from './Stepper'
 // User components
 export { default as Avatar, AvatarGroup, AvatarPatterns } from './Avatar'
 export { default as UserCard, UserCardPatterns } from './UserCard'
-export { default as ProfileDropdown, ProfileDropdownPatterns } from './ProfileDropdown' 
+export { default as ProfileDropdown, ProfileDropdownPatterns } from './ProfileDropdown'
+
+// Export components
+export { default as ExportDropdown } from './ExportDropdown' 

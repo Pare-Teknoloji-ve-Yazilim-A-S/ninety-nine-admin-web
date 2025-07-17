@@ -44,11 +44,11 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
             this.logger.info(`Fetched ${response.data.users.length} residents`);
             return {
                 data: response.data.users,
-                total: response.data.pagination.total,
-                page: response.data.pagination.page,
-                limit: response.data.pagination.limit,
-                totalPages: response.data.pagination.totalPages,
-                pagination: response.data.pagination,
+                total: response.pagination.total,
+                page: response.pagination.page,
+                limit: response.pagination.limit,
+                totalPages: response.pagination.totalPages,
+                pagination: response.pagination,
             };
         } catch (error) {
             this.logger.error('Failed to fetch residents', error);
@@ -69,14 +69,13 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
                 `${apiConfig.endpoints.residents.admin.pendingVerification}${queryParams}`
             );
 
-            this.logger.info(`Fetched ${response.data.users.length} pending residents`);
             return {
-                data: response.data.users,
-                total: response.data.pagination.total,
-                page: response.data.pagination.page,
-                limit: response.data.pagination.limit,
-                totalPages: response.data.pagination.totalPages,
-                pagination: response.data.pagination,
+                data: response.data, // <-- düzeltildi
+                total: response.pagination.total,
+                page: response.pagination.page,
+                limit: response.pagination.limit,
+                totalPages: response.pagination.totalPages,
+                pagination: response.pagination,
             };
         } catch (error) {
             this.logger.error('Failed to fetch pending residents', error);
@@ -174,17 +173,17 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
      */
     async approveResident(id: string, data: ResidentApprovalDto): Promise<ApiResponse<ResidentApprovalResponse>> {
         try {
-            this.logger.info(`${data.decision === 'APPROVED' ? 'Approving' : 'Rejecting'} resident: ${id}`, data);
+
 
             const response = await apiClient.put<ResidentApprovalResponse>(
                 apiConfig.endpoints.residents.admin.approve(id),
                 data
             );
 
-            this.logger.info(`Resident ${data.decision === 'APPROVED' ? 'approved' : 'rejected'} successfully`);
+
             return response;
         } catch (error) {
-            this.logger.error(`Failed to ${data.decision === 'APPROVED' ? 'approve' : 'reject'} resident`, error);
+
             throw error;
         }
     }

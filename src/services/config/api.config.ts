@@ -1,7 +1,7 @@
 // API Configuration - Infrastructure Layer
 export const apiConfig = {
     // Base URLs - Next.js proxy kullanıyoruz (CORS bypass için)
-    baseURL: '/api',
+    baseURL: '/api/proxy',
     version: '', // API-99CLUB'da version yok
 
     // Timeout settings
@@ -27,14 +27,19 @@ export const apiConfig = {
     // Endpoints - API-99CLUB Compatible
     endpoints: {
         auth: {
-            login: '/auth/login',
+            login: '/auth/login-v2',
             logout: '/auth/logout',
             refresh: '/auth/refresh-token',
             register: '/auth/register',
-            me: '/auth/me',
+            me: '/auth/me-v2',
         },
         admin: {
             users: '/admin/users',
+            goldResidentsCount: '/admin/users/gold-residents/count',
+            activeResidentsCount: '/admin/users/active-residents/count',
+            activeUsersCount: '/admin/users/active-users/count',
+            tenantsCount: '/admin/users/tenants/count',
+            ownersCount: '/admin/users/owners/count',
             roles: '/admin/roles',
             permissions: '/admin/permissions',
             configs: '/admin/configs',

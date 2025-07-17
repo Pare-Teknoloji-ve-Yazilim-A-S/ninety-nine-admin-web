@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { residentService } from '@/services/resident.service';
 import { Resident } from '@/app/components/ui/ResidentRow';
 import { ResidentFilterParams, ResidentStatsResponse } from '@/services/types/resident.types';
+import { ApiResident } from '@/app/dashboard/residents/types';
+import { transformApiResidentToComponentResident } from '@/app/dashboard/residents/utils/transformations';
 
 interface UseResidentsDataProps {
     currentPage: number;
@@ -27,96 +29,64 @@ interface UseResidentsDataReturn {
     setResidents: React.Dispatch<React.SetStateAction<Resident[]>>;
 }
 
-// API types for transformation
-interface ApiResident {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-    phone?: string;
-    tcKimlikNo?: string;
-    nationalId?: string;
-    passportNumber?: string;
-    property?: {
-        ownershipType?: 'owner' | 'tenant';
-        block?: string;
-        apartment?: string;
-        roomType?: string;
-        governorate?: string;
-        district?: string;
-        neighborhood?: string;
-    };
-    registrationDate?: string;
-    lastActivity?: string;
-    financial?: {
-        totalDebt?: number;
-        lastPaymentDate?: string;
-        balance?: number;
-    };
-    status?: string;
-    membershipTier?: string;
-    notes?: string;
-    avatar?: string;
-    createdAt?: string;
-    updatedAt?: string;
-}
-
 // Convert API types to component types (Iraq-specific)
-const transformApiResidentToComponentResident = (apiResident: ApiResident): Resident => {
-    return {
-        id: apiResident.id,
-        firstName: apiResident.firstName,
-        lastName: apiResident.lastName,
-        fullName: `${apiResident.firstName} ${apiResident.lastName}`,
-        // Iraq-specific: National ID could be Iraqi National ID or Passport
-        nationalId: apiResident.tcKimlikNo || apiResident.nationalId || apiResident.passportNumber,
+// const transformApiResidentToComponentResident = (apiResident: ApiResident): Resident => {
+//     return {
+//         id: apiResident.id,
+//         firstName: apiResident.firstName,
+//         lastName: apiResident.lastName,
+//         fullName: `${apiResident.firstName} ${apiResident.lastName}`,
+//         // Iraq-specific: National ID could be Iraqi National ID or Passport
+//         nationalId: apiResident.tcKimlikNo || apiResident.nationalId || apiResident.passportNumber,
+//         email: apiResident.email,
+//         phone: apiResident.phone,
 
-        // Property information from API
-        residentType: {
-            type: apiResident.property?.ownershipType || 'owner',
-            label: apiResident.property?.ownershipType === 'tenant' ? 'Kiracı' : 'Malik',
-            color: apiResident.property?.ownershipType === 'tenant' ? 'blue' : 'green'
-        },
-        address: {
-            building: apiResident.property?.block || 'Belirtilmemiş',
-            apartment: apiResident.property?.apartment || 'Belirtilmemiş',
-            roomType: apiResident.property?.roomType || 'Belirtilmemiş',
-            // Iraq-specific location fields (commented out until ResidentAddress interface is updated)
-            // governorate: apiResident.property?.governorate || 'Belirtilmemiş',
-            // district: apiResident.property?.district || 'Belirtilmemiş',
-            // neighborhood: apiResident.property?.neighborhood || 'Belirtilmemiş'
-        },
-        contact: {
-            phone: apiResident.phone || 'Belirtilmemiş',
-            email: apiResident.email || 'Belirtilmemiş',
-            formattedPhone: apiResident.phone ? `+964 ${apiResident.phone}` : 'Belirtilmemiş'
-        },
-        financial: {
-            balance: apiResident.financial?.balance || 0,
-            totalDebt: apiResident.financial?.totalDebt || 0,
-            lastPaymentDate: apiResident.financial?.lastPaymentDate
-        },
-        status: {
-            type: 'active',
-            label: 'Aktif',
-            color: 'green'
-        },
-        membershipTier: {
-            type: 'BRONZE',
-            label: 'Bronz Üye',
-            color: 'blue'
-        },
-        verificationStatus: {
-            type: 'APPROVED',
-            color: 'green',
-            label: 'Doğrulandı'
-        },
-        registrationDate: apiResident.registrationDate || new Date().toISOString(),
-        lastActivity: apiResident.lastActivity,
-        notes: apiResident.notes,
-        profileImage: apiResident.avatar
-    };
-};
+//         // Property information from API
+//         residentType: {
+//             type: apiResident.property?.ownershipType || 'owner',
+//             label: apiResident.property?.ownershipType === 'tenant' ? 'Kiracı' : 'Malik',
+//             color: apiResident.property?.ownershipType === 'tenant' ? 'blue' : 'green'
+//         },
+//         address: {
+//             building: apiResident.property?.block || 'Belirtilmemiş',
+//             apartment: apiResident.property?.apartment || 'Belirtilmemiş',
+//             roomType: apiResident.property?.roomType || 'Belirtilmemiş',
+//             // Iraq-specific location fields
+//             governorate: apiResident.property?.governorate || 'Belirtilmemiş',
+//             district: apiResident.property?.district || 'Belirtilmemiş',
+//             neighborhood: apiResident.property?.neighborhood || 'Belirtilmemiş'
+//         },
+//         contact: {
+//             phone: apiResident.phone || 'Belirtilmemiş',
+//             email: apiResident.email || 'Belirtilmemiş',
+//             formattedPhone: apiResident.phone ? `+964 ${apiResident.phone}` : 'Belirtilmemiş'
+//         },
+//         financial: {
+//             balance: apiResident.financial?.balance || 0,
+//             totalDebt: apiResident.financial?.totalDebt || 0,
+//             lastPaymentDate: apiResident.financial?.lastPaymentDate
+//         },
+//         status: {
+//             type: 'active',
+//             label: 'Aktif',
+//             color: 'green'
+//         },
+//         membershipTier: {
+//             type: 'BRONZE',
+//             label: 'Bronz Üye'
+//         },
+//         verificationStatus: {
+//             color: 'green',
+//             label: 'Doğrulandı'
+//         },
+//         registrationDate: apiResident.registrationDate || new Date().toISOString(),
+//         lastActivity: apiResident.lastActivity,
+//         notes: apiResident.notes,
+//         profileImage: apiResident.avatar,
+//         createdAt: apiResident.createdAt,
+//         updatedAt: apiResident.updatedAt
+//     };
+// };
 
 export const useResidentsData = ({
     currentPage,
@@ -143,14 +113,14 @@ export const useResidentsData = ({
                 limit: recordsPerPage,
                 search: searchQuery || undefined,
                 orderColumn: sortConfig.key,
-                orderBy: sortConfig.direction.toUpperCase() as 'ASC' | 'DESC',
+                orderBy: sortConfig.direction === 'asc' ? 'ASC' : 'DESC',
                 ...filters
             };
 
             const response = await residentService.getAllResidents(filterParams);
             
             if (response.data) {
-                const transformedResidents = response.data.map((apiResident: any) => transformApiResidentToComponentResident(apiResident));
+                const transformedResidents = (response.data as ApiResident[]).map(transformApiResidentToComponentResident);
                 setResidents(transformedResidents);
                 setTotalRecords(response.total || 0);
                 setTotalPages(response.totalPages || 0);
@@ -173,32 +143,8 @@ export const useResidentsData = ({
 
     const fetchStats = useCallback(async () => {
         try {
-            // Mock stats for now since getResidentStats doesn't exist yet
-            const mockStats = {
-                totalResidents: residents.length,
-                activeResidents: residents.filter(r => r.status.type === 'active').length,
-                pendingApproval: residents.filter(r => r.status.type === 'pending').length,
-                newRegistrationsThisMonth: 0,
-                approvedThisMonth: 0,
-                rejectedThisMonth: 0,
-                byMembershipTier: {
-                    gold: residents.filter(r => r.isGoldMember).length,
-                    silver: 0,
-                    standard: residents.filter(r => !r.isGoldMember).length
-                },
-                byOwnershipType: {
-                    owner: residents.filter(r => r.residentType.type === 'owner').length,
-                    tenant: residents.filter(r => r.residentType.type === 'tenant').length
-                },
-                byStatus: {
-                    active: residents.filter(r => r.status.type === 'active').length,
-                    inactive: residents.filter(r => r.status.type === 'inactive').length,
-                    pending: residents.filter(r => r.status.type === 'pending').length,
-                    suspended: 0,
-                    banned: 0
-                }
-            };
-            setStats(mockStats);
+            const statsResponse = await residentService.getResidentStats();
+            setStats(statsResponse as unknown as ResidentStatsResponse);
         } catch (error: unknown) {
             console.error('Failed to fetch stats:', error);
             // Don't set error state for stats failure, just log it

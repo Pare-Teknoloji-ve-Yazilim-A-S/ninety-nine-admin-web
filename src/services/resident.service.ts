@@ -14,10 +14,14 @@ import {
     ResidentApprovalResponse,
     BulkActionDto,
     BulkActionResponse,
+    CreateResidentRequest // yeni tip eklendi
 } from './types/resident.types';
 import { ApiResponse, PaginatedResponse } from './core/types';
 
 class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateResidentDto> {
+    getResidentStats() {
+        throw new Error('Method not implemented.');
+    }
     protected baseEndpoint = apiConfig.endpoints.residents.admin.base;
 
     constructor() {
@@ -78,8 +82,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
             const response = await apiClient.put<AvatarUploadResponse>(
                 apiConfig.endpoints.residents.mobile.uploadAvatar(id),
-                formData,
-                {} as any
+                formData
             );
 
             this.logger.info('Avatar uploaded successfully');
@@ -128,7 +131,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
             
             // Eğer response.data.users yoksa, response.data'nın kendisi array olabilir
             const users = response.data.users || response.data || [];
-            const pagination = response.data.pagination || {
+            const pagination = response.data.pagination || response.pagination || {
                 total: Array.isArray(users) ? users.length : 0,
                 page: params?.page || 1,
                 limit: params?.limit || 10,
@@ -186,7 +189,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
             );
 
             // API response yapısını kontrol edelim
-            const users = response.data.users || response.data || [];
+            const users =  response.data || [];
             const pagination = response.data.pagination || {
                 total: Array.isArray(users) ? users.length : 0,
                 page: params?.page || 1,
@@ -194,7 +197,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
                 totalPages: 1
             };
 
-            this.logger.info(`Fetched ${users.length} pending residents`);
+          
             return {
                 data: users,
                 pagination: pagination,
@@ -255,12 +258,10 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
      * Create new resident (admin)
      * POST /admin/users
      */
-    async createResident(data: CreateResidentDto): Promise<ApiResponse<Resident>> {
+    async createResident(data: CreateResidentRequest): Promise<ApiResponse<Resident>> {
         try {
-            this.logger.info('Creating new resident (admin)', { email: data.email });
-
+            this.logger.info('Creating new resident (admin)', { personalInfo: data.personalInfo });
             const response = await apiClient.post<Resident>(apiConfig.endpoints.residents.admin.base, data);
-
             this.logger.info('Resident created successfully');
             return response;
         } catch (error) {
@@ -344,8 +345,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
             const response = await apiClient.post<Resident>(
                 apiConfig.endpoints.residents.mobile.uploadDocuments(id),
-                formData,
-                {} as any
+                formData
             );
 
             this.logger.info('Documents uploaded successfully');

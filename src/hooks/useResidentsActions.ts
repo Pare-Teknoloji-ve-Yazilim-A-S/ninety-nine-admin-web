@@ -4,6 +4,8 @@ import { useCallback } from 'react';
 import { residentService } from '@/services/resident.service';
 import { Resident } from '@/app/components/ui/ResidentRow';
 import { useToast } from '@/hooks/useToast';
+import adminResidentService from '@/services/admin-resident.service';
+import billingService, { Bill } from '@/services/billing.service';
 
 interface UseResidentsActionsProps {
     refreshData: () => Promise<void>;
@@ -28,8 +30,9 @@ interface UseResidentsActionsReturn {
     handleGenerateQR: (resident: Resident) => void;
     handleViewNotes: (resident: Resident) => void;
     handleViewHistory: (resident: Resident) => void;
-    handleViewPaymentHistory: (resident: Resident) => void;
+    handleViewPaymentHistory: (resident: Resident) => Promise<{ bills: Bill[]; error?: string }>;
     handleDeleteResident: (resident: Resident) => Promise<void>;
+    handleSetResidentStatus: (resident: Resident, status: 'ACTIVE' | 'INACTIVE') => Promise<void>;
     
     // Export actions
     handleExportExcel: () => void;
@@ -74,16 +77,16 @@ export const useResidentsActions = ({
         if (selectedResidents.length === 0) return;
 
         const confirmMessage = `${selectedResidents.length} sakinin durumunu ${status === 'active' ? 'aktif' : 'pasif'} yapmak istediğinizden emin misiniz?`;
-        
         if (confirm(confirmMessage)) {
             try {
-                // Bulk status update logic would go here
-                // await residentService.bulkUpdateStatus(selectedResidents.map(r => r.id), status);
-                
+                if (status === 'active') {
+                    await adminResidentService.bulkActivateResidents(selectedResidents.map(r => String(r.id)));
+                } else {
+                    await adminResidentService.bulkDeactivateResidents(selectedResidents.map(r => String(r.id)));
+                }
                 await refreshData();
                 setSelectedResidents([]);
                 success('Durum güncellendi', `${selectedResidents.length} sakinin durumu başarıyla güncellendi.`);
-
             } catch (err: unknown) {
                 console.error('Bulk status update failed:', err);
                 error('Durum Güncelleme Hatası', err instanceof Error ? err.message : 'Durum güncelleme işlemi başarısız oldu');
@@ -163,18 +166,26 @@ export const useResidentsActions = ({
     }, [setResidents, success]);
 
     const handleViewHistory = useCallback((resident: Resident) => {
-        info('Aktivite Geçmişi', `${resident.fullName} - Kayıt: ${new Date(resident.registrationDate).toLocaleDateString()}, Son aktivite: ${resident.lastActivity || 'Bilgi yok'}`);
+        const registration = new Date(String(resident.registrationDate)).toLocaleDateString();
+        const lastActivity = resident.lastActivity ? new Date(String(resident.lastActivity)).toLocaleDateString() : 'Bilgi yok';
+        info('Aktivite Geçmişi', `${resident.fullName} - Kayıt: ${registration}, Son aktivite: ${lastActivity}`);
     }, [info]);
 
-    const handleViewPaymentHistory = useCallback((resident: Resident) => {
-        const debt = resident.financial.totalDebt;
-        info('Ödeme Geçmişi', `${resident.fullName} - Borç: ₺${debt.toLocaleString()}, Bakiye: ₺${resident.financial.balance.toLocaleString()}`);
-    }, [info]);
+    // Yeni: Ödeme geçmişi modalı için async handler
+    const handleViewPaymentHistory = async (resident: Resident): Promise<{ bills: Bill[]; error?: string }> => {
+        try {
+            const bills = await billingService.getBillsByUser(String(resident.id));
+            console.log("bills GELDİ Mİ ALOO", bills);
+            return { bills };
+        } catch (err: any) {
+            return { bills: [], error: err?.message || 'Ödeme geçmişi alınamadı.' };
+        }
+    };
 
     const handleDeleteResident = useCallback(async (resident: Resident) => {
         if (confirm(`${resident.fullName} sakinini kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {
             try {
-                await residentService.deleteResident(resident.id);
+                await residentService.deleteResident(String(resident.id));
                 await refreshData();
                 success('Sakin silindi', `${resident.fullName} başarıyla silindi.`);
             } catch (err: unknown) {
@@ -183,6 +194,24 @@ export const useResidentsActions = ({
             }
         }
     }, [refreshData, success, error]);
+
+    // Bireysel resident için aktif/pasif yapma
+    const handleSetResidentStatus = useCallback(
+        async (resident: Resident, status: 'ACTIVE' | 'INACTIVE') => {
+            const actionLabel = status === 'ACTIVE' ? 'Aktif' : 'Pasif';
+            if (confirm(`${resident.fullName} sakini ${actionLabel} yapmak istediğinize emin misiniz?`)) {
+                try {
+                    await adminResidentService.updateResident(String(resident.id), { status });
+                    await refreshData();
+                    success('Durum güncellendi', `${resident.fullName} ${actionLabel} yapıldı.`);
+                } catch (err: unknown) {
+                    console.error('Status update failed:', err);
+                    error('Durum Güncelleme Hatası', err instanceof Error ? err.message : 'Durum güncelleme işlemi başarısız oldu');
+                }
+            }
+        },
+        [refreshData, success, error]
+    );
 
     // Export Actions
     const handleExportExcel = useCallback(() => {
@@ -223,6 +252,7 @@ export const useResidentsActions = ({
         handleViewHistory,
         handleViewPaymentHistory,
         handleDeleteResident,
+        handleSetResidentStatus,
         
         // Export actions
         handleExportExcel,

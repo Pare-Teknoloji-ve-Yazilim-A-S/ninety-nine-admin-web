@@ -75,6 +75,28 @@ export interface CreateResidentDto {
     documents?: File[];
 }
 
+// Yeni API formatı için:
+export interface CreateResidentRequest {
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    password?: string;
+  };
+  propertyInfo: {
+    name?: string;
+    block: string;
+    propertyNumber: string;
+    propertyType: 'RESIDENCE';
+    ownershipType: 'owner' | 'tenant';
+  };
+  documents?: {
+    type: string;
+    url: string;
+  }[];
+}
+
 export interface UpdateResidentDto {
     email?: string;
     firstName?: string;
@@ -90,7 +112,7 @@ export interface UpdateResidentDto {
 
 // Approval DTOs
 export interface ResidentApprovalDto {
-    decision: 'APPROVED' | 'REJECTED';
+    decision: 'approved' | 'rejected';
     reason?: string;
     assignedRole?: string;
     initialMembershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
@@ -146,7 +168,7 @@ export interface ResidentListResponse {
 }
 
 export interface PendingResidentsResponse {
-    users: Resident[];
+    data: Resident[];
     pagination: {
         total: number;
         page: number;

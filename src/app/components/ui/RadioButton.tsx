@@ -32,12 +32,13 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
             lg: 'w-6 h-6'
         }
 
-        const baseClasses = 'rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-gold/50 focus:ring-offset-1 focus:ring-offset-background-primary'
-        const normalClasses = 'border-primary-gold/30 hover:border-primary-gold/50'
-        const checkedClasses = 'bg-primary-gold border-primary-gold'
-        const errorClasses = error ? 'border-primary-red focus:ring-primary-red/50' : ''
+        // Border ve focus efektleri kaldırıldı
+        const baseClasses = 'rounded-full transition-colors';
+        const normalClasses = '';
+        const checkedClasses = 'bg-primary-gold';
+        const errorClasses = error ? 'bg-primary-red' : '';
 
-        const containerClasses = direction === 'horizontal' ? 'flex flex-wrap gap-6' : 'space-y-3'
+        const containerClasses = direction === 'horizontal' ? 'flex flex-wrap gap-6' : 'space-y-3';
 
         return (
             <div className="space-y-2">
@@ -49,37 +50,47 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
 
                 <div className={containerClasses}>
                     {options.map((option, index) => (
-                        <div key={option.value} className="flex items-center space-x-3">
-                            <div className="relative flex-shrink-0">
-                                <input
-                                    ref={index === 0 ? ref : undefined}
-                                    type="radio"
-                                    value={option.value}
-                                    disabled={option.disabled}
-                                    className={`
-                    ${baseClasses}
-                    ${sizeClasses[radioSize]}
-                    ${error ? errorClasses : normalClasses}
-                    ${className}
-                    appearance-none cursor-pointer
-                    ${option.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                  `}
-                                    {...props}
-                                />
-
-                                {props.value === option.value && (
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                        <div className="w-2 h-2 bg-primary-dark-gray rounded-full" />
-                                    </div>
-                                )}
-                            </div>
-
+                        <div key={option.value} className="flex items-center gap-2 min-h-6">
                             <label
-                                className={`text-sm font-medium cursor-pointer font-inter ${option.disabled ? 'text-text-secondary opacity-50' : 'text-text-primary'
-                                    }`}
                                 htmlFor={`${props.name}-${option.value}`}
+                                className={`text-sm font-medium cursor-pointer font-inter flex items-center ${option.disabled ? 'text-text-secondary opacity-50' : 'text-text-primary'}`}
+                                style={{ lineHeight: 1.5 }}
                             >
-                                {option.label}
+                                <span className="relative flex items-center justify-center">
+                                    <input
+                                        ref={index === 0 ? ref : undefined}
+                                        id={`${props.name}-${option.value}`}
+                                        type="radio"
+                                        value={option.value}
+                                        disabled={option.disabled}
+                                        className={`
+                        ${baseClasses}
+                        ${sizeClasses[radioSize]}
+                        ${error ? errorClasses : normalClasses}
+                        ${props.value === option.value ? checkedClasses : ''}
+                        ${className}
+                        cursor-pointer
+                        ${option.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                        peer
+                    `}
+                                        checked={props.value === option.value}
+                                        onChange={props.onChange}
+                                        name={props.name}
+                                    />
+                                    {/* Custom dot for checked state, premium gold */}
+                                    <span
+                                        className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-150
+                        ${props.value === option.value ?
+                                                radioSize === 'lg' ? 'w-3 h-3' : radioSize === 'sm' ? 'w-1.5 h-1.5' : 'w-2 h-2'
+                                                : 'w-0 h-0'}
+                        ${props.value === option.value ? 'bg-primary-dark-gray' : ''}
+                    `}
+                                        style={{
+                                            backgroundColor: props.value === option.value ? '#ac8d6a' : 'transparent'
+                                        }}
+                                    />
+                                </span>
+                                <span className="ml-2 select-none flex items-center" style={{ minHeight: '1.5rem' }}>{option.label}</span>
                             </label>
                         </div>
                     ))}
@@ -99,4 +110,4 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
 
 RadioButton.displayName = 'RadioButton'
 
-export default RadioButton 
+export default RadioButton

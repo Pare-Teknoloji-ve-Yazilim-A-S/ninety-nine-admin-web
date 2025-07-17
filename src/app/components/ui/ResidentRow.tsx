@@ -24,10 +24,10 @@ interface ResidentFinancial {
     lastPaymentDate?: string;
 }
 
-interface ResidentStatus {
+export interface ResidentStatus {
     type: 'active' | 'pending' | 'inactive' | 'suspended';
     label: string;
-    color: 'green' | 'yellow' | 'red' | 'gray';
+    color: 'green' | 'yellow' | 'red' | 'gray' | 'blue';
 }
 
 interface ResidentType {
@@ -49,12 +49,13 @@ interface VerificationStatus {
 }
 
 export interface Resident {
-    id: string;
+    id: string | number;
     firstName: string;
     lastName: string;
     fullName: string;
     nationalId?: string;
     profileImage?: string;
+    avatar?: string;
     residentType: ResidentType;
     address: ResidentAddress;
     contact: ResidentContact;
@@ -67,6 +68,8 @@ export interface Resident {
     notes?: string;
     tags?: string[];
     isGoldMember?: boolean;
+    membershipTier?: string;
+    verificationStatus?: { label: string; color: string };
 }
 
 interface ResidentRowProps {

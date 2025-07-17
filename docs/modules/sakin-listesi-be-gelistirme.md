@@ -225,3 +225,69 @@ Görünüm: [▦ Grid] [☰ Liste] [📋 Kompakt]
 - Excel export: < 5 saniye (2500 kayıt)
 
 Bu bilgi mimarisi, yöneticilerin binlerce sakini etkin bir şekilde yönetmelerini, hızlı erişim sağlamalarını ve toplu işlemler yapmalarını kolaylaştıracak şekilde tasarlanmıştır.
+
+---
+
+# 📤 Sakin Listesi Dışa Aktarım (Export) Özelliği
+
+## 1. Mimari Karar: Export İşlemi FE mi, BE mi?
+
+### Backend Export (Önerilen Yaklaşım)
+- Büyük veri setlerinde performanslı ve güvenli.
+- Hassas veriler client'a taşınmaz.
+- Tüm kullanıcılar için tutarlı çıktı.
+- Gelişmiş PDF/Excel formatlama imkanı.
+
+### Frontend Export
+- Küçük veri setlerinde hızlı prototipleme için uygun.
+- Büyük veri setlerinde tarayıcıyı yavaşlatır.
+- Gelişmiş formatlama ve güvenlik kısıtlı.
+
+**Karar:**
+> Sakin Listesi gibi büyük ve hassas veri içeren modüllerde export işlemi backend'de yapılmalıdır.
+
+## 2. API Endpoint Tasarımı
+
+Export işlemleri için aşağıdaki endpointler önerilir:
+
+```
+GET /api/residents/export/pdf
+GET /api/residents/export/excel
+GET /api/residents/export/csv
+GET /api/residents/export/json
+```
+
+- **Tüm filtreler, arama ve sıralama parametreleri** query string ile iletilir.
+- **Kullanıcı hangi filtreleri seçtiyse, sadece o filtrelere uyan veriler indirilir.**
+- Response: İlgili formatta dosya (Content-Disposition: attachment)
+
+## 3. Frontend Entegrasyon
+
+Export butonuna tıklandığında FE'de örnek kullanım:
+
+```typescript
+const handleExport = async (format: 'pdf' | 'excel' | 'csv' | 'json') => {
+  const params = new URLSearchParams({
+    ...filters, // Kullanıcının seçtiği tüm filtreler
+    search: searchQuery,
+    orderColumn: sortConfig.key,
+    orderBy: sortConfig.direction
+  });
+  const response = await fetch(`/api/residents/export/${format}?${params}`);
+  const blob = await response.blob();
+  // Download logic
+};
+```
+
+> **Not:** Export edilen dosya, kullanıcının o anda uyguladığı filtreler, arama ve sıralama ile birebir aynı verileri içermelidir.
+
+## 4. Kullanıcı Deneyimi
+- Export işlemi sırasında loading göstergesi.
+- Büyük dosyalarda progress bar önerilir.
+- Hata durumunda kullanıcıya bildirim.
+
+## 5. Test ve Performans
+- 2500+ kayıt için <5 sn hedefi.
+- Farklı filtre ve sıralama kombinasyonları test edilmeli.
+
+---

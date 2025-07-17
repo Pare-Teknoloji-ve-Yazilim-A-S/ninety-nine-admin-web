@@ -77,7 +77,7 @@ const menuItems: MenuItemProps[] = [
         icon: Home,
         children: [
             { title: 'Daire/Villa Listesi', icon: Building, href: '/dashboard/units' },
-            { title: 'Boş Konutlar', icon: MapPin, href: '/dashboard/units/vacant' },
+            { title: 'Boş Konutlar', icon: MapPin, href: '/dashboard/units/empty' },
             { title: 'Bakım Durumu', icon: RotateCcw, href: '/dashboard/units/maintenance' }
         ]
     },
@@ -104,9 +104,9 @@ const menuItems: MenuItemProps[] = [
         title: 'Hizmet Talepleri',
         icon: Wrench,
         children: [
-            { title: 'Açık Talepler', icon: AlertCircle, href: '/dashboard/requests/open' },
-            { title: 'İşlem Bekleyenler', icon: Clock, href: '/dashboard/requests/pending' },
-            { title: 'Tamamlananlar', icon: CheckCircle, href: '/dashboard/requests/completed' }
+            { title: 'Açık Talepler', icon: AlertCircle, href: '/dashboard/requests' },
+            { title: 'İşlem Bekleyenler', icon: Clock, href: '/dashboard/requests/waiting' },
+            { title: 'Tamamlananlar', icon: CheckCircle, href: '/dashboard/requests/resolved' }
         ]
     },
     {

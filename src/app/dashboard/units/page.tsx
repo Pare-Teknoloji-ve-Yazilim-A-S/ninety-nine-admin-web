@@ -6,11 +6,8 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
-import Badge from '@/app/components/ui/Badge';
-import ViewToggle from '@/app/components/ui/ViewToggle';
-import SearchBar from '@/app/components/ui/SearchBar';
 import {
-    propertyService,
+    unitsService,
     Property,
     PropertyFilterParams,
     PropertyStatistics,
@@ -19,46 +16,55 @@ import {
 } from '@/services';
 import {
     Building,
+    Map,
+    Plus,
+    Download,
+    RefreshCw,
+    Filter,
+    List,
+    Grid3X3,
     Home,
     Store,
     Car,
-    Users,
-    Search,
-    Filter,
-    Download,
-    Plus,
-    MoreVertical,
-    Edit,
-    Eye,
-    UserPlus,
-    DollarSign,
-    FileText,
-    MapPin,
-    Grid3X3,
-    Map,
-    List,
-    RotateCcw,
-    TrendingUp,
-    TrendingDown,
-    Calendar,
     CheckCircle,
     AlertCircle,
-    User
+    RotateCcw,
+    Calendar,
+    Eye,
+    MoreVertical,
+    User,
+    Edit,
+    Trash2
 } from 'lucide-react';
+import { UnitsQuickStats } from './components/UnitsQuickStats';
+import { UnitsFilters } from './components/UnitsFilters';
+import { UnitsAnalytics } from './components/UnitsAnalytics';
+import GenericListView from '@/app/components/templates/GenericListView';
+import GenericGridView from '@/app/components/templates/GenericGridView';
+import { ExportDropdown } from '@/app/components/ui';
+import SearchBar from '@/app/components/ui/SearchBar';
+import ViewToggle from '@/app/components/ui/ViewToggle';
+import FilterPanel from '@/app/components/ui/FilterPanel';
+import StatsCard from '@/app/components/ui/StatsCard';
+import Badge from '@/app/components/ui/Badge';
+import EmptyState from '@/app/components/ui/EmptyState';
+import Skeleton from '@/app/components/ui/Skeleton';
+import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
+import TablePagination from '@/app/components/ui/TablePagination';
+import Checkbox from '@/app/components/ui/Checkbox';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Portal from '@/app/components/ui/Portal';
 
-const statusConfig = {
-    OCCUPIED: { label: 'Dolu', color: 'green', icon: CheckCircle },
-    AVAILABLE: { label: 'Boş', color: 'blue', icon: AlertCircle },
-    UNDER_MAINTENANCE: { label: 'Bakım', color: 'orange', icon: RotateCcw },
-    RESERVED: { label: 'Rezerve', color: 'purple', icon: Calendar }
-};
 
 export default function UnitsListPage() {
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    // 1. Local search input state
+    const [searchInput, setSearchInput] = useState("");
     const [viewMode, setViewMode] = useState<'table' | 'grid' | 'block' | 'map'>('table');
     const [showFilters, setShowFilters] = useState(false);
+    const [selectedUnits, setSelectedUnits] = useState<Property[]>([]);
     const [filters, setFilters] = useState<PropertyFilterParams>({
         type: undefined,
         status: undefined,
@@ -92,8 +98,10 @@ export default function UnitsListPage() {
         try {
             setLoading(true);
             setError(null);
-
-            const response = await propertyService.getAllProperties(filters);
+            // Pagination ve filtreleri logla
+            console.log('Filters:', filters);
+            const response = await unitsService.getAllUnits(filters);
+            console.log('API Pagination:', response.pagination);
             setProperties(response.data);
             setPagination(response.pagination);
         } catch (err: any) {
@@ -108,7 +116,7 @@ export default function UnitsListPage() {
 
     const loadQuickStats = async () => {
         try {
-            const response = await propertyService.getQuickStats();
+            const response = await unitsService.getQuickStats();
             setQuickStats(response.data);
         } catch (err: any) {
             console.error('Failed to load quick stats:', err);
@@ -124,7 +132,7 @@ export default function UnitsListPage() {
 
     const loadRecentActivities = async () => {
         try {
-            const response = await propertyService.getRecentActivities(10, 7);
+            const response = await unitsService.getRecentActivities(10, 7);
             setRecentActivities(response.data);
         } catch (err: any) {
             console.error('Failed to load recent activities:', err);
@@ -155,276 +163,390 @@ export default function UnitsListPage() {
     const villaUnits = quickStats?.villaUnits.total || properties.filter(p => p.type === 'VILLA').length;
     const commercialUnits = quickStats?.commercialUnits.total || properties.filter(p => p.type === 'COMMERCIAL').length;
 
-    const viewModeOptions = [
-        { id: 'table', label: 'Tablo', icon: List },
-        { id: 'grid', label: 'Kart', icon: Grid3X3 },
-        { id: 'block', label: 'Blok', icon: Building },
-        { id: 'map', label: 'Harita', icon: Map }
-    ];
+    const router = useRouter();
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('tr-TR', {
-            style: 'currency',
-            currency: 'TRY',
-            minimumFractionDigits: 0
-        }).format(amount);
+    const handleUnitAction = (action: string, unit: Property) => {
+        if (action === 'view') {
+            router.push(`/dashboard/units/${unit.id}`);
+            return;
+        }
+        console.log('Unit action:', action, unit);
+        // Handle other unit actions here
     };
 
-    const renderTableView = () => (
-        <Card>
-            <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-                        Konut Listesi ({pagination.total || properties.length})
-                    </h3>
-                    <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" icon={Search}>
-                            Ara
-                        </Button>
-                        <Button variant="ghost" size="sm" icon={Download}>
-                            İndir
-                        </Button>
+    const handleQuickAction = (action: string) => {
+        console.log('Quick action:', action);
+        // Handle quick actions here
+    };
+
+    // Status configuration
+    const statusConfig = {
+        AVAILABLE: { label: 'Boş', color: 'info', icon: AlertCircle },
+        OCCUPIED: { label: 'Dolu', color: 'success', icon: CheckCircle },
+        UNDER_MAINTENANCE: { label: 'Bakımda', color: 'warning', icon: RotateCcw },
+        RESERVED: { label: 'Rezerve', color: 'primary', icon: Calendar }
+    };
+
+    // Table columns configuration
+    const getTableColumns = () => [
+        {
+            key: 'property',
+            header: 'Konut',
+            render: (_value: any, unit: Property) => (
+                <div>
+                    <div className="font-medium text-text-on-light dark:text-text-on-dark">
+                        {unit?.propertyNumber || unit?.name || 'N/A'}
+                    </div>
+                    <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+                        {unit?.blockNumber && `Blok ${unit.blockNumber}`}
+                        {unit?.floor && ` • ${unit.floor}. kat`}
                     </div>
                 </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-border-light dark:border-border-dark">
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    Konut
-                                </th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    Tip
-                                </th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    m²
-                                </th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    Sakin
-                                </th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    Durum
-                                </th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    Borç
-                                </th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    Son Ödeme
-                                </th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                    İşlemler
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={8} className="py-8 text-center">
-                                        <div className="flex items-center justify-center gap-3">
-                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-gold"></div>
-                                            <span className="text-text-light-secondary dark:text-text-secondary">
-                                                Konutlar yükleniyor...
-                                            </span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : error ? (
-                                <tr>
-                                    <td colSpan={8} className="py-8 text-center">
-                                        <div className="text-primary-red">{error}</div>
-                                    </td>
-                                </tr>
-                            ) : properties.length === 0 ? (
-                                <tr>
-                                    <td colSpan={8} className="py-8 text-center">
-                                        <div className="text-text-light-secondary dark:text-text-secondary">
-                                            Henüz konut bulunamadı
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                properties.map((property) => {
-                                    const statusInfo = statusConfig[property.status as keyof typeof statusConfig];
-                                    const StatusIcon = statusInfo.icon;
-                                    const typeInfo = propertyService.getTypeInfo(property.type);
-
-                                    return (
-                                        <tr key={property.id} className="border-b border-border-light dark:border-border-dark hover:bg-background-light-soft dark:hover:bg-background-soft">
-                                            <td className="py-4 px-4">
-                                                <div>
-                                                    <div className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                        {property.propertyNumber || property.name}
-                                                    </div>
-                                                    <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                        {property.blockNumber && `Blok ${property.blockNumber}`}
-                                                        {property.floor && ` • ${property.floor}. kat`}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                <Badge variant="soft" color="secondary">
-                                                    {typeInfo.label}
-                                                </Badge>
-                                            </td>
-                                            <td className="py-4 px-4 text-text-on-light dark:text-text-on-dark">
-                                                {property.area || '--'}
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                {property.tenant ? (
-                                                    <div>
-                                                        <div className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {property.tenant.firstName} {property.tenant.lastName}
-                                                        </div>
-                                                        <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                            Kiracı
-                                                        </div>
-                                                    </div>
-                                                ) : property.owner ? (
-                                                    <div>
-                                                        <div className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {property.owner.firstName} {property.owner.lastName}
-                                                        </div>
-                                                        <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                            Malik
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-text-light-muted dark:text-text-muted">
-                                                        Boş
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex items-center gap-2">
-                                                    <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
-                                                    <Badge variant="soft" color={statusInfo.color as any}>
-                                                        {statusInfo.label}
-                                                    </Badge>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                {property.bills && property.bills.length > 0 ? (
-                                                    <span className="text-primary-red font-medium">
-                                                        Var
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-semantic-success-500">
-                                                        Temiz
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="py-4 px-4 text-text-light-secondary dark:text-text-secondary">
-                                                --
-                                            </td>
-                                            <td className="py-4 px-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Button variant="ghost" size="sm" icon={Eye}>
-                                                        Detay
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" icon={MoreVertical} />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </Card>
-    );
-
-    const renderGridView = () => (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {loading ? (
-                Array.from({ length: 8 }).map((_, index) => (
-                    <Card key={index} variant="elevated">
-                        <div className="p-4 animate-pulse">
-                            <div className="h-4 bg-gray-200 rounded mb-3"></div>
-                            <div className="space-y-2">
-                                <div className="h-3 bg-gray-200 rounded"></div>
-                                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+            ),
+        },
+        {
+            key: 'type',
+            header: 'Tip',
+            render: (_value: any, unit: Property) => (
+                <Badge variant="soft" color="secondary">
+                    {unit?.type ? unitsService.getTypeInfo(unit.type).label : 'N/A'}
+                </Badge>
+            ),
+        },
+        {
+            key: 'area',
+            header: 'm²',
+            render: (_value: any, unit: Property) => unit?.area || '--',
+        },
+        {
+            key: 'resident',
+            header: 'Sakin',
+            render: (_value: any, unit: Property) => {
+                const currentResident = unit?.tenant || unit?.owner;
+                if (currentResident) {
+                    return (
+                        <div>
+                            <div className="font-medium text-text-on-light dark:text-text-on-dark">
+                                {currentResident.firstName} {currentResident.lastName}
+                            </div>
+                            <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+                                {unit?.tenant ? 'Kiracı' : 'Malik'}
                             </div>
                         </div>
-                    </Card>
-                ))
-            ) : error ? (
-                <div className="col-span-full text-center py-8">
-                    <div className="text-primary-red">{error}</div>
-                </div>
-            ) : properties.length === 0 ? (
-                <div className="col-span-full text-center py-8">
-                    <div className="text-text-light-secondary dark:text-text-secondary">
-                        Henüz konut bulunamadı
-                    </div>
-                </div>
-            ) : (
-                properties.map((property) => {
-                    const statusInfo = statusConfig[property.status as keyof typeof statusConfig];
-                    const StatusIcon = statusInfo.icon;
-                    const typeInfo = propertyService.getTypeInfo(property.type);
-                    const currentResident = property.tenant || property.owner;
-
-                    return (
-                        <Card key={property.id} variant="elevated" hover={true}>
-                            <div className="p-4">
-                                <div className="flex items-center justify-between mb-3">
-                                    <h4 className="font-semibold text-text-on-light dark:text-text-on-dark">
-                                        {property.propertyNumber || property.name}
-                                    </h4>
-                                    <Badge variant="soft" color={statusInfo.color as any}>
-                                        {statusInfo.label}
-                                    </Badge>
-                                </div>
-
-                                <div className="space-y-2 mb-4">
-                                    <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                                        <Home className="h-4 w-4" />
-                                        <span>{typeInfo.label}</span>
-                                    </div>
-                                    {property.area && (
-                                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                                            <MapPin className="h-4 w-4" />
-                                            <span>{property.area} m²</span>
-                                        </div>
-                                    )}
-                                    {property.blockNumber && (
-                                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                                            <Building className="h-4 w-4" />
-                                            <span>Blok {property.blockNumber}</span>
-                                        </div>
-                                    )}
-                                    {currentResident && (
-                                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                                            <User className="h-4 w-4" />
-                                            <span>{currentResident.firstName} {currentResident.lastName}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {property.bills && property.bills.length > 0 && (
-                                    <div className="mb-4 p-2 bg-primary-red/10 dark:bg-primary-red/20 rounded-lg">
-                                        <div className="text-sm text-primary-red font-medium">
-                                            Ödenmemiş Faturalar Var
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="flex gap-2">
-                                    <Button variant="ghost" size="sm" className="flex-1" icon={Eye}>
-                                        Detay
-                                    </Button>
-                                    <Button variant="ghost" size="sm" icon={MoreVertical} />
-                                </div>
-                            </div>
-                        </Card>
                     );
-                })
-            )}
-        </div>
+                }
+                return (
+                    <span className="text-text-light-muted dark:text-text-muted">
+                        Boş
+                    </span>
+                );
+            },
+        },
+        {
+            key: 'status',
+            header: 'Durum',
+            render: (_value: any, unit: Property) => {
+                const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
+                if (!statusInfo) {
+                    return <span className="text-text-light-muted dark:text-text-muted">N/A</span>;
+                }
+                const StatusIcon = statusInfo.icon;
+                return (
+                    <div className="flex items-center gap-2">
+                        <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
+                        <Badge variant="soft" color={statusInfo.color as any}>
+                            {statusInfo.label}
+                        </Badge>
+                    </div>
+                );
+            },
+        },
+        {
+            key: 'debt',
+            header: 'Borç',
+            render: (_value: any, unit: Property) => (
+                unit?.bills && unit.bills.length > 0 ? (
+                    <span className="text-primary-red font-medium">
+                        Var
+                    </span>
+                ) : (
+                    <span className="text-semantic-success-500">
+                        Temiz
+                    </span>
+                )
+            ),
+        },
+        {
+            key: 'lastPayment',
+            header: 'Son Ödeme',
+            render: (_value: any, _unit: Property) => '--',
+        },
+    ];
+
+    // UnitActionMenu
+    const UnitActionMenu: React.FC<{ unit: Property; onAction: (action: string, unit: Property) => void }> = ({ unit, onAction }) => {
+        const [isOpen, setIsOpen] = React.useState(false);
+        const buttonRef = React.useRef<HTMLButtonElement>(null);
+        const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({});
+
+        React.useEffect(() => {
+            if (isOpen && buttonRef.current) {
+                const rect = buttonRef.current.getBoundingClientRect();
+                const menuHeight = 180; // tahmini yükseklik
+                const menuWidth = 200;
+                const padding = 8;
+                let top = rect.bottom + window.scrollY + padding;
+                let left = rect.right + window.scrollX - menuWidth;
+                if (top + menuHeight > window.innerHeight + window.scrollY) {
+                    top = rect.top + window.scrollY - menuHeight - padding;
+                }
+                if (left < 0) {
+                    left = padding;
+                }
+                setMenuStyle({
+                    position: 'absolute',
+                    top,
+                    left,
+                    zIndex: 9999,
+                    minWidth: menuWidth,
+                });
+            }
+        }, [isOpen]);
+
+        React.useEffect(() => {
+            if (!isOpen) return;
+            const handleClick = (e: MouseEvent) => {
+                if (
+                    buttonRef.current &&
+                    !buttonRef.current.contains(e.target as Node)
+                ) {
+                    setIsOpen(false);
+                }
+            };
+            document.addEventListener('click', handleClick); // mousedown -> click
+            return () => document.removeEventListener('click', handleClick);
+        }, [isOpen]);
+
+        const handleDropdownToggle = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+        };
+
+        const handleAction = (action: string) => (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setIsOpen(false);
+            onAction(action, unit);
+        };
+
+        return (
+            <div className="flex items-center justify-center">
+                <button
+                    ref={buttonRef}
+                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
+                    onClick={handleDropdownToggle}
+                    type="button"
+                >
+                    <MoreVertical className="w-5 h-5" />
+                </button>
+                {isOpen && (
+                    <Portal>
+                        <div
+                            style={menuStyle}
+                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 py-1 max-h-72 overflow-auto"
+                        >
+                            <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                <Eye className="w-5 h-5" /> Detay
+                            </button>
+                            <button onClick={handleAction('edit')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
+                                <Edit className="w-5 h-5" /> Düzenle
+                            </button>
+                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
+                            <button onClick={handleAction('delete')} className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3">
+                                <Trash2 className="w-5 h-5" /> Sil
+                            </button>
+                        </div>
+                    </Portal>
+                )}
+            </div>
+        );
+    };
+
+    const UnitActionMenuWrapper: React.FC<{ row: Property }> = ({ row }) => (
+        <UnitActionMenu unit={row} onAction={handleUnitAction} />
     );
+
+    // Unit card renderer for grid view
+    const renderUnitCard = (unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Property }>) => {
+        if (!unit) return null;
+        
+        const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
+        if (!statusInfo) return null;
+        
+        const StatusIcon = statusInfo.icon;
+        const typeInfo = unit?.type ? unitsService.getTypeInfo(unit.type) : { label: 'N/A' };
+        const currentResident = unit?.tenant || unit?.owner;
+
+        return (
+            <ui.Card key={unit.id} className="p-4 rounded-2xl shadow-md bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 transition-transform hover:scale-[1.01] hover:shadow-lg">
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                        <ui.Checkbox
+                            checked={selectedItems.includes(unit.id)}
+                            onChange={() => onSelect(unit.id)}
+                            className="focus:ring-2 focus:ring-primary-gold/30"
+                        />
+                        <div>
+                            <h4 className="font-semibold text-text-on-light dark:text-text-on-dark">
+                                {unit?.propertyNumber || unit?.name || 'N/A'}
+                            </h4>
+                            {/* Durum satırı: Daire isminin hemen altında */}
+                            {statusInfo && (
+                                <div className="flex items-center">
+                                    <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
+                                    <ui.Badge variant="soft" color={statusInfo.color as any}>
+                                        {statusInfo.label}
+                                    </ui.Badge>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {ActionMenu && <ActionMenu row={unit} />}
+                </div>
+
+                <div className="space-y-2 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                        <Home className="h-4 w-4" />
+                        <span>{typeInfo.label}</span>
+                    </div>
+                    {unit?.area && (
+                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                            <Map className="h-4 w-4" />
+                            <span>{unit.area} m²</span>
+                        </div>
+                    )}
+                    {unit?.blockNumber && (
+                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                            <Building className="h-4 w-4" />
+                            <span>Blok {unit.blockNumber}</span>
+                        </div>
+                    )}
+                    {currentResident && (
+                        <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                            <User className="h-4 w-4" />
+                            <span>{currentResident.firstName} {currentResident.lastName}</span>
+                        </div>
+                    )}
+                </div>
+
+                {unit?.bills && unit.bills.length > 0 && (
+                    <div className="mb-4 p-2 bg-primary-red/10 dark:bg-primary-red/20 rounded-lg">
+                        <div className="text-sm text-primary-red font-medium">
+                            Ödenmemiş Faturalar Var
+                        </div>
+                    </div>
+                )}
+            </ui.Card>
+        );
+    };
+
+    const handleExport = () => {
+        console.log('Export triggered');
+        // Handle export here
+    };
+
+    // Refresh handler eklendi
+    const handleRefresh = () => {
+        loadProperties();
+        loadQuickStats();
+        loadRecentActivities();
+    };
+
+    // 2. Input değişimini yöneten handler
+    const handleSearchInputChange = (value: string) => {
+        setSearchInput(value);
+    };
+
+    // 3. Debounce sonrası filtreleme (API çağrısı) yapan handler
+    const handleSearchSubmit = (value: string) => {
+        setSearchInput(value);
+        setFilters((prev) => ({ ...prev, search: value, page: 1 }));
+    };
+
+    // Export action handlers (placeholder functions)
+    const exportActionHandlers = {
+        handleExportPDF: () => { console.log('Export PDF'); },
+        handleExportExcel: () => { console.log('Export Excel'); },
+        handleExportCSV: () => { console.log('Export CSV'); },
+        handleExportJSON: () => { console.log('Export JSON'); },
+    };
+
+    // Selection handler
+    const handleSelectionChange = (selected: Property[]) => {
+        setSelectedUnits(selected);
+    };
+
+    // Define filter groups for units
+    const unitFilterGroups = [
+        {
+            id: 'type',
+            label: 'Konut Tipi',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'RESIDENCE', label: 'Daire', value: 'RESIDENCE' },
+                { id: 'VILLA', label: 'Villa', value: 'VILLA' },
+                { id: 'COMMERCIAL', label: 'Ticari', value: 'COMMERCIAL' },
+            ],
+        },
+        {
+            id: 'status',
+            label: 'Durum',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'OCCUPIED', label: 'Dolu', value: 'OCCUPIED' },
+                { id: 'AVAILABLE', label: 'Boş', value: 'AVAILABLE' },
+                { id: 'UNDER_MAINTENANCE', label: 'Bakımda', value: 'UNDER_MAINTENANCE' },
+                { id: 'RESERVED', label: 'Rezerve', value: 'RESERVED' },
+            ],
+        },
+        {
+            id: 'blockNumber',
+            label: 'Blok',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'A', label: 'A Blok', value: 'A' },
+                { id: 'B', label: 'B Blok', value: 'B' },
+                { id: 'C', label: 'C Blok', value: 'C' },
+                { id: 'D', label: 'D Blok', value: 'D' },
+                { id: 'Villa', label: 'Villa', value: 'Villa' },
+            ],
+        },
+        {
+            id: 'rooms',
+            label: 'Oda Sayısı',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: '1+1', label: '1+1', value: '1+1' },
+                { id: '2+1', label: '2+1', value: '2+1' },
+                { id: '3+1', label: '3+1', value: '3+1' },
+                { id: '4+1', label: '4+1', value: '4+1' },
+            ],
+        },
+        {
+            id: 'debtStatus',
+            label: 'Borç Durumu',
+            type: 'select' as const,
+            options: [
+                { id: 'all', label: 'Tümü', value: '' },
+                { id: 'clean', label: 'Temiz Hesap', value: 'clean' },
+                { id: 'indebted', label: 'Borçlu', value: 'indebted' },
+            ],
+        },
+    ];
+
 
     return (
         <ProtectedRoute>
@@ -446,217 +568,210 @@ export default function UnitsListPage() {
                     {/* Main Content */}
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Page Header with Summary */}
-                        <div className="bg-background-light-card dark:bg-background-card rounded-xl p-6 mb-8">
-                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                                <div>
-                                    <h2 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-2">
-                                        Konut Listesi ({totalUnits.toLocaleString()} toplam)
-                                    </h2>
-                                    <p className="text-text-light-secondary dark:text-text-secondary">
-                                        Dolu: {occupiedUnits} ({occupancyRate}%) | Boş: {vacantUnits} | Bakımda: {maintenanceUnits}
-                                    </p>
+
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                            <div>
+                                <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
+                                    Konut Listesi <span className="text-primary-gold">({totalUnits.toLocaleString()} Konut)
+                                    </span>
+                                </h2>
+                                <p className="text-text-light-secondary dark:text-text-secondary">
+                                    Dolu: {occupiedUnits} ({occupancyRate}%) | Boş: {vacantUnits} | Bakımda: {maintenanceUnits}
+                                </p>
+                            </div>
+                            <div className="flex gap-3">
+                                <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
+                                    Yenile
+                                </Button>
+                                <ExportDropdown
+                                    onExportPDF={exportActionHandlers.handleExportPDF}
+                                    onExportExcel={exportActionHandlers.handleExportExcel}
+                                    onExportCSV={exportActionHandlers.handleExportCSV}
+                                    onExportJSON={exportActionHandlers.handleExportJSON}
+                                    variant="secondary"
+                                    size="md"
+                                />
+                                <Link href="/dashboard/units/add">
+                                  <Button variant="primary" size="md" icon={Plus}>
+                                    Yeni Konut
+                                  </Button>
+                                </Link>
+                                
+                            </div>
+
+                        </div>
+
+
+                        {/* Search and Filters */}
+                        <Card className="mb-6">
+                            <div className="p-6">
+                                <div className="flex flex-col lg:flex-row gap-4">
+                                    {/* Search Bar */}
+                                    <div className="flex-1">
+                                        <SearchBar
+                                            placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
+                                            value={searchInput}
+                                            onChange={handleSearchInputChange}
+                                            onSearch={handleSearchSubmit}
+                                            debounceMs={500}
+                                        />
+                                    </div>
+                                    {/* Filter and View Toggle */}
+                                    <div className="flex gap-2 items-center">
+                                        <Button
+                                            variant={showFilters ? "primary" : "secondary"}
+                                            size="md"
+                                            icon={Filter}
+                                            onClick={() => setShowFilters(true)}
+                                        >
+                                            Filtreler
+                                        </Button>
+                                        <ViewToggle
+                                            options={[
+                                                { id: 'table', label: 'Tablo', icon: List },
+                                                { id: 'grid', label: 'Kart', icon: Grid3X3 },
+                                                { id: 'block', label: 'Blok', icon: Building },
+                                                { id: 'map', label: 'Harita', icon: Map }
+                                            ]}
+                                            activeView={viewMode}
+                                            onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
+                                            size="sm"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex gap-3">
-                                    <Button variant="secondary" size="sm" icon={Plus}>
-                                        Yeni Konut
-                                    </Button>
-                                    <Button variant="secondary" size="sm" icon={Download}>
-                                        İndir
-                                    </Button>
-                                </div>
+                            </div>
+                        </Card>
+                        {/* Filter Sidebar (Drawer) */}
+                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}> 
+                            {/* Backdrop */}
+                            <div
+                                className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'}`}
+                                onClick={() => setShowFilters(false)}
+                            />
+                            {/* Drawer */}
+                            <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
+                                <FilterPanel
+                                    filterGroups={unitFilterGroups}
+                                    onApplyFilters={(newFilters) => {
+                                        setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+                                        setShowFilters(false);
+                                    }}
+                                    onResetFilters={() => {
+                                        setFilters({
+                                            type: undefined,
+                                            status: undefined,
+                                            page: 1,
+                                            limit: 20,
+                                            orderColumn: 'name',
+                                            orderBy: 'ASC',
+                                        });
+                                    }}
+                                    onClose={() => setShowFilters(false)}
+                                    variant="sidebar"
+                                />
                             </div>
                         </div>
 
                         {/* Quick Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                            <Card className="p-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-primary-gold/10 dark:bg-primary-gold/20 rounded-xl flex items-center justify-center">
-                                        <Building className="h-6 w-6 text-primary-gold" />
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                                            {apartmentUnits}
-                                        </p>
-                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                            Apartman Dairesi
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            <Card className="p-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-semantic-success-500/10 dark:bg-semantic-success-500/20 rounded-xl flex items-center justify-center">
-                                        <Home className="h-6 w-6 text-semantic-success-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                                            {villaUnits}
-                                        </p>
-                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                            Villa
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            <Card className="p-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-primary-blue/10 dark:bg-primary-blue/20 rounded-xl flex items-center justify-center">
-                                        <Store className="h-6 w-6 text-primary-blue" />
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                                            {commercialUnits}
-                                        </p>
-                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                            Ticari Alan
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            <Card className="p-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-primary-red/10 dark:bg-primary-red/20 rounded-xl flex items-center justify-center">
-                                        <Car className="h-6 w-6 text-primary-red" />
-                                    </div>
-                                    <div>
-                                        <p className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                                            1,800
-                                        </p>
-                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                            Otopark Alanı
-                                        </p>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
-
-                        {/* Search and Filters */}
-                        <div className="bg-background-light-card dark:bg-background-card rounded-xl p-6 mb-6">
-                            <div className="flex flex-col lg:flex-row gap-4">
-                                <div className="flex-1">
-                                    <SearchBar
-                                        placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
-                                        value={searchQuery}
-                                        onChange={setSearchQuery}
-                                    />
-                                </div>
-                                <div className="flex gap-3">
-                                    <Button
-                                        variant={showFilters ? "primary" : "secondary"}
-                                        size="sm"
-                                        icon={Filter}
-                                        onClick={() => setShowFilters(!showFilters)}
-                                    >
-                                        Filtrele
-                                    </Button>
-                                    <ViewToggle
-                                        activeView={viewMode}
-                                        onViewChange={(viewId: string) => setViewMode(viewId as typeof viewMode)}
-                                        options={viewModeOptions}
-                                    />
-                                </div>
+                        <div className="mb-8">
+                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-4">
+                                <StatsCard
+                                    title="Apartman Dairesi"
+                                    value={quickStats?.apartmentUnits.total || 0}
+                                    icon={Building}
+                                    color="primary"
+                                    loading={loading}
+                                    size="md"
+                                />
+                                <StatsCard
+                                    title="Villa"
+                                    value={quickStats?.villaUnits.total || 0}
+                                    icon={Home}
+                                    color="success"
+                                    loading={loading}
+                                    size="md"
+                                />
+                                <StatsCard
+                                    title="Ticari Alan"
+                                    value={quickStats?.commercialUnits.total || 0}
+                                    icon={Store}
+                                    color="info"
+                                    loading={loading}
+                                    size="md"
+                                />
+                                <StatsCard
+                                    title="Otopark Alanı"
+                                    value={quickStats?.parkingSpaces.total || 0}
+                                    icon={Car}
+                                    color="danger"
+                                    loading={loading}
+                                    size="md"
+                                />
                             </div>
-
-                            {/* Advanced Filters */}
-                            {showFilters && (
-                                <div className="mt-6 pt-6 border-t border-border-light dark:border-border-dark">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                Konut Tipi
-                                            </label>
-                                            <select
-                                                className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
-                                                value={filters.unitType}
-                                                onChange={(e) => setFilters({ ...filters, unitType: e.target.value })}
-                                            >
-                                                <option value="all">Tümü</option>
-                                                <option value="apartment">Daire</option>
-                                                <option value="villa">Villa</option>
-                                                <option value="commercial">Ticari</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                Durum
-                                            </label>
-                                            <select
-                                                className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
-                                                value={filters.status}
-                                                onChange={(e) => setFilters({ ...filters, status: e.target.value as 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED' })}
-                                            >
-                                                <option value="all">Tümü</option>
-                                                <option value="occupied">Dolu</option>
-                                                <option value="vacant">Boş</option>
-                                                <option value="maintenance">Bakımda</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                Blok
-                                            </label>
-                                            <select
-                                                className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
-                                                value={filters.block}
-                                                onChange={(e) => setFilters({ ...filters, block: e.target.value })}
-                                            >
-                                                <option value="all">Tümü</option>
-                                                <option value="A">A Blok</option>
-                                                <option value="B">B Blok</option>
-                                                <option value="C">C Blok</option>
-                                                <option value="D">D Blok</option>
-                                                <option value="Villa">Villa</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                Oda Sayısı
-                                            </label>
-                                            <select
-                                                className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
-                                                value={filters.rooms}
-                                                onChange={(e) => setFilters({ ...filters, rooms: e.target.value })}
-                                            >
-                                                <option value="all">Tümü</option>
-                                                <option value="1+1">1+1</option>
-                                                <option value="2+1">2+1</option>
-                                                <option value="3+1">3+1</option>
-                                                <option value="4+1">4+1</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                Borç Durumu
-                                            </label>
-                                            <select
-                                                className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
-                                                value={filters.debtStatus}
-                                                onChange={(e) => setFilters({ ...filters, debtStatus: e.target.value })}
-                                            >
-                                                <option value="all">Tümü</option>
-                                                <option value="clean">Temiz Hesap</option>
-                                                <option value="indebted">Borçlu</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
-
                         {/* Content Area */}
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                             {/* Main Content */}
-                            <div className="lg:col-span-3">
-                                {viewMode === 'table' && renderTableView()}
-                                {viewMode === 'grid' && renderGridView()}
+                            <div className="lg:col-span-1">
+                                {viewMode === 'table' && (
+                                    <GenericListView
+                                        data={properties}
+                                        loading={loading}
+                                        error={error}
+                                        onSelectionChange={handleSelectionChange}
+                                        bulkActions={[]}
+                                        columns={getTableColumns()}
+                                        pagination={{
+                                            currentPage: pagination.page,
+                                            totalPages: pagination.totalPages,
+                                            totalRecords: pagination.total,
+                                            recordsPerPage: pagination.limit,
+                                            onPageChange: (page) => setFilters(prev => ({ ...prev, page })),
+                                            onRecordsPerPageChange: (limit) => setFilters(prev => ({ ...prev, limit, page: 1 })),
+                                        }}
+                                        emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                        selectable={true}
+                                        showPagination={true}
+                                        ActionMenuComponent={UnitActionMenuWrapper}
+                                    />
+                                )}
+                                {viewMode === 'grid' && (
+                                    <GenericGridView
+                                        data={properties}
+                                        loading={loading}
+                                        error={error}
+                                        onSelectionChange={(selectedIds) => {
+                                            const selectedProperties = properties.filter(p => selectedIds.includes(p.id));
+                                            setSelectedUnits(selectedProperties);
+                                        }}
+                                        bulkActions={[]}
+                                        onAction={handleUnitAction}
+                                        selectedItems={selectedUnits.map(u => u.id)}
+                                        pagination={{
+                                            currentPage: pagination.page,
+                                            totalPages: pagination.totalPages,
+                                            totalRecords: pagination.total,
+                                            recordsPerPage: pagination.limit,
+                                            onPageChange: (page) => setFilters(prev => ({ ...prev, page })),
+                                            onRecordsPerPageChange: (limit) => setFilters(prev => ({ ...prev, limit, page: 1 })),
+                                        }}
+                                        emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                        ui={{
+                                            Card,
+                                            Button,
+                                            Checkbox,
+                                            TablePagination,
+                                            Badge,
+                                            EmptyState,
+                                            Skeleton,
+                                            BulkActionsBar,
+                                        }}
+                                        ActionMenu={UnitActionMenuWrapper}
+                                        renderCard={renderUnitCard}
+                                        getItemId={(unit) => unit.id}
+                                        gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                                    />
+                                )}
                                 {viewMode === 'block' && (
                                     <Card>
                                         <div className="p-6 text-center">
@@ -677,153 +792,6 @@ export default function UnitsListPage() {
                                         </div>
                                     </Card>
                                 )}
-                            </div>
-
-                            {/* Analytics Sidebar */}
-                            <div className="space-y-6">
-                                {/* Quick Analysis */}
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4">
-                                            📊 Hızlı Analiz
-                                        </h3>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                        Doluluk Oranı
-                                                    </span>
-                                                    <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                                        %{occupancyRate}
-                                                    </span>
-                                                </div>
-                                                <div className="w-full bg-background-light-soft dark:bg-background-soft rounded-full h-2">
-                                                    <div
-                                                        className="bg-primary-gold h-2 rounded-full transition-all duration-300"
-                                                        style={{ width: `${occupancyRate}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <h4 className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                                    Konut Tipi Dağılımı
-                                                </h4>
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-text-light-secondary dark:text-text-secondary">1+1:</span>
-                                                        <span className="text-text-on-light dark:text-text-on-dark">420 (%17)</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-text-light-secondary dark:text-text-secondary">2+1:</span>
-                                                        <span className="text-text-on-light dark:text-text-on-dark">840 (%34)</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-text-light-secondary dark:text-text-secondary">3+1:</span>
-                                                        <span className="text-text-on-light dark:text-text-on-dark">840 (%34)</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-text-light-secondary dark:text-text-secondary">4+1:</span>
-                                                        <span className="text-text-on-light dark:text-text-on-dark">250 (%10)</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm">
-                                                        <span className="text-text-light-secondary dark:text-text-secondary">Villa:</span>
-                                                        <span className="text-text-on-light dark:text-text-on-dark">150 (%5)</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2 pt-2 border-t border-border-light dark:border-border-dark">
-                                                <h4 className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                                    Borç Durumu
-                                                </h4>
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-text-light-secondary dark:text-text-secondary">Temiz:</span>
-                                                    <span className="text-semantic-success-500">2,100</span>
-                                                </div>
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-text-light-secondary dark:text-text-secondary">Borçlu:</span>
-                                                    <span className="text-primary-red">248</span>
-                                                </div>
-                                                <div className="flex justify-between text-sm">
-                                                    <span className="text-text-light-secondary dark:text-text-secondary">Toplam:</span>
-                                                    <span className="text-text-on-light dark:text-text-on-dark">4.2M ₺</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                {/* Recent Activity */}
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4">
-                                            Son 30 Gün
-                                        </h3>
-
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <TrendingUp className="h-4 w-4 text-semantic-success-500" />
-                                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                        Yeni dolu
-                                                    </span>
-                                                </div>
-                                                <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                                    12
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <TrendingDown className="h-4 w-4 text-primary-red" />
-                                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                        Boşalan
-                                                    </span>
-                                                </div>
-                                                <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                                    8
-                                                </span>
-                                            </div>
-
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <RotateCcw className="h-4 w-4 text-semantic-warning-500" />
-                                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                        Bakıma giren
-                                                    </span>
-                                                </div>
-                                                <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                                    3
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                {/* Quick Actions */}
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4">
-                                            Hızlı İşlemler
-                                        </h3>
-                                        <div className="space-y-3">
-                                            <Button variant="ghost" className="w-full justify-start" icon={Plus}>
-                                                Yeni Konut Ekle
-                                            </Button>
-                                            <Button variant="ghost" className="w-full justify-start" icon={UserPlus}>
-                                                Toplu Sakin Ata
-                                            </Button>
-                                            <Button variant="ghost" className="w-full justify-start" icon={DollarSign}>
-                                                Borç Analizi
-                                            </Button>
-                                            <Button variant="ghost" className="w-full justify-start" icon={FileText}>
-                                                Doluluk Raporu
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </Card>
                             </div>
                         </div>
                     </main>

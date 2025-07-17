@@ -25,6 +25,8 @@ import {
     Smartphone,
     QrCode
 } from 'lucide-react';
+import { useResidentData } from '@/hooks/useResidentData';
+import { CreateResidentRequest } from '@/services/types/resident.types';
 
 interface FormData {
     // Identity
@@ -90,6 +92,14 @@ export default function AddResidentPage() {
 
     const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    // Yeni eklenen: useResidentData hook'u
+    const {
+        createResident,
+        saving,
+        saveError,
+        clearSaveError
+    } = useResidentData();
 
     // Breadcrumb for add resident page
     const breadcrumbItems = [
@@ -197,13 +207,34 @@ export default function AddResidentPage() {
     };
 
     // Handle form submission
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (validateForm()) {
-            // Mock successful save
-            console.log('Form submitted:', formData);
-            setShowSuccess(true);
+            // Yeni API'ye uygun CreateResidentRequest oluştur
+            const dto: CreateResidentRequest = {
+                personalInfo: {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    phone: formData.mobilePhone,
+                    email: formData.email,
+                    password: '', // Eğer şifre isteniyorsa ekle
+                },
+                propertyInfo: {
+                    name: '', // Apartman adı gerekiyorsa ekle
+                    block: formData.block,
+                    propertyNumber: formData.apartmentNumber,
+                    propertyType: 'RESIDENCE',
+                    ownershipType: formData.residentType === 'owner' ? 'owner' : 'tenant',
+                },
+                documents: [], // Belgeler ekleniyorsa doldur
+            };
+            try {
+                await createResident(dto);
+                setShowSuccess(true);
+            } catch (err) {
+                // Hata zaten saveError ile gösterilecek
+            }
         }
     };
 
@@ -600,7 +631,7 @@ export default function AddResidentPage() {
                                                     <Checkbox
                                                         checked={formData.useStandardDues}
                                                         onChange={(e) => handleInputChange('useStandardDues', e.target.checked)}
-                                                        label="Standart aidat tutarını uygula (250,000 د.ع)"
+                                                        label="Standart aidat tutarını uygula (250,000)"
                                                     />
 
                                                     <Checkbox
@@ -621,10 +652,13 @@ export default function AddResidentPage() {
 
                                     {/* Submit Button */}
                                     <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                        <div className="flex justify-center">
-                                            <Button variant="primary" size="lg" type="submit" className="px-12">
-                                                Sakini Kaydet
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Button variant="primary" size="lg" type="submit" className="px-12" disabled={saving}>
+                                                {saving ? 'Kaydediliyor...' : 'Sakini Kaydet'}
                                             </Button>
+                                            {saveError && (
+                                                <p className="text-sm text-red-600 dark:text-red-400 mt-2">{saveError}</p>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
