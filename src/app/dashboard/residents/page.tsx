@@ -51,6 +51,7 @@ import { createBulkActionHandlers } from './actions/bulk-actions';
 import { createResidentActionHandlers } from './actions/resident-actions';
 import { createExportActionHandlers } from './actions/export-actions';
 import { getTableColumns } from './components/table-columns';
+import Portal from '@/app/components/ui/Portal';
 
 const residentFilterGroups = [
     {
@@ -504,23 +505,46 @@ export default function ResidentsPage() {
     // Resident Action Menu Component
     const ResidentActionMenu: React.FC<{ resident: Resident; onAction: (action: string, resident: Resident) => void }> = ({ resident, onAction }) => {
         const [isOpen, setIsOpen] = React.useState(false);
-        const dropdownRef = React.useRef<HTMLDivElement>(null);
         const buttonRef = React.useRef<HTMLButtonElement>(null);
+        const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({});
 
         React.useEffect(() => {
-            const handleClickOutside = (event: MouseEvent) => {
+            if (isOpen && buttonRef.current) {
+                const rect = buttonRef.current.getBoundingClientRect();
+                const menuHeight = 320; // tahmini yükseklik (daha fazla buton var)
+                const menuWidth = 220;
+                const padding = 8;
+                let top = rect.bottom + window.scrollY + padding;
+                let left = rect.right + window.scrollX - menuWidth;
+                if (top + menuHeight > window.innerHeight + window.scrollY) {
+                    top = rect.top + window.scrollY - menuHeight - padding;
+                }
+                if (left < 0) {
+                    left = padding;
+                }
+                setMenuStyle({
+                    position: 'absolute',
+                    top,
+                    left,
+                    zIndex: 9999,
+                    minWidth: menuWidth,
+                });
+            }
+        }, [isOpen]);
+
+        React.useEffect(() => {
+            if (!isOpen) return;
+            const handleClick = (e: MouseEvent) => {
                 if (
-                    dropdownRef.current &&
                     buttonRef.current &&
-                    !dropdownRef.current.contains(event.target as Node) &&
-                    !buttonRef.current.contains(event.target as Node)
+                    !buttonRef.current.contains(e.target as Node)
                 ) {
                     setIsOpen(false);
                 }
             };
-            document.addEventListener('mousedown', handleClickOutside);
-            return () => document.removeEventListener('mousedown', handleClickOutside);
-        }, []);
+            document.addEventListener('mousedown', handleClick);
+            return () => document.removeEventListener('mousedown', handleClick);
+        }, [isOpen]);
 
         const handleDropdownToggle = (e: React.MouseEvent) => {
             e.stopPropagation();
@@ -545,20 +569,20 @@ export default function ResidentsPage() {
 
         return (
             <div className="flex items-center justify-center">
-                <div className="relative group">
-                    <Button
-                        ref={buttonRef}
-                        variant="ghost"
-                        size="sm"
-                        icon={MoreVertical}
-                        className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        onClick={handleDropdownToggle}
-                    />
-                    <div
-                        ref={dropdownRef}
-                        className={`absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${isOpen ? '' : 'hidden'}`}
-                    >
-                        <div className="py-1">
+                <button
+                    ref={buttonRef}
+                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
+                    onClick={handleDropdownToggle}
+                    type="button"
+                >
+                    <MoreVertical className="w-5 h-5" />
+                </button>
+                {isOpen && (
+                    <Portal>
+                        <div
+                            style={menuStyle}
+                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 py-1 max-h-80 overflow-auto"
+                        >
                             <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
                                 <Eye className="w-5 h-5" /> Görüntüle
                             </button>
@@ -591,8 +615,8 @@ export default function ResidentsPage() {
                                 <Trash2 className="w-5 h-5" /> Sil
                             </button>
                         </div>
-                    </div>
-                </div>
+                    </Portal>
+                )}
             </div>
         );
     };
