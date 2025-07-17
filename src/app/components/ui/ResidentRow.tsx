@@ -61,8 +61,6 @@ export interface Resident {
     contact: ResidentContact;
     financial: ResidentFinancial;
     status: ResidentStatus;
-    membershipTier: MembershipTier;
-    verificationStatus: VerificationStatus;
     registrationDate: string;
     lastActivity?: string;
     notes?: string;

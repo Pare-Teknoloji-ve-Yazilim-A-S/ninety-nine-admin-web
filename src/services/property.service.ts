@@ -57,10 +57,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
                 limit: response.data.pagination.limit,
                 totalPages: response.data.pagination.totalPages,
                 pagination: response.data.pagination,
-                total: response.data.pagination.total,
-                page: response.data.pagination.page,
-                limit: response.data.pagination.limit,
-                totalPages: response.data.pagination.totalPages,
+
             };
         } catch (error) {
             this.logger.error('Failed to fetch properties', error);
