@@ -36,6 +36,7 @@ import Link from 'next/link';
 import { ticketService, Ticket } from '@/services/ticket.service';
 import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
+import RequestDetailModal from './RequestDetailModal';
 
 export default function RequestsListPage() {
     // UI State
@@ -54,6 +55,8 @@ export default function RequestsListPage() {
         limit: 20,
         totalPages: 0
     });
+    // Detay modalı state
+    const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
 
     // Fetch tickets from API
     React.useEffect(() => {
@@ -212,8 +215,15 @@ export default function RequestsListPage() {
         );
     };
 
+    // Detay açma fonksiyonu
+    const handleViewDetail = (req: Ticket) => {
+        setDetailModal({ open: true, item: req });
+    };
+
     const RequestActionMenuWrapper: React.FC<{ row: any }> = ({ row }) => (
-        <RequestActionMenu req={row} onAction={() => { }} />
+        <RequestActionMenu req={row} onAction={(action, req) => {
+            if (action === 'view') handleViewDetail(req);
+        }} />
     );
 
     // Card renderer for grid view (API'den gelen Ticket yapısına göre)
@@ -504,6 +514,12 @@ export default function RequestsListPage() {
                             </div>
                         </div>
                     </main>
+                    {/* Detay Modalı */}
+                    <RequestDetailModal
+                        open={detailModal.open}
+                        onClose={() => setDetailModal({ open: false, item: null })}
+                        item={detailModal.item}
+                    />
                 </div>
             </div>
         </ProtectedRoute>
