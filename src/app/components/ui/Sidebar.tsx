@@ -104,7 +104,7 @@ const menuItems: MenuItemProps[] = [
         title: 'Hizmet Talepleri',
         icon: Wrench,
         children: [
-            { title: 'Açık Talepler', icon: AlertCircle, href: '/dashboard/requests/open' },
+            { title: 'Açık Talepler', icon: AlertCircle, href: '/dashboard/requests' },
             { title: 'İşlem Bekleyenler', icon: Clock, href: '/dashboard/requests/pending' },
             { title: 'Tamamlananlar', icon: CheckCircle, href: '/dashboard/requests/completed' }
         ]
