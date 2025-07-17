@@ -27,7 +27,7 @@ export const apiConfig = {
     // Endpoints - API-99CLUB Compatible
     endpoints: {
         auth: {
-            login: '/auth/login',
+            login: '/auth/login-v2',
             logout: '/auth/logout',
             refresh: '/auth/refresh-token',
             register: '/auth/register',
