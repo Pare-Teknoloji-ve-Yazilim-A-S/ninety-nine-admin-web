@@ -20,7 +20,8 @@ import {
     MoreVertical,
     User,
     Edit,
-    Trash2
+    Trash2,
+    PauseCircle
 } from 'lucide-react';
 import SearchBar from '@/app/components/ui/SearchBar';
 import ViewToggle from '@/app/components/ui/ViewToggle';
@@ -69,6 +70,7 @@ export default function WaitingRequestsPage() {
     const statusConfig = {
         OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
         IN_PROGRESS: { label: 'İşlemde', color: 'warning', icon: RotateCcw },
+        WAITING: { label: 'Beklemede', color: 'warning', icon: PauseCircle },
         COMPLETED: { label: 'Tamamlandı', color: 'success', icon: CheckCircle },
         SCHEDULED: { label: 'Planlandı', color: 'primary', icon: Calendar }
     };
@@ -314,6 +316,7 @@ export default function WaitingRequestsPage() {
                 { id: 'all', label: 'Tümü', value: '' },
                 { id: 'OPEN', label: 'Açık', value: 'OPEN' },
                 { id: 'IN_PROGRESS', label: 'İşlemde', value: 'IN_PROGRESS' },
+                { id: 'WAITING', label: 'Beklemede', value: 'WAITING' },
                 { id: 'COMPLETED', label: 'Tamamlandı', value: 'COMPLETED' },
             ],
         },

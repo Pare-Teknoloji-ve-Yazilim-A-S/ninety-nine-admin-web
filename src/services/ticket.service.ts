@@ -32,4 +32,34 @@ export const ticketService = {
     const response: ApiResponse<Ticket[]> = await apiClient.get<Ticket[]>(`/admin/tickets/status/${status}`);
     return response.data;
   },
+  // --- Ticket Status Update Methods ---
+  async startProgress(id: string): Promise<Ticket> {
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/start-progress`, {});
+    return response.data;
+  },
+  async markWaiting(id: string): Promise<Ticket> {
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/mark-waiting`, {});
+    return response.data;
+  },
+  async resolve(id: string): Promise<Ticket> {
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/resolve`, {});
+    return response.data;
+  },
+  async close(id: string): Promise<Ticket> {
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/close`, {});
+    return response.data;
+  },
+  async cancel(id: string): Promise<Ticket> {
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/cancel`, {});
+    return response.data;
+  },
+  // --- Ticket Comments ---
+  async getComments(id: string): Promise<any[]> {
+    const response: ApiResponse<any[]> = await apiClient.get<any[]>(`/admin/tickets/${id}/comments`);
+    return response.data;
+  },
+  async addComment(id: string, content: string): Promise<any> {
+    const response: ApiResponse<any> = await apiClient.post<any>(`/admin/tickets/${id}/comments`, { content });
+    return response.data;
+  },
 }; 
