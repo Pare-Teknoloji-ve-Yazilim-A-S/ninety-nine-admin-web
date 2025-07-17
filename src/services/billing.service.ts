@@ -68,7 +68,7 @@ class BillingService {
    */
   async getBillsByUser(userId: string): Promise<Bill[]> {
     const response = await apiClient.get<any[]>(`/admin/billing/user/${userId}`);
-    return Array.isArray(response) ? response : [];
+    return Array.isArray(response) ? response.map(mapApiBill) : [];
   }
 }
 

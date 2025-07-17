@@ -43,7 +43,8 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
       icon={CreditCard}
       size="lg"
       variant="default"
-      scrollable
+      scrollable={true}
+      maxHeight="calc(100vh - 4rem)"
     >
       {loading ? (
         <div className="py-8 text-center text-text-light-secondary">Yükleniyor...</div>
@@ -52,9 +53,9 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
       ) : bills.length === 0 ? (
         <div className="py-8 text-center text-text-light-secondary">Ödeme geçmişi bulunamadı.</div>
       ) : (
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[60vh] overflow-y-auto">
           {bills.map((bill) => (
-            <div key={bill.id} className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-2">
+            <div key={bill.id} className="flex flex-col md:flex-row md:items-center justify-between py-4 gap-2 mr-4">
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-text-on-light dark:text-text-on-dark">{bill.title}</div>
                 <div className="text-xs text-text-light-muted dark:text-text-muted mt-1 flex flex-wrap gap-2">
