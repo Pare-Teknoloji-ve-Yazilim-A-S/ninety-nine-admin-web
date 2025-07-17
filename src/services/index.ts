@@ -30,29 +30,18 @@ export { residentsStatsService } from './residents-stats.service';
 
 // Re-export commonly used types for convenience
 export type {
-    ApiResponse,
-    PaginatedResponse,
-    ApiError,
-    FilterParams,
-    LoadingState,
-} from './core/types';
-
-export type {
+    // Export specific types from user.types to avoid Permission conflict
     User,
     CreateUserDto,
     UpdateUserDto,
+    UserRole,
     UserFilterParams,
+    UserListResponse,
+    UserStatsResponse,
+    Permission as UserPermission,
 } from './types/user.types';
-
 export type {
-    LoginDto,
-    RegisterDto,
-    AuthState,
-    LoginResponse,
-    RegisterResponse,
-} from './types/auth.types';
-
-export type {
+    // Export specific types from resident.types to avoid Permission conflict
     Resident,
     CreateResidentDto,
     UpdateResidentDto,
@@ -65,9 +54,11 @@ export type {
     ResidentRole,
     ResidentDocument,
     AvatarUploadResponse,
+    Permission as ResidentPermission,
+    BulkActionResult as ResidentBulkActionResult,
 } from './types/resident.types';
-
 export type {
+    // Export specific types from property.types to avoid BulkActionResult conflict  
     Property,
     PropertyUser,
     PropertyBill,
@@ -90,7 +81,26 @@ export type {
     CompleteMaintenanceDto,
     ExportParams,
     ImportResult,
+    BulkActionResult as PropertyBulkActionResult,
 } from './types/property.types';
+
+// Services
+export { default as authService, authService as AuthService } from './auth.service';
+export { default as userService, userService as UserService } from './user.service';
+export { default as adminResidentService, adminResidentService as AdminResidentService } from './admin-resident.service';
+export { default as residentService, residentService as ResidentService } from './resident.service';
+export { default as propertyService, PropertyService } from './property.service';
+
+// Re-export commonly used types for convenience
+export type {
+    ApiResponse,
+    PaginatedResponse,
+    ApiError,
+    FilterParams,
+    LoadingState,
+} from './core/types';
+
+// Re-export types are already handled above with specific exports
 
 // Service factory for custom implementations
 export class ServiceFactory {

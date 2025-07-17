@@ -122,8 +122,8 @@ export const useResidentsData = ({
             if (response.data) {
                 const transformedResidents = (response.data as ApiResident[]).map(transformApiResidentToComponentResident);
                 setResidents(transformedResidents);
-                setTotalRecords(response.pagination?.total || 0);
-                setTotalPages(response.pagination?.totalPages || 0);
+                setTotalRecords(response.total || 0);
+                setTotalPages(response.totalPages || 0);
             } else {
                 setResidents([]);
                 setTotalRecords(0);
@@ -149,7 +149,7 @@ export const useResidentsData = ({
             console.error('Failed to fetch stats:', error);
             // Don't set error state for stats failure, just log it
         }
-    }, []);
+    }, [residents]);
 
     const refreshData = useCallback(async () => {
         await Promise.all([fetchResidents(), fetchStats()]);

@@ -48,6 +48,10 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
                 page: response.data.pagination.page,
                 limit: response.data.pagination.limit,
                 totalPages: response.data.pagination.totalPages,
+                total: response.data.pagination.total,
+                page: response.data.pagination.page,
+                limit: response.data.pagination.limit,
+                totalPages: response.data.pagination.totalPages,
                 pagination: response.data.pagination,
             };
         } catch (error) {

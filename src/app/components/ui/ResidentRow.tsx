@@ -36,6 +36,18 @@ interface ResidentType {
     color: 'blue' | 'green' | 'purple';
 }
 
+interface MembershipTier {
+    type: string;
+    label: string;
+    color: string;
+}
+
+interface VerificationStatus {
+    type: string;
+    label: string;
+    color: string;
+}
+
 export interface Resident {
     id: string | number;
     firstName: string;
@@ -49,6 +61,8 @@ export interface Resident {
     contact: ResidentContact;
     financial: ResidentFinancial;
     status: ResidentStatus;
+    membershipTier: MembershipTier;
+    verificationStatus: VerificationStatus;
     registrationDate: string;
     lastActivity?: string;
     notes?: string;

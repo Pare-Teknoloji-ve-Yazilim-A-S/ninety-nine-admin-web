@@ -148,7 +148,7 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
         setShowFilterPanel,
         setCurrentPage,
         setRecordsPerPage,
-        setSortConfig,
+        setSortConfig: (config: { key: string; direction: 'asc' | 'desc' }) => setSortConfig(config),
         setSelectedView,
         setSelectedResidents,
         
