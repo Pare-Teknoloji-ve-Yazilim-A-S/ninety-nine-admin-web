@@ -396,11 +396,11 @@ export default function WaitingRequestsPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
-                                <Link href="/dashboard/requests/add">
+                                {/* <Link href="/dashboard/requests/add">
                                     <Button variant="primary" size="md" icon={Plus}>
                                         Yeni Talep
                                     </Button>
-                                </Link>
+                                </Link> */}
                             </div>
                         </div>
 
