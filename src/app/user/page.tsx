@@ -109,8 +109,7 @@ export default function UserDemo() {
         <div className="min-h-screen bg-background-primary p-8">
             <ToastContainer
                 toasts={toasts}
-                position="top-right"
-                onClose={(id) => setToasts(prev => prev.filter(toast => toast.id !== id))}
+                onRemove={(id: string) => setToasts(prev => prev.filter(toast => toast.id !== id))}
             />
 
             <div className="max-w-7xl mx-auto space-y-12">

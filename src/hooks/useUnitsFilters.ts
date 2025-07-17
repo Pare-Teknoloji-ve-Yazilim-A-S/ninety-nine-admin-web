@@ -73,6 +73,6 @@ export const useUnitsFilters = (
         setShowFilters,
         setViewMode,
         resetFilters,
-        getFilteredParams
+        getFilteredParams: () => getFilteredParams
     };
 };

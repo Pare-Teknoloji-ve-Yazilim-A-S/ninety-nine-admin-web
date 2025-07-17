@@ -207,7 +207,7 @@ const DataDisplayDemo = () => {
                             <Badge color="secondary">VIP</Badge>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-4">
-                            <Badge variant="ghost" color="gold">Outline</Badge>
+                            <Badge variant="outline" color="gold">Outline</Badge>
                             <Badge variant="solid" color="gold">Solid</Badge>
                             <Badge variant="soft" color="accent">Soft</Badge>
                             <Badge dot color="gold">Noktalı</Badge>
@@ -240,7 +240,7 @@ const DataDisplayDemo = () => {
                             ))}
                         </div>
                         <div className="flex flex-wrap gap-2 mb-4">
-                            <Chip variant="ghost" color="gold">Outline</Chip>
+                            <Chip variant="outline" color="gold">Outline</Chip>
                             <Chip variant="solid" color="gold">Solid</Chip>
                             <Chip avatar="https://via.placeholder.com/32">Avatar</Chip>
                         </div>

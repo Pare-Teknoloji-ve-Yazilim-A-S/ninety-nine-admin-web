@@ -168,7 +168,7 @@ export interface ResidentListResponse {
 }
 
 export interface PendingResidentsResponse {
-    users: Resident[];
+    data: Resident[];
     pagination: {
         total: number;
         page: number;

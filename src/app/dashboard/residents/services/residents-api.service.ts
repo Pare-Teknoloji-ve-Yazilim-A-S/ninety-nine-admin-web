@@ -1,5 +1,5 @@
 import { residentService } from '@/services/resident.service';
-import { ResidentFilterParams, ResidentStatsResponse } from '@/services/types/resident.types';
+import { CreateResidentRequest, ResidentFilterParams, ResidentStatsResponse, UpdateResidentDto } from '@/services/types/resident.types';
 import { Resident } from '@/app/components/ui/ResidentRow';
 import { ApiResident } from '../types';
 import { 
@@ -146,8 +146,8 @@ export class ResidentsApiService {
      */
     async createResident(residentData: Partial<ApiResident>): Promise<Resident> {
         try {
-            const response = await residentService.createResident(residentData);
-            return transformApiResidentToComponentResident(response);
+            const response = await residentService.createResident(residentData as CreateResidentRequest);
+            return transformApiResidentToComponentResident(response as unknown as ApiResident);
         } catch (error) {
             throw this.handleApiError(error);
         }
@@ -158,8 +158,8 @@ export class ResidentsApiService {
      */
     async updateResident(id: string, residentData: Partial<ApiResident>): Promise<Resident> {
         try {
-            const response = await residentService.updateResident(id, residentData);
-            return transformApiResidentToComponentResident(response);
+            const response = await residentService.updateResident(id, residentData as UpdateResidentDto);
+            return transformApiResidentToComponentResident(response as unknown as ApiResident);
         } catch (error) {
             throw this.handleApiError(error);
         }
@@ -181,8 +181,8 @@ export class ResidentsApiService {
      */
     async getResident(id: string): Promise<Resident> {
         try {
-            const response = await residentService.getResident(id);
-            return transformApiResidentToComponentResident(response);
+            const response = await residentService.getResidentById(id);
+            return transformApiResidentToComponentResident(response as unknown as ApiResident);
         } catch (error) {
             throw this.handleApiError(error);
         }

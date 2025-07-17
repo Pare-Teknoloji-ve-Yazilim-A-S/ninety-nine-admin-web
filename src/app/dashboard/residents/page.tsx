@@ -805,10 +805,7 @@ export default function ResidentsPage() {
                                     const selectedResidents = dataHook.residents.filter(r => selectedIds.includes(r.id));
                                     filtersHook.handleSelectionChange(selectedResidents);
                                 }}
-                                bulkActions={bulkActions.map(action => ({
-                                    ...action,
-                                    onClick: (residents) => action.onClick(residents)
-                                }))}
+                                bulkActions={bulkActions}
                                 onAction={handleResidentAction}
                                 selectedItems={filtersHook.selectedResidents.map(r => r.id)}
                                 pagination={{

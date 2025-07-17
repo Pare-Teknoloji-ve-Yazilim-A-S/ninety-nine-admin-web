@@ -19,6 +19,9 @@ import {
 import { ApiResponse, PaginatedResponse } from './core/types';
 
 class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateResidentDto> {
+    getResidentStats() {
+        throw new Error('Method not implemented.');
+    }
     protected baseEndpoint = apiConfig.endpoints.residents.admin.base;
 
     constructor() {
@@ -186,7 +189,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
             );
 
             // API response yapısını kontrol edelim
-            const users = response.data.users || response.data || [];
+            const users =  response.data || [];
             const pagination = response.data.pagination || {
                 total: Array.isArray(users) ? users.length : 0,
                 page: params?.page || 1,
@@ -194,7 +197,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
                 totalPages: 1
             };
 
-            this.logger.info(`Fetched ${users.length} pending residents`);
+          
             return {
                 data: users,
                 pagination: pagination,

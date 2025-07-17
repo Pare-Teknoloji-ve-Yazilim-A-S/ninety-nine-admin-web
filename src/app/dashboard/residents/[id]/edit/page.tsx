@@ -108,7 +108,7 @@ export default function ResidentEditPage() {
                 lastName: resident.lastName,
                 email: resident.contact.email || '',
                 phone: resident.contact.phone,
-                residentType: resident.residentType.type,
+                residentType: resident.residentType.type === 'guest' ? 'family' : resident.residentType.type,
                 block: resident.address.building,
                 apartmentNumber: resident.address.apartment,
                 status: resident.status.type === 'active' ? 'ACTIVE' : 'INACTIVE',
@@ -370,7 +370,7 @@ export default function ResidentEditPage() {
                                 <Button 
                                     variant="primary" 
                                     onClick={handleSubmit}
-                                    loading={saving}
+                                    isLoading={saving}
                                     icon={Save}
                                 >
                                     Kaydet
@@ -655,7 +655,7 @@ export default function ResidentEditPage() {
                                                     variant="primary" 
                                                     size="lg" 
                                                     type="submit"
-                                                    loading={saving}
+                                                    isLoading={saving}
                                                     className="px-12"
                                                 >
                                                     Değişiklikleri Kaydet

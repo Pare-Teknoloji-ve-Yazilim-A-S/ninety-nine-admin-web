@@ -5,6 +5,7 @@ import { ResidentFilterParams } from '@/services/types/resident.types';
 
 // API Response Types
 export interface ApiResident {
+    verificationStatus: string;
     id: string;
     firstName: string;
     lastName: string;

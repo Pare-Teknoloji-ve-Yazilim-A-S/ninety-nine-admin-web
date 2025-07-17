@@ -16,10 +16,8 @@ export * from './utils/token-manager';
 export * from './utils/logger';
 
 // Domain Types
-export * from './types/user.types';
 export * from './types/auth.types';
-export * from './types/resident.types';
-export * from './types/property.types';
+
 
 // Services
 export { default as authService, authService as AuthService } from './auth.service';

@@ -185,7 +185,7 @@ export const useResidentsActions = ({
     const handleDeleteResident = useCallback(async (resident: Resident) => {
         if (confirm(`${resident.fullName} sakinini kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`)) {
             try {
-                await residentService.deleteResident(resident.id);
+                await residentService.deleteResident(String(resident.id));
                 await refreshData();
                 success('Sakin silindi', `${resident.fullName} başarıyla silindi.`);
             } catch (err: unknown) {
@@ -201,7 +201,7 @@ export const useResidentsActions = ({
             const actionLabel = status === 'ACTIVE' ? 'Aktif' : 'Pasif';
             if (confirm(`${resident.fullName} sakini ${actionLabel} yapmak istediğinize emin misiniz?`)) {
                 try {
-                    await adminResidentService.updateResident(resident.id, { status });
+                    await adminResidentService.updateResident(String(resident.id), { status });
                     await refreshData();
                     success('Durum güncellendi', `${resident.fullName} ${actionLabel} yapıldı.`);
                 } catch (err: unknown) {

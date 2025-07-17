@@ -31,7 +31,7 @@ export const apiConfig = {
             logout: '/auth/logout',
             refresh: '/auth/refresh-token',
             register: '/auth/register',
-            me: '/auth/me',
+            me: '/auth/me-v2',
         },
         admin: {
             users: '/admin/users',

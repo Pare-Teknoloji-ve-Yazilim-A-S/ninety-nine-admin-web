@@ -15,7 +15,7 @@ export interface ApiResponse<T = any> {
 }
 
 export interface PaginatedResponse<T = any> {
-    data: T[];
+    data: any;
     pagination: {
         page: number;
         limit: number;

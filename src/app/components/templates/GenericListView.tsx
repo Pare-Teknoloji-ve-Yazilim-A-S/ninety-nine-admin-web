@@ -60,7 +60,7 @@ function GenericListView<T>({
       <EmptyState
         title="Hata"
         description={error}
-        variant="error"
+        
       />
     );
   }

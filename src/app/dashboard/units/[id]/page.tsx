@@ -45,7 +45,7 @@ export default function PropertyDetailPage() {
   const breadcrumbItems = [
     { label: "Ana Sayfa", href: "/dashboard" },
     { label: "Konutlar", href: "/dashboard/units" },
-    { label: property?.name || "Konut Detayı", active: true },
+    { label: property?.data?.name || "Konut Detayı", active: true },
   ];
 
   if (loading) {
@@ -99,8 +99,8 @@ export default function PropertyDetailPage() {
     );
   }
 
-  const statusInfo = statusConfig[property.status as keyof typeof statusConfig];
-  const typeInfo = typeConfig[property.type as keyof typeof typeConfig];
+  const statusInfo = statusConfig[property.data.status as keyof typeof statusConfig];
+  const typeInfo = typeConfig[property.data.type as keyof typeof typeConfig];
 
   // Helper to map color to allowed Badge color
   const mapBadgeColor = (color: string | undefined): 'primary' | 'secondary' | 'gold' | 'red' | 'accent' | undefined => {
@@ -117,7 +117,7 @@ export default function PropertyDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-background-light-primary via-background-light-secondary to-primary-gold-light/30 dark:from-background-primary dark:via-background-secondary dark:to-background-card flex flex-col min-h-screen">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="lg:ml-72 flex flex-col flex-1">
-          <DashboardHeader title={property.name} breadcrumbItems={breadcrumbItems} />
+          <DashboardHeader title={property.data.name} breadcrumbItems={breadcrumbItems} />
           <main className="flex flex-col items-center flex-1 w-full py-12 px-4 sm:px-8 lg:px-16">
             <div className="w-full max-w-5xl">
               <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-10">
@@ -128,11 +128,11 @@ export default function PropertyDetailPage() {
                 </Link>
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold text-text-on-light dark:text-on-dark tracking-tight mb-1 flex items-center gap-3">
-                    <span className="text-primary-gold">{property.name}</span>
+                    <span className="text-primary-gold">{property.data.name}</span>
                     <span className="inline-block">
                       <Badge variant="soft" color={mapBadgeColor(typeInfo?.color)} className="text-lg px-4 py-1 rounded-xl shadow-md flex items-center gap-2">
                         {typeInfo?.icon && <typeInfo.icon className="h-5 w-5 mr-1" />}
-                        {typeInfo?.label || property.type}
+                        {typeInfo?.label || property.data.type}
                       </Badge>
                     </span>
                   </h1>
@@ -152,23 +152,23 @@ export default function PropertyDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
                       <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Konut Numarası</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.propertyNumber || "-"}</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.data.propertyNumber || "-"}</p>
                     </div>
                     <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
                       <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Konut Grubu</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.propertyGroup || "-"}</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.data.propertyGroup || "-"}</p>
                     </div>
                     <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
                       <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Alan (m²)</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.area || "-"}</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.data.area || "-"}</p>
                     </div>
                     <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
                       <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Blok</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.blockNumber || "-"}</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.data.blockNumber || "-"}</p>
                     </div>
                     <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
                       <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Kat</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.floor ?? "-"}</p>
+                      <p className="font-semibold text-lg text-text-on-dark">{property.data.floor ?? "-"}</p>
                     </div>
                     <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
                       <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Durum</p>
@@ -176,8 +176,8 @@ export default function PropertyDetailPage() {
                     </div>
                   </div>
                   {/* Fatura Durumu */}
-                  {property.bills && property.bills.length > 0 && (() => {
-                    const unpaidBills = property.bills.filter((bill: any) => bill.status !== "PAID");
+                  {property.data.bills && property.data.bills.length > 0 && (() => {
+                    const unpaidBills = property.data.bills.filter((bill: any) => bill.status !== "PAID");
                     const allPaid = unpaidBills.length === 0;
                     if (allPaid) {
                       return (

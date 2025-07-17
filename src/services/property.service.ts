@@ -49,9 +49,14 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             );
 
             this.logger.info(`Fetched ${response.data.data.length} properties`);
+            // PaginatedResponse tipine uygun dönüş
             return {
                 data: response.data.data,
                 pagination: response.data.pagination,
+                total: response.data.pagination.total,
+                page: response.data.pagination.page,
+                limit: response.data.pagination.limit,
+                totalPages: response.data.pagination.totalPages,
             };
         } catch (error) {
             this.logger.error('Failed to fetch properties', error);
@@ -386,9 +391,9 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             this.logger.info('Exporting properties', params);
 
             const queryParams = this.buildQueryParams(params);
+            // responseType parametresini kaldır
             const response = await apiClient.get(
-                `${apiConfig.endpoints.properties.admin.export}${queryParams}`,
-                { responseType: 'blob' }
+                `${apiConfig.endpoints.properties.admin.export}${queryParams}`
             );
 
             this.logger.info('Properties exported successfully');
@@ -414,14 +419,10 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             formData.append('file', file);
             formData.append('options', JSON.stringify(options));
 
+            // headers parametresini kaldır
             const response = await apiClient.post<ImportResult>(
                 apiConfig.endpoints.properties.admin.import,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
+                formData
             );
 
             this.logger.info('Properties imported successfully');
@@ -463,9 +464,9 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
         try {
             this.logger.info(`Completing maintenance for property ${id}`, data);
 
+            // data parametresini kaldır
             const response = await apiClient.delete<Property>(
-                apiConfig.endpoints.properties.admin.completeMaintenance(id),
-                { data }
+                apiConfig.endpoints.properties.admin.completeMaintenance(id)
             );
 
             this.logger.info('Property maintenance completed successfully');

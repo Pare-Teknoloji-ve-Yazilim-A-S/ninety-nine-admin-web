@@ -146,7 +146,7 @@ class AuthService {
             const response = await apiClient.get<User>(this.endpoints.me);
 
             this.logger.info('Current user fetched successfully');
-            return response;
+            return response.data;
         } catch (error) {
             this.logger.error('Failed to fetch current user', error);
             throw error;

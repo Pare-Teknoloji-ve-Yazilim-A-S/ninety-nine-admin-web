@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { residentService } from '@/services/resident.service';
 import { Resident } from '@/app/components/ui/ResidentRow';
 import { ResidentFilterParams, ResidentStatsResponse } from '@/services/types/resident.types';
+import { ApiResident } from '@/app/dashboard/residents/types';
 import { transformApiResidentToComponentResident } from '@/app/dashboard/residents/utils/transformations';
 
 interface UseResidentsDataProps {
@@ -26,40 +27,6 @@ interface UseResidentsDataReturn {
     fetchStats: () => Promise<void>;
     refreshData: () => Promise<void>;
     setResidents: React.Dispatch<React.SetStateAction<Resident[]>>;
-}
-
-// API types for transformation
-interface ApiResident {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email?: string;
-    phone?: string;
-    tcKimlikNo?: string;
-    nationalId?: string;
-    passportNumber?: string;
-    property?: {
-        ownershipType?: 'owner' | 'tenant';
-        block?: string;
-        apartment?: string;
-        roomType?: string;
-        governorate?: string;
-        district?: string;
-        neighborhood?: string;
-    };
-    registrationDate?: string;
-    lastActivity?: string;
-    financial?: {
-        totalDebt?: number;
-        lastPaymentDate?: string;
-        balance?: number;
-    };
-    status?: string;
-    membershipTier?: string;
-    notes?: string;
-    avatar?: string;
-    createdAt?: string;
-    updatedAt?: string;
 }
 
 // Convert API types to component types (Iraq-specific)
@@ -153,7 +120,7 @@ export const useResidentsData = ({
             const response = await residentService.getAllResidents(filterParams);
             
             if (response.data) {
-                const transformedResidents = response.data.map(transformApiResidentToComponentResident);
+                const transformedResidents = (response.data as ApiResident[]).map(transformApiResidentToComponentResident);
                 setResidents(transformedResidents);
                 setTotalRecords(response.pagination?.total || 0);
                 setTotalPages(response.pagination?.totalPages || 0);
@@ -177,7 +144,7 @@ export const useResidentsData = ({
     const fetchStats = useCallback(async () => {
         try {
             const statsResponse = await residentService.getResidentStats();
-            setStats(statsResponse);
+            setStats(statsResponse as unknown as ResidentStatsResponse);
         } catch (error: unknown) {
             console.error('Failed to fetch stats:', error);
             // Don't set error state for stats failure, just log it
