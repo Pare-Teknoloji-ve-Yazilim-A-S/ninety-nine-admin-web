@@ -20,7 +20,7 @@ const DEFAULT_FILTERS: PropertyFilterParams = {
     status: undefined,
     page: 1,
     limit: 20,
-    orderColumn: 'name',
+    orderColumn: 'firstName',
     orderBy: 'ASC'
 };
 

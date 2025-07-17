@@ -1,5 +1,20 @@
 import { ExportHandlers } from '../types';
 import { EXPORT_FORMATS } from '../constants';
+import { residentsApiService } from '../services/residents-api.service';
+import { ResidentFilterParams } from '@/services/types/resident.types';
+
+function downloadBlob(blob: Blob, filename: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+}
 
 /**
  * Toast notification functions interface
@@ -34,52 +49,56 @@ export class ExportActionHandlers {
     /**
      * Handle PDF export
      */
-    handleExportPDF = async (): Promise<void> => {
+    handleExportPDF = async (filters?: ResidentFilterParams): Promise<void> => {
         try {
             this.toast.success('PDF İndiriliyor', 'Sakin listesi PDF formatında hazırlanıyor...');
-            await this.simulateExport(EXPORT_FORMATS.PDF);
+            const blob = await residentsApiService.exportResidents('pdf', filters);
+            downloadBlob(blob, `sakinler_${new Date().toISOString().slice(0,10)}.pdf`);
             this.toast.success('PDF İndirildi', 'Sakin listesi başarıyla PDF olarak indirildi');
-        } catch (error) {
-            this.toast.error('PDF İndirme Hatası', 'PDF indirme sırasında bir hata oluştu');
+        } catch (error: any) {
+            this.toast.error('PDF İndirme Hatası', error?.message || 'PDF indirme sırasında bir hata oluştu');
         }
     };
 
     /**
      * Handle Excel export
      */
-    handleExportExcel = async (): Promise<void> => {
+    handleExportExcel = async (filters?: ResidentFilterParams): Promise<void> => {
         try {
             this.toast.success('Excel İndiriliyor', 'Sakin listesi Excel formatında hazırlanıyor...');
-            await this.simulateExport(EXPORT_FORMATS.EXCEL);
+            const blob = await residentsApiService.exportResidents('excel', filters);
+            downloadBlob(blob, `sakinler_${new Date().toISOString().slice(0,10)}.xlsx`);
             this.toast.success('Excel İndirildi', 'Sakin listesi başarıyla Excel olarak indirildi');
-        } catch (error) {
-            this.toast.error('Excel İndirme Hatası', 'Excel indirme sırasında bir hata oluştu');
+        } catch (error: any) {
+            this.toast.error('Excel İndirme Hatası', error?.message || 'Excel indirme sırasında bir hata oluştu');
         }
     };
 
     /**
      * Handle CSV export
      */
-    handleExportCSV = async (): Promise<void> => {
+    handleExportCSV = async (filters?: ResidentFilterParams): Promise<void> => {
         try {
             this.toast.success('CSV İndiriliyor', 'Sakin listesi CSV formatında hazırlanıyor...');
-            await this.simulateExport(EXPORT_FORMATS.CSV);
+            const blob = await residentsApiService.exportResidents('csv', filters);
+            downloadBlob(blob, `sakinler_${new Date().toISOString().slice(0,10)}.csv`);
             this.toast.success('CSV İndirildi', 'Sakin listesi başarıyla CSV olarak indirildi');
-        } catch (error) {
-            this.toast.error('CSV İndirme Hatası', 'CSV indirme sırasında bir hata oluştu');
+        } catch (error: any) {
+            this.toast.error('CSV İndirme Hatası', error?.message || 'CSV indirme sırasında bir hata oluştu');
         }
     };
 
     /**
      * Handle JSON export
      */
-    handleExportJSON = async (): Promise<void> => {
+    handleExportJSON = async (filters?: ResidentFilterParams): Promise<void> => {
         try {
             this.toast.success('JSON İndiriliyor', 'Sakin listesi JSON formatında hazırlanıyor...');
-            await this.simulateExport(EXPORT_FORMATS.JSON);
+            const blob = await residentsApiService.exportResidents('json', filters);
+            downloadBlob(blob, `sakinler_${new Date().toISOString().slice(0,10)}.json`);
             this.toast.success('JSON İndirildi', 'Sakin listesi başarıyla JSON olarak indirildi');
-        } catch (error) {
-            this.toast.error('JSON İndirme Hatası', 'JSON indirme sırasında bir hata oluştu');
+        } catch (error: any) {
+            this.toast.error('JSON İndirme Hatası', error?.message || 'JSON indirme sırasında bir hata oluştu');
         }
     };
 

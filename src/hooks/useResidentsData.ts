@@ -145,8 +145,8 @@ export const useResidentsData = ({
                 page: currentPage,
                 limit: recordsPerPage,
                 search: searchQuery || undefined,
-                sortBy: sortConfig.key,
-                sortOrder: sortConfig.direction,
+                orderColumn: sortConfig.key,
+                orderBy: sortConfig.direction === 'asc' ? 'ASC' : 'DESC',
                 ...filters
             };
 

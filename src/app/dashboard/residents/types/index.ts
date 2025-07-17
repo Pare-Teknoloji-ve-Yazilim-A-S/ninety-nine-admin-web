@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
+import { ResidentFilterParams } from '@/services/types/resident.types';
 
 // API Response Types
 export interface ApiResident {
@@ -104,10 +105,10 @@ export interface BulkActionHandlers {
 }
 
 export interface ExportHandlers {
-    handleExportPDF: () => Promise<void>;
-    handleExportExcel: () => Promise<void>;
-    handleExportCSV: () => Promise<void>;
-    handleExportJSON: () => Promise<void>;
+    handleExportPDF: (filters?: ResidentFilterParams) => Promise<void>;
+    handleExportExcel: (filters?: ResidentFilterParams) => Promise<void>;
+    handleExportCSV: (filters?: ResidentFilterParams) => Promise<void>;
+    handleExportJSON: (filters?: ResidentFilterParams) => Promise<void>;
 }
 
 // Page Props and State Types

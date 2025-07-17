@@ -639,10 +639,34 @@ export default function ResidentsPage() {
                                     Yenile
                                 </Button>
                                 <ExportDropdown
-                                    onExportPDF={exportActionHandlers.handleExportPDF}
-                                    onExportExcel={exportActionHandlers.handleExportExcel}
-                                    onExportCSV={exportActionHandlers.handleExportCSV}
-                                    onExportJSON={exportActionHandlers.handleExportJSON}
+                                    onExportPDF={() => exportActionHandlers.handleExportPDF({
+                                        ...filtersHook.filters,
+                                        search: filtersHook.searchQuery,
+                                        orderColumn: !filtersHook.searchQuery ? 'firstName' : filtersHook.sortConfig.key,
+                                        orderBy: filtersHook.sortConfig.direction ? filtersHook.sortConfig.direction.toUpperCase() as 'ASC' | 'DESC' : undefined,
+                                        // page ve limit gönderme
+                                    })}
+                                    onExportExcel={() => exportActionHandlers.handleExportExcel({
+                                        ...filtersHook.filters,
+                                        search: filtersHook.searchQuery,
+                                        orderColumn: !filtersHook.searchQuery ? 'firstName' : filtersHook.sortConfig.key,
+                                        orderBy: filtersHook.sortConfig.direction ? filtersHook.sortConfig.direction.toUpperCase() as 'ASC' | 'DESC' : undefined,
+                                        // page ve limit gönderme
+                                    })}
+                                    onExportCSV={() => exportActionHandlers.handleExportCSV({
+                                        ...filtersHook.filters,
+                                        search: filtersHook.searchQuery,
+                                        orderColumn: !filtersHook.searchQuery ? 'firstName' : filtersHook.sortConfig.key,
+                                        orderBy: filtersHook.sortConfig.direction ? filtersHook.sortConfig.direction.toUpperCase() as 'ASC' | 'DESC' : undefined,
+                                        // page ve limit gönderme
+                                    })}
+                                    onExportJSON={() => exportActionHandlers.handleExportJSON({
+                                        ...filtersHook.filters,
+                                        search: filtersHook.searchQuery,
+                                        orderColumn: !filtersHook.searchQuery ? 'firstName' : filtersHook.sortConfig.key,
+                                        orderBy: filtersHook.sortConfig.direction ? filtersHook.sortConfig.direction.toUpperCase() as 'ASC' | 'DESC' : undefined,
+                                        // page ve limit gönderme
+                                    })}
                                     variant="secondary"
                                     size="md"
                                 />

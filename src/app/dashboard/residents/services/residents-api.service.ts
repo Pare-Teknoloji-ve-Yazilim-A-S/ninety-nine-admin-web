@@ -217,14 +217,45 @@ export class ResidentsApiService {
      */
     async exportResidents(format: 'pdf' | 'excel' | 'csv' | 'json', filters?: ResidentFilterParams): Promise<Blob> {
         try {
-            // This would typically call a dedicated export endpoint
-            // For now, we'll simulate the export
-            const response = await residentService.getAllResidents(filters || {});
-            const data = JSON.stringify(response.data, null, 2);
-            
-            return new Blob([data], { 
-                type: format === 'json' ? 'application/json' : 'text/plain' 
-            });
+            // Endpoint belirle
+            let endpoint = '';
+            switch (format) {
+                case 'pdf':
+                    endpoint = '/admin/users/export/pdf';
+                    break;
+                case 'excel':
+                    endpoint = '/admin/users/export/excel';
+                    break;
+                case 'csv':
+                    endpoint = '/admin/users/export/csv';
+                    break;
+                case 'json':
+                    endpoint = '/admin/users/export/json';
+                    break;
+                default:
+                    throw new Error('Unsupported export format');
+            }
+
+            // Filtreleri query string olarak ekle
+            const params = { ...filters };
+            // Query string oluştur
+            const queryString = Object.keys(params).length > 0
+                ? '?' + new URLSearchParams(
+                    Object.entries(params).reduce((acc, [key, value]) => {
+                        if (value !== undefined && value !== null) {
+                            acc[key] = String(value);
+                        }
+                        return acc;
+                    }, {} as Record<string, string>)
+                ).toString()
+                : '';
+
+            // API çağrısı (responseType: 'blob')
+            const response = await (await import('@/services/api/client')).apiClient['client'].get(
+                `${endpoint}${queryString}`,
+                { responseType: 'blob' }
+            );
+            return response.data;
         } catch (error) {
             throw this.handleApiError(error);
         }

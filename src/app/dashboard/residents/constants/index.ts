@@ -85,7 +85,7 @@ export const BULK_ACTION_IDS = {
 // Table Column IDs
 export const TABLE_COLUMN_IDS = {
     PHOTO: 'photo',
-    NAME: 'name',
+    NAME: 'firstName',
     LOCATION: 'location',
     TYPE: 'type',
     CONTACT: 'contact',
