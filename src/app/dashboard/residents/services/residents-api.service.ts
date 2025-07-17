@@ -242,7 +242,7 @@ export class ResidentsApiService {
             const queryString = Object.keys(params).length > 0
                 ? '?' + new URLSearchParams(
                     Object.entries(params).reduce((acc, [key, value]) => {
-                        if (value !== undefined && value !== null) {
+                        if (value !== undefined && value !== null && value !== "") {
                             acc[key] = String(value);
                         }
                         return acc;
