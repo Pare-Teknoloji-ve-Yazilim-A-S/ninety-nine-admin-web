@@ -26,7 +26,7 @@ export interface Ticket {
 export const ticketService = {
   async getOpenTickets(): Promise<Ticket[]> {
     const response: ApiResponse<Ticket[]> = await apiClient.get<Ticket[]>('/admin/tickets/open');
-    return response.data;
+    return response;
   },
   async getTicketsByStatus(status: string): Promise<Ticket[]> {
     const response: ApiResponse<Ticket[]> = await apiClient.get<Ticket[]>(`/admin/tickets/status/${status}`);

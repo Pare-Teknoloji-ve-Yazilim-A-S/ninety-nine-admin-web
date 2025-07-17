@@ -79,18 +79,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
             const response = await apiClient.put<AvatarUploadResponse>(
                 apiConfig.endpoints.residents.mobile.uploadAvatar(id),
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    onUploadProgress: (progressEvent) => {
-                        if (onProgress && progressEvent.total) {
-                            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                            onProgress(progress);
-                        }
-                    },
-                }
+                formData
             );
 
             this.logger.info('Avatar uploaded successfully');
@@ -353,18 +342,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
             const response = await apiClient.post<Resident>(
                 apiConfig.endpoints.residents.mobile.uploadDocuments(id),
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                    onUploadProgress: (progressEvent) => {
-                        if (onProgress && progressEvent.total) {
-                            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                            onProgress(progress);
-                        }
-                    },
-                }
+                formData
             );
 
             this.logger.info('Documents uploaded successfully');
