@@ -77,8 +77,8 @@ const transformApiResidentToComponentResident = (apiResident: ApiResident): Resi
         },
         membershipTier: apiResident.membershipTier === 'GOLD' ? 'Altın Üye' : 
                        apiResident.membershipTier === 'SILVER' ? 'Gümüş Üye' : 'Standart Üye',
-        verificationStatus: apiResident.verificationStatus === 'APPROVED' ? 'Onaylandı' : 
-                           apiResident.verificationStatus === 'REJECTED' ? 'Reddedildi' : 'Beklemede',
+        verificationStatus: apiResident.verificationStatus === 'APPROVED' ? { label: 'Onaylandı', color: 'green' } : 
+                           apiResident.verificationStatus === 'REJECTED' ? { label: 'Reddedildi', color: 'red' } : { label: 'Beklemede', color: 'yellow' },
         registrationDate: apiResident.registrationDate || apiResident.createdAt || new Date().toISOString(),
         lastActivity: apiResident.lastLoginDate,
         notes: '',
@@ -103,8 +103,8 @@ export const useResidentData = ({
 
             const response = await residentService.getResidentById(id);
             
-            if (response) {
-                const transformedResident = transformApiResidentToComponentResident(response);
+            if (response && response.data) {
+                const transformedResident = transformApiResidentToComponentResident(response.data);
                 setResident(transformedResident);
             } else {
                 setError('Sakin bulunamadı');
@@ -125,7 +125,7 @@ export const useResidentData = ({
 
             const response = await residentService.updateResident(id, data);
             
-            if (response.data) {
+            if (response && response.data) {
                 const transformedResident = transformApiResidentToComponentResident(response.data);
                 setResident(transformedResident);
             }
@@ -147,7 +147,7 @@ export const useResidentData = ({
             // Yeni API formatına uygun çağrı
             const response = await residentService.createResident(data);
             
-            if (response.data) {
+            if (response && response.data) {
                 const transformedResident = transformApiResidentToComponentResident(response.data);
                 setResident(transformedResident);
                 return response.data.id?.toString?.() || '';

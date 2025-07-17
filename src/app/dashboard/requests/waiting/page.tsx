@@ -186,8 +186,8 @@ export default function WaitingRequestsPage() {
                     setIsOpen(false);
                 }
             };
-            document.addEventListener('mousedown', handleClick);
-            return () => document.removeEventListener('mousedown', handleClick);
+            document.addEventListener('click', handleClick); // mousedown -> click
+            return () => document.removeEventListener('click', handleClick);
         }, [isOpen]);
 
         const handleDropdownToggle = (e: React.MouseEvent) => {
