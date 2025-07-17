@@ -88,6 +88,17 @@ export default function RequestsListPage() {
         SCHEDULED: { label: 'Planlandı', color: 'primary', icon: Calendar }
     };
 
+    // Type color mapping for request types (Badge color prop ile uyumlu)
+    const typeColorMap: Record<string, "primary" | "secondary" | "gold" | "red"> = {
+        FAULT_REPAIR: 'gold',      // Sarı/altın (warning)
+        COMPLAINT: 'red',          // Kırmızı
+        REQUEST: 'primary',        // Sıcak mavi
+        SUGGESTION: 'primary',     // Yeşil yok, en yakın primary
+        QUESTION: 'secondary',     // Gri/mavi
+        MAINTENANCE: 'primary',    // Bilgi mavisi (info)
+        OTHER: 'secondary',        // Nötr
+    };
+
     // Table columns (API'den gelen Ticket yapısına göre)
     const getTableColumns = () => [
         {
@@ -108,7 +119,7 @@ export default function RequestsListPage() {
             key: 'type',
             header: 'Tip',
             render: (_value: any, req: Ticket) => (
-                <Badge variant="soft" color="secondary">
+                <Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
                     {req?.type || 'Tip Yok'}
                 </Badge>
             ),
@@ -258,7 +269,9 @@ export default function RequestsListPage() {
                 <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                         <Wrench className="h-4 w-4" />
-                        <span>{req?.type || 'Tip Yok'}</span>
+                        <ui.Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
+                            {req?.type || 'Tip Yok'}
+                        </ui.Badge>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                         <User className="h-4 w-4" />
