@@ -524,6 +524,33 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
         };
         return typeConfig[type] || { label: type, icon: 'Building' };
     }
+
+    /**
+     * Get resident count
+     * GET /admin/properties/resident/count
+     */
+    async getResidentCount(): Promise<number> {
+        const response = await apiClient.get(apiConfig.endpoints.properties.admin.residentCount);
+        return response.data.count;
+    }
+
+    /**
+     * Get villa count
+     * GET /admin/properties/villa/count
+     */
+    async getVillaCount(): Promise<number> {
+        const response = await apiClient.get(apiConfig.endpoints.properties.admin.villaCount);
+        return response.data.count;
+    }
+
+    /**
+     * Get available count
+     * GET /admin/properties/avaliable/count
+     */
+    async getAvailableCount(): Promise<number> {
+        const response = await apiClient.get(apiConfig.endpoints.properties.admin.availableCount);
+        return response.data.count;
+    }
 }
 
 export default new PropertyService();

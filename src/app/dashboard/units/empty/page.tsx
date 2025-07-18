@@ -207,11 +207,10 @@ export default function EmptyUnitsPage() {
               </div>
             </div>
             <div className="mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
                 <StatsCard title="Apartman Dairesi" value={units.filter(u => u.type === 'RESIDENCE').length} icon={Building} color="primary" loading={loading} size="md" />
                 <StatsCard title="Villa" value={units.filter(u => u.type === 'VILLA').length} icon={Home} color="success" loading={loading} size="md" />
                 <StatsCard title="Ticari Alan" value={units.filter(u => u.type === 'COMMERCIAL').length} icon={Store} color="info" loading={loading} size="md" />
-                <StatsCard title="Ofis Alanı" value={units.filter(u => u.type === 'OFFICE').length} icon={Car} color="danger" loading={loading} size="md" />
               </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
