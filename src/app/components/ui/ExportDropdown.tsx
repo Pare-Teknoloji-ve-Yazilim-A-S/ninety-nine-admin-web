@@ -14,10 +14,10 @@ interface ExportOption {
 }
 
 interface ExportDropdownProps {
-    onExportPDF: () => void;
+    onExportPDF?: () => void;
     onExportExcel: () => void;
     onExportCSV: () => void;
-    onExportJSON: () => void;
+    onExportJSON?: () => void;
     disabled?: boolean;
     className?: string;
     size?: 'sm' | 'md' | 'lg';
@@ -39,25 +39,27 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const exportOptions: ExportOption[] = [
-        {
-            id: 'pdf',
-            label: 'PDF İndir',
-            icon: FileText,
-            description: 'Sakin listesini PDF formatında indir',
-            format: 'pdf',
-            onClick: async () => {
-                setLoadingOption('pdf');
-                await onExportPDF();
-                setLoadingOption(null);
-                setIsOpen(false);
-            }
-        },
+        ...(onExportPDF
+            ? [{
+                id: 'pdf',
+                label: 'PDF İndir',
+                icon: FileText,
+                description: 'Sakin listesini PDF formatında indir',
+                format: 'pdf' as const,
+                onClick: async () => {
+                    setLoadingOption('pdf');
+                    await onExportPDF();
+                    setLoadingOption(null);
+                    setIsOpen(false);
+                }
+            }]
+            : []),
         {
             id: 'excel',
             label: 'Excel İndir',
             icon: FileSpreadsheet,
             description: 'Sakin listesini Excel formatında indir',
-            format: 'excel',
+            format: 'excel' as const,
             onClick: async () => {
                 setLoadingOption('excel');
                 await onExportExcel();
@@ -70,7 +72,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
             label: 'CSV İndir',
             icon: FileType2,
             description: 'Sakin listesini CSV formatında indir',
-            format: 'csv',
+            format: 'csv' as const,
             onClick: async () => {
                 setLoadingOption('csv');
                 await onExportCSV();
@@ -78,19 +80,21 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
                 setIsOpen(false);
             }
         },
-        {
-            id: 'json',
-            label: 'JSON İndir',
-            icon: Code,
-            description: 'Sakin listesini JSON formatında indir',
-            format: 'json',
-            onClick: async () => {
-                setLoadingOption('json');
-                await onExportJSON();
-                setLoadingOption(null);
-                setIsOpen(false);
-            }
-        }
+        ...(onExportJSON
+            ? [{
+                id: 'json',
+                label: 'JSON İndir',
+                icon: Code,
+                description: 'Sakin listesini JSON formatında indir',
+                format: 'json' as const,
+                onClick: async () => {
+                    setLoadingOption('json');
+                    await onExportJSON();
+                    setLoadingOption(null);
+                    setIsOpen(false);
+                }
+            }]
+            : []),
     ];
 
     // Size classes

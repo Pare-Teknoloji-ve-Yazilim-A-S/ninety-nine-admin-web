@@ -583,6 +583,7 @@ export default function UnitsListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
+                                {/*
                                 <ExportDropdown
                                     onExportPDF={exportActionHandlers.handleExportPDF}
                                     onExportExcel={exportActionHandlers.handleExportExcel}
@@ -591,6 +592,7 @@ export default function UnitsListPage() {
                                     variant="secondary"
                                     size="md"
                                 />
+                                */}
                                 <Link href="/dashboard/units/add">
                                   <Button variant="primary" size="md" icon={Plus}>
                                     Yeni Konut
