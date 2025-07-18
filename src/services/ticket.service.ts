@@ -79,14 +79,14 @@ export const ticketService = {
   },
 
   // Eski metodları geriye uyumluluk için koruyorum
-  async getOpenTickets(): Promise<Ticket[]> {
+  async getOpenTickets(): Promise<TicketPaginationResponse> {
     const response = await this.getTickets({ filter: 'open', limit: 100 });
-    return response.data.data;
+    return response.data;
   },
   
-  async getTicketsByStatus(status: string): Promise<Ticket[]> {
+  async getTicketsByStatus(status: string): Promise<TicketPaginationResponse> {
     const response = await this.getTickets({ status, limit: 100 });
-    return response.data.data;
+    return response.data;
   },
   
   // --- Ticket Status Update Methods ---

@@ -11,7 +11,7 @@ export function useWaitingTickets() {
     setError(null);
     try {
       const data = await ticketService.getTicketsByStatus('WAITING');
-      setTickets(data);
+      setTickets(data as unknown as Ticket[]);
     } catch (err: any) {
       setError(err?.message || 'Bekleyen talepler alınamadı.');
     } finally {
