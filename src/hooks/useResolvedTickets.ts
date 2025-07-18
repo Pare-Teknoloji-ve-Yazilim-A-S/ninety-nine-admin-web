@@ -11,7 +11,7 @@ export function useResolvedTickets() {
     setError(null);
     try {
       const data = await ticketService.getTicketsByStatus('RESOLVED');
-      setTickets(data);
+      setTickets(data as unknown as Ticket[]);
     } catch (err: any) {
       setError(err?.message || 'Çözümlenen talepler alınamadı.');
     } finally {
