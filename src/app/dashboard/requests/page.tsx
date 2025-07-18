@@ -34,11 +34,12 @@ import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import TablePagination from '@/app/components/ui/TablePagination';
 import Checkbox from '@/app/components/ui/Checkbox';
 import Link from 'next/link';
-import { ticketService, Ticket } from '@/services/ticket.service';
+import { ticketService, Ticket, TicketPaginationResponse, TicketFilters } from '@/services/ticket.service';
 import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from './RequestDetailModal';
 import Portal from '@/app/components/ui/Portal';
+import { ApiResponse } from '@/services';
 
 export default function RequestsListPage() {
     // UI State
@@ -60,20 +61,32 @@ export default function RequestsListPage() {
     // Detay modalı state
     const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
 
-    // Fetch tickets from API
-    const fetchRequests = React.useCallback(() => {
+    // Fetch tickets from API with pagination
+    const fetchRequests = React.useCallback((filters: TicketFilters = {}) => {
         setLoading(true);
         setError(null);
-        ticketService.getOpenTickets()
-            .then((data) => {
-                setRequests(data);
+        ticketService.getTickets({
+            page: pagination.page,
+            limit: pagination.limit,
+            filter: 'open', // Açık talepleri getir
+            ...filters
+        })
+            .then((response: ApiResponse<TicketPaginationResponse>) => {
+                setRequests(response.data as unknown as Ticket[]);
+                setPagination(prev => ({
+                    ...prev,
+                    total: response.pagination.total,
+                    totalPages: response.pagination.totalPages,
+                    page: response.pagination.page,
+                    limit: response.pagination.limit
+                }));
                 setLoading(false);
             })
             .catch((err) => {
                 setError('Veriler alınamadı.');
                 setLoading(false);
             });
-    }, []);
+    }, [pagination.page, pagination.limit]);
     React.useEffect(() => {
         fetchRequests();
     }, [fetchRequests]);
@@ -351,17 +364,18 @@ export default function RequestsListPage() {
         setSelectedRequests(selected);
     };
 
-    // Search handlers (placeholder)
+    // Search handlers
     const handleSearchInputChange = (value: string) => {
         setSearchInput(value);
     };
     const handleSearchSubmit = (value: string) => {
         setSearchInput(value);
+        fetchRequests({ search: value });
     };
 
-    // Refresh handler (placeholder)
+    // Refresh handler
     const handleRefresh = () => {
-        fetchRequests();
+        fetchRequests({ search: searchInput });
     };
 
     // Table columns (API'den gelen Ticket yapısına göre)
@@ -415,20 +429,20 @@ export default function RequestsListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
-                                {/* <Link href="/dashboard/requests/add">
+                                <Link href="/dashboard/requests/add">
                                     <Button variant="primary" size="md" icon={Plus}>
                                         Yeni Talep
                                     </Button>
-                                </Link> */}
+                                </Link>
                             </div>
                         </div>
 
                         {/* Search and Filters */}
                         <Card className="mb-6">
                             <div className="p-6">
-                                <div className="flex flex-col lg:flex-row gap-4">
+                                <div className="flex flex-col justify-between lg:flex-row gap-4">
                                     {/* Search Bar */}
-                                    <div className="flex-1">
+                                    <div className="flex-1 max-w-lg">
                                         <SearchBar
                                             placeholder="Talep başlığı, sakin adı, daire veya tip ile ara..."
                                             value={searchInput}
@@ -439,14 +453,14 @@ export default function RequestsListPage() {
                                     </div>
                                     {/* Filter and View Toggle */}
                                     <div className="flex gap-2 items-center">
-                                        <Button
+                                        {/* <Button
                                             variant={showFilters ? "primary" : "secondary"}
                                             size="md"
                                             icon={Filter}
                                             onClick={() => setShowFilters(true)}
                                         >
                                             Filtreler
-                                        </Button>
+                                        </Button> */}
                                         <ViewToggle
                                             options={[
                                                 { id: 'table', label: 'Tablo', icon: List },
@@ -517,8 +531,14 @@ export default function RequestsListPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setPagination((prev) => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setPagination((prev) => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: (page) => {
+                                                setPagination((prev) => ({ ...prev, page }));
+                                                fetchRequests({ page, search: searchInput });
+                                            },
+                                            onRecordsPerPageChange: (limit) => {
+                                                setPagination((prev) => ({ ...prev, limit, page: 1 }));
+                                                fetchRequests({ limit, page: 1, search: searchInput });
+                                            },
                                         }}
                                         ActionMenuComponent={RequestActionMenuWrapper}
                                         selectable={true}
@@ -538,8 +558,14 @@ export default function RequestsListPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setPagination((prev) => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setPagination((prev) => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: (page) => {
+                                                setPagination((prev) => ({ ...prev, page }));
+                                                fetchRequests({ page, search: searchInput });
+                                            },
+                                            onRecordsPerPageChange: (limit) => {
+                                                setPagination((prev) => ({ ...prev, limit, page: 1 }));
+                                                fetchRequests({ limit, page: 1, search: searchInput });
+                                            },
                                         }}
                                         emptyStateMessage="Henüz hizmet talebi bulunmuyor."
                                         ui={gridViewUI}

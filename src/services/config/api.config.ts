@@ -108,6 +108,10 @@ export const apiConfig = {
                 import: '/admin/properties/import',
                 setMaintenance: (id: string) => `/admin/properties/${id}/maintenance`,
                 completeMaintenance: (id: string) => `/admin/properties/${id}/maintenance`,
+                // Added endpoints for counts
+                residentCount: '/admin/properties/residence/count',
+                villaCount: '/admin/properties/villa/count',
+                availableCount: '/admin/properties/available/count',
             },
         },
         billing: {

@@ -55,6 +55,7 @@ import Checkbox from '@/app/components/ui/Checkbox';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Portal from '@/app/components/ui/Portal';
+import { useUnitCounts } from '@/hooks/useUnitsData';
 
 
 export default function UnitsListPage() {
@@ -78,8 +79,7 @@ export default function UnitsListPage() {
     const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [quickStats, setQuickStats] = useState<QuickStats | null>(null);
-    const [recentActivities, setRecentActivities] = useState<PropertyActivity[]>([]);
+    // recentActivities kaldırıldı
     const [pagination, setPagination] = useState({
         total: 0,
         page: 1,
@@ -87,11 +87,13 @@ export default function UnitsListPage() {
         totalPages: 0
     });
 
+    // Add this inside the component
+    const { residentCount, villaCount, availableCount, loading: countsLoading, error: countsError } = useUnitCounts();
+
     // Load initial data
     useEffect(() => {
         loadProperties();
-        loadQuickStats();
-        loadRecentActivities();
+        // recentActivities kaldırıldı
     }, [filters]);
 
     const loadProperties = async () => {
@@ -114,31 +116,7 @@ export default function UnitsListPage() {
         }
     };
 
-    const loadQuickStats = async () => {
-        try {
-            const response = await unitsService.getQuickStats();
-            setQuickStats(response.data);
-        } catch (err: any) {
-            console.error('Failed to load quick stats:', err);
-            // Use fallback data for demo
-            setQuickStats({
-                apartmentUnits: { total: 85, occupied: 72, occupancyRate: 85 },
-                villaUnits: { total: 15, occupied: 12, occupancyRate: 80 },
-                commercialUnits: { total: 8, occupied: 6, occupancyRate: 75 },
-                parkingSpaces: { total: 120, occupied: 98, occupancyRate: 82 }
-            });
-        }
-    };
-
-    const loadRecentActivities = async () => {
-        try {
-            const response = await unitsService.getRecentActivities(10, 7);
-            setRecentActivities(response.data);
-        } catch (err: any) {
-            console.error('Failed to load recent activities:', err);
-            setRecentActivities([]);
-        }
-    };
+    // loadRecentActivities kaldırıldı
 
     const breadcrumbItems = [
         { label: 'Ana Sayfa', href: '/dashboard' },
@@ -147,21 +125,15 @@ export default function UnitsListPage() {
     ];
 
     // Statistics calculations from API data
-    const totalUnits = quickStats ?
-        quickStats.apartmentUnits.total + quickStats.villaUnits.total + quickStats.commercialUnits.total :
-        properties.length;
-
-    const occupiedUnits = quickStats ?
-        quickStats.apartmentUnits.occupied + quickStats.villaUnits.occupied + quickStats.commercialUnits.occupied :
-        properties.filter(p => p.status === 'OCCUPIED').length;
-
+    // quickStats ile ilgili hesaplamalar kaldırıldı, sadece properties üzerinden hesaplanacak
+    const totalUnits = properties.length;
+    const occupiedUnits = properties.filter(p => p.status === 'OCCUPIED').length;
     const vacantUnits = properties.filter(p => p.status === 'AVAILABLE').length;
     const maintenanceUnits = properties.filter(p => p.status === 'UNDER_MAINTENANCE').length;
     const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
-
-    const apartmentUnits = quickStats?.apartmentUnits.total || properties.filter(p => p.type === 'RESIDENCE').length;
-    const villaUnits = quickStats?.villaUnits.total || properties.filter(p => p.type === 'VILLA').length;
-    const commercialUnits = quickStats?.commercialUnits.total || properties.filter(p => p.type === 'COMMERCIAL').length;
+    const apartmentUnits = properties.filter(p => p.type === 'RESIDENCE').length;
+    const villaUnits = properties.filter(p => p.type === 'VILLA').length;
+    const commercialUnits = properties.filter(p => p.type === 'COMMERCIAL').length;
 
     const router = useRouter();
 
@@ -457,8 +429,7 @@ export default function UnitsListPage() {
     // Refresh handler eklendi
     const handleRefresh = () => {
         loadProperties();
-        loadQuickStats();
-        loadRecentActivities();
+        // recentActivities kaldırıldı
     };
 
     // 2. Input değişimini yöneten handler
@@ -583,6 +554,7 @@ export default function UnitsListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
+                                {/*
                                 <ExportDropdown
                                     onExportPDF={exportActionHandlers.handleExportPDF}
                                     onExportExcel={exportActionHandlers.handleExportExcel}
@@ -591,6 +563,7 @@ export default function UnitsListPage() {
                                     variant="secondary"
                                     size="md"
                                 />
+                                */}
                                 <Link href="/dashboard/units/add">
                                   <Button variant="primary" size="md" icon={Plus}>
                                     Yeni Konut
@@ -673,38 +646,37 @@ export default function UnitsListPage() {
                         </div>
 
                         {/* Quick Stats Cards */}
+                        {countsError && (
+                            <Card className="mb-4">
+                                <div className="p-4 text-primary-red text-center font-medium">
+                                    {countsError}
+                                </div>
+                            </Card>
+                        )}
                         <div className="mb-8">
-                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
                                 <StatsCard
                                     title="Apartman Dairesi"
-                                    value={quickStats?.apartmentUnits.total || 0}
+                                    value={residentCount ?? 0}
                                     icon={Building}
                                     color="primary"
-                                    loading={loading}
+                                    loading={countsLoading}
                                     size="md"
                                 />
                                 <StatsCard
                                     title="Villa"
-                                    value={quickStats?.villaUnits.total || 0}
+                                    value={villaCount ?? 0}
                                     icon={Home}
                                     color="success"
-                                    loading={loading}
+                                    loading={countsLoading}
                                     size="md"
                                 />
                                 <StatsCard
-                                    title="Ticari Alan"
-                                    value={quickStats?.commercialUnits.total || 0}
+                                    title="Müsait Konut"
+                                    value={availableCount ?? 0}
                                     icon={Store}
                                     color="info"
-                                    loading={loading}
-                                    size="md"
-                                />
-                                <StatsCard
-                                    title="Otopark Alanı"
-                                    value={quickStats?.parkingSpaces.total || 0}
-                                    icon={Car}
-                                    color="danger"
-                                    loading={loading}
+                                    loading={countsLoading}
                                     size="md"
                                 />
                             </div>

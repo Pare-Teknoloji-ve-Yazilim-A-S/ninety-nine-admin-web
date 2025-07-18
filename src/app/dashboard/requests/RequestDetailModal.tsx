@@ -2,7 +2,7 @@ import React from 'react';
 import Modal from '@/app/components/ui/Modal';
 import Badge from '@/app/components/ui/Badge';
 import Button from '@/app/components/ui/Button';
-import { AlertCircle, RotateCcw, CheckCircle, Calendar, User, Wrench, Flag, Paperclip, MessageCircle, PauseCircle } from 'lucide-react';
+import { AlertCircle, RotateCcw, CheckCircle, Calendar, User, Wrench, Flag, Paperclip, MessageCircle, PauseCircle, Image, File, Download, Eye } from 'lucide-react';
 import type { Ticket } from '@/services/ticket.service';
 import { ticketService } from '@/services/ticket.service';
 import { useState } from 'react';
@@ -35,6 +35,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [postingComment, setPostingComment] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Fetch comments when modal opens or item changes
   React.useEffect(() => {
@@ -204,19 +205,62 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
                 <Paperclip className="h-5 w-5 text-primary-gold" />
                 <span className="font-semibold text-text-on-light dark:text-text-on-dark">Ekler</span>
               </div>
-              <ul className="space-y-2">
-                {currentItem.attachments.map((att: any) => (
-                  <li key={att.id} className="flex items-center gap-3 p-2 bg-background-light-soft dark:bg-background-soft rounded-lg border border-primary-gold/10">
-                    <a href={att.url || att.fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary-gold hover:underline font-medium flex items-center gap-2">
-                      <Paperclip className="h-4 w-4" />
-                      {att.fileName || att.name || 'Dosya'}
-                    </a>
-                    {att.uploadedAt && (
-                      <span className="text-xs text-text-light-secondary ml-2">{new Date(att.uploadedAt).toLocaleString('tr-TR')}</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentItem.attachments.map((att: any) => {
+                  const isImage = att.fileType?.startsWith('image/') || att.fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+                  const fileUrl = att.fileUrl || att.url;
+                  
+                  return (
+                    <div key={att.id} className="bg-background-light-soft dark:bg-background-soft rounded-lg border border-primary-gold/10 overflow-hidden">
+                      {isImage ? (
+                        <div className="relative group">
+                          <img 
+                            src={fileUrl} 
+                            alt={att.fileName || 'Resim'} 
+                            className="w-full h-48 object-cover cursor-pointer transition-transform hover:scale-105"
+                            onClick={() => setSelectedImage(fileUrl)}
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+                            <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 flex items-center justify-center h-32 bg-gray-50 dark:bg-gray-800">
+                          <File className="h-12 w-12 text-gray-400" />
+                        </div>
+                      )}
+                      <div className="p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {isImage ? <Image className="h-4 w-4 text-primary-gold" /> : <File className="h-4 w-4 text-gray-500" />}
+                            <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark truncate">
+                              {att.fileName || att.name || 'Dosya'}
+                            </span>
+                          </div>
+                          <a 
+                            href={fileUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                          >
+                            <Download className="h-4 w-4 text-primary-gold" />
+                          </a>
+                        </div>
+                        {att.fileSize && (
+                          <div className="text-xs text-text-light-secondary dark:text-text-secondary">
+                            {(att.fileSize / 1024 / 1024).toFixed(2)} MB
+                          </div>
+                        )}
+                        {att.uploadedAt && (
+                          <div className="text-xs text-text-light-secondary dark:text-text-secondary">
+                            {new Date(att.uploadedAt).toLocaleString('tr-TR')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -285,6 +329,27 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
 
         </div>
       </div>
+      
+      {/* Image Preview Modal */}
+      {selectedImage && (
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-90 flex items-center justify-center p-4">
+          <div className="relative max-w-4xl max-h-full">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Büyütülmüş resim" 
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </Modal>
   );
 };

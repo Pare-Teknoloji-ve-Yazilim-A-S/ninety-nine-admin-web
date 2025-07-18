@@ -6,6 +6,7 @@ import {
     QuickStats, 
     PropertyActivity 
 } from '@/services/types/property.types';
+import { propertyService } from '@/services';
 
 interface UseUnitsDataReturn {
     units: Property[];
@@ -153,3 +154,41 @@ export const useUnitsData = (
         exportUnits
     };
 };
+
+export function useUnitCounts() {
+    const [residentCount, setResidentCount] = useState<number | null>(null);
+    const [villaCount, setVillaCount] = useState<number | null>(null);
+    const [availableCount, setAvailableCount] = useState<number | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        setLoading(true);
+        setError(null);
+        Promise.all([
+            propertyService.getResidentCount(),
+            propertyService.getVillaCount(),
+            propertyService.getAvailableCount(),
+        ])
+            .then(([resident, villa, available]) => {
+                if (!isMounted) return;
+                setResidentCount(resident);
+                setVillaCount(villa);
+                setAvailableCount(available);
+            })
+            .catch((err) => {
+                if (!isMounted) return;
+                setError('Konut sayaçları yüklenirken bir hata oluştu');
+            })
+            .finally(() => {
+                if (!isMounted) return;
+                setLoading(false);
+            });
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    return { residentCount, villaCount, availableCount, loading, error };
+}

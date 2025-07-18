@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
-import { Building, Map, Plus, RefreshCw, Filter, List, Grid3X3, Home, Store, Car, RotateCcw } from 'lucide-react';
+import { Building, Map, Plus, RefreshCw, Filter, List, Grid3X3, Home, Store, Car, RotateCcw, CheckCircle, Calendar } from 'lucide-react';
 import StatsCard from '@/app/components/ui/StatsCard';
 import Badge from '@/app/components/ui/Badge';
 import EmptyState from '@/app/components/ui/EmptyState';
@@ -14,27 +14,121 @@ import SearchBar from '@/app/components/ui/SearchBar';
 import ViewToggle from '@/app/components/ui/ViewToggle';
 import FilterPanel from '@/app/components/ui/FilterPanel';
 import Link from 'next/link';
-
-// Mock data for maintenance units
-const mockUnits = [];
-const mockQuickStats = {
-  apartmentUnits: { total: 1 },
-  villaUnits: { total: 1 },
-  commercialUnits: { total: 0 },
-  parkingSpaces: { total: 0 }
-};
+import GenericListView from '@/app/components/templates/GenericListView';
+import { unitsService, Property } from '@/services';
 
 export default function MaintenanceUnitsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [showFilters, setShowFilters] = useState(false);
+  const [units, setUnits] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 20,
+    totalPages: 0
+  });
 
   const breadcrumbItems = [
     { label: 'Ana Sayfa', href: '/dashboard' },
     { label: 'Konutlar', href: '/dashboard/units' },
     { label: 'Bakım Durumu', active: true }
   ];
+
+  // Status config for table
+  const statusConfig = {
+    AVAILABLE: { label: 'Boş', color: 'info', icon: RotateCcw },
+    OCCUPIED: { label: 'Dolu', color: 'success', icon: CheckCircle },
+    UNDER_MAINTENANCE: { label: 'Bakımda', color: 'warning', icon: RotateCcw },
+    RESERVED: { label: 'Rezerve', color: 'primary', icon: Calendar }
+  };
+
+  // Table columns (sadeleştirilmiş)
+  const getTableColumns = () => [
+    {
+      key: 'property',
+      header: 'Konut',
+      render: (_value: any, unit: Property) => (
+        <div>
+          <div className="font-medium text-text-on-light dark:text-text-on-dark">
+            {unit?.propertyNumber || unit?.name || 'N/A'}
+          </div>
+          <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+            {unit?.blockNumber && `Blok ${unit.blockNumber}`}
+            {unit?.floor && ` • ${unit.floor}. kat`}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Tip',
+      render: (_value: any, unit: Property) => (
+        <Badge variant="soft" color="secondary">
+          {unit?.type ? unitsService.getTypeInfo(unit.type).label : 'N/A'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'area',
+      header: 'm²',
+      render: (_value: any, unit: Property) => unit?.area || '--',
+    },
+    {
+      key: 'status',
+      header: 'Durum',
+      render: (_value: any, unit: Property) => {
+        const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
+        if (!statusInfo) {
+          return <span className="text-text-light-muted dark:text-text-muted">N/A</span>;
+        }
+        const StatusIcon = statusInfo.icon;
+        return (
+          <div className="flex items-center gap-2">
+            <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
+            <Badge variant="soft" color={statusInfo.color as any}>
+              {statusInfo.label}
+            </Badge>
+          </div>
+        );
+      },
+    },
+  ];
+
+  // API'den bakımda olan konutları çek
+  const fetchUnits = async (page = 1, limit = 20, search = "") => {
+    setLoading(true);
+    setError(null);
+    try {
+      const filters: any = { status: 'UNDER_MAINTENANCE', page, limit };
+      if (search) filters.search = search;
+      const response = await unitsService.getAllUnits(filters);
+      setUnits(response.data);
+      setPagination(response.pagination);
+    } catch (err: any) {
+      setError('Bakımda olan konutlar yüklenirken bir hata oluştu.');
+      setUnits([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnits(pagination.page, pagination.limit, searchInput);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pagination.page, pagination.limit, searchInput]);
+
+  const handleRefresh = () => {
+    fetchUnits(pagination.page, pagination.limit, searchInput);
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchInput(value);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
   return (
     <ProtectedRoute>
@@ -46,21 +140,21 @@ export default function MaintenanceUnitsPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div>
                 <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
-                  Bakımda Olan Konutlar <span className="text-primary-gold">({mockUnits.length} Konut)</span>
+                  Bakımda Olan Konutlar <span className="text-primary-gold">({units.length} Konut)</span>
                 </h2>
                 <p className="text-text-light-secondary dark:text-text-secondary">
                   Sadece bakımda olan daire, villa ve ticari alanlar listelenir.
                 </p>
               </div>
               <div className="flex gap-3">
-                <Button variant="ghost" size="md" icon={RefreshCw} onClick={() => {}}>
+                <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                   Yenile
                 </Button>
-                <Link href="/dashboard/units/add">
+                {/* <Link href="/dashboard/units/add">
                   <Button variant="primary" size="md" icon={Plus}>
                     Yeni Konut
                   </Button>
-                </Link>
+                </Link> */}
               </div>
             </div>
             <Card className="mb-6">
@@ -70,20 +164,20 @@ export default function MaintenanceUnitsPage() {
                     <SearchBar
                       placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
                       value={searchInput}
-                      onChange={setSearchInput}
-                      onSearch={setSearchInput}
+                      onChange={handleSearchInputChange}
+                      onSearch={handleSearchInputChange}
                       debounceMs={500}
                     />
                   </div>
                   <div className="flex gap-2 items-center">
-                    <Button
+                    {/* <Button
                       variant={showFilters ? "primary" : "secondary"}
                       size="md"
                       icon={Filter}
                       onClick={() => setShowFilters(true)}
                     >
                       Filtreler
-                    </Button>
+                    </Button> */}
                     <ViewToggle
                       options={[
                         { id: 'table', label: 'Tablo', icon: List },
@@ -114,23 +208,34 @@ export default function MaintenanceUnitsPage() {
             </div>
             <div className="mb-8">
               <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-4">
-                <StatsCard title="Apartman Dairesi" value={mockQuickStats.apartmentUnits.total} icon={Building} color="primary" loading={false} size="md" />
-                <StatsCard title="Villa" value={mockQuickStats.villaUnits.total} icon={Home} color="success" loading={false} size="md" />
-                <StatsCard title="Ticari Alan" value={mockQuickStats.commercialUnits.total} icon={Store} color="info" loading={false} size="md" />
-                <StatsCard title="Otopark Alanı" value={mockQuickStats.parkingSpaces.total} icon={Car} color="danger" loading={false} size="md" />
+                 <StatsCard title="Apartman Dairesi" value={units.filter(u => u.type === 'RESIDENCE').length} icon={Building} color="primary" loading={loading} size="md" />
+                 <StatsCard title="Villa" value={units.filter(u => u.type === 'VILLA').length} icon={Home} color="success" loading={loading} size="md" />
+                 <StatsCard title="Ticari Alan" value={units.filter(u => u.type === 'COMMERCIAL').length} icon={Store} color="info" loading={loading} size="md" />
+                 <StatsCard title="Ofis Alanı" value={units.filter(u => u.type === 'OFFICE').length} icon={Car} color="danger" loading={loading} size="md" />
               </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
               <div className="lg:col-span-1">
-                <Card>
-                  <div className="p-8 text-center">
-                    <EmptyState
-                      icon={<RotateCcw />}
-                      title="Bakımda Konut Bulunamadı"
-                      description="Şu anda bakımda olan konut kaydı bulunmuyor."
-                    />
-                  </div>
-                </Card>
+                {viewMode === 'table' && (
+                  <GenericListView
+                    data={units}
+                    loading={loading}
+                    error={error}
+                    columns={getTableColumns()}
+                    pagination={{
+                      currentPage: pagination.page,
+                      totalPages: pagination.totalPages,
+                      totalRecords: pagination.total,
+                      recordsPerPage: pagination.limit,
+                      onPageChange: (page) => setPagination(prev => ({ ...prev, page })),
+                      onRecordsPerPageChange: (limit) => setPagination(prev => ({ ...prev, limit, page: 1 })),
+                    }}
+                    emptyStateMessage="Şu anda bakımda olan konut kaydı bulunmuyor."
+                    selectable={false}
+                    showPagination={true}
+                  />
+                )}
+                {/* Grid görünümü ileride eklenebilir */}
               </div>
             </div>
           </main>

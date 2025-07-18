@@ -60,16 +60,13 @@ export default function QrPage() {
       {/* Kart Alanı */}
       <div className="bg-background-light-card dark:bg-background-card rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
       <div className="w-full flex flex-col items-center mt-8 mb-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           <img
             src="/images/NinetyNine Logo.png"
             alt="NinetyNine Logo"
             className="h-20 w-auto"
           />
-          <div>
-            <h1 className="text-xl font-bold gradient-gold-start text-primary-gold">NinetyNine</h1>
-            <p className="text-xs text-text-light-muted dark:text-text-muted">Admin Panel</p>
-          </div>
+         
         </div>
         <div className="mt-3 text-center">
           
