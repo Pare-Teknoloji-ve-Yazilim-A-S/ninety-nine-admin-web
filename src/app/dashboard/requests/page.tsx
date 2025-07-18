@@ -68,9 +68,11 @@ export default function RequestsListPage() {
         ticketService.getTickets({
             page: pagination.page,
             limit: pagination.limit,
-            filter: 'open', // Açık talepleri getir
+             // Açık ve işlemdeki talepleri getir
+            orderColumn: 'createdAt',
+            orderBy: 'DESC',
             ...filters
-        })
+  })
             .then((response: ApiResponse<TicketPaginationResponse>) => {
                 setRequests(response.data as unknown as Ticket[]);
                 setPagination(prev => ({
@@ -95,7 +97,7 @@ export default function RequestsListPage() {
     const breadcrumbItems = [
         { label: 'Ana Sayfa', href: '/dashboard' },
         { label: 'Hizmet Talepleri', href: '/dashboard/requests' },
-        { label: 'Açık Talepler', active: true }
+        { label: 'Aktif Talepler', active: true }
     ];
 
     // Status config (placeholder)
@@ -409,7 +411,7 @@ export default function RequestsListPage() {
                 <div className="lg:ml-72">
                     {/* Header */}
                     <DashboardHeader
-                        title="Açık Hizmet Talepleri"
+                        title="Aktif Hizmet Talepleri"
                         breadcrumbItems={breadcrumbItems}
                     />
 
@@ -419,7 +421,7 @@ export default function RequestsListPage() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                             <div>
                                 <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
-                                    Açık Talepler <span className="text-primary-gold">({requests.length} Talep)</span>
+                                    Aktif Talepler <span className="text-primary-gold">({requests.length} Talep)</span>
                                 </h2>
                                 <p className="text-text-light-secondary dark:text-text-secondary">
                                     Açık: {requests.filter(r => r.status === 'OPEN').length} | İşlemde: {requests.filter(r => r.status === 'IN_PROGRESS').length}
@@ -543,7 +545,7 @@ export default function RequestsListPage() {
                                         ActionMenuComponent={RequestActionMenuWrapper}
                                         selectable={true}
                                         showPagination={true}
-                                        emptyStateMessage="Henüz hizmet talebi bulunmuyor."
+                                        emptyStateMessage="Henüz aktif hizmet talebi bulunmuyor."
                                     />
                                 )}
                                 {viewMode === 'grid' && (
@@ -567,7 +569,7 @@ export default function RequestsListPage() {
                                                 fetchRequests({ limit, page: 1, search: searchInput });
                                             },
                                         }}
-                                        emptyStateMessage="Henüz hizmet talebi bulunmuyor."
+                                        emptyStateMessage="Henüz aktif hizmet talebi bulunmuyor."
                                         ui={gridViewUI}
                                         ActionMenu={RequestActionMenuWrapper}
                                         renderCard={renderRequestCard}

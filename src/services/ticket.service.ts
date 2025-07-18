@@ -45,7 +45,7 @@ export interface TicketFilters {
   orderBy?: 'ASC' | 'DESC';
   search?: string;
   type?: string;
-  status?: string;
+  status?: string | string[];
 }
 
 export const ticketService = {
@@ -65,7 +65,13 @@ export const ticketService = {
     if (filters.filter) params.append('filter', filters.filter);
     if (filters.search) params.append('search', filters.search);
     if (filters.type) params.append('type', filters.type);
-    if (filters.status) params.append('status', filters.status);
+    if (filters.status) {
+      if (Array.isArray(filters.status)) {
+        filters.status.forEach(status => params.append('status', status));
+      } else {
+        params.append('status', filters.status);
+      }
+    }
     
     // Order params
     if (filters.orderColumn) params.append('orderColumn', filters.orderColumn);
