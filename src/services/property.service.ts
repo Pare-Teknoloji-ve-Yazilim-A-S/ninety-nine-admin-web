@@ -578,14 +578,14 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
     }
 
     /**
-     * Get unassigned properties count
-     * GET /admin/properties/unassigned/count
+     * Get assigned properties count
+     * GET /admin/properties/assigned/count
      */
-    async getUnassignedPropertiesCount(): Promise<number> {
+    async getAssignedPropertiesCount(): Promise<number> {
         try {
-            this.logger.info('Fetching unassigned properties count');
-            const response = await apiClient.get(apiConfig.endpoints.properties.admin.unassignedCount);
-            this.logger.info('Unassigned properties count response:', response.data);
+            this.logger.info('Fetching assigned properties count');
+            const response = await apiClient.get(apiConfig.endpoints.properties.admin.assignedCount);
+            this.logger.info('Assigned properties count response:', response.data);
             
             // Handle different response structures
             if (response.data && typeof response.data.count === 'number') {
@@ -593,11 +593,11 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             } else if (response.data && response.data.data && typeof response.data.data.count === 'number') {
                 return response.data.data.count;
             } else {
-                this.logger.warn('Unexpected response structure for unassigned properties count:', response.data);
+                this.logger.warn('Unexpected response structure for assigned properties count:', response.data);
                 return 0;
             }
         } catch (error) {
-            this.logger.error('Failed to fetch unassigned properties count:', error);
+            this.logger.error('Failed to fetch assigned properties count:', error);
             throw error;
         }
     }

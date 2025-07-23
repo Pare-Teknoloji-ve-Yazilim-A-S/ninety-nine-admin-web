@@ -23,7 +23,7 @@ interface MetricData {
 interface TopMetricsGridProps {
     metrics?: MetricData[];
     totalProperties?: number;
-    unassignedProperties?: number;
+    assignedProperties?: number;
     loading?: boolean;
 }
 
@@ -64,7 +64,7 @@ const defaultMetrics: MetricData[] = [
 export default function TopMetricsGrid({ 
     metrics = defaultMetrics, 
     totalProperties, 
-    unassignedProperties, 
+    assignedProperties, 
     loading = false 
 }: TopMetricsGridProps) {
     // Create dynamic metrics based on real data
@@ -78,10 +78,9 @@ export default function TopMetricsGrid({
         },
         {
             title: 'Dolu Konutlar',
-            value: loading ? '...' : (totalProperties && unassignedProperties) ? 
-                (totalProperties - unassignedProperties).toLocaleString() : '0',
-            subtitle: (totalProperties && unassignedProperties) ? 
-                `%${Math.round(((totalProperties - unassignedProperties) / totalProperties) * 100)} doluluk` : undefined,
+            value: loading ? '...' : assignedProperties?.toLocaleString() || '0',
+            subtitle: (totalProperties && assignedProperties) ? 
+                `%${Math.round((assignedProperties / totalProperties) * 100)} doluluk` : undefined,
             icon: Users,
             color: 'gold',
             trend: null
@@ -104,7 +103,7 @@ export default function TopMetricsGrid({
         }
     ];
 
-    const displayMetrics = totalProperties !== undefined || unassignedProperties !== undefined ? dynamicMetrics : metrics;
+    const displayMetrics = totalProperties !== undefined || assignedProperties !== undefined ? dynamicMetrics : metrics;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
