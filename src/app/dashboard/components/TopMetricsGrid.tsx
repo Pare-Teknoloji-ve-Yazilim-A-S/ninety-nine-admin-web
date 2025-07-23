@@ -22,6 +22,9 @@ interface MetricData {
 
 interface TopMetricsGridProps {
     metrics?: MetricData[];
+    totalProperties?: number;
+    unassignedProperties?: number;
+    loading?: boolean;
 }
 
 const defaultMetrics: MetricData[] = [
@@ -58,10 +61,54 @@ const defaultMetrics: MetricData[] = [
     }
 ];
 
-export default function TopMetricsGrid({ metrics = defaultMetrics }: TopMetricsGridProps) {
+export default function TopMetricsGrid({ 
+    metrics = defaultMetrics, 
+    totalProperties, 
+    unassignedProperties, 
+    loading = false 
+}: TopMetricsGridProps) {
+    // Create dynamic metrics based on real data
+    const dynamicMetrics: MetricData[] = [
+        {
+            title: 'Toplam Konut',
+            value: loading ? '...' : totalProperties?.toLocaleString() || '0',
+            icon: Home,
+            color: 'primary',
+            trend: null
+        },
+        {
+            title: 'Dolu Konutlar',
+            value: loading ? '...' : (totalProperties && unassignedProperties) ? 
+                (totalProperties - unassignedProperties).toLocaleString() : '0',
+            subtitle: (totalProperties && unassignedProperties) ? 
+                `%${Math.round(((totalProperties - unassignedProperties) / totalProperties) * 100)} doluluk` : undefined,
+            icon: Users,
+            color: 'gold',
+            trend: null
+        },
+        {
+            title: 'Bu Ay Tahsilat',
+            value: '₺4.2M',
+            subtitle: '↑ %12',
+            icon: DollarSign,
+            color: 'primary',
+            trend: 'up'
+        },
+        {
+            title: 'Açık Talepler',
+            value: '47',
+            subtitle: '↓ %8',
+            icon: AlertTriangle,
+            color: 'red',
+            trend: 'down'
+        }
+    ];
+
+    const displayMetrics = totalProperties !== undefined || unassignedProperties !== undefined ? dynamicMetrics : metrics;
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {metrics.map((metric, index) => (
+            {displayMetrics.map((metric, index) => (
                 <Card
                     key={index}
                     variant="elevated"

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
@@ -10,6 +10,7 @@ import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import { useResidentData } from '@/hooks/useResidentData';
+import { ResidentsApiService } from '../services/residents-api.service';
 import {
     ArrowLeft,
     Edit,
@@ -30,11 +31,38 @@ import {
     Mail,
     IdCard
 } from 'lucide-react';
+import Modal from '@/app/components/ui/Modal';
+import axios from 'axios'; // Added axios import
+import apiClient from '@/services/api/client';
 
 export default function ResidentViewPage() {
     const params = useParams();
     const residentId = params.id as string;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+    // Document states
+    const [nationalIdDocLoading, setNationalIdDocLoading] = useState(false);
+    const [ownershipDocLoading, setOwnershipDocLoading] = useState(false);
+    const [nationalIdDocError, setNationalIdDocError] = useState<string | null>(null);
+    const [ownershipDocError, setOwnershipDocError] = useState<string | null>(null);
+
+    // Görüntüle butonları için handler
+    const handleViewDocument = async (type: 'national_id' | 'ownership_document') => {
+        const setLoading = type === 'national_id' ? setNationalIdDocLoading : setOwnershipDocLoading;
+        const setError = type === 'national_id' ? setNationalIdDocError : setOwnershipDocError;
+        setLoading(true);
+        setError(null);
+        try {
+            // apiClient ile blob olarak çek
+            const response = await apiClient['client'].get(`/admin/users/${residentId}/documents/${type}`, { responseType: 'blob' });
+            const fileUrl = URL.createObjectURL(response.data); // Doğrudan kullan
+            window.open(fileUrl, '_blank');
+        } catch (err: any) {
+            setError(err?.message || 'Belge alınamadı.');
+        } finally {
+            setLoading(false);
+        }
+    };
     
     const { resident, loading, error } = useResidentData({
         residentId,
@@ -472,6 +500,9 @@ export default function ResidentViewPage() {
                                             <Button variant="secondary" className="w-full justify-start" icon={FileText}>
                                                 Rapor Oluştur
                                             </Button>
+                                            <Button variant="secondary" className="w-full justify-start" icon={FileText} onClick={() => setShowDocumentsModal(true)}>
+                                                Belgeleri Görüntüle
+                                            </Button>
                                         </div>
                                     </div>
                                 </Card>
@@ -495,6 +526,43 @@ export default function ResidentViewPage() {
                     </main>
                 </div>
             </div>
+            {/* Modal for Documents */}
+            <Modal
+                isOpen={showDocumentsModal}
+                onClose={() => setShowDocumentsModal(false)}
+                title="Belgeleri Görüntüle"
+                icon={FileText}
+                size="md"
+            >
+                <div className="py-4 space-y-6">
+                    {/* National ID */}
+                    <div>
+                        <h4 className="text-lg font-semibold mb-2 text-text-on-light dark:text-text-on-dark">National ID</h4>
+                        <Button
+                            variant="secondary"
+                            onClick={() => handleViewDocument('national_id')}
+                            disabled={nationalIdDocLoading}
+                            className="mb-2"
+                        >
+                            {nationalIdDocLoading ? 'Yükleniyor...' : 'Görüntüle'}
+                        </Button>
+                        {nationalIdDocError && <p className="text-sm text-primary-red">{nationalIdDocError}</p>}
+                    </div>
+                    {/* Ownership Document */}
+                    <div>
+                        <h4 className="text-lg font-semibold mb-2 text-text-on-light dark:text-text-on-dark">Ownership Document</h4>
+                        <Button
+                            variant="secondary"
+                            onClick={() => handleViewDocument('ownership_document')}
+                            disabled={ownershipDocLoading}
+                            className="mb-2"
+                        >
+                            {ownershipDocLoading ? 'Yükleniyor...' : 'Görüntüle'}
+                        </Button>
+                        {ownershipDocError && <p className="text-sm text-primary-red">{ownershipDocError}</p>}
+                    </div>
+                </div>
+            </Modal>
         </ProtectedRoute>
     );
 } 

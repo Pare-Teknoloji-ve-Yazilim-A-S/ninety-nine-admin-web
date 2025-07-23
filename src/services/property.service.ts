@@ -551,6 +551,56 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
         const response = await apiClient.get(apiConfig.endpoints.properties.admin.availableCount);
         return response.data.count;
     }
+
+    /**
+     * Get total properties count
+     * GET /admin/properties/count
+     */
+    async getAllPropertiesCount(): Promise<number> {
+        try {
+            this.logger.info('Fetching total properties count');
+            const response = await apiClient.get(apiConfig.endpoints.properties.admin.totalCount);
+            this.logger.info('Total properties count response:', response.data);
+            
+            // Handle different response structures
+            if (response.data && typeof response.data.count === 'number') {
+                return response.data.count;
+            } else if (response.data && response.data.data && typeof response.data.data.count === 'number') {
+                return response.data.data.count;
+            } else {
+                this.logger.warn('Unexpected response structure for total properties count:', response.data);
+                return 0;
+            }
+        } catch (error) {
+            this.logger.error('Failed to fetch total properties count:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get unassigned properties count
+     * GET /admin/properties/unassigned/count
+     */
+    async getUnassignedPropertiesCount(): Promise<number> {
+        try {
+            this.logger.info('Fetching unassigned properties count');
+            const response = await apiClient.get(apiConfig.endpoints.properties.admin.unassignedCount);
+            this.logger.info('Unassigned properties count response:', response.data);
+            
+            // Handle different response structures
+            if (response.data && typeof response.data.count === 'number') {
+                return response.data.count;
+            } else if (response.data && response.data.data && typeof response.data.data.count === 'number') {
+                return response.data.data.count;
+            } else {
+                this.logger.warn('Unexpected response structure for unassigned properties count:', response.data);
+                return 0;
+            }
+        } catch (error) {
+            this.logger.error('Failed to fetch unassigned properties count:', error);
+            throw error;
+        }
+    }
 }
 
 export default new PropertyService();

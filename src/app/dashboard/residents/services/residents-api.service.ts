@@ -8,6 +8,7 @@ import {
 } from '../utils/transformations';
 import { calculateStatsFromResidents } from '../utils/stats';
 import { API_CONFIG } from '../constants';
+import { apiClient } from '@/services/api/client';
 
 /**
  * API Response interface
@@ -258,6 +259,38 @@ export class ResidentsApiService {
             return response.data;
         } catch (error) {
             throw this.handleApiError(error);
+        }
+    }
+
+    /**
+     * Get National ID document for a resident
+     */
+    async getNationalIdDocument(userId: string): Promise<any> {
+        const url = `/admin/users/${userId}/documents/national_id`;
+        console.log('[getNationalIdDocument] userId:', userId, 'url:', url);
+        try {
+            const response = await apiClient.get(url);
+            console.log('[getNationalIdDocument] response:', response);
+            return response.data;
+        } catch (error) {
+            console.error('[getNationalIdDocument] error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get Ownership document for a resident
+     */
+    async getOwnershipDocument(userId: string): Promise<any> {
+        const url = `/admin/users/${userId}/documents/ownership_document`;
+        console.log('[getOwnershipDocument] userId:', userId, 'url:', url);
+        try {
+            const response = await apiClient.get(url);
+            console.log('[getOwnershipDocument] response:', response);
+            return response.data;
+        } catch (error) {
+            console.error('[getOwnershipDocument] error:', error);
+            throw error;
         }
     }
 
