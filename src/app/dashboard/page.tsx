@@ -17,12 +17,16 @@ import RecentActivities from './components/RecentActivities';
 
 // Hooks
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
 
 export default function DashboardPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Fetch dashboard metrics
     const { totalProperties, assignedProperties, loading, error } = useDashboardMetrics();
+    
+    // Fetch maintenance requests
+    const { requests: maintenanceRequests, loading: maintenanceLoading, error: maintenanceError, totalCount: maintenanceTotalCount } = useMaintenanceRequests(50);
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/dashboard' },
@@ -75,7 +79,14 @@ export default function DashboardPage() {
                                     <RecentTransactions />
 
                                     {/* Maintenance Requests */}
-                                    <MaintenanceRequests />
+                                    <MaintenanceRequests 
+                                        requests={maintenanceRequests}
+                                        loading={maintenanceLoading}
+                                        error={maintenanceError}
+                                        totalCount={maintenanceTotalCount}
+                                    />
+
+
 
                                 </div>
 
