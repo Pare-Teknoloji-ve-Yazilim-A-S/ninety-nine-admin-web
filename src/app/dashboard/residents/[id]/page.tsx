@@ -32,6 +32,8 @@ import {
     IdCard
 } from 'lucide-react';
 import Modal from '@/app/components/ui/Modal';
+import axios from 'axios'; // Added axios import
+import apiClient from '@/services/api/client';
 
 export default function ResidentViewPage() {
     const params = useParams();
@@ -39,26 +41,28 @@ export default function ResidentViewPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showDocumentsModal, setShowDocumentsModal] = useState(false);
     // Document states
-    const [nationalIdDoc, setNationalIdDoc] = useState<{ loading: boolean; error: string | null; data: any }>({ loading: false, error: null, data: null });
-    const [ownershipDoc, setOwnershipDoc] = useState<{ loading: boolean; error: string | null; data: any }>({ loading: false, error: null, data: null });
+    const [nationalIdDocLoading, setNationalIdDocLoading] = useState(false);
+    const [ownershipDocLoading, setOwnershipDocLoading] = useState(false);
+    const [nationalIdDocError, setNationalIdDocError] = useState<string | null>(null);
+    const [ownershipDocError, setOwnershipDocError] = useState<string | null>(null);
 
-    // Fetch documents when modal opens
-    useEffect(() => {
-        if (showDocumentsModal && residentId) {
-            const api = new ResidentsApiService();
-            setNationalIdDoc({ loading: true, error: null, data: null });
-            setOwnershipDoc({ loading: true, error: null, data: null });
-            api.getNationalIdDocument(residentId)
-                .then(data => setNationalIdDoc({ loading: false, error: null, data }))
-                .catch(err => setNationalIdDoc({ loading: false, error: err?.message || 'Hata oluştu', data: null }));
-            api.getOwnershipDocument(residentId)
-                .then(data => setOwnershipDoc({ loading: false, error: null, data }))
-                .catch(err => setOwnershipDoc({ loading: false, error: err?.message || 'Hata oluştu', data: null }));
-        } else if (!showDocumentsModal) {
-            setNationalIdDoc({ loading: false, error: null, data: null });
-            setOwnershipDoc({ loading: false, error: null, data: null });
+    // Görüntüle butonları için handler
+    const handleViewDocument = async (type: 'national_id' | 'ownership_document') => {
+        const setLoading = type === 'national_id' ? setNationalIdDocLoading : setOwnershipDocLoading;
+        const setError = type === 'national_id' ? setNationalIdDocError : setOwnershipDocError;
+        setLoading(true);
+        setError(null);
+        try {
+            // apiClient ile blob olarak çek
+            const response = await apiClient['client'].get(`/admin/users/${residentId}/documents/${type}`, { responseType: 'blob' });
+            const fileUrl = URL.createObjectURL(response.data); // Doğrudan kullan
+            window.open(fileUrl, '_blank');
+        } catch (err: any) {
+            setError(err?.message || 'Belge alınamadı.');
+        } finally {
+            setLoading(false);
         }
-    }, [showDocumentsModal, residentId]);
+    };
     
     const { resident, loading, error } = useResidentData({
         residentId,
@@ -530,23 +534,33 @@ export default function ResidentViewPage() {
                 icon={FileText}
                 size="md"
             >
-                <div className="py-4">
-                    <h4 className="text-lg font-semibold mb-2 text-text-on-light dark:text-text-on-dark">National ID</h4>
-                    {nationalIdDoc.loading && <p className="text-sm text-text-light-muted">Yükleniyor...</p>}
-                    {nationalIdDoc.error && <p className="text-sm text-primary-red">{nationalIdDoc.error}</p>}
-                    {nationalIdDoc.data && (
-                        <pre className="bg-background-light-soft dark:bg-background-soft rounded p-2 text-xs overflow-x-auto">
-                            {typeof nationalIdDoc.data === 'object' ? JSON.stringify(nationalIdDoc.data, null, 2) : String(nationalIdDoc.data)}
-                        </pre>
-                    )}
-                    <h4 className="text-lg font-semibold mt-6 mb-2 text-text-on-light dark:text-text-on-dark">Ownership Document</h4>
-                    {ownershipDoc.loading && <p className="text-sm text-text-light-muted">Yükleniyor...</p>}
-                    {ownershipDoc.error && <p className="text-sm text-primary-red">{ownershipDoc.error}</p>}
-                    {ownershipDoc.data && (
-                        <pre className="bg-background-light-soft dark:bg-background-soft rounded p-2 text-xs overflow-x-auto">
-                            {typeof ownershipDoc.data === 'object' ? JSON.stringify(ownershipDoc.data, null, 2) : String(ownershipDoc.data)}
-                        </pre>
-                    )}
+                <div className="py-4 space-y-6">
+                    {/* National ID */}
+                    <div>
+                        <h4 className="text-lg font-semibold mb-2 text-text-on-light dark:text-text-on-dark">National ID</h4>
+                        <Button
+                            variant="secondary"
+                            onClick={() => handleViewDocument('national_id')}
+                            disabled={nationalIdDocLoading}
+                            className="mb-2"
+                        >
+                            {nationalIdDocLoading ? 'Yükleniyor...' : 'Görüntüle'}
+                        </Button>
+                        {nationalIdDocError && <p className="text-sm text-primary-red">{nationalIdDocError}</p>}
+                    </div>
+                    {/* Ownership Document */}
+                    <div>
+                        <h4 className="text-lg font-semibold mb-2 text-text-on-light dark:text-text-on-dark">Ownership Document</h4>
+                        <Button
+                            variant="secondary"
+                            onClick={() => handleViewDocument('ownership_document')}
+                            disabled={ownershipDocLoading}
+                            className="mb-2"
+                        >
+                            {ownershipDocLoading ? 'Yükleniyor...' : 'Görüntüle'}
+                        </Button>
+                        {ownershipDocError && <p className="text-sm text-primary-red">{ownershipDocError}</p>}
+                    </div>
                 </div>
             </Modal>
         </ProtectedRoute>

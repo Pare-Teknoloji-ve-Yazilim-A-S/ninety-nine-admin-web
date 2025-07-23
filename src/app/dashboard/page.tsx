@@ -15,8 +15,14 @@ import OccupancyStatus from './components/OccupancyStatus';
 import TodaysAgenda from './components/TodaysAgenda';
 import RecentActivities from './components/RecentActivities';
 
+// Hooks
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+
 export default function DashboardPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Fetch dashboard metrics
+    const { totalProperties, unassignedProperties, loading, error } = useDashboardMetrics();
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/dashboard' },
@@ -41,7 +47,20 @@ export default function DashboardPage() {
                         <div className="px-4 sm:px-0">
 
                             {/* Top Metrics Cards */}
-                            <TopMetricsGrid />
+                            <TopMetricsGrid 
+                                totalProperties={totalProperties}
+                                unassignedProperties={unassignedProperties}
+                                loading={loading}
+                            />
+                            
+                            {/* Error Display */}
+                            {error && (
+                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-red-600 text-sm">{error}</p>
+                                </div>
+                            )}
+
+
 
                             {/* Two Column Layout */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -76,7 +95,7 @@ export default function DashboardPage() {
                                     <RecentActivities />
 
                                 </div>
-                            </div>
+                            </div> 
                         </div>
                     </main>
                 </div>
