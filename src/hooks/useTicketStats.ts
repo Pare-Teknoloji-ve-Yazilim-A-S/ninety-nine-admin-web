@@ -28,7 +28,7 @@ export const useTicketStats = (): UseTicketStatsReturn => {
                 setError(null);
                 
                 const response = await apiClient.get('/admin/tickets/monthly-stats');
-                setStats(response);
+                setStats(response.data);
             } catch (err: any) {
                 console.error('Error fetching ticket stats:', err);
                 setError(err.response?.data?.message || 'Talepler istatistikleri yüklenirken hata oluştu');
