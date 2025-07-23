@@ -25,6 +25,12 @@ interface TopMetricsGridProps {
     totalProperties?: number;
     assignedProperties?: number;
     loading?: boolean;
+    ticketStats?: {
+        currentMonthCount: number;
+        percentageChange: number;
+        changeDirection: 'increase' | 'decrease';
+    } | null;
+    ticketStatsLoading?: boolean;
 }
 
 const defaultMetrics: MetricData[] = [
@@ -65,7 +71,9 @@ export default function TopMetricsGrid({
     metrics = defaultMetrics, 
     totalProperties, 
     assignedProperties, 
-    loading = false 
+    loading = false,
+    ticketStats,
+    ticketStatsLoading = false
 }: TopMetricsGridProps) {
     // Create dynamic metrics based on real data
     const dynamicMetrics: MetricData[] = [
@@ -95,11 +103,13 @@ export default function TopMetricsGrid({
         },
         {
             title: 'Açık Talepler',
-            value: '47',
-            subtitle: '↓ %8',
+            value: ticketStatsLoading ? '...' : ticketStats?.currentMonthCount?.toString() || '0',
+            subtitle: ticketStats ? 
+                `${ticketStats.changeDirection === 'increase' ? '↑' : '↓'} %${ticketStats.percentageChange}` : 
+                undefined,
             icon: AlertTriangle,
             color: 'red',
-            trend: 'down'
+            trend: ticketStats?.changeDirection === 'increase' ? 'up' : 'down'
         }
     ];
 

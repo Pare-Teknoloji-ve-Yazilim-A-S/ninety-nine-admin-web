@@ -19,6 +19,7 @@ import RecentActivities from './components/RecentActivities';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
 import { useAuditLogs } from '@/hooks/useAuditLogs';
+import { useTicketStats } from '@/hooks/useTicketStats';
 
 export default function DashboardPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -31,6 +32,9 @@ export default function DashboardPage() {
 
     // Fetch audit logs
     const { logs: auditLogs, loading: auditLogsLoading, error: auditLogsError, totalCount: auditLogsTotalCount } = useAuditLogs({}, 25);
+
+    // Fetch ticket stats
+    const { stats: ticketStats, loading: ticketStatsLoading, error: ticketStatsError } = useTicketStats();
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/dashboard' },
@@ -59,12 +63,14 @@ export default function DashboardPage() {
                                 totalProperties={totalProperties}
                                 assignedProperties={assignedProperties}
                                 loading={loading}
+                                ticketStats={ticketStats}
+                                ticketStatsLoading={ticketStatsLoading}
                             />
                             
                             {/* Error Display */}
-                            {error && (
+                            {(error || ticketStatsError) && (
                                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <p className="text-red-600 text-sm">{error}</p>
+                                    <p className="text-red-600 text-sm">{error || ticketStatsError}</p>
                                 </div>
                             )}
 
