@@ -6,6 +6,7 @@ import { AlertCircle, RotateCcw, CheckCircle, Calendar, User, Wrench, Flag, Pape
 import type { Ticket } from '@/services/ticket.service';
 import { ticketService } from '@/services/ticket.service';
 import { useState } from 'react';
+import TicketActivityLog from './components/TicketActivityLog';
 
 const statusConfig = {
   OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
@@ -290,6 +291,15 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
                 </ul>
               </div>
             )}
+          </div>
+
+          {/* Ticket Activity Log */}
+          <div className="mt-6">
+            <TicketActivityLog 
+              ticketId={currentItem.id}
+              title="Son Aktiviteler"
+              subtitle="Bakım talebi güncellemeleri ve yorumlar"
+            />
           </div>
         </div>
         {/* Add comment input - always visible above footer */}
