@@ -22,7 +22,7 @@ export default function DashboardPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Fetch dashboard metrics
-    const { totalProperties, unassignedProperties, loading, error } = useDashboardMetrics();
+    const { totalProperties, assignedProperties, loading, error } = useDashboardMetrics();
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/dashboard' },
@@ -49,7 +49,7 @@ export default function DashboardPage() {
                             {/* Top Metrics Cards */}
                             <TopMetricsGrid 
                                 totalProperties={totalProperties}
-                                unassignedProperties={unassignedProperties}
+                                assignedProperties={assignedProperties}
                                 loading={loading}
                             />
                             

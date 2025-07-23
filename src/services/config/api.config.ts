@@ -113,7 +113,7 @@ export const apiConfig = {
                 villaCount: '/admin/properties/villa/count',
                 availableCount: '/admin/properties/available/count',
                 totalCount: '/admin/properties/count',
-                unassignedCount: '/admin/properties/unassigned/count',
+                assignedCount: '/admin/properties/assigned/count',
             },
         },
         billing: {
