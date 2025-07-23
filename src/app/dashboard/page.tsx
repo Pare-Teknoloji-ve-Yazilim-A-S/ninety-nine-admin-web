@@ -18,6 +18,7 @@ import RecentActivities from './components/RecentActivities';
 // Hooks
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
+import { useAuditLogs } from '@/hooks/useAuditLogs';
 
 export default function DashboardPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,6 +28,9 @@ export default function DashboardPage() {
     
     // Fetch maintenance requests
     const { requests: maintenanceRequests, loading: maintenanceLoading, error: maintenanceError, totalCount: maintenanceTotalCount } = useMaintenanceRequests(50);
+
+    // Fetch audit logs
+    const { logs: auditLogs, loading: auditLogsLoading, error: auditLogsError, totalCount: auditLogsTotalCount } = useAuditLogs({}, 25);
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/dashboard' },
@@ -103,7 +107,11 @@ export default function DashboardPage() {
                                     <TodaysAgenda />
 
                                     {/* Recent Activities */}
-                                    <RecentActivities />
+                                    <RecentActivities 
+                                        logs={auditLogs}
+                                        loading={auditLogsLoading}
+                                        error={auditLogsError}
+                                    />
 
                                 </div>
                             </div> 
