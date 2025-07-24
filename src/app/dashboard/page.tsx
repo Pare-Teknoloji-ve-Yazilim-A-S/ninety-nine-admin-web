@@ -107,10 +107,10 @@ export default function DashboardPage() {
                                     <QuickActions />
 
                                     {/* Occupancy Status */}
-                                    <OccupancyStatus />
+                                    {/* <OccupancyStatus /> */}
 
                                     {/* Today's Agenda */}
-                                    <TodaysAgenda />
+                                    {/* <TodaysAgenda /> */}
 
                                     {/* Recent Activities */}
                                     <RecentActivities 
