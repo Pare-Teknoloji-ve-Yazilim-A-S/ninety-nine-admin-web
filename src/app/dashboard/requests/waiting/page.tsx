@@ -40,6 +40,13 @@ import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from '../RequestDetailModal';
 import { useWaitingTickets } from '@/hooks/useWaitingTickets';
 import Portal from '@/app/components/ui/Portal';
+import { 
+    createTicketFilterGroups, 
+    STATUS_CONFIG, 
+    TYPE_COLOR_MAP, 
+    FilterStateManager,
+    TicketFilters as RequestFilters 
+} from '../constants';
 
 export default function WaitingRequestsPage() {
     // UI State
@@ -66,24 +73,23 @@ export default function WaitingRequestsPage() {
         { label: 'Bekleyen Talepler', active: true }
     ];
 
-    // Status config (placeholder)
-    const statusConfig = {
-        OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
-        IN_PROGRESS: { label: 'İşlemde', color: 'warning', icon: RotateCcw },
-        WAITING: { label: 'Beklemede', color: 'warning', icon: PauseCircle },
-        COMPLETED: { label: 'Tamamlandı', color: 'success', icon: CheckCircle },
-        SCHEDULED: { label: 'Planlandı', color: 'primary', icon: Calendar }
+    // Icon mapping for status configuration
+    const iconMap = {
+        AlertCircle,
+        RotateCcw,
+        PauseCircle,
+        CheckCircle,
+        Calendar
     };
 
-    // Type color mapping for request types (Badge color prop ile uyumlu)
-    const typeColorMap: Record<string, "primary" | "secondary" | "gold" | "red"> = {
-        FAULT_REPAIR: 'gold',
-        COMPLAINT: 'red',
-        REQUEST: 'primary',
-        SUGGESTION: 'primary',
-        QUESTION: 'secondary',
-        MAINTENANCE: 'primary',
-        OTHER: 'secondary',
+    // Get status info with proper icon mapping - SOLID: Open/Closed Principle
+    const getStatusInfo = (status: string) => {
+        const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.WAITING;
+        const IconComponent = iconMap[config.icon as keyof typeof iconMap] || PauseCircle;
+        return {
+            ...config,
+            iconComponent: IconComponent
+        };
     };
 
     // Table columns (API'den gelen Ticket yapısına göre)
@@ -106,7 +112,7 @@ export default function WaitingRequestsPage() {
             key: 'type',
             header: 'Tip',
             render: (_value: any, req: Ticket) => (
-                <Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
+                <Badge variant="soft" color={TYPE_COLOR_MAP[req?.type as string] || 'secondary'}>
                     {req?.type || 'Tip Yok'}
                 </Badge>
             ),
@@ -129,8 +135,8 @@ export default function WaitingRequestsPage() {
             key: 'status',
             header: 'Durum',
             render: (_value: any, req: Ticket) => {
-                const statusInfo = statusConfig[req?.status as keyof typeof statusConfig] || statusConfig.OPEN;
-                const StatusIcon = statusInfo.icon;
+                const statusInfo = getStatusInfo(req?.status || 'WAITING');
+                const StatusIcon = statusInfo.iconComponent;
                 return (
                     <div className="flex items-center gap-2">
                         <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
@@ -249,8 +255,8 @@ export default function WaitingRequestsPage() {
 
     // Card renderer for grid view (API'den gelen Ticket yapısına göre)
     const renderRequestCard = (req: Ticket, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: any }>) => {
-        const statusInfo = statusConfig[req?.status as keyof typeof statusConfig] || statusConfig.OPEN;
-        const StatusIcon = statusInfo.icon;
+        const statusInfo = getStatusInfo(req?.status || 'WAITING');
+        const StatusIcon = statusInfo.iconComponent;
         return (
             <ui.Card key={req.id} className="p-4 rounded-2xl shadow-md bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 transition-transform hover:scale-[1.01] hover:shadow-lg">
                 <div className="flex items-center justify-between mb-3">
@@ -279,7 +285,7 @@ export default function WaitingRequestsPage() {
                 <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                         <Wrench className="h-4 w-4" />
-                        <ui.Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
+                        <ui.Badge variant="soft" color={TYPE_COLOR_MAP[req?.type as string] || 'secondary'}>
                             {req?.type || 'Tip Yok'}
                         </ui.Badge>
                     </div>
@@ -295,32 +301,8 @@ export default function WaitingRequestsPage() {
         );
     };
 
-    // Filter groups (placeholder)
-    const requestFilterGroups = [
-        {
-            id: 'type',
-            label: 'Talep Tipi',
-            type: 'select' as const,
-            options: [
-                { id: 'all', label: 'Tümü', value: '' },
-                { id: 'maintenance', label: 'Bakım', value: 'maintenance' },
-                { id: 'cleaning', label: 'Temizlik', value: 'cleaning' },
-                { id: 'other', label: 'Diğer', value: 'other' },
-            ],
-        },
-        {
-            id: 'status',
-            label: 'Durum',
-            type: 'select' as const,
-            options: [
-                { id: 'all', label: 'Tümü', value: '' },
-                { id: 'OPEN', label: 'Açık', value: 'OPEN' },
-                { id: 'IN_PROGRESS', label: 'İşlemde', value: 'IN_PROGRESS' },
-                { id: 'WAITING', label: 'Beklemede', value: 'WAITING' },
-                { id: 'COMPLETED', label: 'Tamamlandı', value: 'COMPLETED' },
-            ],
-        },
-    ];
+    // Filter groups using SOLID factory pattern - Focus on waiting-related statuses
+    const requestFilterGroups = React.useMemo(() => createTicketFilterGroups(true), []);
 
     // Selection handler for grid view
     const handleGridSelectionChange = (selectedIds: Array<string | number>) => {

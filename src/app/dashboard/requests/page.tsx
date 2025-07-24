@@ -40,6 +40,13 @@ import RequestDetailModal from './RequestDetailModal';
 import CreateTicketModal from '@/app/dashboard/components/CreateTicketModal';
 import Portal from '@/app/components/ui/Portal';
 import { ApiResponse } from '@/services';
+import { 
+    createTicketFilterGroups, 
+    STATUS_CONFIG, 
+    TYPE_COLOR_MAP, 
+    FilterStateManager,
+    TicketFilters as RequestFilters 
+} from './constants';
 
 export default function RequestsListPage() {
     // UI State
@@ -48,6 +55,11 @@ export default function RequestsListPage() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRequests, setSelectedRequests] = useState<any[]>([]);
+    
+    // Filter State Management - SOLID: Single Responsibility
+    const [filterManager] = useState(() => new FilterStateManager());
+    const [activeFilters, setActiveFilters] = useState<RequestFilters>({});
+    
     // Data State
     const [requests, setRequests] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(false);
@@ -63,18 +75,23 @@ export default function RequestsListPage() {
     // Yeni talep modalı state
     const [createTicketModal, setCreateTicketModal] = useState(false);
 
-    // Fetch tickets from API with pagination
-    const fetchRequests = React.useCallback((filters: TicketFilters = {}) => {
+    // Fetch tickets from API with pagination and filters - SOLID: Single Responsibility
+    const fetchRequests = React.useCallback((customFilters: RequestFilters = {}) => {
         setLoading(true);
         setError(null);
-        ticketService.getTickets({
+        
+        const finalFilters: TicketFilters = {
             page: pagination.page,
             limit: pagination.limit,
-             // Açık ve işlemdeki talepleri getir
             orderColumn: 'createdAt',
             orderBy: 'DESC',
-            ...filters
-  })
+            ...filterManager.getFilters(),
+            ...customFilters
+        };
+
+        console.log(`🚀 API Call with filters:`, finalFilters);
+        
+        ticketService.getTickets(finalFilters)
             .then((response: ApiResponse<TicketPaginationResponse>) => {
                 setRequests(response.data as unknown as Ticket[]);
                 setPagination(prev => ({
@@ -90,7 +107,7 @@ export default function RequestsListPage() {
                 setError('Veriler alınamadı.');
                 setLoading(false);
             });
-    }, [pagination.page, pagination.limit]);
+    }, [pagination.page, pagination.limit, filterManager]);
     React.useEffect(() => {
         fetchRequests();
     }, [fetchRequests]);
@@ -102,24 +119,23 @@ export default function RequestsListPage() {
         { label: 'Aktif Talepler', active: true }
     ];
 
-    // Status config (placeholder)
-    const statusConfig = {
-        OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
-        IN_PROGRESS: { label: 'İşlemde', color: 'success', icon: RotateCcw },
-        WAITING: { label: 'Beklemede', color: 'warning', icon: PauseCircle },
-        COMPLETED: { label: 'Tamamlandı', color: 'success', icon: CheckCircle },
-        SCHEDULED: { label: 'Planlandı', color: 'primary', icon: Calendar }
+    // Icon mapping for status configuration
+    const iconMap = {
+        AlertCircle,
+        RotateCcw,
+        PauseCircle,
+        CheckCircle,
+        Calendar
     };
 
-    // Type color mapping for request types (Badge color prop ile uyumlu)
-    const typeColorMap: Record<string, "primary" | "secondary" | "gold" | "red"> = {
-        FAULT_REPAIR: 'gold',      // Sarı/altın (warning)
-        COMPLAINT: 'red',          // Kırmızı
-        REQUEST: 'primary',        // Sıcak mavi
-        SUGGESTION: 'primary',     // Yeşil yok, en yakın primary
-        QUESTION: 'secondary',     // Gri/mavi
-        MAINTENANCE: 'primary',    // Bilgi mavisi (info)
-        OTHER: 'secondary',        // Nötr
+    // Get status info with proper icon mapping - SOLID: Open/Closed Principle
+    const getStatusInfo = (status: string) => {
+        const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.OPEN;
+        const IconComponent = iconMap[config.icon as keyof typeof iconMap] || AlertCircle;
+        return {
+            ...config,
+            iconComponent: IconComponent
+        };
     };
 
     // Table columns (API'den gelen Ticket yapısına göre)
@@ -142,7 +158,7 @@ export default function RequestsListPage() {
             key: 'type',
             header: 'Tip',
             render: (_value: any, req: Ticket) => (
-                <Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
+                <Badge variant="soft" color={TYPE_COLOR_MAP[req?.type as string] || 'secondary'}>
                     {req?.type || 'Tip Yok'}
                 </Badge>
             ),
@@ -165,8 +181,8 @@ export default function RequestsListPage() {
             key: 'status',
             header: 'Durum',
             render: (_value: any, req: Ticket) => {
-                const statusInfo = statusConfig[req?.status as keyof typeof statusConfig] || statusConfig.OPEN;
-                const StatusIcon = statusInfo.icon;
+                const statusInfo = getStatusInfo(req?.status || 'OPEN');
+                const StatusIcon = statusInfo.iconComponent;
                 return (
                     <div className="flex items-center gap-2">
                         <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
@@ -285,8 +301,8 @@ export default function RequestsListPage() {
 
     // Card renderer for grid view (API'den gelen Ticket yapısına göre)
     const renderRequestCard = (req: Ticket, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: any }>) => {
-        const statusInfo = statusConfig[req?.status as keyof typeof statusConfig] || statusConfig.OPEN;
-        const StatusIcon = statusInfo.icon;
+        const statusInfo = getStatusInfo(req?.status || 'OPEN');
+        const StatusIcon = statusInfo.iconComponent;
         return (
             <ui.Card key={req.id} className="p-4 rounded-2xl shadow-md bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 transition-transform hover:scale-[1.01] hover:shadow-lg">
                 <div className="flex items-center justify-between mb-3">
@@ -315,7 +331,7 @@ export default function RequestsListPage() {
                 <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                         <Wrench className="h-4 w-4" />
-                        <ui.Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
+                        <ui.Badge variant="soft" color={TYPE_COLOR_MAP[req?.type as string] || 'secondary'}>
                             {req?.type || 'Tip Yok'}
                         </ui.Badge>
                     </div>
@@ -331,32 +347,13 @@ export default function RequestsListPage() {
         );
     };
 
-    // Filter groups (placeholder)
-    const requestFilterGroups = [
-        {
-            id: 'type',
-            label: 'Talep Tipi',
-            type: 'select' as const,
-            options: [
-                { id: 'all', label: 'Tümü', value: '' },
-                { id: 'maintenance', label: 'Bakım', value: 'maintenance' },
-                { id: 'cleaning', label: 'Temizlik', value: 'cleaning' },
-                { id: 'other', label: 'Diğer', value: 'other' },
-            ],
-        },
-        {
-            id: 'status',
-            label: 'Durum',
-            type: 'select' as const,
-            options: [
-                { id: 'all', label: 'Tümü', value: '' },
-                { id: 'OPEN', label: 'Açık', value: 'OPEN' },
-                { id: 'IN_PROGRESS', label: 'İşlemde', value: 'IN_PROGRESS' },
-                { id: 'WAITING', label: 'Beklemede', value: 'WAITING' },
-                { id: 'COMPLETED', label: 'Tamamlandı', value: 'COMPLETED' },
-            ],
-        },
-    ];
+    // Filter groups using SOLID factory pattern - Dynamic and extensible
+    const requestFilterGroups = React.useMemo(() => {
+        const groups = createTicketFilterGroups(true);
+        console.log('📊 Filter Groups Created:', groups);
+        console.log('📋 First group options:', groups[0]?.options);
+        return groups;
+    }, []);
 
     // Selection handler for grid view
     const handleGridSelectionChange = (selectedIds: Array<string | number>) => {
@@ -368,18 +365,41 @@ export default function RequestsListPage() {
         setSelectedRequests(selected);
     };
 
+    // Filter handlers with proper state management - SOLID: Single Responsibility
+    const handleFilterChange = React.useCallback((filterKey: string, value: any) => {
+        console.log(`🎯 handleFilterChange: key=${filterKey}, value=${value}, type=${typeof value}`);
+        filterManager.setFilter(filterKey as keyof RequestFilters, value);
+        const newActiveFilters = filterManager.getFilters();
+        console.log(`📋 Active filters after update:`, newActiveFilters);
+        setActiveFilters(newActiveFilters);
+        setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
+        fetchRequests({ page: 1 });
+    }, [filterManager, fetchRequests]);
+
+    const handleResetFilters = React.useCallback(() => {
+        filterManager.resetFilters();
+        setActiveFilters({});
+        setSearchInput('');
+        setPagination(prev => ({ ...prev, page: 1 }));
+        fetchRequests({ page: 1 });
+    }, [filterManager, fetchRequests]);
+
     // Search handlers
     const handleSearchInputChange = (value: string) => {
         setSearchInput(value);
     };
+    
     const handleSearchSubmit = (value: string) => {
         setSearchInput(value);
-        fetchRequests({ search: value });
+        filterManager.setFilter('search', value);
+        setActiveFilters(filterManager.getFilters());
+        setPagination(prev => ({ ...prev, page: 1 }));
+        fetchRequests({ page: 1 });
     };
 
     // Refresh handler
     const handleRefresh = () => {
-        fetchRequests({ search: searchInput });
+        fetchRequests();
     };
 
     // Table columns (API'den gelen Ticket yapısına göre)
@@ -433,10 +453,10 @@ export default function RequestsListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
-                                <Button 
-                                    variant="primary" 
-                                    size="md" 
-                                    icon={Plus} 
+                                <Button
+                                    variant="primary"
+                                    size="md"
+                                    icon={Plus}
                                     onClick={() => setCreateTicketModal(true)}
                                 >
                                     Yeni Talep
@@ -460,14 +480,14 @@ export default function RequestsListPage() {
                                     </div>
                                     {/* Filter and View Toggle */}
                                     <div className="flex gap-2 items-center">
-                                        {/* <Button
+                                        <Button
                                             variant={showFilters ? "primary" : "secondary"}
                                             size="md"
                                             icon={Filter}
                                             onClick={() => setShowFilters(true)}
                                         >
                                             Filtreler
-                                        </Button> */}
+                                        </Button>
                                         <ViewToggle
                                             options={[
                                                 { id: 'table', label: 'Tablo', icon: List },
@@ -492,8 +512,13 @@ export default function RequestsListPage() {
                             <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
                                 <FilterPanel
                                     filterGroups={requestFilterGroups}
-                                    onApplyFilters={() => setShowFilters(false)}
-                                    onResetFilters={() => { }}
+                                    onApplyFilters={(filters) => {
+                                        Object.entries(filters).forEach(([key, value]) => {
+                                            handleFilterChange(key, value);
+                                        });
+                                        setShowFilters(false);
+                                    }}
+                                    onResetFilters={handleResetFilters}
                                     onClose={() => setShowFilters(false)}
                                     variant="sidebar"
                                 />
