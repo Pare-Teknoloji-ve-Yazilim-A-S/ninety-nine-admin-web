@@ -48,16 +48,40 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
                 `${this.baseEndpoint}${queryParams}`
             );
 
-            this.logger.info(`Fetched ${response.data.data.length} properties`);
-            // PaginatedResponse tipine uygun dönüş
-            return {
-                data: response.data.data,
-                total: response.data.pagination.total,
-                page: response.data.pagination.page,
-                limit: response.data.pagination.limit,
-                totalPages: response.data.pagination.totalPages,
-                pagination: response.data.pagination,
+            // Response yapısını kontrol et
+            this.logger.info('Raw response:', response);
+            
+            // Response.data.data varsa paginated response, yoksa direkt array
+            let properties: Property[];
+            let pagination = {
+                total: 0,
+                page: 1,
+                limit: 10,
+                totalPages: 1
+            };
 
+            if (response.data && response.data.data && Array.isArray(response.data.data)) {
+                // Paginated response
+                properties = response.data.data;
+                pagination = response.data.pagination || pagination;
+                this.logger.info(`Fetched ${properties.length} properties (paginated)`);
+            } else if (response.data && Array.isArray(response.data)) {
+                // Direct array response
+                properties = response.data;
+                this.logger.info(`Fetched ${properties.length} properties (direct array)`);
+            } else {
+                // Empty or unexpected response
+                properties = [];
+                this.logger.warn('Unexpected response structure, returning empty array');
+            }
+
+            return {
+                data: properties,
+                total: pagination.total,
+                page: pagination.page,
+                limit: pagination.limit,
+                totalPages: pagination.totalPages,
+                pagination: pagination,
             };
         } catch (error) {
             this.logger.error('Failed to fetch properties', error);
