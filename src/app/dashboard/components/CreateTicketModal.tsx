@@ -105,7 +105,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                 priority: data.priority,
                 category: data.category,
                 propertyId: data.propertyId,
-                creatorId: user.id,
+                creatorId: String(user.id),
                 initialComment: data.initialComment || undefined
             };
 

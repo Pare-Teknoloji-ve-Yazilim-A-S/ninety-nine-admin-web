@@ -30,7 +30,7 @@ export interface CreateTicketRequest {
   priority: string;
   category: string;
   propertyId: string;
-  creatorId: string;
+  creatorId: string | number;
   initialComment?: string;
 }
 
