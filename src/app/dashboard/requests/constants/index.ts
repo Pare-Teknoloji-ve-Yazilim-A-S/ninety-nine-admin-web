@@ -29,7 +29,7 @@ export const TICKET_PRIORITIES = [
 
 // Filter configuration factory - SOLID: Single Responsibility
 export const createTicketFilterGroups = (includeAllStatuses: boolean = true) => {
-    const statusOptions = includeAllStatuses 
+    const statusOptions = includeAllStatuses
         ? [{ id: 'all', label: 'Tümü', value: '' }, ...TICKET_STATUS.map(status => ({
             id: status.value,
             label: status.label,

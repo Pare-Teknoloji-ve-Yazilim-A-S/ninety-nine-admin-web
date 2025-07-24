@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -33,12 +33,12 @@ import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import TablePagination from '@/app/components/ui/TablePagination';
 import Checkbox from '@/app/components/ui/Checkbox';
 import Link from 'next/link';
-import { ticketService, Ticket } from '@/services/ticket.service';
+import { ticketService, Ticket, TicketPaginationResponse, TicketFilters } from '@/services/ticket.service';
 import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from '../RequestDetailModal';
-import { useResolvedTickets } from '@/hooks/useResolvedTickets';
 import Portal from '@/app/components/ui/Portal';
+import { ApiResponse } from '@/services';
 import { 
     createTicketFilterGroups, 
     STATUS_CONFIG, 
@@ -54,16 +54,71 @@ export default function ResolvedRequestsPage() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRequests, setSelectedRequests] = useState<any[]>([]);
-    // Data State (from hook)
-    const { tickets: requests, loading, error, refresh } = useResolvedTickets();
+    
+    // Filter State Management - SOLID: Single Responsibility
+    const [filterManager] = useState(() => new FilterStateManager());
+    const [activeFilters, setActiveFilters] = useState<RequestFilters>({});
+    
+    // Data State
+    const [requests, setRequests] = useState<Ticket[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [pagination, setPagination] = useState({
         total: 0,
         page: 1,
         limit: 20,
         totalPages: 0
     });
+    
     // Detay modalı state
     const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
+
+    // Memoize current filters to prevent unnecessary re-renders
+    const currentFilters = useMemo(() => {
+        const filters = filterManager.getFilters();
+        // Always filter for resolved status tickets
+        return { ...filters, status: 'RESOLVED' };
+    }, [filterManager, activeFilters]);
+
+    // Fetch resolved tickets from API with pagination and filters
+    const fetchRequests = useCallback(async (customFilters: RequestFilters = {}) => {
+        setLoading(true);
+        setError(null);
+        
+        const finalFilters: TicketFilters = {
+            page: pagination.page,
+            limit: pagination.limit,
+            orderColumn: 'createdAt',
+            orderBy: 'DESC',
+            ...currentFilters,
+            ...customFilters,
+            status: 'RESOLVED', // Always filter for resolved tickets - override any other status
+        };
+
+        console.log(`🚀 Resolved Tickets API Call with filters:`, finalFilters);
+        
+        try {
+            const response: ApiResponse<TicketPaginationResponse> = await ticketService.getTickets(finalFilters);
+            setRequests(response.data as unknown as Ticket[]);
+            setPagination(prev => ({
+                ...prev,
+                total: response.pagination.total,
+                totalPages: response.pagination.totalPages,
+                page: response.pagination.page,
+                limit: response.pagination.limit
+            }));
+        } catch (err) {
+            setError('Çözümlenen talepler alınamadı.');
+            console.error('API Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [pagination.page, pagination.limit, currentFilters]);
+
+    // Initial data fetch
+    useEffect(() => {
+        fetchRequests();
+    }, [pagination.page, pagination.limit, currentFilters]);
 
     // Breadcrumb
     const breadcrumbItems = [
@@ -300,7 +355,7 @@ export default function ResolvedRequestsPage() {
     };
 
     // Filter groups using SOLID factory pattern - Focus on resolved-related statuses
-    const requestFilterGroups = React.useMemo(() => createTicketFilterGroups(true), []);
+    const requestFilterGroups = useMemo(() => createTicketFilterGroups(true), []);
 
     // Selection handler for grid view
     const handleGridSelectionChange = (selectedIds: Array<string | number>) => {
@@ -312,24 +367,51 @@ export default function ResolvedRequestsPage() {
         setSelectedRequests(selected);
     };
 
-    // Search handlers (placeholder)
-    const handleSearchInputChange = (value: string) => {
+    // Filter handlers with proper state management
+    const handleFilterChange = useCallback((filterKey: string, value: any) => {
+        console.log(`🎯 handleFilterChange: key=${filterKey}, value=${value}, type=${typeof value}`);
+        filterManager.setFilter(filterKey as keyof RequestFilters, value);
+        const newActiveFilters = filterManager.getFilters();
+        console.log(`📋 Active filters after update:`, newActiveFilters);
+        setActiveFilters(newActiveFilters);
+        // Reset pagination to first page
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }, [filterManager]);
+
+    const handleResetFilters = useCallback(() => {
+        filterManager.resetFilters();
+        setActiveFilters({});
+        setSearchInput('');
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }, [filterManager]);
+
+    // Search handlers - FIXED: Proper API integration
+    const handleSearchInputChange = useCallback((value: string) => {
         setSearchInput(value);
-    };
-    const handleSearchSubmit = (value: string) => {
+    }, []);
+    
+    const handleSearchSubmit = useCallback((value: string) => {
+        console.log(`🔍 Resolved Tickets Search submitted: "${value}"`);
         setSearchInput(value);
-    };
+        filterManager.setFilter('search', value);
+        
+        // Batch state updates to prevent multiple re-renders
+        React.startTransition(() => {
+            setActiveFilters(filterManager.getFilters());
+            setPagination(prev => ({ ...prev, page: 1 }));
+        });
+    }, [filterManager]);
 
     // Refresh handler
-    const handleRefresh = () => {
-        refresh();
-    };
+    const handleRefresh = useCallback(() => {
+        fetchRequests();
+    }, [fetchRequests]);
 
     // Table columns (API'den gelen Ticket yapısına göre)
-    const tableColumns = getTableColumns();
+    const tableColumns = useMemo(() => getTableColumns(), []);
 
     // GridView UI Adapter
-    const gridViewUI = {
+    const gridViewUI = useMemo(() => ({
         Card,
         Button,
         Checkbox,
@@ -338,10 +420,19 @@ export default function ResolvedRequestsPage() {
         EmptyState,
         Skeleton,
         BulkActionsBar,
-    };
+    }), []);
 
     // GridView getItemId
-    const getRequestId = (req: Ticket) => req.id;
+    const getRequestId = useCallback((req: Ticket) => req.id, []);
+
+    // Page change handlers
+    const handlePageChange = useCallback((page: number) => {
+        setPagination(prev => ({ ...prev, page }));
+    }, []);
+
+    const handleRecordsPerPageChange = useCallback((limit: number) => {
+        setPagination(prev => ({ ...prev, limit, page: 1 }));
+    }, []);
 
     return (
         <ProtectedRoute>
@@ -376,11 +467,6 @@ export default function ResolvedRequestsPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
-                                {/* <Link href="/dashboard/requests/add">
-                                    <Button variant="primary" size="md" icon={Plus}>
-                                        Yeni Talep
-                                    </Button>
-                                </Link> */}
                             </div>
                         </div>
 
@@ -421,6 +507,7 @@ export default function ResolvedRequestsPage() {
                                 </div>
                             </div>
                         </Card>
+                        
                         {/* Filter Sidebar (Drawer) */}
                         <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                             {/* Backdrop */}
@@ -432,15 +519,20 @@ export default function ResolvedRequestsPage() {
                             <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
                                 <FilterPanel
                                     filterGroups={requestFilterGroups}
-                                    onApplyFilters={() => setShowFilters(false)}
-                                    onResetFilters={() => { }}
+                                    onApplyFilters={(filters) => {
+                                        Object.entries(filters).forEach(([key, value]) => {
+                                            handleFilterChange(key, value);
+                                        });
+                                        setShowFilters(false);
+                                    }}
+                                    onResetFilters={handleResetFilters}
                                     onClose={() => setShowFilters(false)}
                                     variant="sidebar"
                                 />
                             </div>
                         </div>
 
-                        {/* Quick Stats Cards (placeholder) */}
+                        {/* Quick Stats Cards */}
                         <div className="mb-8">
                             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
                                 <StatsCard
@@ -453,6 +545,7 @@ export default function ResolvedRequestsPage() {
                                 />
                             </div>
                         </div>
+                        
                         {/* Content Area */}
                         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                             {/* Main Content */}
@@ -469,8 +562,8 @@ export default function ResolvedRequestsPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setPagination((prev) => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setPagination((prev) => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         ActionMenuComponent={RequestActionMenuWrapper}
                                         selectable={true}
@@ -490,8 +583,8 @@ export default function ResolvedRequestsPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setPagination((prev) => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setPagination((prev) => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         emptyStateMessage="Henüz çözümlenen talep bulunmuyor."
                                         ui={gridViewUI}
@@ -514,6 +607,10 @@ export default function ResolvedRequestsPage() {
                         open={detailModal.open}
                         onClose={() => setDetailModal({ open: false, item: null })}
                         item={detailModal.item}
+                        onActionComplete={() => {
+                            setDetailModal({ open: false, item: null });
+                            fetchRequests();
+                        }}
                     />
                 </div>
             </div>

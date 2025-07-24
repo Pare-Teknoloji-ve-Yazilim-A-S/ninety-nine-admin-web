@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -70,13 +70,17 @@ export default function RequestsListPage() {
         limit: 20,
         totalPages: 0
     });
+    
     // Detay modalı state
     const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
     // Yeni talep modalı state
     const [createTicketModal, setCreateTicketModal] = useState(false);
 
-    // Fetch tickets from API with pagination and filters - SOLID: Single Responsibility
-    const fetchRequests = React.useCallback((customFilters: RequestFilters = {}) => {
+    // Memoize current filters to prevent unnecessary re-renders
+    const currentFilters = useMemo(() => filterManager.getFilters(), [filterManager, activeFilters]);
+
+    // Fetch tickets from API with pagination and filters - FIXED: Proper dependencies
+    const fetchRequests = useCallback(async (customFilters: RequestFilters = {}) => {
         setLoading(true);
         setError(null);
         
@@ -85,32 +89,34 @@ export default function RequestsListPage() {
             limit: pagination.limit,
             orderColumn: 'createdAt',
             orderBy: 'DESC',
-            ...filterManager.getFilters(),
+            ...currentFilters,
             ...customFilters
         };
 
         console.log(`🚀 API Call with filters:`, finalFilters);
         
-        ticketService.getTickets(finalFilters)
-            .then((response: ApiResponse<TicketPaginationResponse>) => {
-                setRequests(response.data as unknown as Ticket[]);
-                setPagination(prev => ({
-                    ...prev,
-                    total: response.pagination.total,
-                    totalPages: response.pagination.totalPages,
-                    page: response.pagination.page,
-                    limit: response.pagination.limit
-                }));
-                setLoading(false);
-            })
-            .catch((err) => {
-                setError('Veriler alınamadı.');
-                setLoading(false);
-            });
-    }, [pagination.page, pagination.limit, filterManager]);
-    React.useEffect(() => {
+        try {
+            const response: ApiResponse<TicketPaginationResponse> = await ticketService.getTickets(finalFilters);
+            setRequests(response.data as unknown as Ticket[]);
+            setPagination(prev => ({
+                ...prev,
+                total: response.pagination.total,
+                totalPages: response.pagination.totalPages,
+                page: response.pagination.page,
+                limit: response.pagination.limit
+            }));
+        } catch (err) {
+            setError('Veriler alınamadı.');
+            console.error('API Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [pagination.page, pagination.limit, currentFilters]);
+
+    // Initial data fetch
+    useEffect(() => {
         fetchRequests();
-    }, [fetchRequests]);
+    }, [pagination.page, pagination.limit, currentFilters]);
 
     // Breadcrumb
     const breadcrumbItems = [
@@ -348,7 +354,7 @@ export default function RequestsListPage() {
     };
 
     // Filter groups using SOLID factory pattern - Dynamic and extensible
-    const requestFilterGroups = React.useMemo(() => {
+    const requestFilterGroups = useMemo(() => {
         const groups = createTicketFilterGroups(true);
         console.log('📊 Filter Groups Created:', groups);
         console.log('📋 First group options:', groups[0]?.options);
@@ -365,48 +371,51 @@ export default function RequestsListPage() {
         setSelectedRequests(selected);
     };
 
-    // Filter handlers with proper state management - SOLID: Single Responsibility
-    const handleFilterChange = React.useCallback((filterKey: string, value: any) => {
+    // Filter handlers with proper state management - FIXED: Prevent unnecessary re-renders
+    const handleFilterChange = useCallback((filterKey: string, value: any) => {
         console.log(`🎯 handleFilterChange: key=${filterKey}, value=${value}, type=${typeof value}`);
         filterManager.setFilter(filterKey as keyof RequestFilters, value);
         const newActiveFilters = filterManager.getFilters();
         console.log(`📋 Active filters after update:`, newActiveFilters);
         setActiveFilters(newActiveFilters);
-        setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page
-        fetchRequests({ page: 1 });
-    }, [filterManager, fetchRequests]);
+        // Reset pagination to first page
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }, [filterManager]);
 
-    const handleResetFilters = React.useCallback(() => {
+    const handleResetFilters = useCallback(() => {
         filterManager.resetFilters();
         setActiveFilters({});
         setSearchInput('');
         setPagination(prev => ({ ...prev, page: 1 }));
-        fetchRequests({ page: 1 });
-    }, [filterManager, fetchRequests]);
+    }, [filterManager]);
 
-    // Search handlers
-    const handleSearchInputChange = (value: string) => {
+    // Search handlers - FIXED: Prevent duplicate API calls
+    const handleSearchInputChange = useCallback((value: string) => {
         setSearchInput(value);
-    };
+    }, []);
     
-    const handleSearchSubmit = (value: string) => {
+    const handleSearchSubmit = useCallback((value: string) => {
+        console.log(`🔍 Search submitted: "${value}"`);
         setSearchInput(value);
         filterManager.setFilter('search', value);
-        setActiveFilters(filterManager.getFilters());
-        setPagination(prev => ({ ...prev, page: 1 }));
-        fetchRequests({ page: 1 });
-    };
+        
+        // Batch state updates to prevent multiple re-renders
+        React.startTransition(() => {
+            setActiveFilters(filterManager.getFilters());
+            setPagination(prev => ({ ...prev, page: 1 }));
+        });
+    }, [filterManager]);
 
     // Refresh handler
-    const handleRefresh = () => {
+    const handleRefresh = useCallback(() => {
         fetchRequests();
-    };
+    }, [fetchRequests]);
 
     // Table columns (API'den gelen Ticket yapısına göre)
-    const tableColumns = getTableColumns();
+    const tableColumns = useMemo(() => getTableColumns(), []);
 
     // GridView UI Adapter
-    const gridViewUI = {
+    const gridViewUI = useMemo(() => ({
         Card,
         Button,
         Checkbox,
@@ -415,10 +424,19 @@ export default function RequestsListPage() {
         EmptyState,
         Skeleton,
         BulkActionsBar,
-    };
+    }), []);
 
     // GridView getItemId
-    const getRequestId = (req: Ticket) => req.id;
+    const getRequestId = useCallback((req: Ticket) => req.id, []);
+
+    // Page change handlers
+    const handlePageChange = useCallback((page: number) => {
+        setPagination(prev => ({ ...prev, page }));
+    }, []);
+
+    const handleRecordsPerPageChange = useCallback((limit: number) => {
+        setPagination(prev => ({ ...prev, limit, page: 1 }));
+    }, []);
 
     return (
         <ProtectedRoute>
@@ -501,6 +519,7 @@ export default function RequestsListPage() {
                                 </div>
                             </div>
                         </Card>
+                        
                         {/* Filter Sidebar (Drawer) */}
                         <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                             {/* Backdrop */}
@@ -563,14 +582,8 @@ export default function RequestsListPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => {
-                                                setPagination((prev) => ({ ...prev, page }));
-                                                fetchRequests({ page, search: searchInput });
-                                            },
-                                            onRecordsPerPageChange: (limit) => {
-                                                setPagination((prev) => ({ ...prev, limit, page: 1 }));
-                                                fetchRequests({ limit, page: 1, search: searchInput });
-                                            },
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         ActionMenuComponent={RequestActionMenuWrapper}
                                         selectable={true}
@@ -590,14 +603,8 @@ export default function RequestsListPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => {
-                                                setPagination((prev) => ({ ...prev, page }));
-                                                fetchRequests({ page, search: searchInput });
-                                            },
-                                            onRecordsPerPageChange: (limit) => {
-                                                setPagination((prev) => ({ ...prev, limit, page: 1 }));
-                                                fetchRequests({ limit, page: 1, search: searchInput });
-                                            },
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         emptyStateMessage="Henüz aktif hizmet talebi bulunmuyor."
                                         ui={gridViewUI}
