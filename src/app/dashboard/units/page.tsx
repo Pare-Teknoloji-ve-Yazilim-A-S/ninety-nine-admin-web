@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -57,7 +57,6 @@ import { useRouter } from 'next/navigation';
 import Portal from '@/app/components/ui/Portal';
 import { useUnitCounts } from '@/hooks/useUnitsData';
 
-
 export default function UnitsListPage() {
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -90,33 +89,32 @@ export default function UnitsListPage() {
     // Add this inside the component
     const { residentCount, villaCount, availableCount, loading: countsLoading, error: countsError } = useUnitCounts();
 
-    // Load initial data
-    useEffect(() => {
-        loadProperties();
-        // recentActivities kaldırıldı
-    }, [filters]);
+    // Memoize current filters to prevent unnecessary re-renders
+    const currentFilters = useMemo(() => filters, [filters]);
 
-    const loadProperties = async () => {
+    // FIXED: Proper async/await and dependencies
+    const loadProperties = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
-            // Pagination ve filtreleri logla
-            console.log('Filters:', filters);
-            const response = await unitsService.getAllUnits(filters);
+            console.log('Loading properties with filters:', currentFilters);
+            const response = await unitsService.getAllUnits(currentFilters);
             console.log('API Pagination:', response.pagination);
             setProperties(response.data);
             setPagination(response.pagination);
         } catch (err: any) {
             console.error('Failed to load properties:', err);
             setError('Konutlar yüklenirken bir hata oluştu');
-            // Use fallback data for demo
             setProperties([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentFilters]);
 
-    // loadRecentActivities kaldırıldı
+    // FIXED: Proper dependency management
+    useEffect(() => {
+        loadProperties();
+    }, [loadProperties]);
 
     const breadcrumbItems = [
         { label: 'Ana Sayfa', href: '/dashboard' },
@@ -124,43 +122,55 @@ export default function UnitsListPage() {
         { label: 'Daire/Villa Listesi', active: true }
     ];
 
-    // Statistics calculations from API data
-    // quickStats ile ilgili hesaplamalar kaldırıldı, sadece properties üzerinden hesaplanacak
-    const totalUnits = properties.length;
-    const occupiedUnits = properties.filter(p => p.status === 'OCCUPIED').length;
-    const vacantUnits = properties.filter(p => p.status === 'AVAILABLE').length;
-    const maintenanceUnits = properties.filter(p => p.status === 'UNDER_MAINTENANCE').length;
-    const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
-    const apartmentUnits = properties.filter(p => p.type === 'RESIDENCE').length;
-    const villaUnits = properties.filter(p => p.type === 'VILLA').length;
-    const commercialUnits = properties.filter(p => p.type === 'COMMERCIAL').length;
+    // Statistics calculations from API data - MEMOIZED
+    const unitStats = useMemo(() => {
+        const totalUnits = properties.length;
+        const occupiedUnits = properties.filter(p => p.status === 'OCCUPIED').length;
+        const vacantUnits = properties.filter(p => p.status === 'AVAILABLE').length;
+        const maintenanceUnits = properties.filter(p => p.status === 'UNDER_MAINTENANCE').length;
+        const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
+        const apartmentUnits = properties.filter(p => p.type === 'RESIDENCE').length;
+        const villaUnits = properties.filter(p => p.type === 'VILLA').length;
+        const commercialUnits = properties.filter(p => p.type === 'COMMERCIAL').length;
+
+        return {
+            totalUnits,
+            occupiedUnits,
+            vacantUnits,
+            maintenanceUnits,
+            occupancyRate,
+            apartmentUnits,
+            villaUnits,
+            commercialUnits
+        };
+    }, [properties]);
 
     const router = useRouter();
 
-    const handleUnitAction = (action: string, unit: Property) => {
+    const handleUnitAction = useCallback((action: string, unit: Property) => {
         if (action === 'view') {
             router.push(`/dashboard/units/${unit.id}`);
             return;
         }
         console.log('Unit action:', action, unit);
         // Handle other unit actions here
-    };
+    }, [router]);
 
-    const handleQuickAction = (action: string) => {
+    const handleQuickAction = useCallback((action: string) => {
         console.log('Quick action:', action);
         // Handle quick actions here
-    };
+    }, []);
 
-    // Status configuration
-    const statusConfig = {
+    // Status configuration - MEMOIZED
+    const statusConfig = useMemo(() => ({
         AVAILABLE: { label: 'Boş', color: 'info', icon: AlertCircle },
         OCCUPIED: { label: 'Dolu', color: 'success', icon: CheckCircle },
         UNDER_MAINTENANCE: { label: 'Bakımda', color: 'warning', icon: RotateCcw },
         RESERVED: { label: 'Rezerve', color: 'primary', icon: Calendar }
-    };
+    }), []);
 
-    // Table columns configuration
-    const getTableColumns = () => [
+    // Table columns configuration - MEMOIZED
+    const tableColumns = useMemo(() => [
         {
             key: 'property',
             header: 'Konut',
@@ -253,10 +263,10 @@ export default function UnitsListPage() {
             header: 'Son Ödeme',
             render: (_value: any, _unit: Property) => '--',
         },
-    ];
+    ], [statusConfig]);
 
-    // UnitActionMenu
-    const UnitActionMenu: React.FC<{ unit: Property; onAction: (action: string, unit: Property) => void }> = ({ unit, onAction }) => {
+    // UnitActionMenu - MEMOIZED
+    const UnitActionMenu: React.FC<{ unit: Property; onAction: (action: string, unit: Property) => void }> = React.memo(({ unit, onAction }) => {
         const [isOpen, setIsOpen] = React.useState(false);
         const buttonRef = React.useRef<HTMLButtonElement>(null);
         const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({});
@@ -341,14 +351,14 @@ export default function UnitsListPage() {
                 )}
             </div>
         );
-    };
+    });
 
-    const UnitActionMenuWrapper: React.FC<{ row: Property }> = ({ row }) => (
-        <UnitActionMenu unit={row} onAction={handleUnitAction} />
-    );
+    const UnitActionMenuWrapper: React.FC<{ row: Property }> = useMemo(() => 
+        ({ row }) => <UnitActionMenu unit={row} onAction={handleUnitAction} />
+    , [handleUnitAction]);
 
-    // Unit card renderer for grid view
-    const renderUnitCard = (unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Property }>) => {
+    // Unit card renderer for grid view - MEMOIZED
+    const renderUnitCard = useCallback((unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Property }>) => {
         if (!unit) return null;
         
         const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
@@ -419,45 +429,84 @@ export default function UnitsListPage() {
                 )}
             </ui.Card>
         );
-    };
+    }, [statusConfig]);
 
-    const handleExport = () => {
+    const handleExport = useCallback(() => {
         console.log('Export triggered');
         // Handle export here
-    };
+    }, []);
 
-    // Refresh handler eklendi
-    const handleRefresh = () => {
+    // Refresh handler - FIXED
+    const handleRefresh = useCallback(() => {
         loadProperties();
-        // recentActivities kaldırıldı
-    };
+    }, [loadProperties]);
 
-    // 2. Input değişimini yöneten handler
-    const handleSearchInputChange = (value: string) => {
+    // Search handlers - FIXED: Prevent duplicate API calls
+    const handleSearchInputChange = useCallback((value: string) => {
         setSearchInput(value);
-    };
+    }, []);
 
-    // 3. Debounce sonrası filtreleme (API çağrısı) yapan handler
-    const handleSearchSubmit = (value: string) => {
+    const handleSearchSubmit = useCallback((value: string) => {
+        console.log(`🔍 Search submitted: "${value}"`);
         setSearchInput(value);
-        setFilters((prev) => ({ ...prev, search: value, page: 1 }));
-    };
+        
+        // Batch state updates to prevent multiple re-renders
+        React.startTransition(() => {
+            setFilters(prev => ({ ...prev, search: value, page: 1 }));
+        });
+    }, []);
 
-    // Export action handlers (placeholder functions)
-    const exportActionHandlers = {
+    // Export action handlers - MEMOIZED
+    const exportActionHandlers = useMemo(() => ({
         handleExportPDF: () => { console.log('Export PDF'); },
         handleExportExcel: () => { console.log('Export Excel'); },
         handleExportCSV: () => { console.log('Export CSV'); },
         handleExportJSON: () => { console.log('Export JSON'); },
-    };
+    }), []);
 
-    // Selection handler
-    const handleSelectionChange = (selected: Property[]) => {
+    // Selection handlers - FIXED
+    const handleSelectionChange = useCallback((selected: Property[]) => {
         setSelectedUnits(selected);
-    };
+    }, []);
 
-    // Define filter groups for units
-    const unitFilterGroups = [
+    const handleGridSelectionChange = useCallback((selectedIds: Array<string | number>) => {
+        const selectedProperties = properties.filter(p => selectedIds.includes(p.id));
+        setSelectedUnits(selectedProperties);
+    }, [properties]);
+
+    // Page change handlers - MEMOIZED
+    const handlePageChange = useCallback((page: number) => {
+        setFilters(prev => ({ ...prev, page }));
+    }, []);
+
+    const handleRecordsPerPageChange = useCallback((limit: number) => {
+        setFilters(prev => ({ ...prev, limit, page: 1 }));
+    }, []);
+
+    // Filter handlers - FIXED
+    const handleApplyFilters = useCallback((newFilters: any) => {
+        React.startTransition(() => {
+            setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
+            setShowFilters(false);
+        });
+    }, []);
+
+    const handleResetFilters = useCallback(() => {
+        React.startTransition(() => {
+            setFilters({
+                type: undefined,
+                status: undefined,
+                page: 1,
+                limit: 20,
+                orderColumn: 'name',
+                orderBy: 'ASC',
+            });
+            setSearchInput('');
+        });
+    }, []);
+
+    // Define filter groups for units - MEMOIZED
+    const unitFilterGroups = useMemo(() => [
         {
             id: 'type',
             label: 'Konut Tipi',
@@ -516,8 +565,22 @@ export default function UnitsListPage() {
                 { id: 'indebted', label: 'Borçlu', value: 'indebted' },
             ],
         },
-    ];
+    ], []);
 
+    // Grid UI - MEMOIZED
+    const gridUI = useMemo(() => ({
+        Card,
+        Button,
+        Checkbox,
+        TablePagination,
+        Badge,
+        EmptyState,
+        Skeleton,
+        BulkActionsBar,
+    }), []);
+
+    // Get item ID - MEMOIZED
+    const getItemId = useCallback((unit: Property) => unit.id, []);
 
     return (
         <ProtectedRoute>
@@ -539,15 +602,14 @@ export default function UnitsListPage() {
                     {/* Main Content */}
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Page Header with Summary */}
-
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                             <div>
                                 <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
-                                    Konut Listesi <span className="text-primary-gold">({totalUnits.toLocaleString()} Konut)
+                                    Konut Listesi <span className="text-primary-gold">({unitStats.totalUnits.toLocaleString()} Konut)
                                     </span>
                                 </h2>
                                 <p className="text-text-light-secondary dark:text-text-secondary">
-                                    Dolu: {occupiedUnits} ({occupancyRate}%) | Boş: {vacantUnits} | Bakımda: {maintenanceUnits}
+                                    Dolu: {unitStats.occupiedUnits} ({unitStats.occupancyRate}%) | Boş: {unitStats.vacantUnits} | Bakımda: {unitStats.maintenanceUnits}
                                 </p>
                             </div>
                             <div className="flex gap-3">
@@ -569,11 +631,8 @@ export default function UnitsListPage() {
                                     Yeni Konut
                                   </Button>
                                 </Link>
-                                
                             </div>
-
                         </div>
-
 
                         {/* Search and Filters */}
                         <Card className="mb-6">
@@ -614,6 +673,7 @@ export default function UnitsListPage() {
                                 </div>
                             </div>
                         </Card>
+                        
                         {/* Filter Sidebar (Drawer) */}
                         <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}> 
                             {/* Backdrop */}
@@ -625,20 +685,8 @@ export default function UnitsListPage() {
                             <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
                                 <FilterPanel
                                     filterGroups={unitFilterGroups}
-                                    onApplyFilters={(newFilters) => {
-                                        setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
-                                        setShowFilters(false);
-                                    }}
-                                    onResetFilters={() => {
-                                        setFilters({
-                                            type: undefined,
-                                            status: undefined,
-                                            page: 1,
-                                            limit: 20,
-                                            orderColumn: 'name',
-                                            orderBy: 'ASC',
-                                        });
-                                    }}
+                                    onApplyFilters={handleApplyFilters}
+                                    onResetFilters={handleResetFilters}
                                     onClose={() => setShowFilters(false)}
                                     variant="sidebar"
                                 />
@@ -692,14 +740,14 @@ export default function UnitsListPage() {
                                         error={error}
                                         onSelectionChange={handleSelectionChange}
                                         bulkActions={[]}
-                                        columns={getTableColumns()}
+                                        columns={tableColumns}
                                         pagination={{
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setFilters(prev => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setFilters(prev => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         emptyStateMessage="Henüz konut kaydı bulunmuyor."
                                         selectable={true}
@@ -712,10 +760,7 @@ export default function UnitsListPage() {
                                         data={properties}
                                         loading={loading}
                                         error={error}
-                                        onSelectionChange={(selectedIds) => {
-                                            const selectedProperties = properties.filter(p => selectedIds.includes(p.id));
-                                            setSelectedUnits(selectedProperties);
-                                        }}
+                                        onSelectionChange={handleGridSelectionChange}
                                         bulkActions={[]}
                                         onAction={handleUnitAction}
                                         selectedItems={selectedUnits.map(u => u.id)}
@@ -724,23 +769,14 @@ export default function UnitsListPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setFilters(prev => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setFilters(prev => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         emptyStateMessage="Henüz konut kaydı bulunmuyor."
-                                        ui={{
-                                            Card,
-                                            Button,
-                                            Checkbox,
-                                            TablePagination,
-                                            Badge,
-                                            EmptyState,
-                                            Skeleton,
-                                            BulkActionsBar,
-                                        }}
+                                        ui={gridUI}
                                         ActionMenu={UnitActionMenuWrapper}
                                         renderCard={renderUnitCard}
-                                        getItemId={(unit) => unit.id}
+                                        getItemId={getItemId}
                                         gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                                     />
                                 )}
