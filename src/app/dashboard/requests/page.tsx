@@ -33,11 +33,11 @@ import Skeleton from '@/app/components/ui/Skeleton';
 import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import TablePagination from '@/app/components/ui/TablePagination';
 import Checkbox from '@/app/components/ui/Checkbox';
-import Link from 'next/link';
 import { ticketService, Ticket, TicketPaginationResponse, TicketFilters } from '@/services/ticket.service';
 import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from './RequestDetailModal';
+import CreateTicketModal from '@/app/dashboard/components/CreateTicketModal';
 import Portal from '@/app/components/ui/Portal';
 import { ApiResponse } from '@/services';
 
@@ -60,6 +60,8 @@ export default function RequestsListPage() {
     });
     // Detay modalı state
     const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
+    // Yeni talep modalı state
+    const [createTicketModal, setCreateTicketModal] = useState(false);
 
     // Fetch tickets from API with pagination
     const fetchRequests = React.useCallback((filters: TicketFilters = {}) => {
@@ -431,11 +433,14 @@ export default function RequestsListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
-                                <Link href="/dashboard/requests/add">
-                                    <Button variant="primary" size="md" icon={Plus}>
-                                        Yeni Talep
-                                    </Button>
-                                </Link>
+                                <Button 
+                                    variant="primary" 
+                                    size="md" 
+                                    icon={Plus} 
+                                    onClick={() => setCreateTicketModal(true)}
+                                >
+                                    Yeni Talep
+                                </Button>
                             </div>
                         </div>
 
@@ -593,6 +598,16 @@ export default function RequestsListPage() {
                         onActionComplete={() => {
                             setDetailModal({ open: false, item: null });
                             fetchRequests();
+                        }}
+                    />
+
+                    {/* Yeni Talep Modalı */}
+                    <CreateTicketModal
+                        isOpen={createTicketModal}
+                        onClose={() => setCreateTicketModal(false)}
+                        onSuccess={() => {
+                            setCreateTicketModal(false);
+                            fetchRequests(); // Sayfayı yenile
                         }}
                     />
                 </div>
