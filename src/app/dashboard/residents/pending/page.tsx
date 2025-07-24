@@ -222,13 +222,21 @@ export default function PendingApprovalsPage() {
             ]);
             
             // Handle national ID document
-            if (nationalIdResponse.status === 'fulfilled' && nationalIdResponse.value?.data) {
-                setNationalIdImage(nationalIdResponse.value.data.url || nationalIdResponse.value.data.imageUrl || nationalIdResponse.value.data);
+            if (
+                nationalIdResponse.status === 'fulfilled' &&
+                nationalIdResponse.value?.data &&
+                nationalIdResponse.value.data.staticUrl
+            ) {
+                setNationalIdImage(nationalIdResponse.value.data.staticUrl);
             }
             
             // Handle ownership document
-            if (ownershipResponse.status === 'fulfilled' && ownershipResponse.value?.data) {
-                setOwnershipImage(ownershipResponse.value.data.url || ownershipResponse.value.data.imageUrl || ownershipResponse.value.data);
+            if (
+                ownershipResponse.status === 'fulfilled' &&
+                ownershipResponse.value?.data &&
+                ownershipResponse.value.data.staticUrl
+            ) {
+                setOwnershipImage(ownershipResponse.value.data.staticUrl);
             }
             
         } catch (error: any) {
