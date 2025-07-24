@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -347,6 +347,14 @@ export default function PendingApprovalsPage() {
         </div>
     );
 
+    // Load documents when detail modal opens or selectedApplication changes
+    useEffect(() => {
+        if (showDetailModal && selectedApplication?.id) {
+            loadDocuments(String(selectedApplication.id));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showDetailModal, selectedApplication?.id]);
+
     return (
         <ProtectedRoute>
             <div className="min-h-screen bg-background-primary">
@@ -542,109 +550,111 @@ export default function PendingApprovalsPage() {
                 size="xl"
             >
                 {selectedApplication && (
-                    <div className="space-y-8">
-                        {/* Header: İsim ve Membership Tier */}
-                        <div className="flex items-center gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
-                            <div className="flex-shrink-0 bg-primary-gold-light/30 dark:bg-primary-gold/20 rounded-xl p-3">
-                                <User className="w-8 h-8 text-primary-gold" />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
-                                    {selectedApplication.firstName} {selectedApplication.lastName}
-                                </h3>
-                                {/* Membership Tier Badge */}
-                                {selectedApplication.membershipTier && (
-                                    <Badge variant="soft" color="gold" className="text-xs font-medium">
-                                        {selectedApplication.membershipTier}
-                                    </Badge>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Bilgi Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {/* Sol Sütun */}
-                            <div className="space-y-4">
-                                {/* Bina Bilgisi */}
-                                <div className="flex items-center gap-3">
-                                    <Home className="w-5 h-5 text-primary-gold" />
-                                    <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                        {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
-                                    </span>
+                    <div className="relative">
+                        {/* Scrollable Content */}
+                        <div className="overflow-y-auto max-h-[60vh] pr-2 pb-32 space-y-8">
+                            {/* Header: İsim ve Membership Tier */}
+                            <div className="flex items-center gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex-shrink-0 bg-primary-gold-light/30 dark:bg-primary-gold/20 rounded-xl p-3">
+                                    <User className="w-8 h-8 text-primary-gold" />
                                 </div>
-                                {/* Başvuru Tarihi */}
-                                {selectedApplication.createdAt && (
-                                    <div className="flex items-center gap-3">
-                                        <Calendar className="w-5 h-5 text-primary-gold" />
-                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                            {new Date(selectedApplication.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                            {/* Sağ Sütun */}
-                            <div className="space-y-4">
-                                {/* Telefon */}
-                                {(selectedApplication.contact?.phone || selectedApplication.phone) && (
-                                    <div className="flex items-center gap-3">
-                                        <Phone className="w-5 h-5 text-primary-gold" />
-                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                            {selectedApplication.contact?.phone || selectedApplication.phone}
-                                        </span>
-                                    </div>
-                                )}
-                                {/* E-posta */}
-                                {(selectedApplication.contact?.email || selectedApplication.email) && (
-                                    <div className="flex items-center gap-3">
-                                        <Mail className="w-5 h-5 text-primary-gold" />
-                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                            {selectedApplication.contact?.email || selectedApplication.email}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Belgeler Bölümü */}
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                            <h4 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
-                                Başvuru Belgeleri
-                            </h4>
-                            
-                            {documentsError && (
-                                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <AlertTriangle className="w-5 h-5 text-red-500" />
-                                        <span className="text-red-700 dark:text-red-300 text-sm">{documentsError}</span>
-                                    </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
+                                        {selectedApplication.firstName} {selectedApplication.lastName}
+                                    </h3>
+                                    {/* Membership Tier Badge */}
+                                    {selectedApplication.membershipTier && (
+                                        <Badge variant="soft" color="gold" className="text-xs font-medium">
+                                            {selectedApplication.membershipTier}
+                                        </Badge>
+                                    )}
                                 </div>
-                            )}
+                            </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                {/* Kimlik Belgesi */}
-                                <DocumentViewer
-                                    title="Kimlik Belgesi"
-                                    imageUrl={nationalIdImage || undefined}
-                                    alt="Kimlik belgesi"
-                                    loading={documentsLoading}
-                                    error={!nationalIdImage && !documentsLoading}
-                                    onRetry={() => loadDocuments(String(selectedApplication.id))}
-                                />
+                            {/* Bilgi Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                {/* Sol Sütun */}
+                                <div className="space-y-4">
+                                    {/* Bina Bilgisi */}
+                                    <div className="flex items-center gap-3">
+                                        <Home className="w-5 h-5 text-primary-gold" />
+                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                            {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
+                                        </span>
+                                    </div>
+                                    {/* Başvuru Tarihi */}
+                                    {selectedApplication.createdAt && (
+                                        <div className="flex items-center gap-3">
+                                            <Calendar className="w-5 h-5 text-primary-gold" />
+                                            <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                                {new Date(selectedApplication.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Sağ Sütun */}
+                                <div className="space-y-4">
+                                    {/* Telefon */}
+                                    {(selectedApplication.contact?.phone || selectedApplication.phone) && (
+                                        <div className="flex items-center gap-3">
+                                            <Phone className="w-5 h-5 text-primary-gold" />
+                                            <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                                {selectedApplication.contact?.phone || selectedApplication.phone}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {/* E-posta */}
+                                    {(selectedApplication.contact?.email || selectedApplication.email) && (
+                                        <div className="flex items-center gap-3">
+                                            <Mail className="w-5 h-5 text-primary-gold" />
+                                            <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                                {selectedApplication.contact?.email || selectedApplication.email}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-                                {/* Tapu Belgesi */}
-                                <DocumentViewer
-                                    title="Tapu/Mülkiyet Belgesi"
-                                    imageUrl={ownershipImage || undefined}
-                                    alt="Tapu belgesi"
-                                    loading={documentsLoading}
-                                    error={!ownershipImage && !documentsLoading}
-                                    onRetry={() => loadDocuments(String(selectedApplication.id))}
-                                />
+                            {/* Belgeler Bölümü */}
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <h4 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
+                                    Başvuru Belgeleri
+                                </h4>
+                                
+                                {documentsError && (
+                                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <AlertTriangle className="w-5 h-5 text-red-500" />
+                                            <span className="text-red-700 dark:text-red-300 text-sm">{documentsError}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* Kimlik Belgesi */}
+                                    <DocumentViewer
+                                        title="Kimlik Belgesi"
+                                        imageUrl={nationalIdImage || undefined}
+                                        alt="Kimlik belgesi"
+                                        loading={documentsLoading}
+                                        error={!nationalIdImage && !documentsLoading}
+                                        onRetry={() => loadDocuments(String(selectedApplication.id))}
+                                    />
+
+                                    {/* Tapu Belgesi */}
+                                    <DocumentViewer
+                                        title="Tapu/Mülkiyet Belgesi"
+                                        imageUrl={ownershipImage || undefined}
+                                        alt="Tapu belgesi"
+                                        loading={documentsLoading}
+                                        error={!ownershipImage && !documentsLoading}
+                                        onRetry={() => loadDocuments(String(selectedApplication.id))}
+                                    />
+                                </div>
                             </div>
                         </div>
-
-                        {/* Modal Actions */}
-                        <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+                        {/* Sticky Modal Actions */}
+                        <div className="absolute left-0 bottom-0 w-full bg-background-light-card dark:bg-background-card border-t border-gray-200 dark:border-gray-700 py-4 px-6 flex justify-between items-center z-10">
                             <div className="flex gap-3">
                                 <Button 
                                     variant="primary" 
