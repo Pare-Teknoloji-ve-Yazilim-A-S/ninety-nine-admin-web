@@ -11,6 +11,7 @@ import Button from '@/app/components/ui/Button';
 import { ticketService } from '@/services/ticket.service';
 import propertyService from '@/services/property.service';
 import { useAuth } from '@/app/components/auth/AuthProvider';
+import { Property } from '@/services/types/property.types';
 
 interface CreateTicketModalProps {
     isOpen: boolean;
@@ -151,7 +152,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
         try {
             const response = await propertyService.getAllProperties({ limit: 100 });
             console.log('Properties loaded:', response.data);
-            const propertyOptions = response.data.map(property => ({
+            const propertyOptions = response.data.map((property: Property) => ({
                 value: property.id,
                 label: property.name
             }));
