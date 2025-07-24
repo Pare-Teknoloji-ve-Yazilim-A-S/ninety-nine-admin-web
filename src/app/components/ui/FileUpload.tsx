@@ -12,6 +12,8 @@ interface FileUploadProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 't
     showPreview?: boolean
     multiple?: boolean
     onFilesChange?: (files: FileList | null) => void
+    selectedFiles?: File[] // Controlled state from parent
+    onFileRemove?: (index: number) => void // Callback for removing files
 }
 
 const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
@@ -25,11 +27,12 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
         showPreview = true,
         multiple = false,
         onFilesChange,
+        selectedFiles = [], // Use prop or default to empty array
+        onFileRemove,
         className = '',
         ...props
     }, ref) => {
         const [dragActive, setDragActive] = useState(false)
-        const [selectedFiles, setSelectedFiles] = useState<File[]>([])
         const inputRef = useRef<HTMLInputElement>(null)
 
         const handleDrag = (e: React.DragEvent) => {
@@ -72,7 +75,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
                 return true
             })
 
-            setSelectedFiles(multiple ? [...selectedFiles, ...validFiles] : validFiles)
+            // Use callback to let parent handle file state
             onFilesChange?.(files)
         }
 
@@ -81,8 +84,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
         }
 
         const removeFile = (index: number) => {
-            const newFiles = selectedFiles.filter((_, i) => i !== index)
-            setSelectedFiles(newFiles)
+            onFileRemove?.(index)
         }
 
         const formatFileSize = (bytes: number) => {
@@ -142,23 +144,61 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
                 {showPreview && selectedFiles.length > 0 && (
                     <div className="space-y-2">
                         <p className="text-sm font-medium text-text-primary font-inter">Seçilen dosyalar:</p>
-                        <div className="space-y-2">
-                            {selectedFiles.map((file, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 bg-background-card rounded-lg border border-primary-gold/20">
-                                    <div className="flex items-center space-x-2">
-                                        <File className="h-4 w-4 text-text-secondary" />
-                                        <span className="text-sm text-text-primary font-inter">{file.name}</span>
-                                        <span className="text-xs text-text-secondary font-inter">({formatFileSize(file.size)})</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {selectedFiles.map((file, index) => {
+                                const isImage = file.type.startsWith('image/');
+                                const imageUrl = isImage ? URL.createObjectURL(file) : null;
+                                
+                                return (
+                                    <div key={index} className="relative bg-background-card rounded-lg border border-primary-gold/20 overflow-hidden">
+                                        {/* Image Preview */}
+                                        {isImage && imageUrl ? (
+                                            <div className="aspect-video bg-gray-100 relative">
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={file.name}
+                                                    className="w-full h-full object-cover"
+                                                    onLoad={() => URL.revokeObjectURL(imageUrl)}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeFile(index)}
+                                                    className="absolute top-2 right-2 bg-primary-red text-white rounded-full p-1 hover:bg-primary-red/80 transition-colors"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                                                <File className="h-8 w-8 text-text-secondary" />
+                                            </div>
+                                        )}
+                                        
+                                        {/* File Info */}
+                                        <div className="p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm text-text-primary font-inter truncate" title={file.name}>
+                                                        {file.name}
+                                                    </p>
+                                                    <p className="text-xs text-text-secondary font-inter">
+                                                        {formatFileSize(file.size)}
+                                                    </p>
+                                                </div>
+                                                {!isImage && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeFile(index)}
+                                                        className="ml-2 text-primary-red hover:text-primary-red/80 transition-colors"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeFile(index)}
-                                        className="text-primary-red hover:text-primary-red/80 transition-colors"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}

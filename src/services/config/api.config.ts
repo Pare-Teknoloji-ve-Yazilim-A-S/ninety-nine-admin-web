@@ -130,6 +130,13 @@ export const apiConfig = {
                 pending: '/admin/payments/pending',
             },
         },
+        files: {
+            upload: '/admin/files/upload',
+        },
+        tickets: {
+            base: '/admin/tickets',
+            attachments: (ticketId: string) => `/admin/tickets/${ticketId}/attachments`,
+        },
     },
 } as const;
 
