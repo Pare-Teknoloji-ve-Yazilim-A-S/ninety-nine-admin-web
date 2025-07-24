@@ -22,6 +22,15 @@ interface MetricData {
 
 interface TopMetricsGridProps {
     metrics?: MetricData[];
+    totalProperties?: number;
+    assignedProperties?: number;
+    loading?: boolean;
+    ticketStats?: {
+        currentMonthCount: number;
+        percentageChange: number;
+        changeDirection: 'increase' | 'decrease';
+    } | null;
+    ticketStatsLoading?: boolean;
 }
 
 const defaultMetrics: MetricData[] = [
@@ -58,10 +67,57 @@ const defaultMetrics: MetricData[] = [
     }
 ];
 
-export default function TopMetricsGrid({ metrics = defaultMetrics }: TopMetricsGridProps) {
+export default function TopMetricsGrid({ 
+    metrics = defaultMetrics, 
+    totalProperties, 
+    assignedProperties, 
+    loading = false,
+    ticketStats,
+    ticketStatsLoading = false
+}: TopMetricsGridProps) {
+    // Create dynamic metrics based on real data
+    const dynamicMetrics: MetricData[] = [
+        {
+            title: 'Toplam Konut',
+            value: loading ? '...' : totalProperties?.toLocaleString() || '0',
+            icon: Home,
+            color: 'primary',
+            trend: null
+        },
+        {
+            title: 'Dolu Konutlar',
+            value: loading ? '...' : assignedProperties?.toLocaleString() || '0',
+            subtitle: (totalProperties && assignedProperties) ? 
+                `%${Math.round((assignedProperties / totalProperties) * 100)} doluluk` : undefined,
+            icon: Users,
+            color: 'gold',
+            trend: null
+        },
+        {
+            title: 'Bu Ay Tahsilat',
+            value: '₺4.2M',
+            subtitle: '↑ %12',
+            icon: DollarSign,
+            color: 'primary',
+            trend: 'up'
+        },
+        {
+            title: 'Açık Talepler',
+            value: ticketStatsLoading ? '...' : ticketStats?.currentMonthCount?.toString() || '0',
+            subtitle: ticketStats ? 
+                `${ticketStats.changeDirection === 'increase' ? '↑' : '↓'} %${ticketStats.percentageChange}` : 
+                undefined,
+            icon: AlertTriangle,
+            color: 'red',
+            trend: ticketStats?.changeDirection === 'increase' ? 'up' : 'down'
+        }
+    ];
+
+    const displayMetrics = totalProperties !== undefined || assignedProperties !== undefined ? dynamicMetrics : metrics;
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {metrics.map((metric, index) => (
+            {displayMetrics.map((metric, index) => (
                 <Card
                     key={index}
                     variant="elevated"

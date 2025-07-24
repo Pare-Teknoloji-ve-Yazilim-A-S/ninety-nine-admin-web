@@ -15,8 +15,26 @@ import OccupancyStatus from './components/OccupancyStatus';
 import TodaysAgenda from './components/TodaysAgenda';
 import RecentActivities from './components/RecentActivities';
 
+// Hooks
+import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
+import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
+import { useAuditLogs } from '@/hooks/useAuditLogs';
+import { useTicketStats } from '@/hooks/useTicketStats';
+
 export default function DashboardPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Fetch dashboard metrics
+    const { totalProperties, assignedProperties, loading, error } = useDashboardMetrics();
+    
+    // Fetch maintenance requests
+    const { requests: maintenanceRequests, loading: maintenanceLoading, error: maintenanceError, totalCount: maintenanceTotalCount } = useMaintenanceRequests(50);
+
+    // Fetch audit logs
+    const { logs: auditLogs, loading: auditLogsLoading, error: auditLogsError, totalCount: auditLogsTotalCount } = useAuditLogs({}, 25);
+
+    // Fetch ticket stats
+    const { stats: ticketStats, loading: ticketStatsLoading, error: ticketStatsError } = useTicketStats();
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/dashboard' },
@@ -41,7 +59,22 @@ export default function DashboardPage() {
                         <div className="px-4 sm:px-0">
 
                             {/* Top Metrics Cards */}
-                            <TopMetricsGrid />
+                            <TopMetricsGrid 
+                                totalProperties={totalProperties}
+                                assignedProperties={assignedProperties}
+                                loading={loading}
+                                ticketStats={ticketStats}
+                                ticketStatsLoading={ticketStatsLoading}
+                            />
+                            
+                            {/* Error Display */}
+                            {(error || ticketStatsError) && (
+                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-red-600 text-sm">{error || ticketStatsError}</p>
+                                </div>
+                            )}
+
+
 
                             {/* Two Column Layout */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -56,7 +89,14 @@ export default function DashboardPage() {
                                     <RecentTransactions />
 
                                     {/* Maintenance Requests */}
-                                    <MaintenanceRequests />
+                                    <MaintenanceRequests 
+                                        requests={maintenanceRequests}
+                                        loading={maintenanceLoading}
+                                        error={maintenanceError}
+                                        totalCount={maintenanceTotalCount}
+                                    />
+
+
 
                                 </div>
 
@@ -67,16 +107,20 @@ export default function DashboardPage() {
                                     <QuickActions />
 
                                     {/* Occupancy Status */}
-                                    <OccupancyStatus />
+                                    {/* <OccupancyStatus /> */}
 
                                     {/* Today's Agenda */}
-                                    <TodaysAgenda />
+                                    {/* <TodaysAgenda /> */}
 
                                     {/* Recent Activities */}
-                                    <RecentActivities />
+                                    <RecentActivities 
+                                        logs={auditLogs}
+                                        loading={auditLogsLoading}
+                                        error={auditLogsError}
+                                    />
 
                                 </div>
-                            </div>
+                            </div> 
                         </div>
                     </main>
                 </div>

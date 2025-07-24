@@ -112,6 +112,8 @@ export const apiConfig = {
                 residentCount: '/admin/properties/residence/count',
                 villaCount: '/admin/properties/villa/count',
                 availableCount: '/admin/properties/available/count',
+                totalCount: '/admin/properties/count',
+                assignedCount: '/admin/properties/assigned/count',
             },
         },
         billing: {

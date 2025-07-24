@@ -23,6 +23,24 @@ export interface Ticket {
   attachments?: any[];
 }
 
+export interface CreateTicketRequest {
+  title: string;
+  description: string;
+  type: string;
+  priority: string;
+  category: string;
+  propertyId: string;
+  creatorId: string | number;
+  initialComment?: string;
+}
+
+export interface CreateAttachmentRequest {
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+}
+
 export interface TicketPaginationResponse {
   data: Ticket[];
   pagination: {
@@ -49,6 +67,14 @@ export interface TicketFilters {
 }
 
 export const ticketService = {
+  // Create new ticket
+  async createTicket(data: CreateTicketRequest): Promise<Ticket> {
+    console.log('Sending ticket creation request:', JSON.stringify(data, null, 2));
+    const response: ApiResponse<Ticket> = await apiClient.post<Ticket>('/admin/tickets', data);
+    console.log('Ticket creation response:', response);
+    return response.data;
+  },
+
   // Yeni ana endpoint - pagination ile
   async getTickets(filters: TicketFilters = {}): Promise<ApiResponse<TicketPaginationResponse>> {
     const params = new URLSearchParams();
@@ -123,6 +149,12 @@ export const ticketService = {
   },
   async addComment(id: string, content: string): Promise<any> {
     const response: ApiResponse<any> = await apiClient.post<any>(`/admin/tickets/${id}/comments`, { content });
+    return response.data;
+  },
+
+  // --- Ticket Attachments ---
+  async addAttachment(ticketId: string, data: CreateAttachmentRequest): Promise<any> {
+    const response: ApiResponse<any> = await apiClient.post<any>(`/admin/tickets/${ticketId}/attachments`, data);
     return response.data;
   },
 }; 
