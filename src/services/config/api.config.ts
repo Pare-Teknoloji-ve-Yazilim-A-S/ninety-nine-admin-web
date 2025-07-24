@@ -70,6 +70,9 @@ export const apiConfig = {
                 bulkAction: '/admin/users/bulk-action',
                 byId: (id: string) => `/admin/users/${id}`,
                 stats: '/admin/users/stats',
+                // Document endpoints
+                nationalIdDocument: (id: string) => `/admin/users/${id}/documents/national_id`,
+                ownershipDocument: (id: string) => `/admin/users/${id}/documents/ownership_document`,
             },
             // Mobile/Resident Panel - Resident Operations
             mobile: {

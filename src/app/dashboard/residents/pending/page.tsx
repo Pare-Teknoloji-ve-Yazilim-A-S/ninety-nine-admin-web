@@ -15,6 +15,7 @@ import ResidentGridTemplate from '@/app/components/templates/GridList';
 import TablePagination from '@/app/components/ui/TablePagination';
 import EmptyState from '@/app/components/ui/EmptyState';
 import Skeleton from '@/app/components/ui/Skeleton';
+import { DocumentViewer } from '@/app/components/ui/DocumentViewer';
 import {
     RefreshCw,
     AlertTriangle,
@@ -99,6 +100,12 @@ export default function PendingApprovalsPage() {
     const [approvalLoading, setApprovalLoading] = useState(false);
     const [approvalError, setApprovalError] = useState<string | null>(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
+    
+    // Document states
+    const [nationalIdImage, setNationalIdImage] = useState<string | null>(null);
+    const [ownershipImage, setOwnershipImage] = useState<string | null>(null);
+    const [documentsLoading, setDocumentsLoading] = useState(false);
+    const [documentsError, setDocumentsError] = useState<string | null>(null);
 
     // API'den veri çek
     const { residents, loading, error, refresh } = usePendingResidents();
@@ -200,6 +207,38 @@ export default function PendingApprovalsPage() {
             setApprovalLoading(false);
         }
     };
+    // Load documents for selected resident
+    const loadDocuments = async (residentId: string) => {
+        setDocumentsLoading(true);
+        setDocumentsError(null);
+        setNationalIdImage(null);
+        setOwnershipImage(null);
+        
+        try {
+            // Load both documents in parallel
+            const [nationalIdResponse, ownershipResponse] = await Promise.allSettled([
+                adminResidentService.getNationalIdDocument(residentId),
+                adminResidentService.getOwnershipDocument(residentId)
+            ]);
+            
+            // Handle national ID document
+            if (nationalIdResponse.status === 'fulfilled' && nationalIdResponse.value?.data) {
+                setNationalIdImage(nationalIdResponse.value.data.url || nationalIdResponse.value.data.imageUrl || nationalIdResponse.value.data);
+            }
+            
+            // Handle ownership document
+            if (ownershipResponse.status === 'fulfilled' && ownershipResponse.value?.data) {
+                setOwnershipImage(ownershipResponse.value.data.url || ownershipResponse.value.data.imageUrl || ownershipResponse.value.data);
+            }
+            
+        } catch (error: any) {
+            setDocumentsError(error?.message || 'Belgeler yüklenirken hata oluştu');
+            showErrorToast('Belge Yükleme Hatası', error?.message || 'Belgeler yüklenirken hata oluştu');
+        } finally {
+            setDocumentsLoading(false);
+        }
+    };
+
     // Action handler
     const handleGridAction = (action: string, resident: any) => {
         if (action === 'approve') {
@@ -213,6 +252,8 @@ export default function PendingApprovalsPage() {
         } else if (action === 'view') {
             setSelectedApplication(resident);
             setShowDetailModal(true);
+            // Load documents when modal opens
+            loadDocuments(String(resident.id));
         }
     };
     // Pagination dummy (isteğe göre gerçek pagination eklenebilir)
@@ -491,14 +532,19 @@ export default function PendingApprovalsPage() {
             {/* İncele Modal */}
             <Modal
                 isOpen={showDetailModal}
-                onClose={() => setShowDetailModal(false)}
+                onClose={() => {
+                    setShowDetailModal(false);
+                    setNationalIdImage(null);
+                    setOwnershipImage(null);
+                    setDocumentsError(null);
+                }}
                 title="Başvuru İncele"
-                size="md"
+                size="xl"
             >
                 {selectedApplication && (
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         {/* Header: İsim ve Membership Tier */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
                             <div className="flex-shrink-0 bg-primary-gold-light/30 dark:bg-primary-gold/20 rounded-xl p-3">
                                 <User className="w-8 h-8 text-primary-gold" />
                             </div>
@@ -514,6 +560,7 @@ export default function PendingApprovalsPage() {
                                 )}
                             </div>
                         </div>
+
                         {/* Bilgi Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {/* Sol Sütun */}
@@ -557,10 +604,75 @@ export default function PendingApprovalsPage() {
                                 )}
                             </div>
                         </div>
-                        {/* Diğer Bilgiler veya Açıklama Alanı */}
-                        {/* Buraya ek bilgi veya açıklama eklenebilir */}
-                        <div className="flex justify-end gap-3">
-                            <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+
+                        {/* Belgeler Bölümü */}
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                            <h4 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
+                                Başvuru Belgeleri
+                            </h4>
+                            
+                            {documentsError && (
+                                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                                        <span className="text-red-700 dark:text-red-300 text-sm">{documentsError}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Kimlik Belgesi */}
+                                <DocumentViewer
+                                    title="Kimlik Belgesi"
+                                    imageUrl={nationalIdImage || undefined}
+                                    alt="Kimlik belgesi"
+                                    loading={documentsLoading}
+                                    error={!nationalIdImage && !documentsLoading}
+                                    onRetry={() => loadDocuments(String(selectedApplication.id))}
+                                />
+
+                                {/* Tapu Belgesi */}
+                                <DocumentViewer
+                                    title="Tapu/Mülkiyet Belgesi"
+                                    imageUrl={ownershipImage || undefined}
+                                    alt="Tapu belgesi"
+                                    loading={documentsLoading}
+                                    error={!ownershipImage && !documentsLoading}
+                                    onRetry={() => loadDocuments(String(selectedApplication.id))}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Actions */}
+                        <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex gap-3">
+                                <Button 
+                                    variant="primary" 
+                                    icon={Check}
+                                    onClick={() => {
+                                        setShowDetailModal(false);
+                                        setShowApprovalModal(true);
+                                    }}
+                                >
+                                    Onayla
+                                </Button>
+                                <Button 
+                                    variant="danger" 
+                                    icon={X}
+                                    onClick={() => {
+                                        setShowDetailModal(false);
+                                        setShowRejectModal(true);
+                                    }}
+                                >
+                                    Reddet
+                                </Button>
+                            </div>
+                            <Button variant="secondary" onClick={() => {
+                                setShowDetailModal(false);
+                                setNationalIdImage(null);
+                                setOwnershipImage(null);
+                                setDocumentsError(null);
+                            }}>
                                 Kapat
                             </Button>
                         </div>

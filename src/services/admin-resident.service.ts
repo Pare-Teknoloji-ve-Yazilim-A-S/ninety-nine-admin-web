@@ -326,6 +326,48 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
         }
     }
 
+    // === DOCUMENT MANAGEMENT === //
+
+    /**
+     * Get resident's national ID document
+     * GET /admin/users/{id}/documents/national_id
+     */
+    async getNationalIdDocument(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching national ID document for resident ID: ${id}`);
+
+            const response = await apiClient.get<any>(
+                apiConfig.endpoints.residents.admin.nationalIdDocument(id)
+            );
+
+            this.logger.info('National ID document fetched successfully');
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch national ID document', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get resident's ownership document
+     * GET /admin/users/{id}/documents/ownership_document
+     */
+    async getOwnershipDocument(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching ownership document for resident ID: ${id}`);
+
+            const response = await apiClient.get<any>(
+                apiConfig.endpoints.residents.admin.ownershipDocument(id)
+            );
+
+            this.logger.info('Ownership document fetched successfully');
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch ownership document', error);
+            throw error;
+        }
+    }
+
     // === FILTERING HELPERS === //
 
     /**
