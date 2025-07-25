@@ -73,4 +73,5 @@ export { default as UserCard, UserCardPatterns } from './UserCard'
 export { default as ProfileDropdown, ProfileDropdownPatterns } from './ProfileDropdown'
 
 // Export components
-export { default as ExportDropdown } from './ExportDropdown' 
+export { default as ExportDropdown } from './ExportDropdown'
+export { DocumentViewer } from './DocumentViewer' 

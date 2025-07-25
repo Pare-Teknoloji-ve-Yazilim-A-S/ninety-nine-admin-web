@@ -68,7 +68,7 @@ const menuItems: MenuItemProps[] = [
         icon: Users,
         children: [
             { title: 'Sakin Listesi', icon: User, href: '/dashboard/residents' },
-            // { title: 'Yeni Sakin Ekle', icon: UserPlus, href: '/dashboard/residents/add' },
+            { title: 'Yeni Sakin Ekle', icon: UserPlus, href: '/dashboard/residents/add' },
             { title: 'Onay Bekleyenler', icon: UserCheck, href: '/dashboard/residents/pending' }
         ]
     },

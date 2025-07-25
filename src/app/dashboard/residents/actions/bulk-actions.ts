@@ -10,6 +10,8 @@ import {
     UserX, 
     Trash2 
 } from 'lucide-react';
+import { residentService } from '@/services/resident.service';
+import { BulkActionDto } from '@/services/types/resident.types';
 
 /**
  * Toast notification functions interface
@@ -26,22 +28,42 @@ interface BulkMessageState {
     recipients: Resident[];
 }
 
+interface DataUpdateFunctions {
+    setResidents: (residents: Resident[]) => void;
+    refreshData: () => void;
+}
+
+interface BulkDeleteState {
+    isOpen: boolean;
+    residents: Resident[];
+    loading: boolean;
+}
+
 /**
  * Bulk action handlers class
  */
 export class BulkActionHandlers {
     private toast: ToastFunctions;
     private messageState: BulkMessageState;
-    private setMessageState: (state: BulkMessageState) => void;
+    private setMessageState: (state: BulkMessageState | ((prev: BulkMessageState) => BulkMessageState)) => void;
+    private dataUpdateFunctions: DataUpdateFunctions;
+    private bulkDeleteState: BulkDeleteState;
+    private setBulkDeleteState: (state: BulkDeleteState | ((prev: BulkDeleteState) => BulkDeleteState)) => void;
 
     constructor(
         toast: ToastFunctions,
         messageState: BulkMessageState,
-        setMessageState: (state: BulkMessageState) => void
+        setMessageState: (state: BulkMessageState | ((prev: BulkMessageState) => BulkMessageState)) => void,
+        dataUpdateFunctions: DataUpdateFunctions,
+        bulkDeleteState: BulkDeleteState,
+        setBulkDeleteState: (state: BulkDeleteState | ((prev: BulkDeleteState) => BulkDeleteState)) => void
     ) {
         this.toast = toast;
         this.messageState = messageState;
         this.setMessageState = setMessageState;
+        this.dataUpdateFunctions = dataUpdateFunctions;
+        this.bulkDeleteState = bulkDeleteState;
+        this.setBulkDeleteState = setBulkDeleteState;
     }
 
     /**
@@ -132,41 +154,190 @@ export class BulkActionHandlers {
     };
 
     /**
-     * Handle bulk status change
+     * Handle bulk status change with API call
      */
-    handleBulkStatusChange = (residents: Resident[], status: string): void => {
-        const statusLabels: Record<string, string> = {
-            'active': 'Aktif',
-            'inactive': 'Pasif',
-            'pending': 'Beklemede',
-            'suspended': 'Askıya Alınmış'
-        };
+    handleBulkStatusChange = async (residents: Resident[], status: 'activate' | 'deactivate'): Promise<void> => {
+        try {
+            // Filter residents that actually need status change
+            const residentsToUpdate = residents.filter(resident => {
+                const currentStatus = resident.status?.type || resident.status;
+                if (status === 'activate') {
+                    return currentStatus !== 'active';
+                } else if (status === 'deactivate') {
+                    return currentStatus !== 'inactive';
+                }
+                return false;
+            });
 
-        const statusLabel = statusLabels[status] || status;
-        
-        this.toast.success(
-            'Durum Güncellendi', 
-            `${residents.length} sakin "${statusLabel}" durumuna geçirildi`
-        );
-    };
+            if (residentsToUpdate.length === 0) {
+                const statusLabel = status === 'activate' ? 'aktif' : 'pasif';
+                this.toast.info(
+                    'Durum Güncelleme',
+                    `Seçili sakinler zaten ${statusLabel} durumunda.`
+                );
+                return;
+            }
 
-    /**
-     * Handle bulk delete
-     */
-    handleBulkDelete = (residents: Resident[]): void => {
-        if (confirm(`${residents.length} sakini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) {
-            this.toast.success(
-                'Sakinler Silindi', 
-                `${residents.length} sakin başarıyla silindi`
+            this.toast.info(
+                'Durum Güncelleniyor',
+                `${residentsToUpdate.length} sakin için durum güncelleniyor...`
+            );
+
+            if (status === 'activate') {
+                // Use bulk action API for activate
+                const bulkActionData: BulkActionDto = {
+                    action: 'activate',
+                    userIds: residentsToUpdate.map(r => String(r.id)),
+                    reason: 'Toplu durum güncelleme: Aktif yapıldı',
+                };
+
+                const response = await residentService.bulkAction(bulkActionData);
+
+                if (response.success) {
+                    console.log("BİLMİYOM  response", response);
+                    this.toast.success(
+                        'Durum Güncellendi',
+                        `Seçili sakinler başarıyla aktif durumuna geçirildi.`
+                    );
+
+                    
+                    // Refresh data to show updated statuses
+                    this.dataUpdateFunctions.refreshData();
+                } else {
+                    throw new Error(response.data?.message || 'Bilinmeyen hata');
+                }
+            } else {
+                // Use individual updates for deactivate since bulk API doesn't support INACTIVE
+                let successCount = 0;
+                let errorCount = 0;
+                const errors: string[] = [];
+
+                for (const resident of residentsToUpdate) {
+                    try {
+                        await residentService.updateResident(String(resident.id), {
+                            status: 'INACTIVE'
+                        });
+                        successCount++;
+                    } catch (error: any) {
+                        errorCount++;
+                        errors.push(`${resident.firstName} ${resident.lastName}: ${error?.message || 'Hata'}`);
+                    }
+                }
+
+                if (errorCount === 0) {
+                    this.toast.success(
+                        'Durum Güncellendi',
+                        `${successCount} sakin başarıyla pasif durumuna geçirildi.`
+                    );
+                } else {
+                    this.toast.success(
+                        'Durum Kısmen Güncellendi',
+                        `${successCount} sakin pasif yapıldı, ${errorCount} sakin için hata oluştu.`
+                    );
+                }
+
+                // Refresh data to show updated statuses  
+                this.dataUpdateFunctions.refreshData();
+            }
+
+        } catch (error: any) {
+            console.error('Bulk status update error:', error);
+            this.toast.error(
+                'Durum Güncelleme Hatası',
+                error?.message || 'Sakin durumları güncellenirken bir hata oluştu.'
             );
         }
     };
 
     /**
-     * Get bulk actions configuration
+     * Handle bulk delete - Opens confirmation modal
      */
-    getBulkActions = (): BulkAction[] => {
-        return [
+    handleBulkDelete = (residents: Resident[]): void => {
+        this.setBulkDeleteState({
+            isOpen: true,
+            residents: residents,
+            loading: false
+        });
+    };
+
+    /**
+     * Execute bulk delete after confirmation
+     */
+    executeBulkDelete = async (): Promise<void> => {
+        const { residents } = this.bulkDeleteState;
+        
+        this.setBulkDeleteState(prev => ({ ...prev, loading: true }));
+
+        try {
+            this.toast.info(
+                'Sakinler Siliniyor',
+                `${residents.length} sakin siliniyor...`
+            );
+
+            let successCount = 0;
+            let errorCount = 0;
+            const errors: string[] = [];
+
+            // Use individual delete API calls since bulk delete is not available
+            for (const resident of residents) {
+                try {
+                    await residentService.deleteResident(String(resident.id));
+                    successCount++;
+                } catch (error: any) {
+                    errorCount++;
+                    errors.push(`${resident.firstName} ${resident.lastName}: ${error?.message || 'Hata'}`);
+                }
+            }
+
+            if (errorCount === 0) {
+                this.toast.success(
+                    'Sakinler Silindi',
+                    `${successCount} sakin başarıyla silindi.`
+                );
+            } else {
+                this.toast.success(
+                    'Sakinler Kısmen Silindi',
+                    `${successCount} sakin silindi, ${errorCount} sakin için hata oluştu.`
+                );
+            }
+
+            // Refresh data to remove deleted residents
+            this.dataUpdateFunctions.refreshData();
+
+            // Close modal
+            this.setBulkDeleteState({
+                isOpen: false,
+                residents: [],
+                loading: false
+            });
+
+        } catch (error: any) {
+            console.error('Bulk delete error:', error);
+            this.toast.error(
+                'Silme Hatası',
+                error?.message || 'Sakinler silinirken bir hata oluştu.'
+            );
+            
+            this.setBulkDeleteState(prev => ({ ...prev, loading: false }));
+        }
+    };
+
+    /**
+     * Get bulk actions configuration with conditional visibility
+     */
+    getBulkActions = (selectedResidents: Resident[]): BulkAction[] => {
+        // Analyze selected residents to determine which actions should be available
+        const activeResidents = selectedResidents.filter(r => {
+            const status = r.status?.type || r.status;
+            return status === 'active';
+        });
+        
+        const inactiveResidents = selectedResidents.filter(r => {
+            const status = r.status?.type || r.status;
+            return status === 'inactive' || status === 'suspended' || status === 'pending';
+        });
+
+        const actions: BulkAction[] = [
             {
                 id: BULK_ACTION_IDS.MAIL,
                 label: 'Toplu Mail',
@@ -184,28 +355,42 @@ export class BulkActionHandlers {
                 label: 'PDF Oluştur',
                 icon: FileText,
                 onClick: this.handleBulkPDF
-            },
-            {
+            }
+        ];
+
+        // Only show "Aktif Yap" if there are inactive residents
+        if (inactiveResidents.length > 0) {
+            actions.push({
                 id: BULK_ACTION_IDS.ACTIVATE,
-                label: 'Aktif Yap',
+                label: `Aktif Yap (${inactiveResidents.length})`,
                 icon: UserCheck,
-                onClick: (residents: Resident[]) => this.handleBulkStatusChange(residents, 'active')
-            },
-            {
+                onClick: (residents: Resident[]) => this.handleBulkStatusChange(residents, 'activate')
+            });
+        }
+
+        // Only show "Pasif Yap" if there are active residents
+        if (activeResidents.length > 0) {
+            actions.push({
                 id: BULK_ACTION_IDS.DEACTIVATE,
-                label: 'Pasif Yap',
+                label: `Pasif Yap (${activeResidents.length})`,
                 icon: UserX,
-                onClick: (residents: Resident[]) => this.handleBulkStatusChange(residents, 'inactive'),
+                onClick: (residents: Resident[]) => this.handleBulkStatusChange(residents, 'deactivate'),
                 variant: 'warning'
-            },
-            {
+            });
+        }
+
+        // Always show delete option when residents are selected
+        if (selectedResidents.length > 0) {
+            actions.push({
                 id: BULK_ACTION_IDS.DELETE,
-                label: 'Sil',
+                label: `Sil (${selectedResidents.length})`,
                 icon: Trash2,
                 onClick: this.handleBulkDelete,
                 variant: 'danger'
-            },
-        ];
+            });
+        }
+
+        return actions;
     };
 }
 
@@ -215,7 +400,17 @@ export class BulkActionHandlers {
 export const createBulkActionHandlers = (
     toast: ToastFunctions,
     messageState: BulkMessageState,
-    setMessageState: (state: BulkMessageState) => void
+    setMessageState: (state: BulkMessageState | ((prev: BulkMessageState) => BulkMessageState)) => void,
+    dataUpdateFunctions: DataUpdateFunctions,
+    bulkDeleteState: BulkDeleteState,
+    setBulkDeleteState: (state: BulkDeleteState | ((prev: BulkDeleteState) => BulkDeleteState)) => void
 ): BulkActionHandlers => {
-    return new BulkActionHandlers(toast, messageState, setMessageState);
+    return new BulkActionHandlers(
+        toast, 
+        messageState, 
+        setMessageState, 
+        dataUpdateFunctions,
+        bulkDeleteState,
+        setBulkDeleteState
+    );
 }; 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -34,12 +34,19 @@ import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import TablePagination from '@/app/components/ui/TablePagination';
 import Checkbox from '@/app/components/ui/Checkbox';
 import Link from 'next/link';
-import { ticketService, Ticket } from '@/services/ticket.service'; // Use real Ticket type
+import { ticketService, Ticket, TicketPaginationResponse, TicketFilters } from '@/services/ticket.service';
 import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from '../RequestDetailModal';
-import { useWaitingTickets } from '@/hooks/useWaitingTickets';
 import Portal from '@/app/components/ui/Portal';
+import { ApiResponse } from '@/services';
+import { 
+    createTicketFilterGroups, 
+    STATUS_CONFIG, 
+    TYPE_COLOR_MAP, 
+    FilterStateManager,
+    TicketFilters as RequestFilters 
+} from '../constants';
 
 export default function WaitingRequestsPage() {
     // UI State
@@ -48,16 +55,71 @@ export default function WaitingRequestsPage() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRequests, setSelectedRequests] = useState<any[]>([]);
-    // Data State (from hook)
-    const { tickets: requests, loading, error, refresh } = useWaitingTickets();
+    
+    // Filter State Management - SOLID: Single Responsibility
+    const [filterManager] = useState(() => new FilterStateManager());
+    const [activeFilters, setActiveFilters] = useState<RequestFilters>({});
+    
+    // Data State
+    const [requests, setRequests] = useState<Ticket[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [pagination, setPagination] = useState({
         total: 0,
         page: 1,
         limit: 20,
         totalPages: 0
     });
+    
     // Detay modalı state
     const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
+
+    // Memoize current filters to prevent unnecessary re-renders
+    const currentFilters = useMemo(() => {
+        const filters = filterManager.getFilters();
+        // Always filter for waiting status tickets
+        return { ...filters, status: 'WAITING' };
+    }, [filterManager, activeFilters]);
+
+    // Fetch waiting tickets from API with pagination and filters
+    const fetchRequests = useCallback(async (customFilters: RequestFilters = {}) => {
+        setLoading(true);
+        setError(null);
+        
+        const finalFilters: TicketFilters = {
+            page: pagination.page,
+            limit: pagination.limit,
+            orderColumn: 'createdAt',
+            orderBy: 'DESC',
+            ...currentFilters,
+            ...customFilters,
+            status: 'WAITING', // Always filter for waiting tickets - override any other status
+        };
+
+        console.log(`🚀 Waiting Tickets API Call with filters:`, finalFilters);
+        
+        try {
+            const response: ApiResponse<TicketPaginationResponse> = await ticketService.getTickets(finalFilters);
+            setRequests(response.data as unknown as Ticket[]);
+            setPagination(prev => ({
+                ...prev,
+                total: response.pagination.total,
+                totalPages: response.pagination.totalPages,
+                page: response.pagination.page,
+                limit: response.pagination.limit
+            }));
+        } catch (err) {
+            setError('Bekleyen talepler alınamadı.');
+            console.error('API Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [pagination.page, pagination.limit, currentFilters]);
+
+    // Initial data fetch
+    useEffect(() => {
+        fetchRequests();
+    }, [pagination.page, pagination.limit, currentFilters]);
 
     // Breadcrumb
     const breadcrumbItems = [
@@ -66,24 +128,23 @@ export default function WaitingRequestsPage() {
         { label: 'Bekleyen Talepler', active: true }
     ];
 
-    // Status config (placeholder)
-    const statusConfig = {
-        OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
-        IN_PROGRESS: { label: 'İşlemde', color: 'warning', icon: RotateCcw },
-        WAITING: { label: 'Beklemede', color: 'warning', icon: PauseCircle },
-        COMPLETED: { label: 'Tamamlandı', color: 'success', icon: CheckCircle },
-        SCHEDULED: { label: 'Planlandı', color: 'primary', icon: Calendar }
+    // Icon mapping for status configuration
+    const iconMap = {
+        AlertCircle,
+        RotateCcw,
+        PauseCircle,
+        CheckCircle,
+        Calendar
     };
 
-    // Type color mapping for request types (Badge color prop ile uyumlu)
-    const typeColorMap: Record<string, "primary" | "secondary" | "gold" | "red"> = {
-        FAULT_REPAIR: 'gold',
-        COMPLAINT: 'red',
-        REQUEST: 'primary',
-        SUGGESTION: 'primary',
-        QUESTION: 'secondary',
-        MAINTENANCE: 'primary',
-        OTHER: 'secondary',
+    // Get status info with proper icon mapping - SOLID: Open/Closed Principle
+    const getStatusInfo = (status: string) => {
+        const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.WAITING;
+        const IconComponent = iconMap[config.icon as keyof typeof iconMap] || PauseCircle;
+        return {
+            ...config,
+            iconComponent: IconComponent
+        };
     };
 
     // Table columns (API'den gelen Ticket yapısına göre)
@@ -106,7 +167,7 @@ export default function WaitingRequestsPage() {
             key: 'type',
             header: 'Tip',
             render: (_value: any, req: Ticket) => (
-                <Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
+                <Badge variant="soft" color={TYPE_COLOR_MAP[req?.type as string] || 'secondary'}>
                     {req?.type || 'Tip Yok'}
                 </Badge>
             ),
@@ -129,8 +190,8 @@ export default function WaitingRequestsPage() {
             key: 'status',
             header: 'Durum',
             render: (_value: any, req: Ticket) => {
-                const statusInfo = statusConfig[req?.status as keyof typeof statusConfig] || statusConfig.OPEN;
-                const StatusIcon = statusInfo.icon;
+                const statusInfo = getStatusInfo(req?.status || 'WAITING');
+                const StatusIcon = statusInfo.iconComponent;
                 return (
                     <div className="flex items-center gap-2">
                         <StatusIcon className={`h-4 w-4 text-semantic-${statusInfo.color}-500`} />
@@ -249,8 +310,8 @@ export default function WaitingRequestsPage() {
 
     // Card renderer for grid view (API'den gelen Ticket yapısına göre)
     const renderRequestCard = (req: Ticket, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: any }>) => {
-        const statusInfo = statusConfig[req?.status as keyof typeof statusConfig] || statusConfig.OPEN;
-        const StatusIcon = statusInfo.icon;
+        const statusInfo = getStatusInfo(req?.status || 'WAITING');
+        const StatusIcon = statusInfo.iconComponent;
         return (
             <ui.Card key={req.id} className="p-4 rounded-2xl shadow-md bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 transition-transform hover:scale-[1.01] hover:shadow-lg">
                 <div className="flex items-center justify-between mb-3">
@@ -279,7 +340,7 @@ export default function WaitingRequestsPage() {
                 <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                         <Wrench className="h-4 w-4" />
-                        <ui.Badge variant="soft" color={typeColorMap[req?.type as string] || 'secondary'}>
+                        <ui.Badge variant="soft" color={TYPE_COLOR_MAP[req?.type as string] || 'secondary'}>
                             {req?.type || 'Tip Yok'}
                         </ui.Badge>
                     </div>
@@ -295,32 +356,8 @@ export default function WaitingRequestsPage() {
         );
     };
 
-    // Filter groups (placeholder)
-    const requestFilterGroups = [
-        {
-            id: 'type',
-            label: 'Talep Tipi',
-            type: 'select' as const,
-            options: [
-                { id: 'all', label: 'Tümü', value: '' },
-                { id: 'maintenance', label: 'Bakım', value: 'maintenance' },
-                { id: 'cleaning', label: 'Temizlik', value: 'cleaning' },
-                { id: 'other', label: 'Diğer', value: 'other' },
-            ],
-        },
-        {
-            id: 'status',
-            label: 'Durum',
-            type: 'select' as const,
-            options: [
-                { id: 'all', label: 'Tümü', value: '' },
-                { id: 'OPEN', label: 'Açık', value: 'OPEN' },
-                { id: 'IN_PROGRESS', label: 'İşlemde', value: 'IN_PROGRESS' },
-                { id: 'WAITING', label: 'Beklemede', value: 'WAITING' },
-                { id: 'COMPLETED', label: 'Tamamlandı', value: 'COMPLETED' },
-            ],
-        },
-    ];
+    // Filter groups using SOLID factory pattern - Focus on waiting-related statuses
+    const requestFilterGroups = useMemo(() => createTicketFilterGroups(true), []);
 
     // Selection handler for grid view
     const handleGridSelectionChange = (selectedIds: Array<string | number>) => {
@@ -332,24 +369,51 @@ export default function WaitingRequestsPage() {
         setSelectedRequests(selected);
     };
 
-    // Search handlers (placeholder)
-    const handleSearchInputChange = (value: string) => {
-        setSearchInput(value);
-    };
-    const handleSearchSubmit = (value: string) => {
-        setSearchInput(value);
-    };
+    // Filter handlers with proper state management
+    const handleFilterChange = useCallback((filterKey: string, value: any) => {
+        console.log(`🎯 handleFilterChange: key=${filterKey}, value=${value}, type=${typeof value}`);
+        filterManager.setFilter(filterKey as keyof RequestFilters, value);
+        const newActiveFilters = filterManager.getFilters();
+        console.log(`📋 Active filters after update:`, newActiveFilters);
+        setActiveFilters(newActiveFilters);
+        // Reset pagination to first page
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }, [filterManager]);
 
-    // Refresh handler (placeholder)
-    const handleRefresh = () => {
-        refresh();
-    };
+    const handleResetFilters = useCallback(() => {
+        filterManager.resetFilters();
+        setActiveFilters({});
+        setSearchInput('');
+        setPagination(prev => ({ ...prev, page: 1 }));
+    }, [filterManager]);
+
+    // Search handlers - FIXED: Proper API integration
+    const handleSearchInputChange = useCallback((value: string) => {
+        setSearchInput(value);
+    }, []);
+    
+    const handleSearchSubmit = useCallback((value: string) => {
+        console.log(`🔍 Waiting Tickets Search submitted: "${value}"`);
+        setSearchInput(value);
+        filterManager.setFilter('search', value);
+        
+        // Batch state updates to prevent multiple re-renders
+        React.startTransition(() => {
+            setActiveFilters(filterManager.getFilters());
+            setPagination(prev => ({ ...prev, page: 1 }));
+        });
+    }, [filterManager]);
+
+    // Refresh handler
+    const handleRefresh = useCallback(() => {
+        fetchRequests();
+    }, [fetchRequests]);
 
     // Table columns (API'den gelen Ticket yapısına göre)
-    const tableColumns = getTableColumns();
+    const tableColumns = useMemo(() => getTableColumns(), []);
 
     // GridView UI Adapter
-    const gridViewUI = {
+    const gridViewUI = useMemo(() => ({
         Card,
         Button,
         Checkbox,
@@ -358,10 +422,19 @@ export default function WaitingRequestsPage() {
         EmptyState,
         Skeleton,
         BulkActionsBar,
-    };
+    }), []);
 
     // GridView getItemId
-    const getRequestId = (req: Ticket) => req.id;
+    const getRequestId = useCallback((req: Ticket) => req.id, []);
+
+    // Page change handlers
+    const handlePageChange = useCallback((page: number) => {
+        setPagination(prev => ({ ...prev, page }));
+    }, []);
+
+    const handleRecordsPerPageChange = useCallback((limit: number) => {
+        setPagination(prev => ({ ...prev, limit, page: 1 }));
+    }, []);
 
     return (
         <ProtectedRoute>
@@ -389,18 +462,13 @@ export default function WaitingRequestsPage() {
                                     Bekleyen Talepler <span className="text-primary-gold">({requests.length} Talep)</span>
                                 </h2>
                                 <p className="text-text-light-secondary dark:text-text-secondary">
-                                    Açık: {requests.filter(r => r.status === 'OPEN').length} | İşlemde: {requests.filter(r => r.status === 'IN_PROGRESS').length}
+                                    Bekleyen: {requests.length}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     Yenile
                                 </Button>
-                                {/* <Link href="/dashboard/requests/add">
-                                    <Button variant="primary" size="md" icon={Plus}>
-                                        Yeni Talep
-                                    </Button>
-                                </Link> */}
                             </div>
                         </div>
 
@@ -441,6 +509,7 @@ export default function WaitingRequestsPage() {
                                 </div>
                             </div>
                         </Card>
+                        
                         {/* Filter Sidebar (Drawer) */}
                         <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                             {/* Backdrop */}
@@ -452,36 +521,33 @@ export default function WaitingRequestsPage() {
                             <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
                                 <FilterPanel
                                     filterGroups={requestFilterGroups}
-                                    onApplyFilters={() => setShowFilters(false)}
-                                    onResetFilters={() => { }}
+                                    onApplyFilters={(filters) => {
+                                        Object.entries(filters).forEach(([key, value]) => {
+                                            handleFilterChange(key, value);
+                                        });
+                                        setShowFilters(false);
+                                    }}
+                                    onResetFilters={handleResetFilters}
                                     onClose={() => setShowFilters(false)}
                                     variant="sidebar"
                                 />
                             </div>
                         </div>
 
-                        {/* Quick Stats Cards (placeholder) */}
+                        {/* Quick Stats Cards */}
                         <div className="mb-8">
                             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
                                 <StatsCard
-                                    title="Açık Talepler"
-                                    value={requests.filter(r => r.status === 'OPEN').length}
-                                    icon={AlertCircle}
-                                    color="info"
-                                    loading={loading}
-                                    size="md"
-                                />
-                                <StatsCard
-                                    title="İşlemde"
-                                    value={requests.filter(r => r.status === 'IN_PROGRESS').length}
-                                    icon={RotateCcw}
+                                    title="Bekleyen Talepler"
+                                    value={requests.length}
+                                    icon={PauseCircle}
                                     color="warning"
                                     loading={loading}
                                     size="md"
                                 />
-
                             </div>
                         </div>
+                        
                         {/* Content Area */}
                         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                             {/* Main Content */}
@@ -498,13 +564,13 @@ export default function WaitingRequestsPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setPagination((prev) => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setPagination((prev) => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         ActionMenuComponent={RequestActionMenuWrapper}
                                         selectable={true}
                                         showPagination={true}
-                                        emptyStateMessage="Henüz hizmet talebi bulunmuyor."
+                                        emptyStateMessage="Henüz bekleyen hizmet talebi bulunmuyor."
                                     />
                                 )}
                                 {viewMode === 'grid' && (
@@ -519,10 +585,10 @@ export default function WaitingRequestsPage() {
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
                                             recordsPerPage: pagination.limit,
-                                            onPageChange: (page) => setPagination((prev) => ({ ...prev, page })),
-                                            onRecordsPerPageChange: (limit) => setPagination((prev) => ({ ...prev, limit, page: 1 })),
+                                            onPageChange: handlePageChange,
+                                            onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
-                                        emptyStateMessage="Henüz hizmet talebi bulunmuyor."
+                                        emptyStateMessage="Henüz bekleyen hizmet talebi bulunmuyor."
                                         ui={gridViewUI}
                                         ActionMenu={RequestActionMenuWrapper}
                                         renderCard={renderRequestCard}
@@ -543,6 +609,10 @@ export default function WaitingRequestsPage() {
                         open={detailModal.open}
                         onClose={() => setDetailModal({ open: false, item: null })}
                         item={detailModal.item}
+                        onActionComplete={() => {
+                            setDetailModal({ open: false, item: null });
+                            fetchRequests();
+                        }}
                     />
                 </div>
             </div>

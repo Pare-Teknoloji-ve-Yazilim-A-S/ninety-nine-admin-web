@@ -63,7 +63,7 @@ export interface TicketFilters {
   orderBy?: 'ASC' | 'DESC';
   search?: string;
   type?: string;
-  status?: string;
+  status?: string | string[];
 }
 
 export const ticketService = {
@@ -78,11 +78,11 @@ export const ticketService = {
   // Yeni ana endpoint - pagination ile
   async getTickets(filters: TicketFilters = {}): Promise<ApiResponse<TicketPaginationResponse>> {
     const params = new URLSearchParams();
-    
+
     // Pagination params
     if (filters.page) params.append('page', filters.page.toString());
     if (filters.limit) params.append('limit', filters.limit.toString());
-    
+
     // Filter params
     if (filters.priority) params.append('priority', filters.priority);
     if (filters.assigneeId) params.append('assigneeId', filters.assigneeId);
@@ -91,15 +91,21 @@ export const ticketService = {
     if (filters.filter) params.append('filter', filters.filter);
     if (filters.search) params.append('search', filters.search);
     if (filters.type) params.append('type', filters.type);
-    if (filters.status) params.append('status', filters.status);
-    
+    if (filters.status) {
+      if (Array.isArray(filters.status)) {
+        filters.status.forEach(status => params.append('status', status));
+      } else {
+        params.append('status', filters.status);
+      }
+    }
+
     // Order params
     if (filters.orderColumn) params.append('orderColumn', filters.orderColumn);
     if (filters.orderBy) params.append('orderBy', filters.orderBy);
-    
+
     const queryString = params.toString();
     const url = `/admin/tickets${queryString ? `?${queryString}` : ''}`;
-    
+
     const response: ApiResponse<TicketPaginationResponse> = await apiClient.get<TicketPaginationResponse>(url);
     return response;
   },
@@ -109,12 +115,12 @@ export const ticketService = {
     const response = await this.getTickets({ filter: 'open', limit: 100 });
     return response.data;
   },
-  
+
   async getTicketsByStatus(status: string): Promise<TicketPaginationResponse> {
     const response = await this.getTickets({ status, limit: 100 });
     return response.data;
   },
-  
+
   // --- Ticket Status Update Methods ---
   async startProgress(id: string): Promise<Ticket> {
     const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/start-progress`, {});
@@ -149,6 +155,33 @@ export const ticketService = {
   // --- Ticket Attachments ---
   async addAttachment(ticketId: string, data: CreateAttachmentRequest): Promise<any> {
     const response: ApiResponse<any> = await apiClient.post<any>(`/admin/tickets/${ticketId}/attachments`, data);
+    return response.data;
+  },
+
+  // --- Ticket Statistics ---
+  async getMonthlyStats(): Promise<{
+    currentMonthCount: number;
+    previousMonthCount: number;
+    percentageChange: number;
+    changeDirection: 'increase' | 'decrease';
+    currentMonthName: string;
+    previousMonthName: string;
+  }> {
+    const response: ApiResponse<{
+      currentMonthCount: number;
+      previousMonthCount: number;
+      percentageChange: number;
+      changeDirection: 'increase' | 'decrease';
+      currentMonthName: string;
+      previousMonthName: string;
+    }> = await apiClient.get<{
+      currentMonthCount: number;
+      previousMonthCount: number;
+      percentageChange: number;
+      changeDirection: 'increase' | 'decrease';
+      currentMonthName: string;
+      previousMonthName: string;
+    }>('/admin/tickets/monthly-stats');
     return response.data;
   },
 }; 
