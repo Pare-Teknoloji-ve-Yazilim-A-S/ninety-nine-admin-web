@@ -122,9 +122,9 @@ const menuItems: MenuItemProps[] = [
         title: 'Ayarlar',
         icon: Settings,
         children: [
-            { title: 'Site Bilgileri', icon: Info, href: '/dashboard/settings/site' },
-            { title: 'Kullanıcı Yönetimi', icon: Shield, href: '/dashboard/settings/users' },
-            { title: 'Sistem Ayarları', icon: Cog, href: '/dashboard/settings/system' }
+            { title: 'Site Bilgileri', icon: Info, href: '/settings/website-info' },
+            { title: 'Kullanıcı Yönetimi', icon: Shield, href: '/settings/user-management' },
+            { title: 'Sistem Ayarları', icon: Cog, href: '/settings/system-settings' }
         ]
     }
 ];
