@@ -146,6 +146,20 @@ class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
         }
     }
 
+    async getAdminStaffCount(): Promise<any> {
+        try {
+            this.logger.info('Fetching admin staff count');
+            const response = await apiClient.get(apiConfig.endpoints.admin.adminStaffCount);
+            this.logger.info('Admin staff count fetched successfully', {
+                count: response?.data || 0
+            });
+            return response; // apiClient.get already returns response.data
+        } catch (error) {
+            this.logger.error('Failed to fetch admin staff count', error);
+            throw error;
+        }
+    }
+
     async getUserById(id: string | number): Promise<ApiResponse<User>> {
         try {
             this.logger.info(`Fetching user with ID: ${id}`);

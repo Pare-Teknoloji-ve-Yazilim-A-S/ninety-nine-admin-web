@@ -71,6 +71,10 @@ export default function UserManagementPage() {
   const [pageSize] = useState(5); // Sayfa başına 5 item
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Total User Count State
+  const [totalUserCount, setTotalUserCount] = useState<number>(0);
+  const [userCountLoading, setUserCountLoading] = useState(true);
 
   // Debug state changes
   console.log('Current component state:', { adminStaff, pagination, loading, error });
@@ -112,9 +116,52 @@ export default function UserManagementPage() {
     }
   };
 
+  // Fetch total user count function
+  const fetchTotalUserCount = async () => {
+    try {
+      setUserCountLoading(true);
+      const response = await userService.getAdminStaffCount();
+      console.log('Total user count response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response || {}));
+      console.log('Response.data:', response?.data);
+      console.log('Response.data type:', typeof response?.data);
+      
+      // API'den gelen response'u kontrol et
+      let count = 0;
+      if (response && typeof response === 'object') {
+        // Eğer response.data sayı ise
+        if (typeof response.data === 'number') {
+          count = response.data;
+        }
+        // Eğer response.data object ise ve count property'si varsa
+        else if (response.data && typeof response.data === 'object' && 'count' in response.data) {
+          count = response.data.count;
+        }
+        // Eğer response direkt sayı ise
+        else if (typeof response === 'number') {
+          count = response;
+        }
+        // Eğer response'da count property'si varsa
+        else if ('count' in response) {
+          count = response.count;
+        }
+      }
+      
+      console.log('Final count value:', count);
+      setTotalUserCount(count);
+    } catch (error) {
+      console.error('Failed to fetch total user count:', error);
+      setTotalUserCount(0);
+    } finally {
+      setUserCountLoading(false);
+    }
+  };
+
   // Fetch admin staff on component mount
   useEffect(() => {
     fetchAdminStaff(currentPage);
+    fetchTotalUserCount();
   }, []);
 
   const handleSave = () => {
@@ -169,8 +216,13 @@ export default function UserManagementPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                 <h3 className="text-sm font-medium text-text-light-muted dark:text-text-muted">Toplam Kullanıcı</h3>
-                <p className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">1,247</p>
-                <p className="text-xs text-text-light-muted dark:text-text-muted">Geçen aydan +12%</p>
+                {userCountLoading ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-gold"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
+                    {Number(totalUserCount || 0).toLocaleString()}
+                  </p>
+                )}
               </div>
               <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                 <h3 className="text-sm font-medium text-text-light-muted dark:text-text-muted">Aktif Kullanıcılar</h3>
