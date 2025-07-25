@@ -39,14 +39,17 @@ import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from './RequestDetailModal';
 import CreateTicketModal from '@/app/dashboard/components/CreateTicketModal';
 import Portal from '@/app/components/ui/Portal';
+
 import { ApiResponse } from '@/services';
-import { 
-    createTicketFilterGroups, 
-    STATUS_CONFIG, 
-    TYPE_COLOR_MAP, 
+import {
+    createTicketFilterGroups,
+    STATUS_CONFIG,
+    TYPE_COLOR_MAP,
     FilterStateManager,
-    TicketFilters as RequestFilters 
+    TicketFilters as RequestFilters
 } from './constants';
+import { createRequestBulkActionHandlers } from './actions/bulk-actions';
+import { useRequestsActions } from './hooks/useRequestsActions';
 
 export default function RequestsListPage() {
     // UI State
@@ -55,11 +58,11 @@ export default function RequestsListPage() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedRequests, setSelectedRequests] = useState<any[]>([]);
-    
+
     // Filter State Management - SOLID: Single Responsibility
     const [filterManager] = useState(() => new FilterStateManager());
     const [activeFilters, setActiveFilters] = useState<RequestFilters>({});
-    
+
     // Data State
     const [requests, setRequests] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(false);
@@ -70,20 +73,24 @@ export default function RequestsListPage() {
         limit: 20,
         totalPages: 0
     });
-    
+
     // Detay modalı state
     const [detailModal, setDetailModal] = useState<{ open: boolean, item: Ticket | null }>({ open: false, item: null });
     // Yeni talep modalı state
     const [createTicketModal, setCreateTicketModal] = useState(false);
 
+
+
     // Memoize current filters to prevent unnecessary re-renders
     const currentFilters = useMemo(() => filterManager.getFilters(), [filterManager, activeFilters]);
+
+
 
     // Fetch tickets from API with pagination and filters - FIXED: Proper dependencies
     const fetchRequests = useCallback(async (customFilters: RequestFilters = {}) => {
         setLoading(true);
         setError(null);
-        
+
         const finalFilters: TicketFilters = {
             page: pagination.page,
             limit: pagination.limit,
@@ -94,7 +101,7 @@ export default function RequestsListPage() {
         };
 
         console.log(`🚀 API Call with filters:`, finalFilters);
-        
+
         try {
             const response: ApiResponse<TicketPaginationResponse> = await ticketService.getTickets(finalFilters);
             setRequests(response.data as unknown as Ticket[]);
@@ -117,6 +124,44 @@ export default function RequestsListPage() {
     useEffect(() => {
         fetchRequests();
     }, [pagination.page, pagination.limit, currentFilters]);
+
+    // Toast functions for bulk actions
+    const toastFunctions = {
+        success: useCallback((title: string, message: string) => {
+            console.log(`✓ ${title}: ${message}`);
+        }, []),
+        info: useCallback((title: string, message: string) => {
+            console.info(`${title}: ${message}`);
+        }, []),
+        error: useCallback((title: string, message: string) => {
+            console.error(`✗ ${title}: ${message}`);
+        }, [])
+    };
+
+    const dataUpdateFunctions = {
+        setRequests,
+        refreshData: fetchRequests
+    };
+
+    // Initialize bulk action handlers
+    const bulkActionHandlers = createRequestBulkActionHandlers(
+        toastFunctions,
+        dataUpdateFunctions,
+        selectedRequests
+    );
+
+    // Generate bulk actions configuration
+    const bulkActions = useMemo(() =>
+        bulkActionHandlers.getBulkActions(selectedRequests),
+        [selectedRequests, bulkActionHandlers]
+    );
+
+    // Initialize request actions hook
+    const requestActions = useRequestsActions({
+        refreshData: fetchRequests,
+        setSelectedRequests,
+        setRequests
+    });
 
     // Breadcrumb
     const breadcrumbItems = [
@@ -299,9 +344,38 @@ export default function RequestsListPage() {
         setDetailModal({ open: true, item: req });
     };
 
+    // Unified action handler for request actions
+    const handleRequestAction = useCallback(async (action: string, request: Ticket) => {
+        switch (action) {
+            case 'view':
+                handleViewDetail(request);
+                break;
+            case 'edit':
+                requestActions.handleEditRequest(request);
+                break;
+            case 'delete':
+                await requestActions.handleDeleteRequest(request);
+                break;
+            case 'start-progress':
+                await requestActions.handleUpdateRequestStatus(request, 'start-progress');
+                break;
+            case 'resolve':
+                await requestActions.handleUpdateRequestStatus(request, 'resolve');
+                break;
+            case 'close':
+                await requestActions.handleUpdateRequestStatus(request, 'close');
+                break;
+            case 'cancel':
+                await requestActions.handleUpdateRequestStatus(request, 'cancel');
+                break;
+            default:
+                console.warn('Unknown action:', action);
+        }
+    }, [requestActions, handleViewDetail]);
+
     const RequestActionMenuWrapper: React.FC<{ row: any }> = ({ row }) => (
         <RequestActionMenu req={row} onAction={(action, req) => {
-            if (action === 'view') handleViewDetail(req);
+            handleRequestAction(action, req);
         }} />
     );
 
@@ -393,12 +467,12 @@ export default function RequestsListPage() {
     const handleSearchInputChange = useCallback((value: string) => {
         setSearchInput(value);
     }, []);
-    
+
     const handleSearchSubmit = useCallback((value: string) => {
         console.log(`🔍 Search submitted: "${value}"`);
         setSearchInput(value);
         filterManager.setFilter('search', value);
-        
+
         // Batch state updates to prevent multiple re-renders
         React.startTransition(() => {
             setActiveFilters(filterManager.getFilters());
@@ -410,6 +484,8 @@ export default function RequestsListPage() {
     const handleRefresh = useCallback(() => {
         fetchRequests();
     }, [fetchRequests]);
+
+
 
     // Table columns (API'den gelen Ticket yapısına göre)
     const tableColumns = useMemo(() => getTableColumns(), []);
@@ -519,7 +595,7 @@ export default function RequestsListPage() {
                                 </div>
                             </div>
                         </Card>
-                        
+
                         {/* Filter Sidebar (Drawer) */}
                         <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                             {/* Backdrop */}
@@ -577,6 +653,7 @@ export default function RequestsListPage() {
                                         error={error}
                                         columns={tableColumns}
                                         onSelectionChange={handleListSelectionChange}
+                                        bulkActions={bulkActions}
                                         pagination={{
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
@@ -598,6 +675,7 @@ export default function RequestsListPage() {
                                         error={error}
                                         onSelectionChange={handleGridSelectionChange}
                                         selectedItems={selectedRequests.map(r => r.id)}
+                                        bulkActions={bulkActions}
                                         pagination={{
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
@@ -612,7 +690,7 @@ export default function RequestsListPage() {
                                         renderCard={renderRequestCard}
                                         getItemId={getRequestId}
                                         selectable={true}
-                                        showBulkActions={false}
+                                        showBulkActions={true}
                                         showPagination={true}
                                         showSelectAll={true}
                                         loadingCardCount={6}
@@ -642,6 +720,8 @@ export default function RequestsListPage() {
                             fetchRequests(); // Sayfayı yenile
                         }}
                     />
+
+
                 </div>
             </div>
         </ProtectedRoute>
