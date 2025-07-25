@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
@@ -185,7 +185,8 @@ export default function ResidentsPage() {
     const bulkActionHandlers = createBulkActionHandlers(
         toastFunctions,
         messageState,
-        setMessageState
+        setMessageState,
+        dataUpdateFunctions
     );
     const residentActionHandlers = createResidentActionHandlers(
         toastFunctions,
@@ -194,8 +195,11 @@ export default function ResidentsPage() {
     );
     const exportActionHandlers = createExportActionHandlers(toastFunctions);
 
-    // Generate configuration data
-    const bulkActions = bulkActionHandlers.getBulkActions();
+    // Generate configuration data - regenerate when selected residents change
+    const bulkActions = useMemo(() => 
+        bulkActionHandlers.getBulkActions(filtersHook.selectedResidents),
+        [filtersHook.selectedResidents, bulkActionHandlers]
+    );
 
     // Create wrapper for table actions that uses modal for delete
     const tableActionHandlers = {

@@ -43,7 +43,7 @@ export interface BulkAction {
     id: string;
     label: string;
     icon: LucideIcon;
-    onClick: (residents: Resident[]) => void;
+    onClick: (residents: Resident[]) => void | Promise<void>;
     variant?: 'danger' | 'warning' | 'success' | 'default';
 }
 
