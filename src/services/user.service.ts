@@ -136,12 +136,20 @@ class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
             return response;
         } catch (error) {
             this.logger.error('Failed to fetch admin staff', error);
-            this.logger.error('Error details:', {
-                message: error.message,
-                status: error.response?.status,
-                data: error.response?.data,
-                url: error.config?.url
-            });
+            
+            // Type-safe error handling
+            const errorDetails: any = {};
+            if (error instanceof Error) {
+                errorDetails.message = error.message;
+            }
+            if (error && typeof error === 'object' && 'response' in error) {
+                const axiosError = error as any;
+                errorDetails.status = axiosError.response?.status;
+                errorDetails.data = axiosError.response?.data;
+                errorDetails.url = axiosError.config?.url;
+            }
+            
+            this.logger.error('Error details:', errorDetails);
             throw error;
         }
     }
@@ -156,6 +164,20 @@ class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
             return response; // apiClient.get already returns response.data
         } catch (error) {
             this.logger.error('Failed to fetch admin staff count', error);
+            
+            // Type-safe error handling
+            const errorDetails: any = {};
+            if (error instanceof Error) {
+                errorDetails.message = error.message;
+            }
+            if (error && typeof error === 'object' && 'response' in error) {
+                const axiosError = error as any;
+                errorDetails.status = axiosError.response?.status;
+                errorDetails.data = axiosError.response?.data;
+                errorDetails.url = axiosError.config?.url;
+            }
+            
+            this.logger.error('Error details:', errorDetails);
             throw error;
         }
     }
