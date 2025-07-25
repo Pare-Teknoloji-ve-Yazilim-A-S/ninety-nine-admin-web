@@ -73,7 +73,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         }
 
         debounceRef.current = setTimeout(() => {
-            if (onSearch && currentValue) {
+            if (onSearch) {
                 onSearch(currentValue);
             }
         }, debounceMs);

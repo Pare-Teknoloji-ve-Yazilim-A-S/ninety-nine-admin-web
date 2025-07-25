@@ -69,26 +69,13 @@ const residentFilterGroups = [
     {
         id: 'type',
         label: 'Sakin Tipi',
-        type: 'radio' as const,
+        type: 'multiselect' as const,
         icon: Users,
         options: [
-            { id: 'owner', label: 'Malik', value: 'owner' },
+            { id: 'owner', label: 'Malik', value: 'resident' },
             { id: 'tenant', label: 'Kiracı', value: 'tenant' },
             { id: 'guest', label: 'Misafir', value: 'guest' },
         ],
-    },
- 
-    {
-        id: 'debt',
-        label: 'Borç Miktarı',
-        type: 'numberrange' as const,
-        icon: DollarSign,
-    },
-    {
-        id: 'registrationDate',
-        label: 'Kayıt Tarihi',
-        type: 'daterange' as const,
-        icon: Calendar,
     },
 ];
 
