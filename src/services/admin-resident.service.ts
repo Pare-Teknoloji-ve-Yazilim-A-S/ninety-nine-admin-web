@@ -191,18 +191,23 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
     /**
      * Bulk approve residents
      */
-    async bulkApproveResidents(residentIds: string[], data?: {
-        reason?: string;
-        assignedRole?: string;
-        initialMembershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
-    }): Promise<ApiResponse<BulkActionResponse>> {
+    async bulkApproveResidents(
+        residentIds: string[],
+        data: {
+            reason?: string;
+            assignedRole?: string;
+            initialMembershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
+        }
+    ): Promise<ApiResponse<BulkActionResponse>> {
         try {
             this.logger.info(`Bulk approving ${residentIds.length} residents`);
 
             const bulkData: BulkActionDto = {
-                action: 'APPROVE',
-                residentIds,
-                data,
+                action: 'approve',
+                userIds: residentIds,
+                reason: data.reason,
+                assignedRole: data.assignedRole as 'admin' | 'resident' | 'tenant',
+                membershipTier: data.initialMembershipTier,
             };
 
             return await this.bulkAction(bulkData);

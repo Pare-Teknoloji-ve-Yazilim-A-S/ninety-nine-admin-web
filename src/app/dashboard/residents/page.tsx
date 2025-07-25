@@ -126,6 +126,17 @@ export default function ResidentsPage() {
         loading: false
     });
 
+    // Add bulk delete modal state
+    const [bulkDeleteState, setBulkDeleteState] = useState<{
+        isOpen: boolean;
+        residents: Resident[];
+        loading: boolean;
+    }>({
+        isOpen: false,
+        residents: [],
+        loading: false
+    });
+
     // Ödeme geçmişi modalı için state
     const [paymentHistoryModal, setPaymentHistoryModal] = useState<{
         isOpen: boolean;
@@ -186,7 +197,9 @@ export default function ResidentsPage() {
         toastFunctions,
         messageState,
         setMessageState,
-        dataUpdateFunctions
+        dataUpdateFunctions,
+        bulkDeleteState,
+        setBulkDeleteState
     );
     const residentActionHandlers = createResidentActionHandlers(
         toastFunctions,
@@ -229,6 +242,11 @@ export default function ResidentsPage() {
             setConfirmationState(prev => ({ ...prev, loading: false }));
         }
     }, [confirmationState.resident, residentActionHandlers]);
+
+    // Handle bulk delete confirmation
+    const handleBulkDeleteConfirmation = useCallback(async () => {
+        await bulkActionHandlers.executeBulkDelete();
+    }, [bulkActionHandlers]);
 
     // Create unified action handler for view components
     const handleResidentAction = useCallback(async (action: string, resident: Resident) => {
@@ -870,6 +888,19 @@ export default function ResidentsPage() {
                     loading={confirmationState.loading}
                     itemName={confirmationState.resident?.fullName}
                     itemType="sakin"
+                />
+
+                {/* Bulk Delete Confirmation Modal */}
+                <ConfirmationModal
+                    isOpen={bulkDeleteState.isOpen}
+                    onClose={() => setBulkDeleteState({ isOpen: false, residents: [], loading: false })}
+                    onConfirm={handleBulkDeleteConfirmation}
+                    title="Toplu Silme İşlemi"
+                    description={`${bulkDeleteState.residents.length} sakin kalıcı olarak silinecektir. Bu işlem geri alınamaz.`}
+                    confirmText="Hepsini Sil"
+                    variant="danger"
+                    loading={bulkDeleteState.loading}
+                    itemType="sakinler"
                 />
 
                 {/* Payment History Modal */}
