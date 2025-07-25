@@ -89,6 +89,29 @@ export default function UnitsListPage() {
     // Add this inside the component
     const { residentCount, villaCount, availableCount, loading: countsLoading, error: countsError } = useUnitCounts();
 
+    // Filter processing utility - NEW
+    // This function removes empty values from filters to prevent sending unnecessary parameters to API
+    // When "Tümü" is selected (empty string), the filter is excluded entirely
+    const processFilters = useCallback((filterParams: PropertyFilterParams) => {
+        const processed = { ...filterParams };
+
+        // Remove empty, undefined, or null values
+        Object.keys(processed).forEach(key => {
+            const value = processed[key as keyof PropertyFilterParams];
+            if (value === '' || value === undefined || value === null) {
+                delete processed[key as keyof PropertyFilterParams];
+            }
+        });
+
+        // Always keep pagination and ordering parameters
+        if (!processed.page) processed.page = 1;
+        if (!processed.limit) processed.limit = 10;
+        if (!processed.orderColumn) processed.orderColumn = 'name';
+        if (!processed.orderBy) processed.orderBy = 'ASC';
+
+        return processed;
+    }, []);
+
     // Memoize current filters to prevent unnecessary re-renders
     const currentFilters = useMemo(() => {
         console.log('🔄 Filters memoization updated:', filters);
@@ -100,8 +123,12 @@ export default function UnitsListPage() {
         try {
             setLoading(true);
             setError(null);
-            console.log('🚀 Loading properties with filters:', currentFilters);
-            const response = await unitsService.getAllUnits(currentFilters);
+
+            // Process filters before API call - NEW
+            const processedFilters = processFilters(currentFilters);
+            console.log('🚀 Loading properties with processed filters:', processedFilters);
+
+            const response = await unitsService.getAllUnits(processedFilters);
             console.log('📊 API Response - Pagination:', response.pagination);
             console.log('📊 API Response - Data count:', response.data.length);
             setProperties(response.data);
@@ -113,7 +140,7 @@ export default function UnitsListPage() {
         } finally {
             setLoading(false);
         }
-    }, [currentFilters]);
+    }, [currentFilters, processFilters]);
 
     // FIXED: Proper dependency management
     useEffect(() => {
@@ -358,17 +385,17 @@ export default function UnitsListPage() {
         );
     });
 
-    const UnitActionMenuWrapper: React.FC<{ row: Property }> = useMemo(() => 
+    const UnitActionMenuWrapper: React.FC<{ row: Property }> = useMemo(() =>
         ({ row }) => <UnitActionMenu unit={row} onAction={handleUnitAction} />
-    , [handleUnitAction]);
+        , [handleUnitAction]);
 
     // Unit card renderer for grid view - MEMOIZED
     const renderUnitCard = useCallback((unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Property }>) => {
         if (!unit) return null;
-        
+
         const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
         if (!statusInfo) return null;
-        
+
         const StatusIcon = statusInfo.icon;
         const typeInfo = unit?.type ? unitsService.getTypeInfo(unit.type) : { label: 'N/A' };
         const currentResident = unit?.tenant || unit?.owner;
@@ -454,7 +481,7 @@ export default function UnitsListPage() {
     const handleSearchSubmit = useCallback((value: string) => {
         console.log(`🔍 Search submitted: "${value}"`);
         setSearchInput(value);
-        
+
         // Batch state updates to prevent multiple re-renders
         React.startTransition(() => {
             setFilters(prev => ({ ...prev, search: value, page: 1 }));
@@ -492,7 +519,17 @@ export default function UnitsListPage() {
     // Filter handlers - FIXED
     const handleApplyFilters = useCallback((newFilters: any) => {
         React.startTransition(() => {
-            setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
+            // Process new filters to remove empty values - NEW
+            // This ensures "Tümü" selections (empty strings) are excluded from filter state
+            const processedNewFilters = Object.keys(newFilters).reduce((acc, key) => {
+                const value = newFilters[key];
+                if (value !== '' && value !== undefined && value !== null) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {} as any);
+
+            setFilters(prev => ({ ...prev, ...processedNewFilters, page: 1 }));
             setShowFilters(false);
         });
     }, []);
@@ -518,7 +555,7 @@ export default function UnitsListPage() {
             label: 'Konut Tipi',
             type: 'select' as const,
             options: [
-                { id: 'all', label: 'Tümü', value: '' },
+
                 { id: 'RESIDENCE', label: 'Daire', value: 'RESIDENCE' },
                 { id: 'VILLA', label: 'Villa', value: 'VILLA' },
                 { id: 'COMMERCIAL', label: 'Ticari', value: 'COMMERCIAL' },
@@ -529,7 +566,7 @@ export default function UnitsListPage() {
             label: 'Durum',
             type: 'select' as const,
             options: [
-                { id: 'all', label: 'Tümü', value: '' },
+
                 { id: 'OCCUPIED', label: 'Dolu', value: 'OCCUPIED' },
                 { id: 'AVAILABLE', label: 'Boş', value: 'AVAILABLE' },
                 { id: 'UNDER_MAINTENANCE', label: 'Bakımda', value: 'UNDER_MAINTENANCE' },
@@ -541,7 +578,7 @@ export default function UnitsListPage() {
             label: 'Blok',
             type: 'select' as const,
             options: [
-                { id: 'all', label: 'Tümü', value: '' },
+
                 { id: 'A', label: 'A Blok', value: 'A' },
                 { id: 'B', label: 'B Blok', value: 'B' },
                 { id: 'C', label: 'C Blok', value: 'C' },
@@ -554,7 +591,7 @@ export default function UnitsListPage() {
             label: 'Oda Sayısı',
             type: 'select' as const,
             options: [
-                { id: 'all', label: 'Tümü', value: '' },
+
                 { id: '1+1', label: '1+1', value: '1+1' },
                 { id: '2+1', label: '2+1', value: '2+1' },
                 { id: '3+1', label: '3+1', value: '3+1' },
@@ -566,7 +603,7 @@ export default function UnitsListPage() {
             label: 'Borç Durumu',
             type: 'select' as const,
             options: [
-                { id: 'all', label: 'Tümü', value: '' },
+
                 { id: 'clean', label: 'Temiz Hesap', value: 'clean' },
                 { id: 'indebted', label: 'Borçlu', value: 'indebted' },
             ],
@@ -633,9 +670,9 @@ export default function UnitsListPage() {
                                 />
                                 */}
                                 <Link href="/dashboard/units/add">
-                                  <Button variant="primary" size="md" icon={Plus}>
-                                    Yeni Konut
-                                  </Button>
+                                    <Button variant="primary" size="md" icon={Plus}>
+                                        Yeni Konut
+                                    </Button>
                                 </Link>
                             </div>
                         </div>
@@ -679,9 +716,9 @@ export default function UnitsListPage() {
                                 </div>
                             </div>
                         </Card>
-                        
+
                         {/* Filter Sidebar (Drawer) */}
-                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}> 
+                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                             {/* Backdrop */}
                             <div
                                 className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'}`}

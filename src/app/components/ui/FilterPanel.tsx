@@ -140,13 +140,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     );
 
                 case 'select':
-                    const selectOptions = [
-                        { value: '', label: 'Tümü' },
-                        ...(group.options?.map((option) => ({
-                            value: option.value,
-                            label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
-                        })) || [])
-                    ];
+                    const selectOptions = group.options?.map((option) => ({
+                        value: option.value,
+                        label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
+                    })) || [];
                     
                     return (
                         <Select
@@ -195,13 +192,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             name={group.id}
                             value={currentValue}
                             onChange={(e) => updateFilter(group.id, e.target.value)}
-                            options={[
-                                { value: '', label: 'Tümü' },
-                                ...(group.options?.map(option => ({
-                                    value: option.value,
-                                    label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
-                                })) || [])
-                            ]}
+                            options={group.options?.map(option => ({
+                                value: option.value,
+                                label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
+                            })) || []}
                             radioSize="sm"
                             direction="vertical"
                         />
