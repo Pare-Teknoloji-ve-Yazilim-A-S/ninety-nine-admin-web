@@ -69,7 +69,7 @@ export default function UnitsListPage() {
         type: undefined,
         status: undefined,
         page: 1,
-        limit: 20,
+        limit: 10,
         orderColumn: 'name',
         orderBy: 'ASC'
     });
@@ -82,7 +82,7 @@ export default function UnitsListPage() {
     const [pagination, setPagination] = useState({
         total: 0,
         page: 1,
-        limit: 20,
+        limit: 10,
         totalPages: 0
     });
 
@@ -90,20 +90,24 @@ export default function UnitsListPage() {
     const { residentCount, villaCount, availableCount, loading: countsLoading, error: countsError } = useUnitCounts();
 
     // Memoize current filters to prevent unnecessary re-renders
-    const currentFilters = useMemo(() => filters, [filters]);
+    const currentFilters = useMemo(() => {
+        console.log('🔄 Filters memoization updated:', filters);
+        return filters;
+    }, [filters]);
 
     // FIXED: Proper async/await and dependencies
     const loadProperties = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
-            console.log('Loading properties with filters:', currentFilters);
+            console.log('🚀 Loading properties with filters:', currentFilters);
             const response = await unitsService.getAllUnits(currentFilters);
-            console.log('API Pagination:', response.pagination);
+            console.log('📊 API Response - Pagination:', response.pagination);
+            console.log('📊 API Response - Data count:', response.data.length);
             setProperties(response.data);
             setPagination(response.pagination);
         } catch (err: any) {
-            console.error('Failed to load properties:', err);
+            console.error('❌ Failed to load properties:', err);
             setError('Konutlar yüklenirken bir hata oluştu');
             setProperties([]);
         } finally {
@@ -113,6 +117,7 @@ export default function UnitsListPage() {
 
     // FIXED: Proper dependency management
     useEffect(() => {
+        console.log('⚡ useEffect triggered - loadProperties dependency changed');
         loadProperties();
     }, [loadProperties]);
 
@@ -480,6 +485,7 @@ export default function UnitsListPage() {
     }, []);
 
     const handleRecordsPerPageChange = useCallback((limit: number) => {
+        console.log('🔄 Records per page changed:', limit);
         setFilters(prev => ({ ...prev, limit, page: 1 }));
     }, []);
 
@@ -745,7 +751,7 @@ export default function UnitsListPage() {
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
-                                            recordsPerPage: pagination.limit,
+                                            recordsPerPage: filters.limit || 10,
                                             onPageChange: handlePageChange,
                                             onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
@@ -768,7 +774,7 @@ export default function UnitsListPage() {
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
-                                            recordsPerPage: pagination.limit,
+                                            recordsPerPage: filters.limit || 10,
                                             onPageChange: handlePageChange,
                                             onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
