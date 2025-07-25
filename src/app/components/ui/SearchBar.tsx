@@ -73,7 +73,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         }
 
         debounceRef.current = setTimeout(() => {
-            if (onSearch && currentValue) {
+            if (onSearch) {
                 onSearch(currentValue);
             }
         }, debounceMs);
@@ -116,6 +116,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
         setShowSuggestions(false);
         setFocusedSuggestionIndex(-1);
+        
+        // Clear debounce timer to prevent old search from executing
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+        
+        // Immediately trigger search with empty value to clear results
+        onSearch?.(newValue);
         onClear?.();
         inputRef.current?.focus();
     };

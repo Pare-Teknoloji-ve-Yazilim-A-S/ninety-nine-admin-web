@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -15,6 +15,7 @@ import ResidentGridTemplate from '@/app/components/templates/GridList';
 import TablePagination from '@/app/components/ui/TablePagination';
 import EmptyState from '@/app/components/ui/EmptyState';
 import Skeleton from '@/app/components/ui/Skeleton';
+import { DocumentViewer } from '@/app/components/ui/DocumentViewer';
 import {
     RefreshCw,
     AlertTriangle,
@@ -99,6 +100,12 @@ export default function PendingApprovalsPage() {
     const [approvalLoading, setApprovalLoading] = useState(false);
     const [approvalError, setApprovalError] = useState<string | null>(null);
     const [showRejectModal, setShowRejectModal] = useState(false);
+    
+    // Document states
+    const [nationalIdImage, setNationalIdImage] = useState<string | null>(null);
+    const [ownershipImage, setOwnershipImage] = useState<string | null>(null);
+    const [documentsLoading, setDocumentsLoading] = useState(false);
+    const [documentsError, setDocumentsError] = useState<string | null>(null);
 
     // API'den veri çek
     const { residents, loading, error, refresh } = usePendingResidents();
@@ -200,6 +207,46 @@ export default function PendingApprovalsPage() {
             setApprovalLoading(false);
         }
     };
+    // Load documents for selected resident
+    const loadDocuments = async (residentId: string) => {
+        setDocumentsLoading(true);
+        setDocumentsError(null);
+        setNationalIdImage(null);
+        setOwnershipImage(null);
+        
+        try {
+            // Load both documents in parallel
+            const [nationalIdResponse, ownershipResponse] = await Promise.allSettled([
+                adminResidentService.getNationalIdDocument(residentId),
+                adminResidentService.getOwnershipDocument(residentId)
+            ]);
+            
+            // Handle national ID document
+            if (
+                nationalIdResponse.status === 'fulfilled' &&
+                nationalIdResponse.value?.data &&
+                nationalIdResponse.value.data.staticUrl
+            ) {
+                setNationalIdImage(nationalIdResponse.value.data.staticUrl);
+            }
+            
+            // Handle ownership document
+            if (
+                ownershipResponse.status === 'fulfilled' &&
+                ownershipResponse.value?.data &&
+                ownershipResponse.value.data.staticUrl
+            ) {
+                setOwnershipImage(ownershipResponse.value.data.staticUrl);
+            }
+            
+        } catch (error: any) {
+            setDocumentsError(error?.message || 'Belgeler yüklenirken hata oluştu');
+            showErrorToast('Belge Yükleme Hatası', error?.message || 'Belgeler yüklenirken hata oluştu');
+        } finally {
+            setDocumentsLoading(false);
+        }
+    };
+
     // Action handler
     const handleGridAction = (action: string, resident: any) => {
         if (action === 'approve') {
@@ -213,6 +260,8 @@ export default function PendingApprovalsPage() {
         } else if (action === 'view') {
             setSelectedApplication(resident);
             setShowDetailModal(true);
+            // Load documents when modal opens
+            loadDocuments(String(resident.id));
         }
     };
     // Pagination dummy (isteğe göre gerçek pagination eklenebilir)
@@ -305,6 +354,14 @@ export default function PendingApprovalsPage() {
             </Button>
         </div>
     );
+
+    // Load documents when detail modal opens or selectedApplication changes
+    useEffect(() => {
+        if (showDetailModal && selectedApplication?.id) {
+            loadDocuments(String(selectedApplication.id));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showDetailModal, selectedApplication?.id]);
 
     return (
         <ProtectedRoute>
@@ -491,76 +548,149 @@ export default function PendingApprovalsPage() {
             {/* İncele Modal */}
             <Modal
                 isOpen={showDetailModal}
-                onClose={() => setShowDetailModal(false)}
+                onClose={() => {
+                    setShowDetailModal(false);
+                    setNationalIdImage(null);
+                    setOwnershipImage(null);
+                    setDocumentsError(null);
+                }}
                 title="Başvuru İncele"
-                size="md"
+                size="xl"
             >
                 {selectedApplication && (
-                    <div className="space-y-6">
-                        {/* Header: İsim ve Membership Tier */}
-                        <div className="flex items-center gap-4">
-                            <div className="flex-shrink-0 bg-primary-gold-light/30 dark:bg-primary-gold/20 rounded-xl p-3">
-                                <User className="w-8 h-8 text-primary-gold" />
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
-                                    {selectedApplication.firstName} {selectedApplication.lastName}
-                                </h3>
-                                {/* Membership Tier Badge */}
-                                {selectedApplication.membershipTier && (
-                                    <Badge variant="soft" color="gold" className="text-xs font-medium">
-                                        {selectedApplication.membershipTier}
-                                    </Badge>
-                                )}
-                            </div>
-                        </div>
-                        {/* Bilgi Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {/* Sol Sütun */}
-                            <div className="space-y-4">
-                                {/* Bina Bilgisi */}
-                                <div className="flex items-center gap-3">
-                                    <Home className="w-5 h-5 text-primary-gold" />
-                                    <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                        {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
-                                    </span>
+                    <div className="relative">
+                        {/* Scrollable Content */}
+                        <div className="overflow-y-auto max-h-[60vh] pr-2 pb-32 space-y-8">
+                            {/* Header: İsim ve Membership Tier */}
+                            <div className="flex items-center gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
+                                <div className="flex-shrink-0 bg-primary-gold-light/30 dark:bg-primary-gold/20 rounded-xl p-3">
+                                    <User className="w-8 h-8 text-primary-gold" />
                                 </div>
-                                {/* Başvuru Tarihi */}
-                                {selectedApplication.createdAt && (
-                                    <div className="flex items-center gap-3">
-                                        <Calendar className="w-5 h-5 text-primary-gold" />
-                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                            {new Date(selectedApplication.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                        </span>
-                                    </div>
-                                )}
+                                <div>
+                                    <h3 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
+                                        {selectedApplication.firstName} {selectedApplication.lastName}
+                                    </h3>
+                                    {/* Membership Tier Badge */}
+                                    {selectedApplication.membershipTier && (
+                                        <Badge variant="soft" color="gold" className="text-xs font-medium">
+                                            {selectedApplication.membershipTier}
+                                        </Badge>
+                                    )}
+                                </div>
                             </div>
-                            {/* Sağ Sütun */}
-                            <div className="space-y-4">
-                                {/* Telefon */}
-                                {(selectedApplication.contact?.phone || selectedApplication.phone) && (
+
+                            {/* Bilgi Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                {/* Sol Sütun */}
+                                <div className="space-y-4">
+                                    {/* Bina Bilgisi */}
                                     <div className="flex items-center gap-3">
-                                        <Phone className="w-5 h-5 text-primary-gold" />
+                                        <Home className="w-5 h-5 text-primary-gold" />
                                         <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                            {selectedApplication.contact?.phone || selectedApplication.phone}
+                                            {selectedApplication.address?.block || selectedApplication.block} Blok, Daire {selectedApplication.address?.apartment || selectedApplication.apartment}
                                         </span>
                                     </div>
-                                )}
-                                {/* E-posta */}
-                                {(selectedApplication.contact?.email || selectedApplication.email) && (
-                                    <div className="flex items-center gap-3">
-                                        <Mail className="w-5 h-5 text-primary-gold" />
-                                        <span className="text-sm text-text-on-light dark:text-text-on-dark">
-                                            {selectedApplication.contact?.email || selectedApplication.email}
-                                        </span>
+                                    {/* Başvuru Tarihi */}
+                                    {selectedApplication.createdAt && (
+                                        <div className="flex items-center gap-3">
+                                            <Calendar className="w-5 h-5 text-primary-gold" />
+                                            <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                                {new Date(selectedApplication.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Sağ Sütun */}
+                                <div className="space-y-4">
+                                    {/* Telefon */}
+                                    {(selectedApplication.contact?.phone || selectedApplication.phone) && (
+                                        <div className="flex items-center gap-3">
+                                            <Phone className="w-5 h-5 text-primary-gold" />
+                                            <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                                {selectedApplication.contact?.phone || selectedApplication.phone}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {/* E-posta */}
+                                    {(selectedApplication.contact?.email || selectedApplication.email) && (
+                                        <div className="flex items-center gap-3">
+                                            <Mail className="w-5 h-5 text-primary-gold" />
+                                            <span className="text-sm text-text-on-light dark:text-text-on-dark">
+                                                {selectedApplication.contact?.email || selectedApplication.email}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Belgeler Bölümü */}
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <h4 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
+                                    Başvuru Belgeleri
+                                </h4>
+                                
+                                {documentsError && (
+                                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <AlertTriangle className="w-5 h-5 text-red-500" />
+                                            <span className="text-red-700 dark:text-red-300 text-sm">{documentsError}</span>
+                                        </div>
                                     </div>
                                 )}
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    {/* Kimlik Belgesi */}
+                                    <DocumentViewer
+                                        title="Kimlik Belgesi"
+                                        imageUrl={nationalIdImage || undefined}
+                                        alt="Kimlik belgesi"
+                                        loading={documentsLoading}
+                                        error={!nationalIdImage && !documentsLoading}
+                                        onRetry={() => loadDocuments(String(selectedApplication.id))}
+                                    />
+
+                                    {/* Tapu Belgesi */}
+                                    <DocumentViewer
+                                        title="Tapu/Mülkiyet Belgesi"
+                                        imageUrl={ownershipImage || undefined}
+                                        alt="Tapu belgesi"
+                                        loading={documentsLoading}
+                                        error={!ownershipImage && !documentsLoading}
+                                        onRetry={() => loadDocuments(String(selectedApplication.id))}
+                                    />
+                                </div>
                             </div>
                         </div>
-                        {/* Diğer Bilgiler veya Açıklama Alanı */}
-                        {/* Buraya ek bilgi veya açıklama eklenebilir */}
-                        <div className="flex justify-end gap-3">
-                            <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+                        {/* Sticky Modal Actions */}
+                        <div className="absolute left-0 bottom-0 w-full bg-background-light-card dark:bg-background-card border-t border-gray-200 dark:border-gray-700 py-4 px-6 flex justify-between items-center z-10">
+                            <div className="flex gap-3">
+                                <Button 
+                                    variant="primary" 
+                                    icon={Check}
+                                    onClick={() => {
+                                        setShowDetailModal(false);
+                                        setShowApprovalModal(true);
+                                    }}
+                                >
+                                    Onayla
+                                </Button>
+                                <Button 
+                                    variant="danger" 
+                                    icon={X}
+                                    onClick={() => {
+                                        setShowDetailModal(false);
+                                        setShowRejectModal(true);
+                                    }}
+                                >
+                                    Reddet
+                                </Button>
+                            </div>
+                            <Button variant="secondary" onClick={() => {
+                                setShowDetailModal(false);
+                                setNationalIdImage(null);
+                                setOwnershipImage(null);
+                                setDocumentsError(null);
+                            }}>
                                 Kapat
                             </Button>
                         </div>

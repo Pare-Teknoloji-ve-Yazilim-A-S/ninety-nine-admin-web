@@ -191,18 +191,23 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
     /**
      * Bulk approve residents
      */
-    async bulkApproveResidents(residentIds: string[], data?: {
-        reason?: string;
-        assignedRole?: string;
-        initialMembershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
-    }): Promise<ApiResponse<BulkActionResponse>> {
+    async bulkApproveResidents(
+        residentIds: string[],
+        data: {
+            reason?: string;
+            assignedRole?: string;
+            initialMembershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
+        }
+    ): Promise<ApiResponse<BulkActionResponse>> {
         try {
             this.logger.info(`Bulk approving ${residentIds.length} residents`);
 
             const bulkData: BulkActionDto = {
-                action: 'APPROVE',
-                residentIds,
-                data,
+                action: 'approve',
+                userIds: residentIds,
+                reason: data.reason,
+                assignedRole: data.assignedRole as 'admin' | 'resident' | 'tenant',
+                membershipTier: data.initialMembershipTier,
             };
 
             return await this.bulkAction(bulkData);
@@ -322,6 +327,48 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
             return response;
         } catch (error) {
             this.logger.error('Failed to fetch resident statistics', error);
+            throw error;
+        }
+    }
+
+    // === DOCUMENT MANAGEMENT === //
+
+    /**
+     * Get resident's national ID document
+     * GET /admin/users/{id}/documents/national_id
+     */
+    async getNationalIdDocument(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching national ID document for resident ID: ${id}`);
+
+            const response = await apiClient.get<any>(
+                apiConfig.endpoints.residents.admin.nationalIdDocument(id)
+            );
+
+            this.logger.info('National ID document fetched successfully');
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch national ID document', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get resident's ownership document
+     * GET /admin/users/{id}/documents/ownership_document
+     */
+    async getOwnershipDocument(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching ownership document for resident ID: ${id}`);
+
+            const response = await apiClient.get<any>(
+                apiConfig.endpoints.residents.admin.ownershipDocument(id)
+            );
+
+            this.logger.info('Ownership document fetched successfully');
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch ownership document', error);
             throw error;
         }
     }

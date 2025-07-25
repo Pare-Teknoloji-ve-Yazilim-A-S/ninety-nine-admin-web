@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
@@ -69,26 +69,13 @@ const residentFilterGroups = [
     {
         id: 'type',
         label: 'Sakin Tipi',
-        type: 'radio' as const,
+        type: 'multiselect' as const,
         icon: Users,
         options: [
-            { id: 'owner', label: 'Malik', value: 'owner' },
+            { id: 'owner', label: 'Malik', value: 'resident' },
             { id: 'tenant', label: 'Kiracı', value: 'tenant' },
             { id: 'guest', label: 'Misafir', value: 'guest' },
         ],
-    },
- 
-    {
-        id: 'debt',
-        label: 'Borç Miktarı',
-        type: 'numberrange' as const,
-        icon: DollarSign,
-    },
-    {
-        id: 'registrationDate',
-        label: 'Kayıt Tarihi',
-        type: 'daterange' as const,
-        icon: Calendar,
     },
 ];
 
@@ -123,6 +110,17 @@ export default function ResidentsPage() {
     }>({
         isOpen: false,
         resident: null,
+        loading: false
+    });
+
+    // Add bulk delete modal state
+    const [bulkDeleteState, setBulkDeleteState] = useState<{
+        isOpen: boolean;
+        residents: Resident[];
+        loading: boolean;
+    }>({
+        isOpen: false,
+        residents: [],
         loading: false
     });
 
@@ -185,7 +183,10 @@ export default function ResidentsPage() {
     const bulkActionHandlers = createBulkActionHandlers(
         toastFunctions,
         messageState,
-        setMessageState
+        setMessageState,
+        dataUpdateFunctions,
+        bulkDeleteState,
+        setBulkDeleteState
     );
     const residentActionHandlers = createResidentActionHandlers(
         toastFunctions,
@@ -194,8 +195,11 @@ export default function ResidentsPage() {
     );
     const exportActionHandlers = createExportActionHandlers(toastFunctions);
 
-    // Generate configuration data
-    const bulkActions = bulkActionHandlers.getBulkActions();
+    // Generate configuration data - regenerate when selected residents change
+    const bulkActions = useMemo(() => 
+        bulkActionHandlers.getBulkActions(filtersHook.selectedResidents),
+        [filtersHook.selectedResidents, bulkActionHandlers]
+    );
 
     // Create wrapper for table actions that uses modal for delete
     const tableActionHandlers = {
@@ -225,6 +229,11 @@ export default function ResidentsPage() {
             setConfirmationState(prev => ({ ...prev, loading: false }));
         }
     }, [confirmationState.resident, residentActionHandlers]);
+
+    // Handle bulk delete confirmation
+    const handleBulkDeleteConfirmation = useCallback(async () => {
+        await bulkActionHandlers.executeBulkDelete();
+    }, [bulkActionHandlers]);
 
     // Create unified action handler for view components
     const handleResidentAction = useCallback(async (action: string, resident: Resident) => {
@@ -680,9 +689,9 @@ export default function ResidentsPage() {
                                     variant="secondary"
                                     size="md"
                                 />
-                                {/* <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewResident}>
+                                <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewResident}>
                                     Yeni Sakin
-                                </Button> */}
+                                </Button>
                             </div>
                         </div>
 
@@ -866,6 +875,19 @@ export default function ResidentsPage() {
                     loading={confirmationState.loading}
                     itemName={confirmationState.resident?.fullName}
                     itemType="sakin"
+                />
+
+                {/* Bulk Delete Confirmation Modal */}
+                <ConfirmationModal
+                    isOpen={bulkDeleteState.isOpen}
+                    onClose={() => setBulkDeleteState({ isOpen: false, residents: [], loading: false })}
+                    onConfirm={handleBulkDeleteConfirmation}
+                    title="Toplu Silme İşlemi"
+                    description={`${bulkDeleteState.residents.length} sakin kalıcı olarak silinecektir. Bu işlem geri alınamaz.`}
+                    confirmText="Hepsini Sil"
+                    variant="danger"
+                    loading={bulkDeleteState.loading}
+                    itemType="sakinler"
                 />
 
                 {/* Payment History Modal */}

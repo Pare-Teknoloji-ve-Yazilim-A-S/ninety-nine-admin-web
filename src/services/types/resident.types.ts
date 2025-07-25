@@ -121,14 +121,11 @@ export interface ResidentApprovalDto {
 
 // Bulk Action DTOs
 export interface BulkActionDto {
-    action: 'APPROVE' | 'REJECT' | 'ACTIVATE' | 'DEACTIVATE' | 'DELETE' | 'ASSIGN_ROLE' | 'UPDATE_MEMBERSHIP';
-    residentIds: string[];
-    data?: {
-        reason?: string;
-        roleId?: string;
-        membershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
-        notes?: string;
-    };
+    action: 'approve' | 'reject' | 'suspend' | 'activate' | 'update_membership';
+    userIds: string[];
+    reason?: string;
+    assignedRole?: 'admin' | 'resident' | 'tenant';
+    membershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
 }
 
 export interface BulkActionResult {

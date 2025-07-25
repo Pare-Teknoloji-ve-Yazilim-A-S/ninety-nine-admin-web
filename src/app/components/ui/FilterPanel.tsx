@@ -72,12 +72,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const updateFilter = (groupId: string, value: any) => {
+        console.log(`🔧 UpdateFilter called: groupId=${groupId}, value=${value}, type=${typeof value}`);
         const newFilters = { ...filters };
         if (value === undefined || value === null || value === '') {
             delete newFilters[groupId];
         } else {
             newFilters[groupId] = value;
         }
+        console.log(`📝 New filters state:`, newFilters);
         setFilters(newFilters);
     };
 
@@ -92,6 +94,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     };
 
     const handleApplyFilters = () => {
+        console.log(`🎯 handleApplyFilters called with filters:`, filters);
+        console.log(`📋 Filter entries:`, Object.entries(filters));
         onApplyFilters(filters);
         if (variant === 'dropdown' || variant === 'modal') {
             onClose?.();
@@ -117,6 +121,11 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     const renderFilterGroup = (group: FilterGroup) => {
         const isCollapsed = collapsedGroups.has(group.id);
         const currentValue = filters[group.id];
+        
+        console.log(`🔍 Rendering group: ${group.id}, type: ${group.type}, options count: ${group.options?.length || 0}`);
+        if (group.type === 'select') {
+            console.log(`📝 Select options for ${group.id}:`, group.options);
+        }
 
         const renderFilterContent = () => {
             switch (group.type) {
@@ -131,20 +140,18 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     );
 
                 case 'select':
+                    const selectOptions = group.options?.map((option) => ({
+                        value: option.value,
+                        label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
+                    })) || [];
+                    
                     return (
                         <Select
                             value={currentValue || ''}
-                            onChange={(value) => updateFilter(group.id, value)}
+                            onChange={(e) => updateFilter(group.id, e.target.value)}
                             placeholder={group.placeholder || 'Seçiniz...'}
-                        >
-                            <option value="">Tümü</option>
-                            {group.options?.map((option) => (
-                                <option key={option.id} value={option.value}>
-                                    {option.label}
-                                    {showFilterCount && option.count && ` (${option.count})`}
-                                </option>
-                            ))}
-                        </Select>
+                            options={selectOptions}
+                        />
                     );
 
                 case 'multiselect':
@@ -185,13 +192,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             name={group.id}
                             value={currentValue}
                             onChange={(e) => updateFilter(group.id, e.target.value)}
-                            options={[
-                                { value: '', label: 'Tümü' },
-                                ...(group.options?.map(option => ({
-                                    value: option.value,
-                                    label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
-                                })) || [])
-                            ]}
+                            options={group.options?.map(option => ({
+                                value: option.value,
+                                label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
+                            })) || []}
                             radioSize="sm"
                             direction="vertical"
                         />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { apiClient } from '../services/api/client';
+import { ticketService } from '../services/ticket.service';
 
 interface TicketStats {
     currentMonthCount: number;
@@ -27,8 +27,9 @@ export const useTicketStats = (): UseTicketStatsReturn => {
                 setLoading(true);
                 setError(null);
                 
-                const response = await apiClient.get('/admin/tickets/monthly-stats');
-                setStats(response.data);
+                const data = await ticketService.getMonthlyStats();
+                console.log('Ticket stats response:', data);
+                setStats(data);
             } catch (err: any) {
                 console.error('Error fetching ticket stats:', err);
                 setError(err.response?.data?.message || 'Talepler istatistikleri yüklenirken hata oluştu');
