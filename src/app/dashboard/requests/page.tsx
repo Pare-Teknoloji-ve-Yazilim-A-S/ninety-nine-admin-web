@@ -6,6 +6,8 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
+import { useToast } from '@/hooks/useToast';
+import { ToastContainer } from '@/app/components/ui/Toast';
 import {
     Wrench,
     Plus,
@@ -52,6 +54,9 @@ import { createRequestBulkActionHandlers } from './actions/bulk-actions';
 import { useRequestsActions } from './hooks/useRequestsActions';
 
 export default function RequestsListPage() {
+    // Toast system
+    const toast = useToast();
+
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [searchInput, setSearchInput] = useState("");
@@ -709,6 +714,7 @@ export default function RequestsListPage() {
                             setDetailModal({ open: false, item: null });
                             fetchRequests();
                         }}
+                        toast={toast}
                     />
 
                     {/* Yeni Talep Modalı */}
@@ -724,6 +730,9 @@ export default function RequestsListPage() {
 
                 </div>
             </div>
+
+            {/* Toast Container */}
+            <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
         </ProtectedRoute>
     );
 }
