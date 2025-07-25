@@ -115,6 +115,37 @@ class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
         }
     }
 
+    async getAdminStaff(page: number = 1, limit: number = 5): Promise<any> {
+        try {
+            this.logger.info('Fetching admin staff members', { page, limit });
+            this.logger.info('Using endpoint:', apiConfig.endpoints.admin.adminStaff);
+            this.logger.info('Full baseURL:', apiConfig.baseURL);
+
+            // Query parametrelerini ekle
+            const queryParams = `?page=${page}&limit=${limit}`;
+            const fullEndpoint = `${apiConfig.endpoints.admin.adminStaff}${queryParams}`;
+            
+            this.logger.info('Requesting URL:', fullEndpoint);
+            const response = await apiClient.get(fullEndpoint);
+            this.logger.info('Admin staff fetched successfully', {
+                dataCount: response?.data?.length || 0,
+                pagination: response?.pagination
+            });
+            
+            // apiClient.get zaten response.data döndürüyor
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch admin staff', error);
+            this.logger.error('Error details:', {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data,
+                url: error.config?.url
+            });
+            throw error;
+        }
+    }
+
     async getUserById(id: string | number): Promise<ApiResponse<User>> {
         try {
             this.logger.info(`Fetching user with ID: ${id}`);

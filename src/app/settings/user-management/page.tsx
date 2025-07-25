@@ -1,9 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
+import { userService } from '@/services';
+import { User } from '@/services/types/user.types';
+
+// Admin Staff API response interface
+interface AdminStaffUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'BANNED';
+  verificationStatus?: string;
+  role: {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+// API Response wrapper
+interface AdminStaffResponse {
+  data: AdminStaffUser[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
 
 // Breadcrumb Items
 const BREADCRUMB_ITEMS = [
@@ -31,6 +63,59 @@ export default function UserManagementPage() {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
+  
+  // Admin Staff State
+  const [adminStaff, setAdminStaff] = useState<AdminStaffUser[]>([]);
+  const [pagination, setPagination] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(5); // Sayfa başına 5 item
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Debug state changes
+  console.log('Current component state:', { adminStaff, pagination, loading, error });
+
+  // Fetch admin staff function
+  const fetchAdminStaff = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await userService.getAdminStaff(page, pageSize);
+      console.log('Admin staff response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Is array:', Array.isArray(response));
+      
+      if (response && response.data) {
+        // Response'da data array'i var
+        console.log('Staff data from response.data:', response.data);
+        console.log('Pagination info:', response.pagination);
+        setAdminStaff(response.data);
+        setPagination(response.pagination);
+        setCurrentPage(page);
+        setError(null); // Clear any previous error
+      } else if (response) {
+        // Fallback: direkt response
+        const staffData = Array.isArray(response) ? response : [response];
+        console.log('Staff data after processing (fallback):', staffData);
+        setAdminStaff(staffData);
+        setError(null);
+      } else {
+        console.log('No response received');
+        setError('Admin staff verisi alınamadı');
+      }
+    } catch (err: any) {
+      console.error('Error fetching admin staff:', err);
+      setError(err.message || 'Bir hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch admin staff on component mount
+  useEffect(() => {
+    fetchAdminStaff(currentPage);
+  }, []);
 
   const handleSave = () => {
     console.log('Saving user management settings...');
@@ -265,67 +350,174 @@ export default function UserManagementPage() {
                 Mevcut Takım Üyeleri
               </h2>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Ad</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">E-posta</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Rol</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Durum</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Son Aktiflik</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">İşlemler</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-on-light dark:text-text-on-dark">Ahmet Yılmaz</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">ahmet@ninetynine.com</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium bg-primary-gold-light text-primary-gold rounded-full">Yönetici</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Aktif</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">2 saat önce</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button className="text-primary-gold hover:text-primary-gold/80 mr-4">Düzenle</button>
-                        <button className="text-primary-red hover:text-primary-red/80">Kaldır</button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-on-light dark:text-text-on-dark">Ayşe Demir</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">ayse@ninetynine.com</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Emlak Uzmanı</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Aktif</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">1 gün önce</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button className="text-primary-gold hover:text-primary-gold/80 mr-4">Düzenle</button>
-                        <button className="text-primary-red hover:text-primary-red/80">Kaldır</button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-on-light dark:text-text-on-dark">Mehmet Öz</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">mehmet@ninetynine.com</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">Bakım</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Çevrimdışı</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">3 gün önce</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button className="text-primary-gold hover:text-primary-gold/80 mr-4">Düzenle</button>
-                        <button className="text-primary-red hover:text-primary-red/80">Kaldır</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              {/* Loading State */}
+              {loading && (
+                <div className="flex justify-center items-center py-8">
+                  <div className="flex items-center space-x-2 text-text-light-secondary dark:text-text-secondary">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
+                    <span>Admin staff verileri yükleniyor...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Error State */}
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 mb-4">
+                  <div className="text-red-800 dark:text-red-200 text-sm">
+                    <strong>Hata:</strong> {error}
+                  </div>
+                </div>
+              )}
+
+              {/* Table with API Data */}
+              {!loading && !error && (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Ad</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">E-posta</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Rol</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Durum</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">Telefon</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wider">İşlemler</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                      {(() => {
+                        console.log('Rendering table with adminStaff:', adminStaff);
+                        console.log('adminStaff length:', adminStaff.length);
+                        return null;
+                      })()}
+                      {adminStaff.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-4 text-center text-text-light-secondary dark:text-text-secondary">
+                            Henüz admin staff üyesi bulunmuyor.
+                          </td>
+                        </tr>
+                      ) : (
+                        adminStaff.map((user) => {
+                          console.log('Rendering user:', user);
+                          return (
+                          <tr key={user.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-text-on-light dark:text-text-on-dark">
+                              {user.firstName} {user.lastName}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">
+                              {user.email}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                user.role?.slug === 'admin' 
+                                  ? 'bg-primary-gold-light text-primary-gold'
+                                  : user.role?.slug === 'super_admin'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {user.role?.name || 'Belirtilmemiş'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                user.status === 'ACTIVE' 
+                                  ? 'bg-green-100 text-green-800'
+                                  : user.status === 'INACTIVE'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : user.status === 'BANNED'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {user.status === 'ACTIVE' ? 'Aktif' :
+                                 user.status === 'INACTIVE' ? 'Pasif' :
+                                 user.status === 'BANNED' ? 'Engellenmiş' :
+                                 user.status === 'PENDING' ? 'Beklemede' :
+                                 user.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-text-light-secondary dark:text-text-secondary">
+                              {user.phone || 'Belirtilmemiş'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button className="text-primary-gold hover:text-primary-gold/80 mr-4">
+                                Düzenle
+                              </button>
+                              <button className="text-primary-red hover:text-primary-red/80">
+                                Kaldır
+                              </button>
+                            </td>
+                          </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Pagination Controls */}
+              {pagination && (
+                <div className="mt-6 flex items-center justify-between border-t border-gray-200 dark:border-gray-600 pt-4">
+                  {/* Pagination Info */}
+                  <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+                    <span>Toplam </span>
+                    <span className="font-medium text-text-on-light dark:text-text-on-dark">{pagination.total}</span>
+                    <span> takım üyesi</span>
+                  </div>
+
+                  {/* Pagination Buttons - Her zaman göster */}
+                  <div className="flex items-center space-x-2">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => fetchAdminStaff(currentPage - 1)}
+                      disabled={currentPage <= 1 || loading || (pagination?.total || 0) <= 5}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        currentPage <= 1 || loading || (pagination?.total || 0) <= 5
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                          : 'bg-white text-text-on-light border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-text-on-dark dark:border-gray-600 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      ← Önceki
+                    </button>
+
+                    {/* Page Numbers - Sadece birden fazla sayfa varsa */}
+                    {pagination?.totalPages > 1 && (
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
+                          <button
+                            key={pageNum}
+                            onClick={() => fetchAdminStaff(pageNum)}
+                            disabled={loading}
+                            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                              currentPage === pageNum
+                                ? 'bg-primary-gold text-white shadow-sm'
+                                : loading
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                                : 'bg-white text-text-on-light border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-text-on-dark dark:border-gray-600 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Next Button */}
+                    <button
+                      onClick={() => fetchAdminStaff(currentPage + 1)}
+                      disabled={currentPage >= (pagination?.totalPages || 1) || loading || (pagination?.total || 0) <= 5}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        currentPage >= (pagination?.totalPages || 1) || loading || (pagination?.total || 0) <= 5
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                          : 'bg-white text-text-on-light border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-text-on-dark dark:border-gray-600 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      Sonraki →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Simple Info for Single Page - Removed, artık yukarıda her zaman gösteriyoruz */}
             </div>
 
             {/* Kaydetme İşlemleri */}
