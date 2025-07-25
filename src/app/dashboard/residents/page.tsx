@@ -684,9 +684,9 @@ export default function ResidentsPage() {
                                     variant="secondary"
                                     size="md"
                                 />
-                                {/* <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewResident}>
+                                <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewResident}>
                                     Yeni Sakin
-                                </Button> */}
+                                </Button>
                             </div>
                         </div>
 
