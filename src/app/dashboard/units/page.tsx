@@ -573,41 +573,41 @@ export default function UnitsListPage() {
                 { id: 'RESERVED', label: 'Rezerve', value: 'RESERVED' },
             ],
         },
-        {
-            id: 'blockNumber',
-            label: 'Blok',
-            type: 'select' as const,
-            options: [
+        // {
+        //     id: 'blockNumber',
+        //     label: 'Blok',
+        //     type: 'select' as const,
+        //     options: [
 
-                { id: 'A', label: 'A Blok', value: 'A' },
-                { id: 'B', label: 'B Blok', value: 'B' },
-                { id: 'C', label: 'C Blok', value: 'C' },
-                { id: 'D', label: 'D Blok', value: 'D' },
-                { id: 'Villa', label: 'Villa', value: 'Villa' },
-            ],
-        },
-        {
-            id: 'rooms',
-            label: 'Oda Sayısı',
-            type: 'select' as const,
-            options: [
+        //         { id: 'A', label: 'A Blok', value: 'A' },
+        //         { id: 'B', label: 'B Blok', value: 'B' },
+        //         { id: 'C', label: 'C Blok', value: 'C' },
+        //         { id: 'D', label: 'D Blok', value: 'D' },
+        //         { id: 'Villa', label: 'Villa', value: 'Villa' },
+        //     ],
+        // },
+        // {
+        //     id: 'rooms',
+        //     label: 'Oda Sayısı',
+        //     type: 'select' as const,
+        //     options: [
 
-                { id: '1+1', label: '1+1', value: '1+1' },
-                { id: '2+1', label: '2+1', value: '2+1' },
-                { id: '3+1', label: '3+1', value: '3+1' },
-                { id: '4+1', label: '4+1', value: '4+1' },
-            ],
-        },
-        {
-            id: 'debtStatus',
-            label: 'Borç Durumu',
-            type: 'select' as const,
-            options: [
+        //         { id: '1+1', label: '1+1', value: '1+1' },
+        //         { id: '2+1', label: '2+1', value: '2+1' },
+        //         { id: '3+1', label: '3+1', value: '3+1' },
+        //         { id: '4+1', label: '4+1', value: '4+1' },
+        //     ],
+        // },
+        // {
+        //     id: 'debtStatus',
+        //     label: 'Borç Durumu',
+        //     type: 'select' as const,
+        //     options: [
 
-                { id: 'clean', label: 'Temiz Hesap', value: 'clean' },
-                { id: 'indebted', label: 'Borçlu', value: 'indebted' },
-            ],
-        },
+        //         { id: 'clean', label: 'Temiz Hesap', value: 'clean' },
+        //         { id: 'indebted', label: 'Borçlu', value: 'indebted' },
+        //     ],
+        // },
     ], []);
 
     // Grid UI - MEMOIZED
