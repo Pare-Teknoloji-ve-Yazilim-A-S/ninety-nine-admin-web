@@ -279,6 +279,7 @@ export default function PendingApprovalsPage() {
         const [open, setOpen] = useState(false);
         const menuRef = React.useRef<HTMLDivElement>(null);
         const buttonRef = React.useRef<HTMLButtonElement>(null);
+        
         React.useEffect(() => {
             const handleClickOutside = (event: MouseEvent) => {
                 if (
@@ -293,16 +294,17 @@ export default function PendingApprovalsPage() {
             document.addEventListener('mousedown', handleClickOutside);
             return () => document.removeEventListener('mousedown', handleClickOutside);
         }, []);
+        
         return (
             <div className="relative flex items-center justify-center">
-                <Button
+                <button
                     ref={buttonRef}
-                    variant="ghost"
-                    size="sm"
-                    icon={MoreVertical}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
                     onClick={() => setOpen((v) => !v)}
-                /> 
+                    type="button"
+                >
+                    <MoreVertical className="w-5 h-5" />
+                </button>
                 <div
                     ref={menuRef}
                     className={`absolute right-0 top-full mt-1 w-40 bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${open ? '' : 'hidden'}`}

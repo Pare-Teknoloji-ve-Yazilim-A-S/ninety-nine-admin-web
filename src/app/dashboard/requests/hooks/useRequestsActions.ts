@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Ticket, ticketService } from '@/services/ticket.service';
 
@@ -8,12 +8,73 @@ export interface UseRequestsActionsProps {
     setRequests: React.Dispatch<React.SetStateAction<Ticket[]>>;
 }
 
+interface ConfirmationDialog {
+    isOpen: boolean;
+    ticket: Ticket | null;
+}
+
 export function useRequestsActions({
     refreshData,
     setSelectedRequests,
     setRequests
 }: UseRequestsActionsProps) {
     const router = useRouter();
+
+    // Confirmation modal state
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [confirmationDialog, setConfirmationDialog] = useState<ConfirmationDialog>({
+        isOpen: false,
+        ticket: null
+    });
+
+    // Show delete confirmation modal
+    const showDeleteConfirmation = useCallback((ticket: Ticket) => {
+        setConfirmationDialog({
+            isOpen: true,
+            ticket
+        });
+    }, []);
+
+    // Hide confirmation modal
+    const hideConfirmation = useCallback(() => {
+        setConfirmationDialog({
+            isOpen: false,
+            ticket: null
+        });
+    }, []);
+
+    // Confirm delete with API call
+    const confirmDelete = useCallback(async () => {
+        const ticket = confirmationDialog.ticket;
+        if (!ticket) return;
+
+        try {
+            setIsDeleting(true);
+            
+            // Call delete API
+            await ticketService.deleteTicket(ticket.id);
+            
+            // Remove from state
+            setRequests(prev => prev.filter(r => r.id !== ticket.id));
+            
+            // Remove from selected if it was selected
+            setSelectedRequests([]);
+            
+            console.log('✓ Talep başarıyla silindi');
+            
+            // Refresh data to ensure consistency
+            refreshData();
+            
+            // Hide modal
+            hideConfirmation();
+            
+        } catch (error) {
+            console.error('✗ Talep silinirken hata oluştu:', error);
+            // Don't hide modal on error, let user try again
+        } finally {
+            setIsDeleting(false);
+        }
+    }, [confirmationDialog.ticket, setRequests, setSelectedRequests, refreshData, hideConfirmation]);
 
     const handleViewRequest = useCallback((request: Ticket) => {
         // Navigate to request detail page
@@ -25,18 +86,10 @@ export function useRequestsActions({
         router.push(`/dashboard/requests/${request.id}/edit`);
     }, [router]);
 
-    const handleDeleteRequest = useCallback(async (request: Ticket) => {
-        try {
-            await ticketService.cancel(request.id);
-            
-            // Remove from state
-            setRequests(prev => prev.filter(r => r.id !== request.id));
-            
-            console.log('✓ Talep başarıyla iptal edildi');
-        } catch (error) {
-            console.error('✗ Talep iptal edilirken hata oluştu:', error);
-        }
-    }, [setRequests]);
+    const handleDeleteRequest = useCallback((request: Ticket) => {
+        // Show confirmation modal instead of window.confirm
+        showDeleteConfirmation(request);
+    }, [showDeleteConfirmation]);
 
     const handleUpdateRequestStatus = useCallback(async (request: Ticket, action: string) => {
         try {
@@ -67,10 +120,14 @@ export function useRequestsActions({
             }
             
             console.log(`✓ Talep durumu güncellendi: ${action}`);
+            
+            // Refresh data to ensure consistency
+            refreshData();
         } catch (error) {
             console.error('✗ Talep durumu güncellenirken hata oluştu:', error);
+            alert('Talep durumu güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
         }
-    }, [setRequests]);
+    }, [setRequests, refreshData]);
 
     const handleSendNotification = useCallback(async (request: Ticket, message: string) => {
         try {
@@ -88,6 +145,12 @@ export function useRequestsActions({
         handleEditRequest,
         handleDeleteRequest,
         handleUpdateRequestStatus,
-        handleSendNotification
+        handleSendNotification,
+        // Modal state and handlers
+        isDeleting,
+        confirmationDialog,
+        showDeleteConfirmation,
+        hideConfirmation,
+        confirmDelete
     };
 } 

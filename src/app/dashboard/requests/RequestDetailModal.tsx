@@ -6,7 +6,7 @@ import { AlertCircle, RotateCcw, CheckCircle, Calendar, User, Wrench, Flag, Pape
 import type { Ticket } from '@/services/ticket.service';
 import { ticketService } from '@/services/ticket.service';
 import { useState } from 'react';
-import TicketActivityLog from './components/TicketActivityLog';
+import { handleModalAction } from '@/lib/handleModalAction';
 
 const statusConfig = {
   OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
@@ -27,9 +27,15 @@ interface RequestDetailModalProps {
   onClose: () => void;
   item: Ticket | null;
   onActionComplete?: () => void;
+  toast?: {
+    success: (title: string, message?: string) => void;
+    error: (title: string, message?: string) => void;
+    warning: (title: string, message?: string) => void;
+    info: (title: string, message?: string) => void;
+  };
 }
 
-const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, item, onActionComplete }) => {
+const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, item, onActionComplete, toast }) => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [currentItem, setCurrentItem] = useState<Ticket | null>(item);
   const [comments, setComments] = useState<any[]>([]);
@@ -57,33 +63,26 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   const priorityInfo = priorityConfig[currentItem.priority?.toUpperCase?.() || ''] || { label: currentItem.priority, color: 'secondary' };
 
   // Action handlers
-  const handleStatusChange = async (action: string) => {
+  const handleStatusChange = async (action: string, label: string) => {
     if (!currentItem) return;
     setLoadingAction(action);
-    try {
-      let updated: Ticket | null = null;
-      if (action === 'start-progress') {
-        updated = await ticketService.startProgress(currentItem.id);
-      } else if (action === 'mark-waiting') {
-        updated = await ticketService.markWaiting(currentItem.id);
-      } else if (action === 'resolve') {
-        updated = await ticketService.resolve(currentItem.id);
-      } else if (action === 'close') {
-        updated = await ticketService.close(currentItem.id);
-      } else if (action === 'cancel') {
-        updated = await ticketService.cancel(currentItem.id);
-      }
-      if (updated) {
-        if (onActionComplete) {
-          onActionComplete();
-        }
-        // else setCurrentItem(updated); // fallback, but not needed if modal closes
-      }
-    } catch (e) {
-      // TODO: Show error toast
-    } finally {
-      setLoadingAction(null);
-    }
+    const actionMap: Record<string, () => Promise<Ticket | null>> = {
+      'start-progress': () => ticketService.startProgress(currentItem.id),
+      'mark-waiting': () => ticketService.markWaiting(currentItem.id),
+      'resolve': () => ticketService.resolve(currentItem.id),
+      'close': () => ticketService.close(currentItem.id),
+      'cancel': () => ticketService.cancel(currentItem.id),
+    };
+    const apiAction = actionMap[action];
+    if (!apiAction) return;
+    await handleModalAction({
+      action: apiAction,
+      onClose,
+      onActionComplete,
+      toast: toast!,
+      label,
+      setLoading: (loading) => setLoadingAction(loading ? action : null),
+    });
   };
 
   // Button visibility logic
@@ -92,26 +91,31 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
     status === 'OPEN' && {
       label: 'İşleme Al',
       action: 'start-progress',
+      toastLabel: 'Talep',
       variant: 'primary',
     },
     status === 'IN_PROGRESS' && {
       label: 'Beklemeye Al',
       action: 'mark-waiting',
+      toastLabel: 'Talep',
       variant: 'secondary',
     },
     (status === 'IN_PROGRESS' || status === 'OPEN') && {
       label: 'Tamamlandı',
       action: 'resolve',
+      toastLabel: 'Onay',
       variant: 'success',
     },
     (status === 'IN_PROGRESS' || status === 'OPEN') && {
       label: 'Kapat',
       action: 'close',
+      toastLabel: 'Talep',
       variant: 'warning',
     },
     (status !== 'COMPLETED' && status !== 'CLOSED' && status !== 'CANCELLED') && {
       label: 'İptal Et',
       action: 'cancel',
+      toastLabel: 'Reddet',
       variant: 'danger',
     },
   ].filter(Boolean);
@@ -293,14 +297,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
             )}
           </div>
 
-          {/* Ticket Activity Log */}
-          <div className="mt-6">
-            <TicketActivityLog 
-              ticketId={currentItem.id}
-              title="Son Aktiviteler"
-              subtitle="Bakım talebi güncellemeleri ve yorumlar"
-            />
-          </div>
+
         </div>
         {/* Add comment input - always visible above footer */}
         <div className="flex items-center gap-2 mt-4 px-2 mb-4">
@@ -329,7 +326,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
             <Button
               key={btn.action}
               variant={btn.variant}
-              onClick={() => handleStatusChange(btn.action)}
+              onClick={() => handleStatusChange(btn.action, btn.toastLabel)}
               isLoading={loadingAction === btn.action}
               disabled={!!loadingAction}
             >

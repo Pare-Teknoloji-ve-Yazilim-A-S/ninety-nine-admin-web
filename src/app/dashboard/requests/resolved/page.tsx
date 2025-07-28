@@ -38,6 +38,7 @@ import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from '../RequestDetailModal';
 import Portal from '@/app/components/ui/Portal';
+import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 import { ApiResponse } from '@/services';
 import { 
     createTicketFilterGroups, 
@@ -46,6 +47,7 @@ import {
     FilterStateManager,
     TicketFilters as RequestFilters 
 } from '../constants';
+import { useRequestsActions } from '../hooks/useRequestsActions';
 
 export default function ResolvedRequestsPage() {
     // UI State
@@ -114,6 +116,24 @@ export default function ResolvedRequestsPage() {
             setLoading(false);
         }
     }, [pagination.page, pagination.limit, currentFilters]);
+
+    // Initialize request actions hook
+    const {
+        handleViewRequest,
+        handleEditRequest,
+        handleDeleteRequest,
+        handleUpdateRequestStatus,
+        handleSendNotification,
+        isDeleting,
+        confirmationDialog,
+        showDeleteConfirmation,
+        hideConfirmation,
+        confirmDelete
+    } = useRequestsActions({
+        refreshData: fetchRequests,
+        setSelectedRequests,
+        setRequests
+    });
 
     // Initial data fetch
     useEffect(() => {
@@ -300,9 +320,38 @@ export default function ResolvedRequestsPage() {
         setDetailModal({ open: true, item: req });
     };
 
+    // Unified action handler for request actions
+    const handleRequestAction = useCallback(async (action: string, request: Ticket) => {
+        switch (action) {
+            case 'view':
+                handleViewDetail(request);
+                break;
+            case 'edit':
+                handleEditRequest(request);
+                break;
+            case 'delete':
+                handleDeleteRequest(request);
+                break;
+            case 'start-progress':
+                await handleUpdateRequestStatus(request, 'start-progress');
+                break;
+            case 'resolve':
+                await handleUpdateRequestStatus(request, 'resolve');
+                break;
+            case 'close':
+                await handleUpdateRequestStatus(request, 'close');
+                break;
+            case 'cancel':
+                await handleUpdateRequestStatus(request, 'cancel');
+                break;
+            default:
+                console.warn('Unknown action:', action);
+        }
+    }, [handleViewDetail, handleEditRequest, handleDeleteRequest, handleUpdateRequestStatus]);
+
     const RequestActionMenuWrapper: React.FC<{ row: any }> = ({ row }) => (
         <RequestActionMenu req={row} onAction={(action, req) => {
-            if (action === 'view') handleViewDetail(req);
+            handleRequestAction(action, req);
         }} />
     );
 
@@ -611,6 +660,24 @@ export default function ResolvedRequestsPage() {
                             setDetailModal({ open: false, item: null });
                             fetchRequests();
                         }}
+                    />
+                    {/* Delete Confirmation Modal */}
+                    <ConfirmationModal
+                        isOpen={confirmationDialog.isOpen}
+                        onClose={hideConfirmation}
+                        onConfirm={confirmDelete}
+                        title="Talebi Sil"
+                        description={
+                            confirmationDialog.ticket 
+                                ? `"${confirmationDialog.ticket.title}" adlı talep kalıcı olarak silinecektir. Bu işlem geri alınamaz.`
+                                : "Bu talebi silmek istediğinizden emin misiniz?"
+                        }
+                        confirmText="Sil"
+                        cancelText="İptal"
+                        variant="danger"
+                        loading={isDeleting}
+                        itemName={confirmationDialog.ticket?.title}
+                        itemType="talep"
                     />
                 </div>
             </div>

@@ -56,6 +56,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Portal from '@/app/components/ui/Portal';
 import { useUnitCounts } from '@/hooks/useUnitsData';
+import { useUnitsActions } from '@/hooks/useUnitsActions';
+import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 
 export default function UnitsListPage() {
     // UI State
@@ -88,6 +90,23 @@ export default function UnitsListPage() {
 
     // Add this inside the component
     const { residentCount, villaCount, availableCount, loading: countsLoading, error: countsError } = useUnitCounts();
+
+    // Units actions hook
+    const {
+        isDeleting,
+        confirmationDialog,
+        showDeleteConfirmation,
+        hideConfirmation,
+        confirmDelete
+    } = useUnitsActions({
+        onDeleteSuccess: () => {
+            // Refresh the list after successful delete
+            loadProperties();
+        },
+        onRefreshNeeded: () => {
+            loadProperties();
+        }
+    });
 
     // Filter processing utility - NEW
     // This function removes empty values from filters to prevent sending unnecessary parameters to API
@@ -180,13 +199,21 @@ export default function UnitsListPage() {
     const router = useRouter();
 
     const handleUnitAction = useCallback((action: string, unit: Property) => {
-        if (action === 'view') {
-            router.push(`/dashboard/units/${unit.id}`);
-            return;
+        switch (action) {
+            case 'view':
+                router.push(`/dashboard/units/${unit.id}`);
+                break;
+            case 'edit':
+                // Navigate to edit page - we'll create this page next
+                router.push(`/dashboard/units/${unit.id}/edit`);
+                break;
+            case 'delete':
+                showDeleteConfirmation(unit);
+                break;
+            default:
+                console.log('Unknown unit action:', action, unit);
         }
-        console.log('Unit action:', action, unit);
-        // Handle other unit actions here
-    }, [router]);
+    }, [router, showDeleteConfirmation]);
 
     const handleQuickAction = useCallback((action: string) => {
         console.log('Quick action:', action);
@@ -847,6 +874,25 @@ export default function UnitsListPage() {
                         </div>
                     </main>
                 </div>
+
+                {/* Delete Confirmation Modal */}
+                <ConfirmationModal
+                    isOpen={confirmationDialog.isOpen}
+                    onClose={hideConfirmation}
+                    onConfirm={confirmDelete}
+                    title="Konutu Sil"
+                    description={
+                        confirmationDialog.unit 
+                            ? `"${confirmationDialog.unit.propertyNumber || confirmationDialog.unit.name || 'Konut'}" kalıcı olarak silinecektir. Bu işlem geri alınamaz.`
+                            : "Bu konutu silmek istediğinizden emin misiniz?"
+                    }
+                    confirmText="Sil"
+                    cancelText="İptal"
+                    variant="danger"
+                    loading={isDeleting}
+                    itemName={confirmationDialog.unit?.propertyNumber || confirmationDialog.unit?.name}
+                    itemType="konut"
+                />
             </div>
         </ProtectedRoute>
     );
