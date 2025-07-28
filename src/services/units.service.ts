@@ -23,7 +23,7 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
             const queryParams = this.buildQueryParams(params);
             const response = await apiClient.get(`${this.baseEndpoint}${queryParams}`);
             const data = response.data.data || response.data;
-            const pagination = response.data.pagination || {
+            const pagination = response.pagination || {
                 total: data.length || 0,
                 page: filters.page || 1,
                 limit: filters.limit || 20,
