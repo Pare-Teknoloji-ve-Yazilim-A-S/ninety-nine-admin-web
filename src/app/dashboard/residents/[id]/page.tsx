@@ -40,6 +40,7 @@ export default function ResidentViewPage() {
     const residentId = params.id as string;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+    const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
     // Document states
     const [nationalIdDocLoading, setNationalIdDocLoading] = useState(false);
     const [ownershipDocLoading, setOwnershipDocLoading] = useState(false);
@@ -63,7 +64,7 @@ export default function ResidentViewPage() {
             setLoading(false);
         }
     };
-    
+
     const { resident, loading, error } = useResidentData({
         residentId,
         autoFetch: true
@@ -259,8 +260,8 @@ export default function ResidentViewPage() {
                                                     <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
                                                         {resident.fullName}
                                                     </h2>
-                                                    <Badge 
-                                                        variant="soft" 
+                                                    <Badge
+                                                        variant="soft"
                                                         color={getTypeColor(resident.residentType.type)}
                                                     >
                                                         {resident.residentType.label}
@@ -269,8 +270,8 @@ export default function ResidentViewPage() {
 
                                                 <div className="flex items-center gap-2 mb-3">
                                                     {getStatusIcon(resident.status.type)}
-                                                    <Badge 
-                                                        variant="soft" 
+                                                    <Badge
+                                                        variant="soft"
                                                         color={getStatusColor(resident.status.color)}
                                                     >
                                                         {resident.status.label}
@@ -278,9 +279,9 @@ export default function ResidentViewPage() {
                                                     {resident.verificationStatus && (
                                                         <Badge variant="outline" color={
                                                             resident.verificationStatus.color === 'green' ? 'primary' :
-                                                            resident.verificationStatus.color === 'yellow' ? 'secondary' :
-                                                            resident.verificationStatus.color === 'red' ? 'red' :
-                                                            'secondary'
+                                                                resident.verificationStatus.color === 'yellow' ? 'secondary' :
+                                                                    resident.verificationStatus.color === 'red' ? 'red' :
+                                                                        'secondary'
                                                         }>
                                                             {resident.verificationStatus.label}
                                                         </Badge>
@@ -307,14 +308,216 @@ export default function ResidentViewPage() {
                                 </Card>
 
                                 {/* Contact Information */}
+                                {/* Tabbed Contact/Resident Info Section */}
+                                <Card className="mt-6">
+                                    <div className="p-0">
+                                        <div className="border-b border-gray-200 dark:border-gray-700 px-6 pt-6">
+                                            <nav className="flex space-x-4" aria-label="Tabs">
+                                                {[
+                                                    { label: "Aile Üyeleri", key: "family" },
+                                                    { label: "Belgeler", key: "documents" },
+                                                    { label: "Talepler", key: "requests" },
+                                                    { label: "Aktivite Günlüğü", key: "activity" }
+                                                ].map((tab, idx) => (
+                                                    <button
+                                                        key={tab.key}
+                                                        className={
+                                                            (activeTab === tab.key
+                                                                ? "text-primary-gold border-primary-gold"
+                                                                : "text-text-light-secondary dark:text-text-secondary border-transparent hover:text-primary-gold hover:border-primary-gold/60") +
+                                                            " px-3 py-2 text-sm font-medium border-b-2 transition-colors"
+                                                        }
+                                                        onClick={() => setActiveTab(tab.key as 'family' | 'documents' | 'requests' | 'activity')}
+                                                        type="button"
+                                                    >
+                                                        {tab.label}
+                                                    </button>
+                                                ))}
+                                            </nav>
+                                        </div>
+                                        <div className="px-6 py-6">
+                                            {activeTab === "family" && (
+                                                <div>
+                                                                                                    {/* Aile Üyeleri Tab Content */}
+                                                <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Aile Üyeleri</h4>
+                                                <div className="text-sm text-text-light-muted dark:text-text-muted">
+                                                    Bu sakinle ilgili aile üyesi bilgileri burada görüntülenecek. (Yakında)
+                                                </div>
+                                                </div>
+                                            )}
+                                            {activeTab === "documents" && (
+                                                <div>
+                                                    {/* Belgeler Tab Content */}
+                                                    <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Belgeler</h4>
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <IdCard className="h-5 w-5 text-primary-gold" />
+                                                            <span className="flex-1">Kimlik Belgesi</span>
+                                                            <Button
+                                                                variant="secondary"
+                                                                size="sm"
+                                                                onClick={() => handleViewDocument('national_id')}
+                                                                isLoading={nationalIdDocLoading}
+                                                            >
+                                                                Görüntüle
+                                                            </Button>
+                                                        </div>
+                                                        {nationalIdDocError && (
+                                                            <div className="text-xs text-primary-red mt-1">{nationalIdDocError}</div>
+                                                        )}
+                                                        <div className="flex items-center gap-3">
+                                                            <FileText className="h-5 w-5 text-primary-gold" />
+                                                            <span className="flex-1">Tapu / Mülkiyet Belgesi</span>
+                                                            <Button
+                                                                variant="secondary"
+                                                                size="sm"
+                                                                onClick={() => handleViewDocument('ownership_document')}
+                                                                isLoading={ownershipDocLoading}
+                                                            >
+                                                                Görüntüle
+                                                            </Button>
+                                                        </div>
+                                                        {ownershipDocError && (
+                                                            <div className="text-xs text-primary-red mt-1">{ownershipDocError}</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {activeTab === "requests" && (
+                                                <div>
+                                                    {/* Talepler Tab Content */}
+                                                    <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Talepler</h4>
+                                                    <div className="text-sm text-text-light-muted dark:text-text-muted">
+                                                        Bu sakinle ilgili talepler burada listelenecek. (Yakında)
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {activeTab === "activity" && (
+                                                <div>
+                                                    {/* Aktivite Günlüğü Tab Content */}
+                                                    <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Aktivite Günlüğü</h4>
+                                                    <div className="text-sm text-text-light-muted dark:text-text-muted">
+                                                        Bu sakinle ilgili aktiviteler burada görüntülenecek. (Yakında)
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Card>
+                                {/* Tab State */}
+                                {/*
+                                    Tab state is managed in the parent component.
+                                    Add this to the ResidentViewPage component:
+                                    const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
+                                */}
+
+                                {/* Housing Information */}
+
+                            </div>
+
+                            {/* Right Column - Sidebar */}
+                            <div className="space-y-6">
+                                {/* Financial Summary */}
+                                <Card>
+                                    <div className="p-6">
+                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
+                                            <Home className="h-5 w-5 text-primary-gold" />
+                                            Konut Bilgileri
+                                        </h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                                        <Building className="h-5 w-5 text-primary-gold" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Konut</p>
+                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                            {/* {resident.address.building} */}
+                                                            Villa 13
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                                        <Home className="h-5 w-5 text-primary-gold" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Daire No</p>
+                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                            {resident.address.apartment}
+                                                        </p>
+                                                    </div>
+                                                </div> */}
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                                        <CreditCard className="h-5 w-5 text-primary-gold" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Borç Durumu</p>
+                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                            $20
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                                        <User className="h-5 w-5 text-primary-gold" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Sakin Tipi</p>
+                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                            {resident.residentType.label}
+                                                        </p>
+                                                    </div>
+                                                </div> */}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+
+                                {/* Quick Actions */}
+                                {/* <Card>
+                                    <div className="p-6">
+                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
+                                            <Settings className="h-5 w-5 text-primary-gold" />
+                                            Hızlı İşlemler
+                                        </h3>
+                                        
+                                        <div className="space-y-3">
+                                            <Link href={`/dashboard/residents/${resident.id}/edit`}>
+                                                <Button variant="secondary" className="w-full justify-start" icon={Edit}>
+                                                    Bilgileri Düzenle
+                                                </Button>
+                                            </Link>
+                                            
+                                            <Button variant="secondary" className="w-full justify-start" icon={QrCode}>
+                                                QR Kod Oluştur
+                                            </Button>
+                                            
+                                            <Button variant="secondary" className="w-full justify-start" icon={FileText}>
+                                                Rapor Oluştur
+                                            </Button>
+                                            <Button variant="secondary" className="w-full justify-start" icon={FileText} onClick={() => setShowDocumentsModal(true)}>
+                                                Belgeleri Görüntüle
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Card> */}
                                 <Card>
                                     <div className="p-6">
                                         <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                             <Phone className="h-5 w-5 text-primary-gold" />
                                             İletişim Bilgileri
                                         </h3>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                        <div className="grid grid-cols-1 gap-6">
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
@@ -344,19 +547,7 @@ export default function ResidentViewPage() {
                                             </div>
 
                                             <div className="space-y-4">
-                                                {resident.nationalId && (
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                            <IdCard className="h-5 w-5 text-primary-gold" />
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-sm text-text-light-muted dark:text-text-muted">Kimlik/Telefon</p>
-                                                            <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                                {resident.nationalId}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                
 
                                                 {resident.lastActivity && (
                                                     <div className="flex items-center gap-3">
@@ -375,138 +566,6 @@ export default function ResidentViewPage() {
                                         </div>
                                     </div>
                                 </Card>
-
-                                {/* Housing Information */}
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
-                                            <Home className="h-5 w-5 text-primary-gold" />
-                                            Konut Bilgileri
-                                        </h3>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <Building className="h-5 w-5 text-primary-gold" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Blok</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.address.building}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <Home className="h-5 w-5 text-primary-gold" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Daire No</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.address.apartment}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <MapPin className="h-5 w-5 text-primary-gold" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Daire Tipi</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.address.roomType}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <User className="h-5 w-5 text-primary-gold" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Sakin Tipi</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.residentType.label}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
-                            </div>
-
-                            {/* Right Column - Sidebar */}
-                            <div className="space-y-6">
-                                {/* Financial Summary */}
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
-                                            <CreditCard className="h-5 w-5 text-primary-gold" />
-                                            Mali Durum
-                                        </h3>
-                                        
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-text-light-muted dark:text-text-muted">Bakiye</span>
-                                                <span className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                    {resident.financial.balance.toLocaleString('tr-TR')}
-                                                </span>
-                                            </div>
-                                            
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-text-light-muted dark:text-text-muted">Borç</span>
-                                                <span className={`font-medium ${resident.financial.totalDebt > 0 ? 'text-primary-red' : 'text-semantic-success-600'}`}>
-                                                    {resident.financial.totalDebt.toLocaleString('tr-TR')}
-                                                </span>
-                                            </div>
-                                            
-                                            {resident.financial.lastPaymentDate && (
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-text-light-muted dark:text-text-muted">Son Ödeme</span>
-                                                    <span className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                        {new Date(resident.financial.lastPaymentDate).toLocaleDateString('tr-TR')}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </Card>
-
-                                {/* Quick Actions */}
-                                <Card>
-                                    <div className="p-6">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
-                                            <Settings className="h-5 w-5 text-primary-gold" />
-                                            Hızlı İşlemler
-                                        </h3>
-                                        
-                                        <div className="space-y-3">
-                                            <Link href={`/dashboard/residents/${resident.id}/edit`}>
-                                                <Button variant="secondary" className="w-full justify-start" icon={Edit}>
-                                                    Bilgileri Düzenle
-                                                </Button>
-                                            </Link>
-                                            
-                                            <Button variant="secondary" className="w-full justify-start" icon={QrCode}>
-                                                QR Kod Oluştur
-                                            </Button>
-                                            
-                                            <Button variant="secondary" className="w-full justify-start" icon={FileText}>
-                                                Rapor Oluştur
-                                            </Button>
-                                            <Button variant="secondary" className="w-full justify-start" icon={FileText} onClick={() => setShowDocumentsModal(true)}>
-                                                Belgeleri Görüntüle
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </Card>
-
                                 {/* Notes */}
                                 {resident.notes && (
                                     <Card>
