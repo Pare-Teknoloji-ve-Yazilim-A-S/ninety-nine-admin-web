@@ -282,7 +282,7 @@ export default function EditTicketPage() {
                                                 type="submit"
                                                 variant="primary"
                                                 icon={Save}
-                                                loading={saving}
+                                                isLoading={saving}
                                                 disabled={saving || !isDirty}
                                             >
                                                 {saving ? 'Kaydediliyor...' : 'Kaydet'}
