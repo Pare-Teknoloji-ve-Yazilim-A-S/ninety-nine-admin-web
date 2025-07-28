@@ -373,8 +373,8 @@ export default function EditTicketPage() {
                                         <Select
                                             label="Emlak"
                                             options={properties.map(p => ({
-                                                value: p.id,
-                                                label: `${p.name || p.propertyNumber} - ${p.address || ''}`
+                                                value: String(p.id),
+                                                label: `${p.name || p.propertyNumber}${p.blockNumber ? ` - Blok ${p.blockNumber}` : ''}${p.floor ? ` - Kat ${p.floor}` : ''}`
                                             }))}
                                             placeholder="Emlak seçin"
                                             {...register('propertyId', {
