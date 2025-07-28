@@ -64,23 +64,17 @@ const menuItems: MenuItemProps[] = [
         href: '/dashboard'
     },
     {
-        title: 'Sakinler',
-        icon: Users,
-        children: [
-            { title: 'Sakin Listesi', icon: User, href: '/dashboard/residents' },
-            { title: 'Yeni Sakin Ekle', icon: UserPlus, href: '/dashboard/residents/add' },
-            { title: 'Onay Bekleyenler', icon: UserCheck, href: '/dashboard/residents/pending' }
-        ]
+        title: 'Konut Yönetimi',
+        icon: Building,
+        href: '/dashboard/units'
     },
     {
-        title: 'Konutlar',
-        icon: Home,
-        children: [
-            { title: 'Daire/Villa Listesi', icon: Building, href: '/dashboard/units' },
-            { title: 'Boş Konutlar', icon: MapPin, href: '/dashboard/units/empty' },
-            { title: 'Bakım Durumu', icon: RotateCcw, href: '/dashboard/units/maintenance' }
-        ]
+        title: 'Sakin Listesi',
+        icon: User,
+        href: '/dashboard/residents'
     },
+    
+
     {
         title: 'Finansal İşlemler',
         icon: DollarSign,

@@ -224,8 +224,8 @@ export default function ResidentViewPage() {
                                     Mesaj
                                 </Button>
                                 <Link href={`/dashboard/residents/${resident.id}/edit`}>
-                                    <Button variant="primary" icon={Edit}>
-                                        Düzenle
+                                    <Button variant="danger" icon={Edit}>
+                                        Kaldır
                                     </Button>
                                 </Link>
                             </div>
