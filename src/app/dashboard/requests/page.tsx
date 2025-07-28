@@ -41,6 +41,7 @@ import GenericGridView from '@/app/components/templates/GenericGridView';
 import RequestDetailModal from './RequestDetailModal';
 import CreateTicketModal from '@/app/dashboard/components/CreateTicketModal';
 import Portal from '@/app/components/ui/Portal';
+import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 
 import { ApiResponse } from '@/services';
 import {
@@ -162,7 +163,18 @@ export default function RequestsListPage() {
     );
 
     // Initialize request actions hook
-    const requestActions = useRequestsActions({
+    const {
+        handleViewRequest,
+        handleEditRequest,
+        handleDeleteRequest,
+        handleUpdateRequestStatus,
+        handleSendNotification,
+        isDeleting,
+        confirmationDialog,
+        showDeleteConfirmation,
+        hideConfirmation,
+        confirmDelete
+    } = useRequestsActions({
         refreshData: fetchRequests,
         setSelectedRequests,
         setRequests
@@ -356,27 +368,27 @@ export default function RequestsListPage() {
                 handleViewDetail(request);
                 break;
             case 'edit':
-                requestActions.handleEditRequest(request);
+                handleEditRequest(request);
                 break;
             case 'delete':
-                await requestActions.handleDeleteRequest(request);
+                handleDeleteRequest(request);
                 break;
             case 'start-progress':
-                await requestActions.handleUpdateRequestStatus(request, 'start-progress');
+                await handleUpdateRequestStatus(request, 'start-progress');
                 break;
             case 'resolve':
-                await requestActions.handleUpdateRequestStatus(request, 'resolve');
+                await handleUpdateRequestStatus(request, 'resolve');
                 break;
             case 'close':
-                await requestActions.handleUpdateRequestStatus(request, 'close');
+                await handleUpdateRequestStatus(request, 'close');
                 break;
             case 'cancel':
-                await requestActions.handleUpdateRequestStatus(request, 'cancel');
+                await handleUpdateRequestStatus(request, 'cancel');
                 break;
             default:
                 console.warn('Unknown action:', action);
         }
-    }, [requestActions, handleViewDetail]);
+    }, [handleViewDetail, handleEditRequest, handleDeleteRequest, handleUpdateRequestStatus]);
 
     const RequestActionMenuWrapper: React.FC<{ row: any }> = ({ row }) => (
         <RequestActionMenu req={row} onAction={(action, req) => {
@@ -730,6 +742,25 @@ export default function RequestsListPage() {
 
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmationDialog.isOpen}
+                onClose={hideConfirmation}
+                onConfirm={confirmDelete}
+                title="Talebi Sil"
+                description={
+                    confirmationDialog.ticket 
+                        ? `"${confirmationDialog.ticket.title}" adlı talep kalıcı olarak silinecektir. Bu işlem geri alınamaz.`
+                        : "Bu talebi silmek istediğinizden emin misiniz?"
+                }
+                confirmText="Sil"
+                cancelText="İptal"
+                variant="danger"
+                loading={isDeleting}
+                itemName={confirmationDialog.ticket?.title}
+                itemType="talep"
+            />
 
             {/* Toast Container */}
             <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />

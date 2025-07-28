@@ -41,6 +41,18 @@ export interface CreateAttachmentRequest {
   fileSize: number;
 }
 
+export interface UpdateTicketRequest {
+  title?: string;
+  description?: string;
+  type?: string;
+  priority?: string;
+  category?: string;
+  propertyId?: string;
+  assigneeId?: string;
+  dueDate?: string;
+  status?: string;
+}
+
 export interface TicketPaginationResponse {
   data: Ticket[];
   pagination: {
@@ -156,6 +168,25 @@ export const ticketService = {
   async addAttachment(ticketId: string, data: CreateAttachmentRequest): Promise<any> {
     const response: ApiResponse<any> = await apiClient.post<any>(`/admin/tickets/${ticketId}/attachments`, data);
     return response.data;
+  },
+
+  // --- Ticket CRUD Operations ---
+  async getTicketById(id: string): Promise<Ticket> {
+    const response: ApiResponse<Ticket> = await apiClient.get<Ticket>(`/admin/tickets/${id}`);
+    return response.data;
+  },
+
+  async updateTicket(id: string, data: UpdateTicketRequest): Promise<Ticket> {
+    console.log('Updating ticket:', id, data);
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}`, data);
+    console.log('Ticket update response:', response);
+    return response.data;
+  },
+
+  async deleteTicket(id: string): Promise<void> {
+    console.log('Deleting ticket:', id);
+    await apiClient.delete(`/admin/tickets/${id}`);
+    console.log('Ticket deleted successfully');
   },
 
   // --- Ticket Statistics ---
