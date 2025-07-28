@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -10,6 +11,7 @@ import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import Checkbox from '@/app/components/ui/Checkbox';
 import RadioButton from '@/app/components/ui/RadioButton';
+import FileUpload from '@/app/components/ui/FileUpload';
 import {
     ArrowLeft,
     Check,
@@ -23,27 +25,59 @@ import {
     Calendar,
     CreditCard,
     Smartphone,
-    QrCode
+    QrCode,
+    Image,
+    FileText
 } from 'lucide-react';
-import { useResidentData } from '@/hooks/useResidentData';
-import { CreateResidentRequest } from '@/services/types/resident.types';
+import { useToast } from '@/hooks/useToast';
 
-interface FormData {
-    // Identity
-    identityType: 'nationalId' | 'passport' | 'citizenship' | 'residence';
-    identityNumber: string;
+// API Types based on 99CLUB API
+interface PersonalInfoDto {
     firstName: string;
     lastName: string;
-
-    // Contact
-    mobilePhone: string;
-    hasWhatsApp: boolean;
+    phone: string;
     email: string;
+    password: string;
+}
 
-    // Housing
-    residentType: 'owner' | 'tenant' | 'family';
+interface PropertyInfoDto {
+    name: string;
     block: string;
-    apartmentNumber: string;
+    propertyNumber: string;
+    propertyType: 'RESIDENCE' | 'VILLA' | 'COMMERCIAL' | 'OFFICE';
+    ownershipType: 'owner' | 'tenant';
+}
+
+interface DocumentDto {
+    type: string;
+    url: string;
+}
+
+interface RegisterDto {
+    personalInfo: PersonalInfoDto;
+    propertyInfo: PropertyInfoDto;
+    documents: DocumentDto[];
+}
+
+interface FormData {
+    // Personal Info
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+
+    // Property Info
+    propertyName: string;
+    block: string;
+    propertyNumber: string;
+    propertyType: 'RESIDENCE' | 'VILLA' | 'COMMERCIAL' | 'OFFICE';
+    ownershipType: 'owner' | 'tenant';
+
+    // Documents
+    identityDocument: File[];
+    propertyDocument: File[];
 
     // Quick Options
     startDuesToday: boolean;
@@ -68,22 +102,38 @@ const mockApartments: Apartment[] = [
     { id: '2', block: 'A', number: '13', type: '2+1', area: '120m²', status: 'occupied', currentResident: 'Ahmet Yılmaz' },
     { id: '3', block: 'B', number: '05', type: '3+1', area: '150m²', status: 'empty' },
     { id: '4', block: 'B', number: '06', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '5', block: 'B', number: '04', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '6', block: 'B', number: '07', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '7', block: 'B', number: '08', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '8', block: 'B', number: '09', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '9', block: 'B', number: '10', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '10', block: 'B', number: '11', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '11', block: 'B', number: '12', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '12', block: 'B', number: '13', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '13', block: 'B', number: '14', type: '4+1', area: '180m²', status: 'empty' },
+    { id: '14', block: 'B', number: '15', type: '4+1', area: '180m²', status: 'empty' },
 ];
 
 export default function AddResidentPage() {
+    const router = useRouter();
+    const { success: showSuccessToast, error: showErrorToast } = useToast();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<FormData>({
-        identityType: 'nationalId',
-        identityNumber: '',
         firstName: '',
         lastName: '',
-        mobilePhone: '',
-        hasWhatsApp: true,
+        phone: '',
         email: '',
-        residentType: 'owner',
+        password: '',
+        confirmPassword: '',
+        propertyName: 'Ninety Nine Club', // Default property name
         block: '',
-        apartmentNumber: '',
+        propertyNumber: '',
+        propertyType: 'RESIDENCE',
+        ownershipType: 'owner',
+        identityDocument: [],
+        propertyDocument: [],
         startDuesToday: true,
         useStandardDues: true,
         sendMobileInvite: true,
@@ -92,14 +142,6 @@ export default function AddResidentPage() {
 
     const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-    // Yeni eklenen: useResidentData hook'u
-    const {
-        createResident,
-        saving,
-        saveError,
-        clearSaveError
-    } = useResidentData();
 
     // Breadcrumb for add resident page
     const breadcrumbItems = [
@@ -126,7 +168,7 @@ export default function AddResidentPage() {
         }
 
         // Handle apartment selection
-        if (field === 'apartmentNumber' && value) {
+        if (field === 'propertyNumber' && value) {
             const apartment = mockApartments.find(apt =>
                 apt.block === formData.block && apt.number === value
             );
@@ -134,107 +176,222 @@ export default function AddResidentPage() {
         }
     };
 
-    // Validate Iraqi National ID (basic format: 12 digits)
-    const validateIraqiId = (id: string, type: string): boolean => {
-        switch (type) {
-            case 'nationalId':
-                return /^\d{12}$/.test(id.replace(/\s/g, ''));
-            case 'citizenship':
-                return /^\d{10}$/.test(id.replace(/\s/g, ''));
-            case 'passport':
-                return /^[A-Z]\d{7,9}$/.test(id.replace(/\s/g, ''));
-            case 'residence':
-                return /^\d{8,10}$/.test(id.replace(/\s/g, ''));
-            default:
-                return false;
-        }
+    // Handle file uploads
+    const handleFileChange = (field: 'identityDocument' | 'propertyDocument') =>
+        (files: FileList | null) => {
+            if (files) {
+                setFormData(prev => ({
+                    ...prev,
+                    [field]: Array.from(files)
+                }));
+            }
+        };
+
+    const handleFileRemove = (field: 'identityDocument' | 'propertyDocument') =>
+        (index: number) => {
+            setFormData(prev => ({
+                ...prev,
+                [field]: prev[field].filter((_, i) => i !== index)
+            }));
+        };
+
+    // Validate Iraqi phone number
+    const validateIraqiPhone = (phone: string): boolean => {
+        return /^7\d{9}$/.test(phone.replace(/\s/g, ''));
+    };
+
+    // Validate email
+    const validateEmail = (email: string): boolean => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    };
+
+    // Validate password
+    const validatePassword = (password: string): boolean => {
+        return password.length >= 8;
     };
 
     // Validate form
     const validateForm = (): boolean => {
         const newErrors: { [key: string]: string } = {};
 
-        // Identity Number validation
-        if (!formData.identityNumber) {
-            newErrors.identityNumber = 'Kimlik numarası zorunludur';
-        } else if (!validateIraqiId(formData.identityNumber, formData.identityType)) {
-            switch (formData.identityType) {
-                case 'nationalId':
-                    newErrors.identityNumber = 'Ulusal kimlik numarası 12 haneli olmalıdır';
-                    break;
-                case 'citizenship':
-                    newErrors.identityNumber = 'Vatandaşlık belgesi 10 haneli olmalıdır';
-                    break;
-                case 'passport':
-                    newErrors.identityNumber = 'Pasaport formatı geçersiz (örnek: A1234567)';
-                    break;
-                case 'residence':
-                    newErrors.identityNumber = 'İkamet kartı 8-10 haneli olmalıdır';
-                    break;
-            }
-        }
-
-        // Name validation
+        // Personal Info validation
         if (!formData.firstName.trim()) {
             newErrors.firstName = 'Ad zorunludur';
         }
         if (!formData.lastName.trim()) {
             newErrors.lastName = 'Soyad zorunludur';
         }
-
-        // Phone validation (Iraqi format)
-        if (!formData.mobilePhone) {
-            newErrors.mobilePhone = 'Cep telefonu zorunludur';
-        } else if (!/^7\d{9}$/.test(formData.mobilePhone.replace(/\s/g, ''))) {
-            newErrors.mobilePhone = 'Geçerli bir Irak telefon numarası giriniz (7 ile başlamalı)';
+        if (!formData.phone) {
+            newErrors.phone = 'Telefon numarası zorunludur';
+        } else if (!validateIraqiPhone(formData.phone)) {
+            newErrors.phone = 'Geçerli bir Irak telefon numarası giriniz (7 ile başlamalı)';
+        }
+        if (!formData.email) {
+            newErrors.email = 'E-posta zorunludur';
+        } else if (!validateEmail(formData.email)) {
+            newErrors.email = 'Geçerli bir e-posta adresi giriniz';
+        }
+        if (!formData.password) {
+            newErrors.password = 'Şifre zorunludur';
+        } else if (!validatePassword(formData.password)) {
+            newErrors.password = 'Şifre en az 8 karakter olmalıdır';
+        }
+        if (!formData.confirmPassword) {
+            newErrors.confirmPassword = 'Şifre tekrarı zorunludur';
+        } else if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Şifreler eşleşmiyor';
         }
 
-        // Housing validation
+        // Property Info validation
+        if (!formData.propertyName.trim()) {
+            newErrors.propertyName = 'Emlak adı zorunludur';
+        }
         if (!formData.block) {
             newErrors.block = 'Blok seçimi zorunludur';
         }
-        if (!formData.apartmentNumber) {
-            newErrors.apartmentNumber = 'Daire seçimi zorunludur';
+        if (!formData.propertyNumber) {
+            newErrors.propertyNumber = 'Daire numarası zorunludur';
+        }
+
+        // Document validation
+        if (formData.identityDocument.length === 0) {
+            newErrors.identityDocument = 'Kimlik belgesi zorunludur';
+        }
+        if (formData.propertyDocument.length === 0) {
+            newErrors.propertyDocument = 'Tapu belgesi zorunludur';
         }
 
         // Check if apartment is occupied
         if (selectedApartment?.status === 'occupied') {
-            newErrors.apartmentNumber = 'Seçilen daire dolu görünüyor';
+            newErrors.propertyNumber = 'Seçilen daire dolu görünüyor';
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+        // Upload documents to server
+    const uploadDocuments = async (userId: string): Promise<DocumentDto[]> => {
+        const documents: DocumentDto[] = [];
+        
+        try {
+            // Upload identity document
+            if (formData.identityDocument.length > 0) {
+                const identityFormData = new FormData();
+                identityFormData.append('file', formData.identityDocument[0]);
+                identityFormData.append('documentType', 'identity');
+
+                const identityResponse = await fetch(`/api/proxy/auth/upload-user-documents/${userId}`, {
+                    method: 'POST',
+                    body: identityFormData,
+                });
+
+                if (identityResponse.ok) {
+                    const identityResult = await identityResponse.json();
+                    if (identityResult.success && identityResult.files && identityResult.files.length > 0) {
+                        documents.push({
+                            type: 'identity',
+                            url: identityResult.files[0].filePath,
+                        });
+                    }
+                }
+            }
+
+            // Upload property document
+            if (formData.propertyDocument.length > 0) {
+                const propertyFormData = new FormData();
+                propertyFormData.append('file', formData.propertyDocument[0]);
+                propertyFormData.append('documentType', 'property');
+
+                const propertyResponse = await fetch(`/api/proxy/auth/upload-user-documents/${userId}`, {
+                    method: 'POST',
+                    body: propertyFormData,
+                });
+
+                if (propertyResponse.ok) {
+                    const propertyResult = await propertyResponse.json();
+                    if (propertyResult.success && propertyResult.files && propertyResult.files.length > 0) {
+                        documents.push({
+                            type: 'property',
+                            url: propertyResult.files[0].filePath,
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Document upload error:', error);
+            throw new Error('Belgeler yüklenirken hata oluştu');
+        }
+
+        return documents;
+    };
+
     // Handle form submission
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (validateForm()) {
-            // Yeni API'ye uygun CreateResidentRequest oluştur
-            const dto: CreateResidentRequest = {
+        if (!validateForm()) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // Step 1: Register user
+            const registerData: RegisterDto = {
                 personalInfo: {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
-                    phone: formData.mobilePhone,
+                    phone: formData.phone,
                     email: formData.email,
-                    password: '', // Eğer şifre isteniyorsa ekle
+                    password: formData.password,
                 },
                 propertyInfo: {
-                    name: '', // Apartman adı gerekiyorsa ekle
+                    name: formData.propertyName,
                     block: formData.block,
-                    propertyNumber: formData.apartmentNumber,
-                    propertyType: 'RESIDENCE',
-                    ownershipType: formData.residentType === 'owner' ? 'owner' : 'tenant',
+                    propertyNumber: formData.propertyNumber,
+                    propertyType: formData.propertyType,
+                    ownershipType: formData.ownershipType,
                 },
-                documents: [], // Belgeler ekleniyorsa doldur
+                documents: [], // Initially empty, will be updated after upload
             };
-            try {
-                await createResident(dto);
-                setShowSuccess(true);
-            } catch (err) {
-                // Hata zaten saveError ile gösterilecek
+
+            const registerResponse = await fetch('/api/proxy/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registerData),
+            });
+
+            if (!registerResponse.ok) {
+                const errorData = await registerResponse.json();
+                throw new Error(errorData.message || 'Kullanıcı kaydı başarısız oldu');
             }
+
+            const registerResult = await registerResponse.json();
+
+            if (!registerResult.success || !registerResult.userId) {
+                throw new Error('Kullanıcı kaydı başarısız oldu');
+            }
+            console.log("registerRESULt", registerResult);
+            // Step 2: Upload documents
+            const uploadedDocuments = await uploadDocuments(registerResult.userId);
+
+            // Step 3: Show success and redirect
+            showSuccessToast('Başarılı!', 'Sakin başarıyla kaydedildi');
+            setShowSuccess(true);
+
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                router.push('/dashboard/residents');
+            }, 2000);
+
+        } catch (error: any) {
+            console.error('Registration error:', error);
+            showErrorToast('Hata!', error.message || 'Kayıt sırasında hata oluştu');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -259,29 +416,24 @@ export default function AddResidentPage() {
                                         {formData.firstName} {formData.lastName} - {selectedApartment?.block} Blok, Daire {selectedApartment?.number}
                                     </p>
                                     <p className="text-sm text-text-light-muted dark:text-text-muted mb-6">
-                                        Kayıt No: #2024-{Math.floor(Math.random() * 9999).toString().padStart(4, '0')}
+                                        Kayıt tamamlandı ve onay bekliyor.
                                     </p>
 
                                     <div className="bg-background-light-soft dark:bg-background-soft rounded-lg p-4 mb-6">
                                         <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                            Şimdi ne yapmak istersiniz?
+                                            Sakin listesine yönlendiriliyorsunuz...
                                         </p>
                                     </div>
 
                                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                        <Link href="/dashboard/residents/1">
+                                        <Link href="/dashboard/residents">
                                             <Button variant="primary">
-                                                Detayları Düzenle
+                                                Sakin Listesine Dön
                                             </Button>
                                         </Link>
                                         <Button variant="secondary" onClick={() => setShowSuccess(false)}>
                                             Yeni Sakin Ekle
                                         </Button>
-                                        <Link href="/dashboard/residents">
-                                            <Button variant="secondary">
-                                                Sakin Listesine Dön
-                                            </Button>
-                                        </Link>
                                     </div>
                                 </div>
                             </Card>
@@ -305,7 +457,7 @@ export default function AddResidentPage() {
                 <div className="lg:ml-72">
                     {/* Header */}
                     <DashboardHeader
-                        title="Yeni Sakin - Hızlı Kayıt"
+                        title="Yeni Sakin - Kayıt Formu"
                         breadcrumbItems={breadcrumbItems}
                     />
 
@@ -325,8 +477,12 @@ export default function AddResidentPage() {
                                         İptal
                                     </Button>
                                 </Link>
-                                <Button variant="primary" onClick={handleSubmit}>
-                                    Kaydet
+                                <Button
+                                    variant="primary"
+                                    onClick={handleSubmit}
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Kaydediliyor...' : 'Sakini Kaydet'}
                                 </Button>
                             </div>
                         </div>
@@ -337,10 +493,10 @@ export default function AddResidentPage() {
                                 <Info className="h-5 w-5 text-primary-gold mt-0.5" />
                                 <div>
                                     <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                        Temel bilgileri girerek sakini kaydedin, detayları sonra ekleyin
+                                        Tüm bilgileri girerek sakini kaydedin
                                     </p>
                                     <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
-                                        Sakin kaydedildikten sonra detay sayfasından tüm bilgileri ekleyebilir ve düzenleyebilirsiniz.
+                                        Kişisel bilgiler, emlak bilgileri ve kimlik/tapu belgeleri gereklidir.
                                     </p>
                                 </div>
                             </div>
@@ -350,67 +506,15 @@ export default function AddResidentPage() {
                         <form onSubmit={handleSubmit}>
                             <Card>
                                 <div className="p-6">
-                                    <div className="text-center mb-8">
-                                        <h2 className="text-xl font-bold text-text-on-light dark:text-text-on-dark">
-                                            ZORUNLU BİLGİLER
-                                        </h2>
-                                        <div className="w-24 h-1 bg-primary-gold rounded mx-auto mt-2"></div>
-                                    </div>
-
                                     <div className="space-y-8">
-                                        {/* Identity Information */}
+                                        {/* Personal Information */}
                                         <div>
                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                                 <User className="h-5 w-5 text-primary-gold" />
-                                                Kimlik Bilgileri
+                                                Kişisel Bilgiler
                                             </h3>
                                             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-
-                                                {/* Identity Type */}
-                                                <div className="mb-4">
-                                                    <RadioButton
-                                                        label="Kimlik Tipi"
-                                                        name="identityType"
-                                                        value={formData.identityType}
-                                                        onChange={(e) => handleInputChange('identityType', e.target.value)}
-                                                        direction="horizontal"
-                                                        options={[
-                                                            { value: 'nationalId', label: 'Ulusal Kimlik' },
-                                                            { value: 'citizenship', label: 'Vatandaşlık Belgesi' },
-                                                            { value: 'passport', label: 'Pasaport' },
-                                                            { value: 'residence', label: 'İkamet Kartı' }
-                                                        ]}
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    {/* Identity Number */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                            Kimlik No *
-                                                        </label>
-                                                        <div className="flex gap-2">
-                                                            <input
-                                                                type="text"
-                                                                className={`flex-1 px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.identityNumber ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
-                                                                    }`}
-                                                                placeholder={
-                                                                    formData.identityType === 'nationalId' ? '123456789012' :
-                                                                        formData.identityType === 'citizenship' ? '1234567890' :
-                                                                            formData.identityType === 'passport' ? 'A1234567' : '12345678'
-                                                                }
-                                                                value={formData.identityNumber}
-                                                                onChange={(e) => handleInputChange('identityNumber', e.target.value)}
-                                                            />
-                                                            <Button variant="secondary" size="sm" type="button">
-                                                                ✓
-                                                            </Button>
-                                                        </div>
-                                                        {errors.identityNumber && (
-                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.identityNumber}</p>
-                                                        )}
-                                                    </div>
-
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {/* First Name */}
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
@@ -446,22 +550,11 @@ export default function AddResidentPage() {
                                                             <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.lastName}</p>
                                                         )}
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        {/* Contact Information */}
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
-                                                <Phone className="h-5 w-5 text-primary-gold" />
-                                                İletişim
-                                            </h3>
-                                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {/* Mobile Phone */}
+                                                    {/* Phone */}
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                            Cep Telefonu *
+                                                            Telefon Numarası *
                                                         </label>
                                                         <div className="flex">
                                                             <span className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-200 dark:bg-gray-700 border border-r-0 border-gray-200 dark:border-gray-700 rounded-l-lg">
@@ -469,67 +562,133 @@ export default function AddResidentPage() {
                                                             </span>
                                                             <input
                                                                 type="tel"
-                                                                className={`flex-1 px-3 py-2 border rounded-r-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.mobilePhone ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
+                                                                className={`flex-1 px-3 py-2 border rounded-r-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.phone ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
                                                                     }`}
                                                                 placeholder="750 123 4567"
-                                                                value={formData.mobilePhone}
-                                                                onChange={(e) => handleInputChange('mobilePhone', e.target.value)}
+                                                                value={formData.phone}
+                                                                onChange={(e) => handleInputChange('phone', e.target.value)}
                                                             />
                                                         </div>
-                                                        {errors.mobilePhone && (
-                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.mobilePhone}</p>
+                                                        {errors.phone && (
+                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.phone}</p>
                                                         )}
-                                                        <div className="mt-2">
-                                                            <Checkbox
-                                                                checked={formData.hasWhatsApp}
-                                                                onChange={(e) => handleInputChange('hasWhatsApp', e.target.checked)}
-                                                                label="WhatsApp"
-                                                            />
-                                                        </div>
                                                     </div>
 
                                                     {/* Email */}
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                            E-posta
+                                                            E-posta *
                                                         </label>
                                                         <input
                                                             type="email"
-                                                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold"
+                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
+                                                                }`}
                                                             placeholder="ahmet@email.com"
                                                             value={formData.email}
                                                             onChange={(e) => handleInputChange('email', e.target.value)}
                                                         />
+                                                        {errors.email && (
+                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.email}</p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Password */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                                            Şifre *
+                                                        </label>
+                                                        <input
+                                                            type="password"
+                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.password ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
+                                                                }`}
+                                                            placeholder="En az 8 karakter"
+                                                            value={formData.password}
+                                                            onChange={(e) => handleInputChange('password', e.target.value)}
+                                                        />
+                                                        {errors.password && (
+                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.password}</p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Confirm Password */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                                            Şifre Tekrarı *
+                                                        </label>
+                                                        <input
+                                                            type="password"
+                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.confirmPassword ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
+                                                                }`}
+                                                            placeholder="Şifreyi tekrar giriniz"
+                                                            value={formData.confirmPassword}
+                                                            onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                                                        />
+                                                        {errors.confirmPassword && (
+                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.confirmPassword}</p>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Housing Information */}
+                                        {/* Property Information */}
                                         <div>
                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                                 <Home className="h-5 w-5 text-primary-gold" />
-                                                Konut Atama
+                                                Emlak Bilgileri
                                             </h3>
                                             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-
-                                                {/* Resident Type */}
-                                                <div className="mb-4">
-                                                    <RadioButton
-                                                        label="Sakin Tipi *"
-                                                        name="residentType"
-                                                        value={formData.residentType}
-                                                        onChange={(e) => handleInputChange('residentType', e.target.value)}
-                                                        direction="horizontal"
-                                                        options={[
-                                                            { value: 'owner', label: 'Malik' },
-                                                            { value: 'tenant', label: 'Kiracı' },
-                                                            { value: 'family', label: 'Aile Üyesi' }
-                                                        ]}
-                                                    />
-                                                </div>
-
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {/* Property Name */}
+                                                    <div className="md:col-span-2">
+                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                                            Emlak Adı *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.propertyName ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
+                                                                }`}
+                                                            placeholder="Ninety Nine Club"
+                                                            value={formData.propertyName}
+                                                            onChange={(e) => handleInputChange('propertyName', e.target.value)}
+                                                        />
+                                                        {errors.propertyName && (
+                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.propertyName}</p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Property Type */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                                            Emlak Tipi *
+                                                        </label>
+                                                        <select
+                                                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold"
+                                                            value={formData.propertyType}
+                                                            onChange={(e) => handleInputChange('propertyType', e.target.value as FormData['propertyType'])}
+                                                        >
+                                                            <option value="RESIDENCE">Residence</option>
+                                                            <option value="VILLA">Villa</option>
+                                                            <option value="COMMERCIAL">Commercial</option>
+                                                            <option value="OFFICE">Office</option>
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Ownership Type */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                                            Sahiplik Tipi *
+                                                        </label>
+                                                        <select
+                                                            className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold"
+                                                            value={formData.ownershipType}
+                                                            onChange={(e) => handleInputChange('ownershipType', e.target.value as FormData['ownershipType'])}
+                                                        >
+                                                            <option value="owner">Malik</option>
+                                                            <option value="tenant">Kiracı</option>
+                                                        </select>
+                                                    </div>
+
                                                     {/* Block Selection */}
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
@@ -541,7 +700,7 @@ export default function AddResidentPage() {
                                                             value={formData.block}
                                                             onChange={(e) => {
                                                                 handleInputChange('block', e.target.value);
-                                                                handleInputChange('apartmentNumber', ''); // Reset apartment selection
+                                                                handleInputChange('propertyNumber', ''); // Reset apartment selection
                                                             }}
                                                         >
                                                             <option value="">Seçiniz</option>
@@ -560,10 +719,10 @@ export default function AddResidentPage() {
                                                             Daire No *
                                                         </label>
                                                         <select
-                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.apartmentNumber ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
+                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.propertyNumber ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
                                                                 }`}
-                                                            value={formData.apartmentNumber}
-                                                            onChange={(e) => handleInputChange('apartmentNumber', e.target.value)}
+                                                            value={formData.propertyNumber}
+                                                            onChange={(e) => handleInputChange('propertyNumber', e.target.value)}
                                                             disabled={!formData.block}
                                                         >
                                                             <option value="">Seçiniz</option>
@@ -573,8 +732,8 @@ export default function AddResidentPage() {
                                                                 </option>
                                                             ))}
                                                         </select>
-                                                        {errors.apartmentNumber && (
-                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.apartmentNumber}</p>
+                                                        {errors.propertyNumber && (
+                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.propertyNumber}</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -614,6 +773,47 @@ export default function AddResidentPage() {
                                             </div>
                                         </div>
 
+                                        {/* Document Upload */}
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
+                                                <FileText className="h-5 w-5 text-primary-gold" />
+                                                Belge Yükleme
+                                            </h3>
+                                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    {/* Identity Document */}
+                                                    <div>
+                                                        <FileUpload
+                                                            label="Kimlik Belgesi *"
+                                                            helperText="Kimlik, pasaport veya ikamet kartı resmi"
+                                                            acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']}
+                                                            maxSize={5}
+                                                            selectedFiles={formData.identityDocument}
+                                                            onFilesChange={handleFileChange('identityDocument')}
+                                                            onFileRemove={handleFileRemove('identityDocument')}
+                                                            error={errors.identityDocument}
+                                                            isRequired
+                                                        />
+                                                    </div>
+
+                                                    {/* Property Document */}
+                                                    <div>
+                                                        <FileUpload
+                                                            label="Tapu Belgesi *"
+                                                            helperText="Tapu, kira kontratı veya mülkiyet belgesi"
+                                                            acceptedTypes={['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']}
+                                                            maxSize={5}
+                                                            selectedFiles={formData.propertyDocument}
+                                                            onFilesChange={handleFileChange('propertyDocument')}
+                                                            onFileRemove={handleFileRemove('propertyDocument')}
+                                                            error={errors.propertyDocument}
+                                                            isRequired
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         {/* Quick Options */}
                                         <div>
                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
@@ -631,7 +831,7 @@ export default function AddResidentPage() {
                                                     <Checkbox
                                                         checked={formData.useStandardDues}
                                                         onChange={(e) => handleInputChange('useStandardDues', e.target.checked)}
-                                                        label="Standart aidat tutarını uygula (250,000)"
+                                                        label="Standart aidat tutarını uygula"
                                                     />
 
                                                     <Checkbox
@@ -653,12 +853,15 @@ export default function AddResidentPage() {
                                     {/* Submit Button */}
                                     <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                                         <div className="flex flex-col items-center gap-2">
-                                            <Button variant="primary" size="lg" type="submit" className="px-12" disabled={saving}>
-                                                {saving ? 'Kaydediliyor...' : 'Sakini Kaydet'}
+                                            <Button
+                                                variant="primary"
+                                                size="lg"
+                                                type="submit"
+                                                className="px-12"
+                                                disabled={loading}
+                                            >
+                                                {loading ? 'Kaydediliyor...' : 'Sakini Kaydet'}
                                             </Button>
-                                            {saveError && (
-                                                <p className="text-sm text-red-600 dark:text-red-400 mt-2">{saveError}</p>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
