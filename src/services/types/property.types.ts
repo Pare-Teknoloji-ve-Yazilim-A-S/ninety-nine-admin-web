@@ -11,6 +11,8 @@ export interface Property extends BaseEntity {
     blockNumber?: string;
     floor?: number;
     status: 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED';
+    rooms?: string;
+    description?: string;
     owner?: PropertyUser;
     tenant?: PropertyUser;
     bills?: PropertyBill[];
@@ -46,6 +48,8 @@ export interface CreatePropertyDto {
     blockNumber?: string;
     floor?: number;
     status?: 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED';
+    rooms?: string;
+    description?: string;
     ownerId?: string;
     tenantId?: string;
 }
@@ -59,6 +63,8 @@ export interface UpdatePropertyDto {
     blockNumber?: string;
     floor?: number;
     status?: 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED';
+    rooms?: string;
+    description?: string;
     ownerId?: string;
     tenantId?: string;
 }
