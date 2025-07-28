@@ -295,7 +295,7 @@ export default function TicketDetailPage() {
                                                     İşleme Al
                                                 </Button>
                                                 <Button
-                                                    variant="success"
+                                                    variant="primary"
                                                     icon={CheckCircle}
                                                     onClick={() => handleStatusChange('resolve')}
                                                 >
@@ -319,7 +319,7 @@ export default function TicketDetailPage() {
                                             </h2>
                                             <div className="flex flex-wrap gap-3">
                                                 <Button
-                                                    variant="success"
+                                                    variant="primary"
                                                     icon={CheckCircle}
                                                     onClick={() => handleStatusChange('resolve')}
                                                 >
@@ -351,7 +351,7 @@ export default function TicketDetailPage() {
                                                     <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
                                                         Tip
                                                     </p>
-                                                    <Badge variant="soft" color={TYPE_COLOR_MAP[ticket.type as keyof typeof TYPE_COLOR_MAP] || 'secondary'}>
+                                                    <Badge variant="soft" color={TYPE_COLOR_MAP[ticket.type as keyof typeof TYPE_COLOR_MAP] as any}>
                                                         {ticket.type}
                                                     </Badge>
                                                 </div>
@@ -363,7 +363,7 @@ export default function TicketDetailPage() {
                                                     <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
                                                         Öncelik
                                                     </p>
-                                                    <Badge variant="soft" color={PRIORITY_COLOR_MAP[ticket.priority as keyof typeof PRIORITY_COLOR_MAP] || 'secondary'}>
+                                                    <Badge variant="soft" color={PRIORITY_COLOR_MAP[ticket.priority as keyof typeof PRIORITY_COLOR_MAP] as any}>
                                                         {ticket.priority}
                                                     </Badge>
                                                 </div>

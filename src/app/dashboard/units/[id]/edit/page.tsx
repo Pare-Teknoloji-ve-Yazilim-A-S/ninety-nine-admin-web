@@ -360,7 +360,7 @@ export default function EditUnitPage() {
                                         type="submit"
                                         variant="primary"
                                         icon={Save}
-                                        loading={isUpdating}
+                                        isLoading={isUpdating}
                                         disabled={isUpdating}
                                     >
                                         {isUpdating ? 'Kaydediliyor...' : 'Kaydet'}

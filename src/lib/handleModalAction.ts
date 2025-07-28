@@ -1,10 +1,17 @@
-import { ToastFns } from '@/hooks/useToast';
+import { useToast } from '@/hooks/useToast';
+
+type ToastFns = {
+  success: (title: string, message?: string) => void;
+  error: (title: string, message?: string) => void;
+  warning: (title: string, message?: string) => void;
+  info: (title: string, message?: string) => void;
+};
 
 interface HandleModalActionParams<T> {
   action: () => Promise<T>;
   onClose: () => void;
   onActionComplete?: () => void;
-  toast: any; // ToastFns yerine any
+  toast: ToastFns;
   label: string;
   setLoading?: (loading: boolean) => void;
 }
