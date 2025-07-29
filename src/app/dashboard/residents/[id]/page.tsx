@@ -46,41 +46,10 @@ import RequestDetailModal from '../../requests/RequestDetailModal';
 import CreateTicketModal from '../../components/CreateTicketModal';
 import { ToastContainer } from '@/app/components/ui/Toast';
 import { Ticket } from '@/services/ticket.service';
-import axios from 'axios'; // Added axios import
-import apiClient from '@/services/api/client';
+import { useFamilyMembers } from '@/hooks/useFamilyMembers';
+import { CreateFamilyMemberDto, FamilyMember } from '@/services/types/family-member.types';
 
-// Mock family member interface
-interface FamilyMember {
-    id: string;
-    firstName: string;
-    lastName: string;
-    relationship: string;
-    age: number;
-    phone?: string;
-    isMinor: boolean;
-    profileImage?: string;
-}
 
-// Mock family members data
-const mockFamilyMembers: FamilyMember[] = [
-    {
-        id: '1',
-        firstName: 'Ayşe',
-        lastName: 'Yılmaz',
-        relationship: 'Eş',
-        age: 38,
-        phone: '0555 123 4567',
-        isMinor: false
-    },
-    {
-        id: '2',
-        firstName: 'Can',
-        lastName: 'Yılmaz',
-        relationship: 'Çocuk',
-        age: 12,
-        isMinor: true
-    }
-];
 
 export default function ResidentViewPage() {
     const params = useParams();
@@ -93,7 +62,6 @@ export default function ResidentViewPage() {
     const [showTicketDetailModal, setShowTicketDetailModal] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
-    const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
     
     // Toast system
     const toast = useToast();
@@ -134,6 +102,21 @@ export default function ResidentViewPage() {
 
     const { resident, loading, error } = useResidentData({
         residentId,
+        autoFetch: true
+    });
+
+    // Use family members hook
+    const {
+        familyMembers,
+        loading: familyMembersLoading,
+        error: familyMembersError,
+        saving: familyMembersSaving,
+        saveError: familyMembersSaveError,
+        createFamilyMember,
+        refreshData: refreshFamilyMembers,
+        clearSaveError: clearFamilyMembersSaveError
+    } = useFamilyMembers({
+        userId: residentId,
         autoFetch: true
     });
 
@@ -193,28 +176,34 @@ export default function ResidentViewPage() {
     };
 
     // Handle add family member
-    const handleAddFamilyMember = () => {
+    const handleAddFamilyMember = async () => {
         if (familyFormData.firstName && familyFormData.lastName && familyFormData.relationship && familyFormData.age) {
-            const newMember: FamilyMember = {
-                id: (familyMembers.length + 1).toString(),
-                firstName: familyFormData.firstName,
-                lastName: familyFormData.lastName,
-                relationship: familyFormData.relationship,
-                age: parseInt(familyFormData.age),
-                phone: familyFormData.phone || undefined,
-                isMinor: parseInt(familyFormData.age) < 18
-            };
-            
-            setFamilyMembers([...familyMembers, newMember]);
-            setFamilyFormData({
-                firstName: '',
-                lastName: '',
-                relationship: '',
-                age: '',
-                phone: '',
-                identityNumber: ''
-            });
-            setShowAddFamilyModal(false);
+            try {
+                const newMemberData: CreateFamilyMemberDto = {
+                    firstName: familyFormData.firstName,
+                    lastName: familyFormData.lastName,
+                    relationship: familyFormData.relationship,
+                    age: parseInt(familyFormData.age),
+                    phone: familyFormData.phone || undefined,
+                    identityNumber: familyFormData.identityNumber || undefined
+                };
+                
+                await createFamilyMember(residentId, newMemberData);
+                
+                // Clear form data
+                setFamilyFormData({
+                    firstName: '',
+                    lastName: '',
+                    relationship: '',
+                    age: '',
+                    phone: '',
+                    identityNumber: ''
+                });
+                setShowAddFamilyModal(false);
+                toast.success('Aile üyesi başarıyla eklendi!');
+            } catch (error) {
+                toast.error('Aile üyesi eklenirken bir hata oluştu.');
+            }
         }
     };
 
@@ -460,12 +449,44 @@ export default function ResidentViewPage() {
                                                 <div>
                                                     <div className="flex justify-between items-center mb-6">
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Aile Üyeleri</h4>
-                                                        <Button variant="primary" icon={Plus} onClick={() => setShowAddFamilyModal(true)}>
+                                                        <Button 
+                                                            variant="primary" 
+                                                            icon={Plus} 
+                                                            onClick={() => setShowAddFamilyModal(true)}
+                                                            disabled={familyMembersSaving}
+                                                        >
                                                             Aile Üyesi Ekle
                                                         </Button>
                                                     </div>
                                                     
-                                                    {familyMembers.length > 0 ? (
+                                                    {familyMembersLoading ? (
+                                                        <div className="space-y-4">
+                                                            {[1, 2, 3].map((i) => (
+                                                                <div key={i} className="animate-pulse">
+                                                                    <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                                                        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                                                        <div className="flex-1">
+                                                                            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
+                                                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : familyMembersError ? (
+                                                        <div className="text-center py-8">
+                                                            <AlertCircle className="h-12 w-12 text-primary-red mx-auto mb-4" />
+                                                            <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                                Aile üyeleri yüklenemedi
+                                                            </h3>
+                                                            <p className="text-sm text-text-light-muted dark:text-text-muted mb-4">
+                                                                {familyMembersError}
+                                                            </p>
+                                                            <Button variant="secondary" size="sm" onClick={refreshFamilyMembers}>
+                                                                Tekrar Dene
+                                                            </Button>
+                                                        </div>
+                                                    ) : familyMembers.length > 0 ? (
                                                         <div className="overflow-x-auto">
                                                             <table className="w-full">
                                                                 <thead>
@@ -1010,9 +1031,16 @@ export default function ResidentViewPage() {
                         <Button 
                             variant="primary" 
                             onClick={handleAddFamilyMember}
-                            disabled={!familyFormData.firstName || !familyFormData.lastName || !familyFormData.relationship || !familyFormData.age}
+                            disabled={
+                                !familyFormData.firstName || 
+                                !familyFormData.lastName || 
+                                !familyFormData.relationship || 
+                                !familyFormData.age ||
+                                familyMembersSaving
+                            }
+                            isLoading={familyMembersSaving}
                         >
-                            Aile Üyesi Ekle
+                            {familyMembersSaving ? 'Ekleniyor...' : 'Aile Üyesi Ekle'}
                         </Button>
                     </div>
                 </div>

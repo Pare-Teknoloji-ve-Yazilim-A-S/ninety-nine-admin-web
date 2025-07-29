@@ -17,6 +17,7 @@ export * from './utils/logger';
 
 // Domain Types
 export * from './types/auth.types';
+export * from './types/family-member.types';
 
 
 // Services
@@ -28,6 +29,7 @@ export { default as propertyService, PropertyService } from './property.service'
 export { unitsService, UnitsService } from './units.service';
 export { residentsStatsService } from './residents-stats.service';
 export { fileUploadService } from './file-upload.service';
+export { familyMemberService } from './family-member.service';
 
 // Re-export commonly used types for convenience
 export type {
