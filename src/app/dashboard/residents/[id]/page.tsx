@@ -29,18 +29,68 @@ import {
     Clock,
     MapPin,
     Mail,
-    IdCard
+    IdCard,
+    Plus,
+    ChevronRight
 } from 'lucide-react';
 import Modal from '@/app/components/ui/Modal';
+import Input from '@/app/components/ui/Input';
+import Select from '@/app/components/ui/Select';
 import axios from 'axios'; // Added axios import
 import apiClient from '@/services/api/client';
+
+// Mock family member interface
+interface FamilyMember {
+    id: string;
+    firstName: string;
+    lastName: string;
+    relationship: string;
+    age: number;
+    phone?: string;
+    isMinor: boolean;
+    profileImage?: string;
+}
+
+// Mock family members data
+const mockFamilyMembers: FamilyMember[] = [
+    {
+        id: '1',
+        firstName: 'Ayşe',
+        lastName: 'Yılmaz',
+        relationship: 'Eş',
+        age: 38,
+        phone: '0555 123 4567',
+        isMinor: false
+    },
+    {
+        id: '2',
+        firstName: 'Can',
+        lastName: 'Yılmaz',
+        relationship: 'Çocuk',
+        age: 12,
+        isMinor: true
+    }
+];
 
 export default function ResidentViewPage() {
     const params = useParams();
     const residentId = params.id as string;
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+    const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
+    const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
+    
+    // Family member form data
+    const [familyFormData, setFamilyFormData] = useState({
+        firstName: '',
+        lastName: '',
+        relationship: '',
+        age: '',
+        phone: '',
+        identityNumber: ''
+    });
+    
     // Document states
     const [nationalIdDocLoading, setNationalIdDocLoading] = useState(false);
     const [ownershipDocLoading, setOwnershipDocLoading] = useState(false);
@@ -121,6 +171,36 @@ export default function ResidentViewPage() {
         return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     };
 
+    const getFamilyMemberInitials = (member: FamilyMember) => {
+        return `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
+    };
+
+    // Handle add family member
+    const handleAddFamilyMember = () => {
+        if (familyFormData.firstName && familyFormData.lastName && familyFormData.relationship && familyFormData.age) {
+            const newMember: FamilyMember = {
+                id: (familyMembers.length + 1).toString(),
+                firstName: familyFormData.firstName,
+                lastName: familyFormData.lastName,
+                relationship: familyFormData.relationship,
+                age: parseInt(familyFormData.age),
+                phone: familyFormData.phone || undefined,
+                isMinor: parseInt(familyFormData.age) < 18
+            };
+            
+            setFamilyMembers([...familyMembers, newMember]);
+            setFamilyFormData({
+                firstName: '',
+                lastName: '',
+                relationship: '',
+                age: '',
+                phone: '',
+                identityNumber: ''
+            });
+            setShowAddFamilyModal(false);
+        }
+    };
+
     if (loading) {
         return (
             <ProtectedRoute>
@@ -192,7 +272,7 @@ export default function ResidentViewPage() {
                 <div className="lg:ml-72">
                     {/* Header */}
                     <DashboardHeader
-                        title={resident.fullName}
+                        title={resident?.fullName || 'Sakin Detayı'}
                         breadcrumbItems={breadcrumbItems}
                     />
 
@@ -208,10 +288,10 @@ export default function ResidentViewPage() {
                                 </Link>
                                 <div>
                                     <h1 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                                        {resident.fullName}
+                                        {resident?.fullName || 'Yükleniyor...'}
                                     </h1>
                                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                        Sakin ID: #{resident.id}
+                                        Sakin ID: #{resident?.id || residentId}
                                     </p>
                                 </div>
                             </div>
@@ -223,7 +303,7 @@ export default function ResidentViewPage() {
                                 <Button variant="secondary" icon={MessageSquare}>
                                     Mesaj
                                 </Button>
-                                <Link href={`/dashboard/residents/${resident.id}/edit`}>
+                                <Link href={`/dashboard/residents/${residentId}/edit`}>
                                     <Button variant="danger" icon={Edit}>
                                         Kaldır
                                     </Button>
@@ -241,7 +321,7 @@ export default function ResidentViewPage() {
                                         <div className="flex items-start gap-6">
                                             {/* Avatar */}
                                             <div className="flex-shrink-0">
-                                                {resident.profileImage ? (
+                                                {resident?.profileImage ? (
                                                     <img
                                                         src={resident.profileImage}
                                                         alt={resident.fullName}
@@ -249,7 +329,7 @@ export default function ResidentViewPage() {
                                                     />
                                                 ) : (
                                                     <div className="w-24 h-24 rounded-full bg-primary-gold flex items-center justify-center text-white text-xl font-bold">
-                                                        {getInitials(resident.firstName, resident.lastName)}
+                                                        {resident ? getInitials(resident.firstName, resident.lastName) : 'U'}
                                                     </div>
                                                 )}
                                             </div>
@@ -258,56 +338,61 @@ export default function ResidentViewPage() {
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-3 mb-2">
                                                     <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
-                                                        {resident.fullName}
+                                                        {resident?.fullName || 'Yükleniyor...'}
                                                     </h2>
-                                                    <Badge
-                                                        variant="soft"
-                                                        color={getTypeColor(resident.residentType.type)}
-                                                    >
-                                                        {resident.residentType.label}
-                                                    </Badge>
-                                                </div>
-
-                                                <div className="flex items-center gap-2 mb-3">
-                                                    {getStatusIcon(resident.status.type)}
-                                                    <Badge
-                                                        variant="soft"
-                                                        color={getStatusColor(resident.status.color)}
-                                                    >
-                                                        {resident.status.label}
-                                                    </Badge>
-                                                    {resident.verificationStatus && (
-                                                        <Badge variant="outline" color={
-                                                            resident.verificationStatus.color === 'green' ? 'primary' :
-                                                                resident.verificationStatus.color === 'yellow' ? 'secondary' :
-                                                                    resident.verificationStatus.color === 'red' ? 'red' :
-                                                                        'secondary'
-                                                        }>
-                                                            {resident.verificationStatus.label}
+                                                    {resident && (
+                                                        <Badge
+                                                            variant="soft"
+                                                            color={getTypeColor(resident.residentType.type)}
+                                                        >
+                                                            {resident.residentType.label}
                                                         </Badge>
                                                     )}
                                                 </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                                    <div>
-                                                        <p className="text-text-light-muted dark:text-text-muted">Üyelik Seviyesi</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.membershipTier}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-text-light-muted dark:text-text-muted">Kayıt Tarihi</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {new Date(resident.registrationDate).toLocaleDateString('tr-TR')}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                {resident && (
+                                                    <>
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            {getStatusIcon(resident.status.type)}
+                                                            <Badge
+                                                                variant="soft"
+                                                                color={getStatusColor(resident.status.color)}
+                                                            >
+                                                                {resident.status.label}
+                                                            </Badge>
+                                                            {resident.verificationStatus && (
+                                                                <Badge variant="outline" color={
+                                                                    resident.verificationStatus.color === 'green' ? 'primary' :
+                                                                        resident.verificationStatus.color === 'yellow' ? 'secondary' :
+                                                                            resident.verificationStatus.color === 'red' ? 'red' :
+                                                                                'secondary'
+                                                                }>
+                                                                    {resident.verificationStatus.label}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                            <div>
+                                                                <p className="text-text-light-muted dark:text-text-muted">Üyelik Seviyesi</p>
+                                                                <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                                    {resident.membershipTier}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-text-light-muted dark:text-text-muted">Kayıt Tarihi</p>
+                                                                <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                                    {new Date(resident.registrationDate).toLocaleDateString('tr-TR')}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
                                 </Card>
 
-                                {/* Contact Information */}
                                 {/* Tabbed Contact/Resident Info Section */}
                                 <Card className="mt-6">
                                     <div className="p-0">
@@ -338,11 +423,84 @@ export default function ResidentViewPage() {
                                         <div className="px-6 py-6">
                                             {activeTab === "family" && (
                                                 <div>
-                                                                                                    {/* Aile Üyeleri Tab Content */}
-                                                <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Aile Üyeleri</h4>
-                                                <div className="text-sm text-text-light-muted dark:text-text-muted">
-                                                    Bu sakinle ilgili aile üyesi bilgileri burada görüntülenecek. (Yakında)
-                                                </div>
+                                                    <div className="flex justify-between items-center mb-6">
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Aile Üyeleri</h4>
+                                                        <Button variant="primary" icon={Plus} onClick={() => setShowAddFamilyModal(true)}>
+                                                            Aile Üyesi Ekle
+                                                        </Button>
+                                                    </div>
+                                                    
+                                                    {familyMembers.length > 0 ? (
+                                                        <div className="overflow-x-auto">
+                                                            <table className="w-full">
+                                                                <thead>
+                                                                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Foto</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Ad Soyad</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">İlişki</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Yaş</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Telefon</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">İşlem</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {familyMembers.map((member) => (
+                                                                        <tr key={member.id} className="border-b border-background-light-soft dark:border-background-soft hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors">
+                                                                            <td className="py-4 px-4">
+                                                                                <div className="w-10 h-10 rounded-full bg-primary-gold/10 flex items-center justify-center text-primary-gold font-medium">
+                                                                                    {getFamilyMemberInitials(member)}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="py-4 px-4">
+                                                                                <div className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                                                    {member.firstName} {member.lastName}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="py-4 px-4">
+                                                                                <span className="text-text-light-secondary dark:text-text-secondary">
+                                                                                    {member.relationship}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="py-4 px-4">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-text-on-light dark:text-text-on-dark">
+                                                                                        {member.age}
+                                                                                    </span>
+                                                                                    {member.isMinor && (
+                                                                                        <Badge variant="soft" color="secondary" className="text-xs">
+                                                                                            Reşit Değil
+                                                                                        </Badge>
+                                                                                    )}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="py-4 px-4">
+                                                                                <span className="text-text-light-secondary dark:text-text-secondary">
+                                                                                    {member.phone || '-'}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="py-4 px-4">
+                                                                                <Link href={`/dashboard/residents/${member.id}`}>
+                                                                                    <button className="p-2 hover:bg-background-light-soft dark:hover:bg-background-soft rounded-lg transition-colors">
+                                                                                        <ChevronRight className="h-4 w-4 text-text-light-muted dark:text-text-muted" />
+                                                                                    </button>
+                                                                                </Link>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center py-8">
+                                                            <User className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                                                            <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                                Henüz aile üyesi eklenmemiş
+                                                            </h3>
+                                                            <p className="text-sm text-text-light-muted dark:text-text-muted">
+                                                                Bu sakin için aile üyesi bilgilerini ekleyebilirsiniz.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             {activeTab === "documents" && (
@@ -404,15 +562,6 @@ export default function ResidentViewPage() {
                                         </div>
                                     </div>
                                 </Card>
-                                {/* Tab State */}
-                                {/*
-                                    Tab state is managed in the parent component.
-                                    Add this to the ResidentViewPage component:
-                                    const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
-                                */}
-
-                                {/* Housing Information */}
-
                             </div>
 
                             {/* Right Column - Sidebar */}
@@ -434,23 +583,10 @@ export default function ResidentViewPage() {
                                                     <div>
                                                         <p className="text-sm text-text-light-muted dark:text-text-muted">Konut</p>
                                                         <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {/* {resident.address.building} */}
                                                             Villa 13
                                                         </p>
                                                     </div>
                                                 </div>
-
-                                                {/* <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <Home className="h-5 w-5 text-primary-gold" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Daire No</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.address.apartment}
-                                                        </p>
-                                                    </div>
-                                                </div> */}
                                             </div>
 
                                             <div className="space-y-4">
@@ -465,18 +601,6 @@ export default function ResidentViewPage() {
                                                         </p>
                                                     </div>
                                                 </div>
-
-                                                {/* <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <User className="h-5 w-5 text-primary-gold" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Sakin Tipi</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.residentType.label}
-                                                        </p>
-                                                    </div>
-                                                </div> */}
                                             </div>
                                         </div>
                                     </div>
@@ -519,19 +643,19 @@ export default function ResidentViewPage() {
 
                                         <div className="grid grid-cols-1 gap-6">
                                             <div className="space-y-4">
-                                                <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-2">
                                                     <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
                                                         <Phone className="h-5 w-5 text-primary-gold" />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm text-text-light-muted dark:text-text-muted">Cep Telefonu</p>
                                                         <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident.contact.formattedPhone}
+                                                            {resident?.contact.formattedPhone || 'Belirtilmemiş'}
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                {resident.contact.email && (
+                                                {resident?.contact.email && (
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
                                                             <Mail className="h-5 w-5 text-primary-gold" />
@@ -549,7 +673,7 @@ export default function ResidentViewPage() {
                                             <div className="space-y-4">
                                                 
 
-                                                {resident.lastActivity && (
+                                                {resident?.lastActivity && (
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
                                                             <Calendar className="h-5 w-5 text-primary-gold" />
@@ -567,7 +691,7 @@ export default function ResidentViewPage() {
                                     </div>
                                 </Card>
                                 {/* Notes */}
-                                {resident.notes && (
+                                {resident?.notes && (
                                     <Card>
                                         <div className="p-6">
                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
@@ -585,7 +709,113 @@ export default function ResidentViewPage() {
                     </main>
                 </div>
             </div>
-            {/* Modal for Documents */}
+
+            {/* Add Family Member Modal */}
+            <Modal
+                isOpen={showAddFamilyModal}
+                onClose={() => setShowAddFamilyModal(false)}
+                title="Aile Üyesi Ekle"
+                icon={User}
+                size="lg"
+            >
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Ad *
+                            </label>
+                            <Input
+                                placeholder="Ayşe"
+                                value={familyFormData.firstName}
+                                onChange={(e) => setFamilyFormData({...familyFormData, firstName: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Soyad *
+                            </label>
+                            <Input
+                                placeholder="Yılmaz"
+                                value={familyFormData.lastName}
+                                onChange={(e) => setFamilyFormData({...familyFormData, lastName: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                İlişki *
+                            </label>
+                            <Select
+                                value={familyFormData.relationship}
+                                onChange={(e) => setFamilyFormData({...familyFormData, relationship: e.target.value})}
+                                options={[
+                                    { value: '', label: 'Seçiniz' },
+                                    { value: 'Eş', label: 'Eş' },
+                                    { value: 'Çocuk', label: 'Çocuk' },
+                                    { value: 'Anne', label: 'Anne' },
+                                    { value: 'Baba', label: 'Baba' },
+                                    { value: 'Kardeş', label: 'Kardeş' },
+                                    { value: 'Diğer', label: 'Diğer' }
+                                ]}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Yaş *
+                            </label>
+                            <Input
+                                type="number"
+                                placeholder="25"
+                                value={familyFormData.age}
+                                onChange={(e) => setFamilyFormData({...familyFormData, age: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Telefon
+                            </label>
+                            <Input
+                                placeholder="0555 123 4567"
+                                value={familyFormData.phone}
+                                onChange={(e) => setFamilyFormData({...familyFormData, phone: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Kimlik No
+                            </label>
+                            <Input
+                                placeholder="12345678901"
+                                value={familyFormData.identityNumber}
+                                onChange={(e) => setFamilyFormData({...familyFormData, identityNumber: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <Button 
+                            variant="secondary" 
+                            onClick={() => setShowAddFamilyModal(false)}
+                        >
+                            İptal
+                        </Button>
+                        <Button 
+                            variant="primary" 
+                            onClick={handleAddFamilyMember}
+                            disabled={!familyFormData.firstName || !familyFormData.lastName || !familyFormData.relationship || !familyFormData.age}
+                        >
+                            Aile Üyesi Ekle
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Documents Modal */}
             <Modal
                 isOpen={showDocumentsModal}
                 onClose={() => setShowDocumentsModal(false)}
