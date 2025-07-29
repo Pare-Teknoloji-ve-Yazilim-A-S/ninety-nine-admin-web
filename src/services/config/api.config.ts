@@ -73,6 +73,8 @@ export const apiConfig = {
                 // Document endpoints
                 nationalIdDocument: (id: string) => `/admin/users/${id}/documents/national_id`,
                 ownershipDocument: (id: string) => `/admin/users/${id}/documents/ownership_document`,
+                uploadNationalId: (id: string) => `/admin/users/${id}/documents/national_id/upload`,
+                uploadOwnershipDocument: (id: string) => `/admin/users/${id}/documents/ownership_document/upload`,
             },
             // Mobile/Resident Panel - Resident Operations
             mobile: {

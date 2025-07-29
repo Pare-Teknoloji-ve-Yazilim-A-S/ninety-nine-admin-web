@@ -36,6 +36,8 @@ import {
 import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
+import DocumentUploadModal from '@/app/components/ui/DocumentUploadModal';
+import { useResidentDocuments } from '@/hooks/useResidentDocuments';
 import axios from 'axios'; // Added axios import
 import apiClient from '@/services/api/client';
 
@@ -78,6 +80,7 @@ export default function ResidentViewPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showDocumentsModal, setShowDocumentsModal] = useState(false);
     const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
+    const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
     const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
     
@@ -91,29 +94,18 @@ export default function ResidentViewPage() {
         identityNumber: ''
     });
     
-    // Document states
-    const [nationalIdDocLoading, setNationalIdDocLoading] = useState(false);
-    const [ownershipDocLoading, setOwnershipDocLoading] = useState(false);
-    const [nationalIdDocError, setNationalIdDocError] = useState<string | null>(null);
-    const [ownershipDocError, setOwnershipDocError] = useState<string | null>(null);
-
-    // Görüntüle butonları için handler
-    const handleViewDocument = async (type: 'national_id' | 'ownership_document') => {
-        const setLoading = type === 'national_id' ? setNationalIdDocLoading : setOwnershipDocLoading;
-        const setError = type === 'national_id' ? setNationalIdDocError : setOwnershipDocError;
-        setLoading(true);
-        setError(null);
-        try {
-            // apiClient ile blob olarak çek
-            const response = await apiClient['client'].get(`/admin/users/${residentId}/documents/${type}`, { responseType: 'blob' });
-            const fileUrl = URL.createObjectURL(response.data); // Doğrudan kullan
-            window.open(fileUrl, '_blank');
-        } catch (err: any) {
-            setError(err?.message || 'Belge alınamadı.');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Use document management hook
+    const {
+        nationalIdDoc,
+        ownershipDoc,
+        uploadStates,
+        uploadNationalIdDocument,
+        uploadOwnershipDocument,
+        refreshDocuments
+    } = useResidentDocuments({
+        residentId,
+        autoFetch: true
+    });
 
     const { resident, loading, error } = useResidentData({
         residentId,
@@ -505,39 +497,87 @@ export default function ResidentViewPage() {
                                             )}
                                             {activeTab === "documents" && (
                                                 <div>
-                                                    {/* Belgeler Tab Content */}
-                                                    <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Belgeler</h4>
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <IdCard className="h-5 w-5 text-primary-gold" />
-                                                            <span className="flex-1">Kimlik Belgesi</span>
-                                                            <Button
-                                                                variant="secondary"
-                                                                size="sm"
-                                                                onClick={() => handleViewDocument('national_id')}
-                                                                isLoading={nationalIdDocLoading}
-                                                            >
-                                                                Görüntüle
-                                                            </Button>
+                                                    <div className="flex justify-between items-center mb-6">
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Belgeler</h4>
+                                                        <Button variant="primary" icon={Plus} onClick={() => setShowDocumentUploadModal(true)}>
+                                                            Belge Ekle
+                                                        </Button>
+                                                    </div>
+
+                                                    <div className="space-y-6">
+                                                        {/* National ID Document */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                                            <div className="flex items-center gap-3 mb-3">
+                                                                <IdCard className="h-5 w-5 text-primary-gold" />
+                                                                <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
+                                                            </div>
+                                                            
+                                                            {nationalIdDoc.loading ? (
+                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold"></div>
+                                                                </div>
+                                                            ) : nationalIdDoc.error ? (
+                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                                                    <div className="text-center">
+                                                                        <AlertCircle className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
+                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">{nationalIdDoc.error}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : nationalIdDoc.url ? (
+                                                                <div className="relative">
+                                                                    <img
+                                                                        src={nationalIdDoc.url}
+                                                                        alt="Kimlik Belgesi"
+                                                                        className="w-full h-48 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg cursor-pointer"
+                                                                        onClick={() => window.open(nationalIdDoc.url, '_blank')}
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                                                    <div className="text-center">
+                                                                        <FileText className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
+                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {nationalIdDocError && (
-                                                            <div className="text-xs text-primary-red mt-1">{nationalIdDocError}</div>
-                                                        )}
-                                                        <div className="flex items-center gap-3">
-                                                            <FileText className="h-5 w-5 text-primary-gold" />
-                                                            <span className="flex-1">Tapu / Mülkiyet Belgesi</span>
-                                                            <Button
-                                                                variant="secondary"
-                                                                size="sm"
-                                                                onClick={() => handleViewDocument('ownership_document')}
-                                                                isLoading={ownershipDocLoading}
-                                                            >
-                                                                Görüntüle
-                                                            </Button>
+
+                                                        {/* Ownership Document */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                                            <div className="flex items-center gap-3 mb-3">
+                                                                <FileText className="h-5 w-5 text-primary-gold" />
+                                                                <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
+                                                            </div>
+                                                            
+                                                            {ownershipDoc.loading ? (
+                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold"></div>
+                                                                </div>
+                                                            ) : ownershipDoc.error ? (
+                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                                                    <div className="text-center">
+                                                                        <AlertCircle className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
+                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">{ownershipDoc.error}</p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : ownershipDoc.url ? (
+                                                                <div className="relative">
+                                                                    <img
+                                                                        src={ownershipDoc.url}
+                                                                        alt="Mülkiyet Belgesi"
+                                                                        className="w-full h-48 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg cursor-pointer"
+                                                                        onClick={() => window.open(ownershipDoc.url, '_blank')}
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                                                                    <div className="text-center">
+                                                                        <FileText className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
+                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        {ownershipDocError && (
-                                                            <div className="text-xs text-primary-red mt-1">{ownershipDocError}</div>
-                                                        )}
                                                     </div>
                                                 </div>
                                             )}
@@ -643,7 +683,7 @@ export default function ResidentViewPage() {
 
                                         <div className="grid grid-cols-1 gap-6">
                                             <div className="space-y-4">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
                                                         <Phone className="h-5 w-5 text-primary-gold" />
                                                     </div>
@@ -670,7 +710,7 @@ export default function ResidentViewPage() {
                                                 )}
                                             </div>
 
-                                            <div className="space-y-4">
+                                            <div className="space-y-6">
                                                 
 
                                                 {resident?.lastActivity && (
@@ -815,43 +855,14 @@ export default function ResidentViewPage() {
                 </div>
             </Modal>
 
-            {/* Documents Modal */}
-            <Modal
-                isOpen={showDocumentsModal}
-                onClose={() => setShowDocumentsModal(false)}
-                title="Belgeleri Görüntüle"
-                icon={FileText}
-                size="md"
-            >
-                <div className="py-4 space-y-6">
-                    {/* National ID */}
-                    <div>
-                        <h4 className="text-lg font-semibold mb-2 text-text-on-light dark:text-text-on-dark">National ID</h4>
-                        <Button
-                            variant="secondary"
-                            onClick={() => handleViewDocument('national_id')}
-                            disabled={nationalIdDocLoading}
-                            className="mb-2"
-                        >
-                            {nationalIdDocLoading ? 'Yükleniyor...' : 'Görüntüle'}
-                        </Button>
-                        {nationalIdDocError && <p className="text-sm text-primary-red">{nationalIdDocError}</p>}
-                    </div>
-                    {/* Ownership Document */}
-                    <div>
-                        <h4 className="text-lg font-semibold mb-2 text-text-on-light dark:text-text-on-dark">Ownership Document</h4>
-                        <Button
-                            variant="secondary"
-                            onClick={() => handleViewDocument('ownership_document')}
-                            disabled={ownershipDocLoading}
-                            className="mb-2"
-                        >
-                            {ownershipDocLoading ? 'Yükleniyor...' : 'Görüntüle'}
-                        </Button>
-                        {ownershipDocError && <p className="text-sm text-primary-red">{ownershipDocError}</p>}
-                    </div>
-                </div>
-            </Modal>
+            {/* Document Upload Modal */}
+            <DocumentUploadModal
+                isOpen={showDocumentUploadModal}
+                onClose={() => setShowDocumentUploadModal(false)}
+                onUploadNationalId={uploadNationalIdDocument}
+                onUploadOwnership={uploadOwnershipDocument}
+                uploadStates={uploadStates}
+            />
         </ProtectedRoute>
     );
 } 
