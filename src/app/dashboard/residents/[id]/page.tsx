@@ -48,6 +48,7 @@ import { ToastContainer } from '@/app/components/ui/Toast';
 import { Ticket } from '@/services/ticket.service';
 import { useFamilyMembers } from '@/hooks/useFamilyMembers';
 import { CreateFamilyMemberDto, FamilyMember } from '@/services/types/family-member.types';
+import { useMyProperties } from '@/hooks/useMyProperties';
 
 
 
@@ -117,6 +118,17 @@ export default function ResidentViewPage() {
         clearSaveError: clearFamilyMembersSaveError
     } = useFamilyMembers({
         userId: residentId,
+        autoFetch: true
+    });
+
+    // Use properties hook
+    const {
+        properties,
+        loading: propertiesLoading,
+        error: propertiesError,
+        refreshData: refreshProperties
+    } = useMyProperties({
+        ownerId: residentId,
         autoFetch: true
     });
 
@@ -790,7 +802,7 @@ export default function ResidentViewPage() {
 
                             {/* Right Column - Sidebar */}
                             <div className="space-y-6">
-                                {/* Financial Summary */}
+                                {/* Property Information */}
                                 <Card>
                                     <div className="p-6">
                                         <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
@@ -798,35 +810,111 @@ export default function ResidentViewPage() {
                                             Konut Bilgileri
                                         </h3>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <Building className="h-5 w-5 text-primary-gold" />
+                                        {propertiesLoading ? (
+                                            <div className="animate-pulse">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                                            <div className="flex-1">
+                                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
+                                                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Konut</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            Villa 13
-                                                        </p>
+                                                    <div className="space-y-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                                                            <div className="flex-1">
+                                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
+                                                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        ) : propertiesError ? (
+                                            <div className="text-center py-8">
+                                                <AlertCircle className="h-8 w-8 text-primary-red mx-auto mb-2" />
+                                                <p className="text-sm text-text-light-muted dark:text-text-muted mb-3">
+                                                    Konut bilgileri yüklenemedi
+                                                </p>
+                                                <Button variant="secondary" size="sm" onClick={refreshProperties}>
+                                                    Tekrar Dene
+                                                </Button>
+                                            </div>
+                                        ) : properties.length > 0 ? (
+                                            <div className="space-y-4">
+                                                {properties.map((property, index) => (
+                                                    <div key={property.id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                            <div className="space-y-4">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                                                        <Building className="h-5 w-5 text-primary-gold" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Konut</p>
+                                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                                            {property.name || property.propertyNumber || `Konut ${index + 1}`}
+                                                                        </p>
+                                                                        {property.blockNumber && (
+                                                                            <p className="text-xs text-text-light-muted dark:text-text-muted">
+                                                                                Blok: {property.blockNumber}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
 
-                                            <div className="space-y-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                        <CreditCard className="h-5 w-5 text-primary-gold" />
+                                                            <div className="space-y-4">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                                                        <CreditCard className="h-5 w-5 text-primary-gold" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Durum</p>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Badge 
+                                                                                variant="soft" 
+                                                                                color={
+                                                                                    property.status === 'OCCUPIED' ? 'primary' :
+                                                                                    property.status === 'AVAILABLE' ? 'secondary' :
+                                                                                    property.status === 'UNDER_MAINTENANCE' ? 'gold' :
+                                                                                    property.status === 'RESERVED' ? 'accent' :
+                                                                                    'secondary'
+                                                                                }
+                                                                            >
+                                                                                {property.status === 'OCCUPIED' ? 'Dolu' :
+                                                                                 property.status === 'AVAILABLE' ? 'Müsait' :
+                                                                                 property.status === 'UNDER_MAINTENANCE' ? 'Bakımda' :
+                                                                                 property.status === 'RESERVED' ? 'Rezerve' :
+                                                                                 property.status}
+                                                                            </Badge>
+                                                                        </div>
+                                                                        {property.area && (
+                                                                            <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
+                                                                                {property.area} m²
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Borç Durumu</p>
-                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            $20
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                                ))}
                                             </div>
-                                        </div>
+                                        ) : (
+                                            <div className="text-center py-8">
+                                                <Building className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                                                <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                    Henüz konut atanmamış
+                                                </h3>
+                                                <p className="text-sm text-text-light-muted dark:text-text-muted">
+                                                    Bu sakin için henüz konut bilgisi bulunmuyor.
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </Card>
 
