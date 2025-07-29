@@ -402,9 +402,7 @@ export default function AddResidentPage() {
                                                                 value={formData.identityNumber}
                                                                 onChange={(e) => handleInputChange('identityNumber', e.target.value)}
                                                             />
-                                                            <Button variant="secondary" size="sm" type="button">
-                                                                ✓
-                                                            </Button>
+                                                           
                                                         </div>
                                                         {errors.identityNumber && (
                                                             <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.identityNumber}</p>
@@ -479,13 +477,7 @@ export default function AddResidentPage() {
                                                         {errors.mobilePhone && (
                                                             <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.mobilePhone}</p>
                                                         )}
-                                                        <div className="mt-2">
-                                                            <Checkbox
-                                                                checked={formData.hasWhatsApp}
-                                                                onChange={(e) => handleInputChange('hasWhatsApp', e.target.checked)}
-                                                                label="WhatsApp"
-                                                            />
-                                                        </div>
+                                                       
                                                     </div>
 
                                                     {/* Email */}
@@ -505,149 +497,7 @@ export default function AddResidentPage() {
                                             </div>
                                         </div>
 
-                                        {/* Housing Information */}
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
-                                                <Home className="h-5 w-5 text-primary-gold" />
-                                                Konut Atama
-                                            </h3>
-                                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-
-                                                {/* Resident Type */}
-                                                <div className="mb-4">
-                                                    <RadioButton
-                                                        label="Sakin Tipi *"
-                                                        name="residentType"
-                                                        value={formData.residentType}
-                                                        onChange={(e) => handleInputChange('residentType', e.target.value)}
-                                                        direction="horizontal"
-                                                        options={[
-                                                            { value: 'owner', label: 'Malik' },
-                                                            { value: 'tenant', label: 'Kiracı' },
-                                                            { value: 'family', label: 'Aile Üyesi' }
-                                                        ]}
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {/* Block Selection */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                            Blok *
-                                                        </label>
-                                                        <select
-                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.block ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
-                                                                }`}
-                                                            value={formData.block}
-                                                            onChange={(e) => {
-                                                                handleInputChange('block', e.target.value);
-                                                                handleInputChange('apartmentNumber', ''); // Reset apartment selection
-                                                            }}
-                                                        >
-                                                            <option value="">Seçiniz</option>
-                                                            {availableBlocks.map(block => (
-                                                                <option key={block} value={block}>{block} Blok</option>
-                                                            ))}
-                                                        </select>
-                                                        {errors.block && (
-                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.block}</p>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Apartment Selection */}
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                            Daire No *
-                                                        </label>
-                                                        <select
-                                                            className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.apartmentNumber ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'
-                                                                }`}
-                                                            value={formData.apartmentNumber}
-                                                            onChange={(e) => handleInputChange('apartmentNumber', e.target.value)}
-                                                            disabled={!formData.block}
-                                                        >
-                                                            <option value="">Seçiniz</option>
-                                                            {formData.block && getApartmentsForBlock(formData.block).map(apt => (
-                                                                <option key={apt.id} value={apt.number}>
-                                                                    Daire {apt.number} ({apt.type}) - {apt.status === 'empty' ? 'Boş' : 'Dolu'}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                        {errors.apartmentNumber && (
-                                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.apartmentNumber}</p>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Selected Apartment Info */}
-                                                {selectedApartment && (
-                                                    <div className={`mt-4 p-3 rounded-lg border ${selectedApartment.status === 'empty'
-                                                        ? 'bg-semantic-success-50 dark:bg-semantic-success-900/20 border-semantic-success-200 dark:border-semantic-success-700'
-                                                        : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700'
-                                                        }`}>
-                                                        <div className="flex items-start gap-2">
-                                                            {selectedApartment.status === 'empty' ? (
-                                                                <Info className="h-5 w-5 text-semantic-success-600 mt-0.5" />
-                                                            ) : (
-                                                                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-                                                            )}
-                                                            <div>
-                                                                <p className={`text-sm font-medium ${selectedApartment.status === 'empty'
-                                                                    ? 'text-semantic-success-800 dark:text-semantic-success-200'
-                                                                    : 'text-red-800 dark:text-red-200'
-                                                                    }`}>
-                                                                    {selectedApartment.block} Blok, Daire {selectedApartment.number} - {selectedApartment.type}, {selectedApartment.area}
-                                                                </p>
-                                                                <p className={`text-xs ${selectedApartment.status === 'empty'
-                                                                    ? 'text-semantic-success-600 dark:text-semantic-success-300'
-                                                                    : 'text-red-600 dark:text-red-300'
-                                                                    }`}>
-                                                                    {selectedApartment.status === 'empty'
-                                                                        ? 'Durum: ✓ Boş ve Hazır'
-                                                                        : `Durum: Dolu - Mevcut Sakin: ${selectedApartment.currentResident}`
-                                                                    }
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Quick Options */}
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
-                                                <Building className="h-5 w-5 text-primary-gold" />
-                                                Hızlı Seçenekler
-                                            </h3>
-                                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <Checkbox
-                                                        checked={formData.startDuesToday}
-                                                        onChange={(e) => handleInputChange('startDuesToday', e.target.checked)}
-                                                        label="Aidat başlangıç tarihi: Bugün"
-                                                    />
-
-                                                    <Checkbox
-                                                        checked={formData.useStandardDues}
-                                                        onChange={(e) => handleInputChange('useStandardDues', e.target.checked)}
-                                                        label="Standart aidat tutarını uygula (250,000)"
-                                                    />
-
-                                                    <Checkbox
-                                                        checked={formData.sendMobileInvite}
-                                                        onChange={(e) => handleInputChange('sendMobileInvite', e.target.checked)}
-                                                        label="Mobil uygulama daveti gönder"
-                                                    />
-
-                                                    <Checkbox
-                                                        checked={formData.createQrCode}
-                                                        onChange={(e) => handleInputChange('createQrCode', e.target.checked)}
-                                                        label="QR kod oluştur ve aktifleştir"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        
                                     </div>
 
                                     {/* Submit Button */}

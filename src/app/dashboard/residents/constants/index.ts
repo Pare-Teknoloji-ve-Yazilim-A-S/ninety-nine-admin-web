@@ -63,6 +63,7 @@ export const STATS_CONFIG = {
         INFO: 'info' as const,
         DANGER: 'danger' as const,
         GOLD: 'gold' as const,
+        WARNING: 'warning' as const,
     },
     icons: {
         USERS: Users,

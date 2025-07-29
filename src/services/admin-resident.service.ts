@@ -372,6 +372,64 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
         }
     }
 
+    /**
+     * Upload resident's national ID document
+     * POST /admin/users/{id}/documents/national_id/upload
+     */
+    async uploadNationalIdDocument(
+        id: string,
+        file: File,
+        onProgress?: (progress: number) => void
+    ): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading national ID document for resident ID: ${id}`);
+
+            const formData = new FormData();
+            formData.append('document', file);
+
+            const response = await apiClient.uploadFile<any>(
+                apiConfig.endpoints.residents.admin.uploadNationalId(id),
+                file,
+                onProgress
+            );
+
+            this.logger.info('National ID document uploaded successfully');
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to upload national ID document', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Upload resident's ownership document
+     * POST /admin/users/{id}/documents/ownership_document/upload
+     */
+    async uploadOwnershipDocument(
+        id: string,
+        file: File,
+        onProgress?: (progress: number) => void
+    ): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading ownership document for resident ID: ${id}`);
+
+            const formData = new FormData();
+            formData.append('document', file);
+
+            const response = await apiClient.uploadFile<any>(
+                apiConfig.endpoints.residents.admin.uploadOwnershipDocument(id),
+                file,
+                onProgress
+            );
+
+            this.logger.info('Ownership document uploaded successfully');
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to upload ownership document', error);
+            throw error;
+        }
+    }
+
     // === FILTERING HELPERS === //
 
     /**

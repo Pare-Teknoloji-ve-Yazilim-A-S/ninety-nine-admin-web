@@ -79,6 +79,16 @@ const TablePagination: React.FC<TablePaginationProps> = ({
 
     const visiblePages = getVisiblePages();
 
+    console.log('🔍 TablePagination Debug:', {
+        currentPage,
+        totalPages,
+        totalRecords,
+        recordsPerPage,
+        visiblePages,
+        isFirstPage,
+        isLastPage
+    });
+
     const getItemName = (count: number) => {
         return count === 1 ? itemName : itemNamePlural;
     };

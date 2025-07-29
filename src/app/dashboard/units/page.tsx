@@ -140,6 +140,7 @@ export default function UnitsListPage() {
     // FIXED: Proper async/await and dependencies
     const loadProperties = useCallback(async () => {
         try {
+            console.log('🔄 loadProperties BAŞLADI');
             setLoading(true);
             setError(null);
 
@@ -147,11 +148,19 @@ export default function UnitsListPage() {
             const processedFilters = processFilters(currentFilters);
             console.log('🚀 Loading properties with processed filters:', processedFilters);
 
+            console.log('📞 API çağrısı yapılıyor...');
             const response = await unitsService.getAllUnits(processedFilters);
+            console.log('✅ API Response BAŞARILI:', response);
             console.log('📊 API Response - Pagination:', response.pagination);
             console.log('📊 API Response - Data count:', response.data.length);
+            
+            console.log('💾 setProperties çağrılıyor...');
             setProperties(response.data);
+            
+            console.log('💾 setPagination çağrılıyor...', response.pagination);
             setPagination(response.pagination);
+            
+            console.log('✅ loadProperties TAMAMLANDI');
         } catch (err: any) {
             console.error('❌ Failed to load properties:', err);
             setError('Konutlar yüklenirken bir hata oluştu');
@@ -804,51 +813,69 @@ export default function UnitsListPage() {
                             {/* Main Content */}
                             <div className="lg:col-span-1">
                                 {viewMode === 'table' && (
-                                    <GenericListView
-                                        data={properties}
-                                        loading={loading}
-                                        error={error}
-                                        onSelectionChange={handleSelectionChange}
-                                        bulkActions={[]}
-                                        columns={tableColumns}
-                                        pagination={{
+                                    <>
+                                        {console.log('🔍 TABLE VIEW - Pagination props:', {
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
-                                            recordsPerPage: filters.limit || 10,
-                                            onPageChange: handlePageChange,
-                                            onRecordsPerPageChange: handleRecordsPerPageChange,
-                                        }}
-                                        emptyStateMessage="Henüz konut kaydı bulunmuyor."
-                                        selectable={true}
-                                        showPagination={true}
-                                        ActionMenuComponent={UnitActionMenuWrapper}
-                                    />
+                                            recordsPerPage: pagination.limit || 10,
+                                            pagination: pagination
+                                        })}
+                                        <GenericListView
+                                            data={properties}
+                                            loading={loading}
+                                            error={error}
+                                            onSelectionChange={handleSelectionChange}
+                                            bulkActions={[]}
+                                            columns={tableColumns}
+                                            pagination={{
+                                                currentPage: pagination.page,
+                                                totalPages: pagination.totalPages,
+                                                totalRecords: pagination.total,
+                                                recordsPerPage: pagination.limit || 10,
+                                                onPageChange: handlePageChange,
+                                                onRecordsPerPageChange: handleRecordsPerPageChange,
+                                            }}
+                                            emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                            selectable={true}
+                                            showPagination={true}
+                                            ActionMenuComponent={UnitActionMenuWrapper}
+                                        />
+                                    </>
                                 )}
                                 {viewMode === 'grid' && (
-                                    <GenericGridView
-                                        data={properties}
-                                        loading={loading}
-                                        error={error}
-                                        onSelectionChange={handleGridSelectionChange}
-                                        bulkActions={[]}
-                                        onAction={handleUnitAction}
-                                        selectedItems={selectedUnits.map(u => u.id)}
-                                        pagination={{
+                                    <>
+                                        {console.log('🔍 GRID VIEW - Pagination props:', {
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
                                             totalRecords: pagination.total,
-                                            recordsPerPage: filters.limit || 10,
-                                            onPageChange: handlePageChange,
-                                            onRecordsPerPageChange: handleRecordsPerPageChange,
-                                        }}
-                                        emptyStateMessage="Henüz konut kaydı bulunmuyor."
-                                        ui={gridUI}
-                                        ActionMenu={UnitActionMenuWrapper}
-                                        renderCard={renderUnitCard}
-                                        getItemId={getItemId}
-                                        gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                                    />
+                                            recordsPerPage: pagination.limit || 10,
+                                            pagination: pagination
+                                        })}
+                                        <GenericGridView
+                                            data={properties}
+                                            loading={loading}
+                                            error={error}
+                                            onSelectionChange={handleGridSelectionChange}
+                                            bulkActions={[]}
+                                            onAction={handleUnitAction}
+                                            selectedItems={selectedUnits.map(u => u.id)}
+                                            pagination={{
+                                                currentPage: pagination.page,
+                                                totalPages: pagination.totalPages,
+                                                totalRecords: pagination.total,
+                                                recordsPerPage: pagination.limit || 10,
+                                                onPageChange: handlePageChange,
+                                                onRecordsPerPageChange: handleRecordsPerPageChange,
+                                            }}
+                                            emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                            ui={gridUI}
+                                            ActionMenu={UnitActionMenuWrapper}
+                                            renderCard={renderUnitCard}
+                                            getItemId={getItemId}
+                                            gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                                        />
+                                    </>
                                 )}
                                 {viewMode === 'block' && (
                                     <Card>

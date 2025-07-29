@@ -117,11 +117,11 @@ export const generateStatsCardsData = (stats: ResidentStatsResponse | null): Sta
             icon: STATS_CONFIG.icons.USERS
         },
         {
-            title: 'Aktif',
+            title: 'Onay Bekleyen',
             value: active.toLocaleString('tr-TR'),
             subtitle: totalResidents > 0 ? `%${Math.round((active / totalResidents) * 100)}` : '%0',
-            color: STATS_CONFIG.colors.DANGER,
-            icon: STATS_CONFIG.icons.CREDIT_CARD
+            color: STATS_CONFIG.colors.INFO,
+            icon: STATS_CONFIG.icons.USERS
         },
         {
             title: 'Gold Üye',
@@ -155,7 +155,7 @@ export const generateStatsCardsDataFromCounts = ({
       { title: 'Toplam Sakin', value: '---', color: STATS_CONFIG.colors.PRIMARY, icon: STATS_CONFIG.icons.USERS },
       { title: 'Malik', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.SUCCESS, icon: STATS_CONFIG.icons.HOME },
       { title: 'Kiracı', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.INFO, icon: STATS_CONFIG.icons.USERS },
-      { title: 'Aktif', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.DANGER, icon: STATS_CONFIG.icons.CREDIT_CARD },
+      { title: 'Onay Bekleyen', value: '---', color: STATS_CONFIG.colors.INFO, icon: STATS_CONFIG.icons.USERS },
       { title: 'Gold Üye', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.GOLD, icon: STATS_CONFIG.icons.USERS },
     ];
   }
@@ -181,11 +181,11 @@ export const generateStatsCardsDataFromCounts = ({
       icon: STATS_CONFIG.icons.USERS,
     },
     {
-      title: 'Aktif',
+      title: 'Onay Bekleyen',
       value: activeCount.toLocaleString('tr-TR'),
       subtitle: totalCount > 0 ? `%${Math.round((activeCount / totalCount) * 100)}` : '%0',
-      color: STATS_CONFIG.colors.DANGER,
-      icon: STATS_CONFIG.icons.CREDIT_CARD,
+      color: STATS_CONFIG.colors.WARNING,
+      icon: STATS_CONFIG.icons.USERS,
     },
     {
       title: 'Gold Üye',
