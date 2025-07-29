@@ -25,7 +25,7 @@ import { useResidentsStats } from '@/hooks/useResidentsStats';
 import { generateStatsCardsDataFromCounts } from './utils/stats';
 import {
     Filter, Download, Plus, RefreshCw,
-    MoreVertical, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX, CheckCircle, Users, Home, DollarSign, Calendar
+    ChevronRight, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX, CheckCircle, Users, Home, DollarSign, Calendar
 } from 'lucide-react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
@@ -201,17 +201,9 @@ export default function ResidentsPage() {
         [filtersHook.selectedResidents, bulkActionHandlers]
     );
 
-    // Create wrapper for table actions that uses modal for delete
+    // Create wrapper for table actions - only need view action for detail navigation
     const tableActionHandlers = {
-        ...residentActionHandlers,
-        handleDeleteResident: (resident: Resident) => {
-            // Open confirmation modal instead of direct deletion
-            setConfirmationState({
-                isOpen: true,
-                resident: resident,
-                loading: false
-            });
-        }
+        handleViewResident: residentActionHandlers.handleViewResident,
     };
 
     const tableColumns = getTableColumns(tableActionHandlers);
@@ -470,7 +462,7 @@ export default function ResidentsPage() {
                 </div>
                 
                 {/* Action Buttons */}
-                <div className="mt-6 flex gap-3">
+                {/* <div className="mt-6 flex gap-3">
                     {resident.contact?.phone && (
                         <ui.Button
                             variant="primary"
@@ -489,7 +481,7 @@ export default function ResidentsPage() {
                     >
                         Mesaj
                     </ui.Button>
-                </div>
+                </div> */}
             </ui.Card>
         );
     };
@@ -511,121 +503,22 @@ export default function ResidentsPage() {
         }
     };
 
-    // Resident Action Menu Component
+    // Resident Action Menu Component - Simplified to only show detail view
     const ResidentActionMenu: React.FC<{ resident: Resident; onAction: (action: string, resident: Resident) => void }> = ({ resident, onAction }) => {
-        const [isOpen, setIsOpen] = React.useState(false);
-        const buttonRef = React.useRef<HTMLButtonElement>(null);
-        const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({});
-
-        React.useEffect(() => {
-            if (isOpen && buttonRef.current) {
-                const rect = buttonRef.current.getBoundingClientRect();
-                const menuHeight = 320; // tahmini yükseklik (daha fazla buton var)
-                const menuWidth = 220;
-                const padding = 8;
-                let top = rect.bottom + window.scrollY + padding;
-                let left = rect.right + window.scrollX - menuWidth;
-                if (top + menuHeight > window.innerHeight + window.scrollY) {
-                    top = rect.top + window.scrollY - menuHeight - padding;
-                }
-                if (left < 0) {
-                    left = padding;
-                }
-                setMenuStyle({
-                    position: 'absolute',
-                    top,
-                    left,
-                    zIndex: 9999,
-                    minWidth: menuWidth,
-                });
-            }
-        }, [isOpen]);
-
-        React.useEffect(() => {
-            if (!isOpen) return;
-            const handleClick = (e: MouseEvent) => {
-                if (
-                    buttonRef.current &&
-                    !buttonRef.current.contains(e.target as Node)
-                ) {
-                    setIsOpen(false);
-                }
-            };
-            document.addEventListener('click', handleClick); // mousedown -> click
-            return () => document.removeEventListener('click', handleClick);
-        }, [isOpen]);
-
-        const handleDropdownToggle = (e: React.MouseEvent) => {
+        const handleDetailView = (e: React.MouseEvent) => {
             e.stopPropagation();
-            setIsOpen(!isOpen);
-        };
-
-        const handleAction = (action: string) => (e: React.MouseEvent) => {
-            e.stopPropagation();
-            setIsOpen(false);
-            onAction(action, resident);
-        };
-
-        const handleToggleStatus = async (e: React.MouseEvent) => {
-            e.stopPropagation();
-            setIsOpen(false);
-            if (resident.status.type === 'active') {
-                onAction('deactivate', resident);
-            } else if (resident.status.type === 'inactive') {
-                onAction('activate', resident);
-            }
+            onAction('view', resident);
         };
 
         return (
             <div className="flex items-center justify-center">
                 <button
-                    ref={buttonRef}
                     className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
-                    onClick={handleDropdownToggle}
+                    onClick={handleDetailView}
                     type="button"
                 >
-                    <MoreVertical className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5" />
                 </button>
-                {isOpen && (
-                    <Portal>
-                        <div
-                            style={menuStyle}
-                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 py-1 max-h-80 overflow-auto"
-                        >
-                            <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <Eye className="w-5 h-5" /> Görüntüle
-                            </button>
-                            <button onClick={handleAction('edit')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <Edit className="w-5 h-5" /> Düzenle
-                            </button>
-                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
-                            <button onClick={handleAction('call')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <Phone className="w-5 h-5" /> Ara
-                            </button>
-                            <button onClick={handleAction('message')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <MessageSquare className="w-5 h-5" /> Mesaj
-                            </button>
-                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
-                            {resident.status.type === 'active' && (
-                                <button onClick={handleToggleStatus} className="w-full px-4 py-2 text-left text-sm text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 flex items-center gap-3">
-                                    <UserX className="w-5 h-5" /> Pasif Yap
-                                </button>
-                            )}
-                            {resident.status.type === 'inactive' && (
-                                <button onClick={handleToggleStatus} className="w-full px-4 py-2 text-left text-sm text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-3">
-                                    <UserCheck className="w-5 h-5" /> Aktif Yap
-                                </button>
-                            )}
-                            <button onClick={handleAction('payment-history')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <CreditCard className="w-5 h-5" /> Ödeme Geçmişi
-                            </button>
-                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
-                            <button onClick={handleAction('delete')} className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3">
-                                <Trash2 className="w-5 h-5" /> Sil
-                            </button>
-                        </div>
-                    </Portal>
-                )}
             </div>
         );
     };

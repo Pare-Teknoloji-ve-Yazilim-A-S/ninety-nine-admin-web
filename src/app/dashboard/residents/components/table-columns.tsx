@@ -7,7 +7,7 @@ import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import { 
     Phone, 
-    MoreVertical, 
+    ChevronRight, 
     Eye, 
     Edit, 
     Trash2, 
@@ -24,161 +24,26 @@ import {
 interface ActionMenuProps {
     resident: Resident;
     onViewResident: (resident: Resident) => void;
-    onEditResident: (resident: Resident) => void;
-    onDeleteResident: (resident: Resident) => void;
-    onCallResident: (resident: Resident) => void;
-    onMessageResident: (resident: Resident) => void;
-    onGenerateQR: (resident: Resident) => void;
-    onViewNotes: (resident: Resident) => void;
-    onViewHistory: (resident: Resident) => void;
-    onViewPaymentHistory: (resident: Resident) => void;
 }
 
 const ActionMenu: React.FC<ActionMenuProps> = ({
     resident,
     onViewResident,
-    onEditResident,
-    onDeleteResident,
-    onCallResident,
-    onMessageResident,
-    onGenerateQR,
-    onViewNotes,
-    onViewHistory,
-    onViewPaymentHistory,
 }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
-    const dropdownRef = React.useRef<HTMLDivElement>(null);
-    const buttonRef = React.useRef<HTMLButtonElement>(null);
-
-    React.useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (
-                dropdownRef.current && 
-                buttonRef.current && 
-                !dropdownRef.current.contains(event.target as Node) && 
-                !buttonRef.current.contains(event.target as Node)
-            ) {
-                setIsOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleDropdownToggle = (e: React.MouseEvent) => {
+    const handleDetailView = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setIsOpen(!isOpen);
-    };
-
-    const handleAction = (action: () => void) => (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setIsOpen(false);
-        action();
+        onViewResident(resident);
     };
 
     return (
         <div className="flex items-center justify-center">
-            <div className="relative group">
-                <Button
-                    ref={buttonRef}
-                    variant="ghost"
-                    size="sm"
-                    icon={MoreVertical}
-                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={handleDropdownToggle}
-                />
-
-                {/* Dropdown Menu */}
-                <div 
-                    ref={dropdownRef}
-                    className={`absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 ${isOpen ? '' : 'hidden'}`}
-                >
-                    <div className="py-1">
-                        {/* Primary Actions */}
-                        <button
-                            onClick={handleAction(() => onViewResident(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <Eye className="w-5 h-5" />
-                            Görüntüle
-                        </button>
-
-                        <button
-                            onClick={handleAction(() => onEditResident(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <Edit className="w-5 h-5" />
-                            Düzenle
-                        </button>
-
-                        <hr className="border-gray-200 dark:border-gray-600 my-1" />
-
-                        {/* Communication Actions */}
-                        <button
-                            onClick={handleAction(() => onCallResident(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <Phone className="w-5 h-5" />
-                            Ara
-                        </button>
-
-                        <button
-                            onClick={handleAction(() => onMessageResident(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <MessageSquare className="w-5 h-5" />
-                            Mesaj
-                        </button>
-
-                        <hr className="border-gray-200 dark:border-gray-600 my-1" />
-
-                        {/* Utility Actions */}
-                        {/* <button
-                            onClick={handleAction(() => onGenerateQR(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <QrCode className="w-5 h-5" />
-                            QR Kod
-                        </button> */}
-
-                        {/* <button
-                            onClick={handleAction(() => onViewNotes(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <StickyNote className="w-5 h-5" />
-                            Notlar
-                        </button> */}
-
-                        {/* <button
-                            onClick={handleAction(() => onViewHistory(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <History className="w-5 h-5" />
-                            Geçmiş
-                        </button> */}
-
-                        <button
-                            onClick={handleAction(() => onViewPaymentHistory(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                        >
-                            <PaymentHistory className="w-5 h-5" />
-                            Ödeme Geçmişi
-                        </button>
-
-                        <hr className="border-gray-200 dark:border-gray-600 my-1" />
-
-                        {/* Danger Actions */}
-                        <button
-                            onClick={handleAction(() => onDeleteResident(resident))}
-                            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3"
-                        >
-                            <Trash2 className="w-5 h-5" />
-                            Sil
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <Button
+                variant="ghost"
+                size="sm"
+                icon={ChevronRight}
+                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={handleDetailView}
+            />
         </div>
     );
 };
@@ -189,14 +54,6 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
 export const getTableColumns = (
   actionHandlers: {
     handleViewResident: (resident: Resident) => void;
-    handleEditResident: (resident: Resident) => void;
-    handleDeleteResident: (resident: Resident) => void;
-    handleCallResident: (resident: Resident) => void;
-    handleMessageResident: (resident: Resident) => void;
-    handleGenerateQR: (resident: Resident) => void;
-    handleViewNotes: (resident: Resident) => void;
-    handleViewHistory: (resident: Resident) => void;
-    handleViewPaymentHistory: (resident: Resident) => void;
   },
   ActionMenuComponent?: React.ComponentType<{ row: Resident }>
 ): TableColumn[] => {
@@ -295,13 +152,13 @@ export const getTableColumns = (
                                 </p>
                             )}
                         </div>
-                        <Button 
+                        {/* <Button 
                             variant="ghost" 
                             size="sm" 
                             icon={Phone} 
                             className="h-8 w-8 p-1" 
                             onClick={() => actionHandlers.handleCallResident(row)}
-                        />
+                        /> */}
                     </div>
                 );
             },
@@ -404,14 +261,6 @@ export const getTableColumns = (
         <ActionMenu
           resident={row}
           onViewResident={actionHandlers.handleViewResident}
-          onEditResident={actionHandlers.handleEditResident}
-          onDeleteResident={actionHandlers.handleDeleteResident}
-          onCallResident={actionHandlers.handleCallResident}
-          onMessageResident={actionHandlers.handleMessageResident}
-          onGenerateQR={actionHandlers.handleGenerateQR}
-          onViewNotes={actionHandlers.handleViewNotes}
-          onViewHistory={actionHandlers.handleViewHistory}
-          onViewPaymentHistory={actionHandlers.handleViewPaymentHistory}
         />
       ),
     });

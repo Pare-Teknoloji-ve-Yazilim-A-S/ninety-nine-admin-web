@@ -67,7 +67,7 @@ export interface StatsData {
     title: string;
     value: string;
     subtitle?: string;
-    color: 'primary' | 'success' | 'info' | 'danger' | 'gold';
+    color: 'primary' | 'success' | 'info' | 'danger' | 'gold' | 'warning';
     icon: LucideIcon;
 }
 
