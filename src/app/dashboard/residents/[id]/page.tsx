@@ -31,13 +31,21 @@ import {
     Mail,
     IdCard,
     Plus,
-    ChevronRight
+    ChevronRight,
+    Wrench,
+    ExternalLink
 } from 'lucide-react';
 import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
 import DocumentUploadModal from '@/app/components/ui/DocumentUploadModal';
 import { useResidentDocuments } from '@/hooks/useResidentDocuments';
+import { useResidentTickets } from '@/hooks/useResidentTickets';
+import { useToast } from '@/hooks/useToast';
+import RequestDetailModal from '../../requests/RequestDetailModal';
+import CreateTicketModal from '../../components/CreateTicketModal';
+import { ToastContainer } from '@/app/components/ui/Toast';
+import { Ticket } from '@/services/ticket.service';
 import axios from 'axios'; // Added axios import
 import apiClient from '@/services/api/client';
 
@@ -81,8 +89,14 @@ export default function ResidentViewPage() {
     const [showDocumentsModal, setShowDocumentsModal] = useState(false);
     const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
+    const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
+    const [showTicketDetailModal, setShowTicketDetailModal] = useState(false);
+    const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(mockFamilyMembers);
+    
+    // Toast system
+    const toast = useToast();
     
     // Family member form data
     const [familyFormData, setFamilyFormData] = useState({
@@ -103,6 +117,17 @@ export default function ResidentViewPage() {
         uploadOwnershipDocument,
         refreshDocuments
     } = useResidentDocuments({
+        residentId,
+        autoFetch: true
+    });
+
+    // Use resident tickets hook
+    const {
+        tickets: residentTickets,
+        loading: ticketsLoading,
+        error: ticketsError,
+        refreshTickets
+    } = useResidentTickets({
         residentId,
         autoFetch: true
     });
@@ -191,6 +216,24 @@ export default function ResidentViewPage() {
             });
             setShowAddFamilyModal(false);
         }
+    };
+
+    // Handle ticket detail view
+    const handleViewTicketDetail = (ticket: Ticket) => {
+        setSelectedTicket(ticket);
+        setShowTicketDetailModal(true);
+    };
+
+    // Handle create ticket modal
+    const handleCreateTicket = () => {
+        setShowCreateTicketModal(true);
+    };
+
+    // Handle ticket creation success
+    const handleTicketCreated = () => {
+        setShowCreateTicketModal(false);
+        refreshTickets(); // Refresh the tickets list
+        toast.success('Talep başarıyla oluşturuldu!');
     };
 
     if (loading) {
@@ -583,11 +626,131 @@ export default function ResidentViewPage() {
                                             )}
                                             {activeTab === "requests" && (
                                                 <div>
-                                                    {/* Talepler Tab Content */}
-                                                    <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Talepler</h4>
-                                                    <div className="text-sm text-text-light-muted dark:text-text-muted">
-                                                        Bu sakinle ilgili talepler burada listelenecek. (Yakında)
+                                                    <div className="flex justify-between items-center mb-6">
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">
+                                                            Talepler <span className="text-primary-gold">({residentTickets.length})</span>
+                                                        </h4>
+                                                        <Button 
+                                                            variant="primary" 
+                                                            size="md" 
+                                                            icon={Plus} 
+                                                            onClick={handleCreateTicket}
+                                                        >
+                                                            Yeni Talep
+                                                        </Button>
                                                     </div>
+
+                                                    {ticketsLoading ? (
+                                                        <div className="space-y-4">
+                                                            {[1, 2, 3].map((i) => (
+                                                                <div key={i} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg animate-pulse">
+                                                                    <div className="flex items-center justify-between mb-3">
+                                                                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                                                                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                                                    </div>
+                                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2"></div>
+                                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : ticketsError ? (
+                                                        <div className="text-center py-8">
+                                                            <AlertCircle className="h-12 w-12 text-primary-red mx-auto mb-4" />
+                                                            <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                                Talepler yüklenemedi
+                                                            </h3>
+                                                            <p className="text-sm text-text-light-muted dark:text-text-muted mb-4">
+                                                                {ticketsError}
+                                                            </p>
+                                                            <Button variant="secondary" size="sm" onClick={refreshTickets}>
+                                                                Tekrar Dene
+                                                            </Button>
+                                                        </div>
+                                                    ) : residentTickets.length > 0 ? (
+                                                        <div className="space-y-4">
+                                                            {residentTickets.map((ticket) => (
+                                                                <div 
+                                                                    key={ticket.id} 
+                                                                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-gold/30 transition-colors cursor-pointer"
+                                                                    onClick={() => handleViewTicketDetail(ticket)}
+                                                                >
+                                                                    <div className="flex items-center justify-between mb-3">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="w-8 h-8 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                                                                <Wrench className="h-4 w-4 text-primary-gold" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <h5 className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                                                    {ticket.title}
+                                                                                </h5>
+                                                                                <p className="text-xs text-text-light-muted dark:text-text-muted">
+                                                                                    {ticket.ticketNumber}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Badge 
+                                                                                variant="soft" 
+                                                                                color={
+                                                                                    ticket.status === 'OPEN' ? 'gold' :
+                                                                                    ticket.status === 'IN_PROGRESS' ? 'accent' :
+                                                                                    ticket.status === 'RESOLVED' ? 'primary' :
+                                                                                    ticket.status === 'CLOSED' ? 'primary' :
+                                                                                    'secondary'
+                                                                                }
+                                                                            >
+                                                                                {ticket.status === 'OPEN' ? 'Açık' :
+                                                                                 ticket.status === 'IN_PROGRESS' ? 'İşlemde' :
+                                                                                 ticket.status === 'RESOLVED' ? 'Çözüldü' :
+                                                                                 ticket.status === 'CLOSED' ? 'Kapatıldı' :
+                                                                                 ticket.status}
+                                                                            </Badge>
+                                                                            <ExternalLink className="h-4 w-4 text-text-light-muted dark:text-text-muted" />
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <p className="text-sm text-text-light-secondary dark:text-text-secondary mb-3" style={{
+                                                                        display: '-webkit-box',
+                                                                        WebkitLineClamp: 2,
+                                                                        WebkitBoxOrient: 'vertical',
+                                                                        overflow: 'hidden'
+                                                                    }}>
+                                                                        {ticket.description}
+                                                                    </p>
+                                                                    
+                                                                    <div className="flex items-center justify-between text-xs text-text-light-muted dark:text-text-muted">
+                                                                        <div className="flex items-center gap-4">
+                                                                            <span className="flex items-center gap-1">
+                                                                                <Building className="h-3 w-3" />
+                                                                                {ticket.property?.name || ticket.property?.propertyNumber || 'Konut Belirtilmemiş'}
+                                                                            </span>
+                                                                            <Badge variant="outline" color="secondary" className="text-xs">
+                                                                                {ticket.type === 'FAULT_REPAIR' ? 'Arıza/Tamir' :
+                                                                                 ticket.type === 'COMPLAINT' ? 'Şikayet' :
+                                                                                 ticket.type === 'REQUEST' ? 'Talep' :
+                                                                                 ticket.type === 'MAINTENANCE' ? 'Bakım' :
+                                                                                 ticket.type}
+                                                                            </Badge>
+                                                                        </div>
+                                                                        <span className="flex items-center gap-1">
+                                                                            <Calendar className="h-3 w-3" />
+                                                                            {new Date(ticket.createdAt).toLocaleDateString('tr-TR')}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center py-8">
+                                                            <Wrench className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                                                            <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                                Henüz talep bulunmuyor
+                                                            </h3>
+                                                            <p className="text-sm text-text-light-muted dark:text-text-muted">
+                                                                Bu sakin için henüz bir hizmet talebi oluşturulmamış.
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             {activeTab === "activity" && (
@@ -863,6 +1026,32 @@ export default function ResidentViewPage() {
                 onUploadOwnership={uploadOwnershipDocument}
                 uploadStates={uploadStates}
             />
+
+            {/* Create Ticket Modal */}
+            <CreateTicketModal
+                isOpen={showCreateTicketModal}
+                onClose={() => setShowCreateTicketModal(false)}
+                onSuccess={handleTicketCreated}
+            />
+
+            {/* Ticket Detail Modal */}
+            <RequestDetailModal
+                open={showTicketDetailModal}
+                onClose={() => {
+                    setShowTicketDetailModal(false);
+                    setSelectedTicket(null);
+                }}
+                item={selectedTicket}
+                onActionComplete={() => {
+                    setShowTicketDetailModal(false);
+                    setSelectedTicket(null);
+                    refreshTickets();
+                }}
+                toast={toast}
+            />
+
+            {/* Toast Container */}
+            <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
         </ProtectedRoute>
     );
 } 

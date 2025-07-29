@@ -133,6 +133,31 @@ export const ticketService = {
     return response.data;
   },
 
+  // Get tickets by user ID - special endpoint that returns direct array
+  async getTicketsByUserId(userId: string): Promise<Ticket[]> {
+    console.log(`🎫 Fetching tickets for userId: ${userId}`);
+    
+    // This endpoint returns direct array without data wrapper
+    const response = await apiClient.get<Ticket[]>(`/admin/tickets/user/${userId}`);
+    
+    // API returns direct array, so we return response directly (not response.data)
+    // because apiClient already extracts the response body
+    console.log(`✅ Raw response for user ${userId}:`, response);
+    
+    // Handle different response formats gracefully
+    if (Array.isArray(response)) {
+      return response;
+    }
+    
+    // If response has data property (shouldn't happen but safety check)
+    if (response && typeof response === 'object' && 'data' in response) {
+      return (response as any).data || [];
+    }
+    
+    console.warn(`⚠️ Unexpected response format for user ${userId}:`, response);
+    return [];
+  },
+
   // --- Ticket Status Update Methods ---
   async startProgress(id: string): Promise<Ticket> {
     const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/start-progress`, {});
