@@ -105,7 +105,7 @@ export default function ResidentViewPage() {
         autoFetch: true
     });
 
-    const { resident, loading, error } = useResidentData({
+    const { resident, loading, error, refreshData } = useResidentData({
         residentId,
         autoFetch: true
     });
@@ -212,8 +212,7 @@ export default function ResidentViewPage() {
             );
             
             // Refresh resident data to update verification status
-            // Note: useResidentData hook should have a refresh method
-            window.location.reload(); // Temporary solution
+            await refreshData();
             
         } catch (error: any) {
             console.error('Approval failed:', error);
@@ -435,29 +434,14 @@ export default function ResidentViewPage() {
                                                             >
                                                                 {resident.status.label}
                                                             </Badge>
-                                                            {resident.verificationStatus && (
-                                                                <div className="flex items-center gap-2">
-                                                                    {/* Only show badge for non-pending states */}
-                                                                    {resident.verificationStatus.color !== 'yellow' && (
-                                                                        <Badge variant="outline" color={
-                                                                            resident.verificationStatus.color === 'green' ? 'primary' :
-                                                                                resident.verificationStatus.color === 'red' ? 'red' :
-                                                                                    'secondary'
-                                                                        }>
-                                                                            {resident.verificationStatus.label}
-                                                                        </Badge>
-                                                                    )}
-                                                                    {/* Show approval button for pending states */}
-                                                                    {resident.verificationStatus.color === 'yellow' && (
-                                                                        <Button 
-                                                                            variant="primary" 
-                                                                            size="sm"
-                                                                            onClick={() => setShowApprovalModal(true)}
-                                                                        >
-                                                                            Onayla
-                                                                        </Button>
-                                                                    )}
-                                                                </div>
+                                                            {resident.verificationStatus && resident.verificationStatus.color === 'yellow' && (
+                                                                <Button 
+                                                                    variant="primary" 
+                                                                    size="sm"
+                                                                    onClick={() => setShowApprovalModal(true)}
+                                                                >
+                                                                    Onayla
+                                                                </Button>
                                                             )}
                                                         </div>
 
