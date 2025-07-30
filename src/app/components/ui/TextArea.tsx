@@ -1,6 +1,6 @@
 import { forwardRef, TextareaHTMLAttributes } from 'react'
 
-interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextAreaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
     label?: string
     error?: string
     helperText?: string
@@ -9,6 +9,7 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     resize?: 'none' | 'both' | 'horizontal' | 'vertical'
     maxLength?: number
     showCount?: boolean
+    onChange?: (value: string) => void
 }
 
 const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
@@ -23,6 +24,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         showCount = false,
         className = '',
         value,
+        onChange,
         ...props
     }, ref) => {
         const baseClasses = 'w-full px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-gold/50 min-h-[100px]'
@@ -59,6 +61,7 @@ const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
                         ref={ref}
                         maxLength={maxLength}
                         value={value}
+                        onChange={(e) => onChange?.(e.target.value)}
                         className={`
               ${baseClasses}
               ${variantClasses[variant]}

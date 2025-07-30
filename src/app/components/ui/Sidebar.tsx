@@ -69,58 +69,76 @@ const menuItems: MenuItemProps[] = [
         href: '/dashboard/units'
     },
     {
-        title: 'Sakin Listesi',
+        title: 'Sakin Yönetimi',
         icon: User,
         href: '/dashboard/residents'
     },
-    
-
+    {
+        title: 'Hizmet/Talep Yönetimi',
+        icon: Wrench,
+        href: '/dashboard/requests'
+    },
     {
         title: 'Finansal İşlemler',
         icon: DollarSign,
-        children: [
-            { title: 'Aidat Takibi', icon: CreditCard, href: '/dashboard/financial/dues' },
-            { title: 'Ödeme Geçmişi', icon: History, href: '/dashboard/financial/payments' },
-            { title: 'Borç Raporları', icon: FileText, href: '/dashboard/financial/debts' },
-            { title: 'Fatura Yönetimi', icon: Receipt, href: '/dashboard/financial/bills' }
-        ]
+        href: '/dashboard/financial'
     },
     {
         title: 'Duyurular',
         icon: Megaphone,
-        children: [
-            { title: 'Aktif Duyurular', icon: Bell, href: '/dashboard/announcements' },
-            { title: 'Yeni Duyuru', icon: Plus, href: '/dashboard/announcements/create' },
-            { title: 'Duyuru Arşivi', icon: Archive, href: '/dashboard/announcements/archive' }
-        ]
-    },
-    {
-        title: 'Hizmet Talepleri',
-        icon: Wrench,
-        children: [
-            { title: 'Açık Talepler', icon: AlertCircle, href: '/dashboard/requests' },
-            { title: 'İşlem Bekleyenler', icon: Clock, href: '/dashboard/requests/waiting' },
-            { title: 'Tamamlananlar', icon: CheckCircle, href: '/dashboard/requests/resolved' }
-        ]
-    },
-    {
-        title: 'Raporlar',
-        icon: TrendingUp,
-        children: [
-            { title: 'Mali Raporlar', icon: FileBarChart, href: '/dashboard/reports/financial' },
-            { title: 'Doluluk Raporları', icon: PieChart, href: '/dashboard/reports/occupancy' },
-            { title: 'Hizmet Raporları', icon: Activity, href: '/dashboard/reports/services' }
-        ]
+        href: '/dashboard/announcements'
     },
     {
         title: 'Ayarlar',
         icon: Settings,
-        children: [
-            { title: 'Site Bilgileri', icon: Info, href: '/settings/website-info' },
-            { title: 'Kullanıcı Yönetimi', icon: Shield, href: '/settings/user-management' },
-            { title: 'Sistem Ayarları', icon: Cog, href: '/settings/system-settings' }
-        ]
+        href: '/dashboard/settings'
     }
+    // {
+    //     title: 'Finansal İşlemler',
+    //     icon: DollarSign,
+    //     children: [
+    //         { title: 'Aidat Takibi', icon: CreditCard, href: '/dashboard/financial/dues' },
+    //         { title: 'Ödeme Geçmişi', icon: History, href: '/dashboard/financial/payments' },
+    //         { title: 'Borç Raporları', icon: FileText, href: '/dashboard/financial/debts' },
+    //         { title: 'Fatura Yönetimi', icon: Receipt, href: '/dashboard/financial/bills' }
+    //     ]
+    // },
+    // {
+    //     title: 'Duyurular',
+    //     icon: Megaphone,
+    //     children: [
+    //         { title: 'Aktif Duyurular', icon: Bell, href: '/dashboard/announcements' },
+    //         { title: 'Yeni Duyuru', icon: Plus, href: '/dashboard/announcements/create' },
+    //         { title: 'Duyuru Arşivi', icon: Archive, href: '/dashboard/announcements/archive' }
+    //     ]
+    // },
+    // {
+    //     title: 'Hizmet Talepleri',
+    //     icon: Wrench,
+    //     children: [
+    //         { title: 'Açık Talepler', icon: AlertCircle, href: '/dashboard/requests' },
+    //         { title: 'İşlem Bekleyenler', icon: Clock, href: '/dashboard/requests/waiting' },
+    //         { title: 'Tamamlananlar', icon: CheckCircle, href: '/dashboard/requests/resolved' }
+    //     ]
+    // },
+    // {
+    //     title: 'Raporlar',
+    //     icon: TrendingUp,
+    //     children: [
+    //         { title: 'Mali Raporlar', icon: FileBarChart, href: '/dashboard/reports/financial' },
+    //         { title: 'Doluluk Raporları', icon: PieChart, href: '/dashboard/reports/occupancy' },
+    //         { title: 'Hizmet Raporları', icon: Activity, href: '/dashboard/reports/services' }
+    //     ]
+    // },
+    // {
+    //     title: 'Ayarlar',
+    //     icon: Settings,
+    //     children: [
+    //         { title: 'Site Bilgileri', icon: Info, href: '/settings/website-info' },
+    //         { title: 'Kullanıcı Yönetimi', icon: Shield, href: '/settings/user-management' },
+    //         { title: 'Sistem Ayarları', icon: Cog, href: '/settings/system-settings' }
+    //     ]
+    // }
 ];
 
 function MenuItem({ title, icon: Icon, href, children, isOpen, onToggle }: MenuItemProps) {

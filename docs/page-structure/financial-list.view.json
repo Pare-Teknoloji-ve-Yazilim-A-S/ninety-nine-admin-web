@@ -1,0 +1,1120 @@
+{
+    "financialTransactionsList": {
+        "pageInfo": {
+            "title": "Finansal İşlemler",
+            "subtitle": "Fatura ve Ödeme Yönetimi",
+            "icon": "💰",
+            "lastUpdated": "2025-07-30T11:30:00Z"
+        },
+        "filters": {
+            "search": {
+                "placeholder": "İşlem ID, daire numarası veya açıklama ile ara...",
+                "value": "",
+                "type": "text"
+            },
+            "transactionType": {
+                "label": "İşlem Türü",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm İşlemler",
+                        "count": 1247
+                    },
+                    {
+                        "value": "payment",
+                        "label": "Ödeme",
+                        "count": 856,
+                        "color": "#10b981",
+                        "icon": "💳"
+                    },
+                    {
+                        "value": "bill",
+                        "label": "Fatura",
+                        "count": 234,
+                        "color": "#f59e0b",
+                        "icon": "📄"
+                    },
+                    {
+                        "value": "due",
+                        "label": "Aidat",
+                        "count": 98,
+                        "color": "#3b82f6",
+                        "icon": "🏠"
+                    },
+                    {
+                        "value": "refund",
+                        "label": "İade",
+                        "count": 12,
+                        "color": "#8b5cf6",
+                        "icon": "↩️"
+                    },
+                    {
+                        "value": "penalty",
+                        "label": "Gecikme Cezası",
+                        "count": 34,
+                        "color": "#ef4444",
+                        "icon": "⚠️"
+                    },
+                    {
+                        "value": "deposit",
+                        "label": "Depozit",
+                        "count": 13,
+                        "color": "#06b6d4",
+                        "icon": "🏦"
+                    }
+                ]
+            },
+            "paymentStatus": {
+                "label": "Ödeme Durumu",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Durumlar",
+                        "count": 1247
+                    },
+                    {
+                        "value": "paid",
+                        "label": "Ödendi",
+                        "count": 856,
+                        "color": "#10b981"
+                    },
+                    {
+                        "value": "pending",
+                        "label": "Bekliyor",
+                        "count": 198,
+                        "color": "#f59e0b"
+                    },
+                    {
+                        "value": "overdue",
+                        "label": "Gecikmiş",
+                        "count": 156,
+                        "color": "#ef4444"
+                    },
+                    {
+                        "value": "partial",
+                        "label": "Kısmi Ödeme",
+                        "count": 23,
+                        "color": "#8b5cf6"
+                    },
+                    {
+                        "value": "cancelled",
+                        "label": "İptal",
+                        "count": 14,
+                        "color": "#6b7280"
+                    }
+                ]
+            },
+            "paymentMethod": {
+                "label": "Ödeme Yöntemi",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Yöntemler",
+                        "count": 1247
+                    },
+                    {
+                        "value": "zaincash",
+                        "label": "ZainCash",
+                        "count": 423,
+                        "icon": "📱",
+                        "color": "#e11d48"
+                    },
+                    {
+                        "value": "asiacell",
+                        "label": "AsiaCell Pay",
+                        "count": 298,
+                        "icon": "📱",
+                        "color": "#0ea5e9"
+                    },
+                    {
+                        "value": "bank_transfer",
+                        "label": "Banka Havalesi",
+                        "count": 234,
+                        "icon": "🏦",
+                        "color": "#059669"
+                    },
+                    {
+                        "value": "cash",
+                        "label": "Nakit",
+                        "count": 187,
+                        "icon": "💵",
+                        "color": "#d97706"
+                    },
+                    {
+                        "value": "credit_card",
+                        "label": "Kredi Kartı",
+                        "count": 89,
+                        "icon": "💳",
+                        "color": "#7c3aed"
+                    },
+                    {
+                        "value": "check",
+                        "label": "Çek",
+                        "count": 16,
+                        "icon": "📝",
+                        "color": "#64748b"
+                    }
+                ]
+            },
+            "serviceType": {
+                "label": "Hizmet Türü",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Hizmetler",
+                        "count": 1247
+                    },
+                    {
+                        "value": "monthly_dues",
+                        "label": "Aylık Aidat",
+                        "count": 345,
+                        "icon": "🏠"
+                    },
+                    {
+                        "value": "electricity",
+                        "label": "Elektrik",
+                        "count": 298,
+                        "icon": "⚡"
+                    },
+                    {
+                        "value": "water",
+                        "label": "Su",
+                        "count": 267,
+                        "icon": "💧"
+                    },
+                    {
+                        "value": "gas",
+                        "label": "Gaz",
+                        "count": 156,
+                        "icon": "🔥"
+                    },
+                    {
+                        "value": "internet",
+                        "label": "İnternet",
+                        "count": 89,
+                        "icon": "🌐"
+                    },
+                    {
+                        "value": "maintenance",
+                        "label": "Bakım",
+                        "count": 67,
+                        "icon": "🔧"
+                    },
+                    {
+                        "value": "parking",
+                        "label": "Otopark",
+                        "count": 25,
+                        "icon": "🚗"
+                    }
+                ]
+            },
+            "dateRange": {
+                "label": "Tarih Aralığı",
+                "startDate": "2025-07-01",
+                "endDate": "2025-07-30",
+                "type": "daterange",
+                "presets": [
+                    {
+                        "value": "today",
+                        "label": "Bugün"
+                    },
+                    {
+                        "value": "yesterday",
+                        "label": "Dün"
+                    },
+                    {
+                        "value": "last_7_days",
+                        "label": "Son 7 Gün"
+                    },
+                    {
+                        "value": "last_30_days",
+                        "label": "Son 30 Gün"
+                    },
+                    {
+                        "value": "this_month",
+                        "label": "Bu Ay"
+                    },
+                    {
+                        "value": "last_month",
+                        "label": "Geçen Ay"
+                    },
+                    {
+                        "value": "this_quarter",
+                        "label": "Bu Çeyrek"
+                    },
+                    {
+                        "value": "this_year",
+                        "label": "Bu Yıl"
+                    },
+                    {
+                        "value": "custom",
+                        "label": "Özel Tarih"
+                    }
+                ]
+            },
+            "amountRange": {
+                "label": "Tutar Aralığı (IQD)",
+                "minAmount": 0,
+                "maxAmount": 2000000,
+                "type": "range",
+                "presets": [
+                    {
+                        "value": "0-100000",
+                        "label": "0 - 100,000 IQD"
+                    },
+                    {
+                        "value": "100000-500000",
+                        "label": "100,000 - 500,000 IQD"
+                    },
+                    {
+                        "value": "500000-1000000",
+                        "label": "500,000 - 1,000,000 IQD"
+                    },
+                    {
+                        "value": "1000000+",
+                        "label": "1,000,000+ IQD"
+                    }
+                ]
+            },
+            "building": {
+                "label": "Bina/Blok",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Bloklar",
+                        "count": 1247
+                    },
+                    {
+                        "value": "block_a",
+                        "label": "A Blok",
+                        "count": 356
+                    },
+                    {
+                        "value": "block_b",
+                        "label": "B Blok",
+                        "count": 298
+                    },
+                    {
+                        "value": "block_c",
+                        "label": "C Blok",
+                        "count": 334
+                    },
+                    {
+                        "value": "block_d",
+                        "label": "D Blok",
+                        "count": 259
+                    }
+                ]
+            }
+        },
+        "financialSummary": {
+            "totalTransactions": 1247,
+            "totalRevenue": {
+                "amount": 187500000,
+                "currency": "IQD",
+                "formatted": "187,500,000 IQD"
+            },
+            "totalPending": {
+                "amount": 23400000,
+                "currency": "IQD",
+                "formatted": "23,400,000 IQD"
+            },
+            "totalOverdue": {
+                "amount": 8900000,
+                "currency": "IQD",
+                "formatted": "8,900,000 IQD"
+            },
+            "collectionRate": 94.2,
+            "averageTransactionAmount": {
+                "amount": 150240,
+                "currency": "IQD",
+                "formatted": "150,240 IQD"
+            },
+            "monthlyGrowth": {
+                "percentage": 12.5,
+                "trend": "up"
+            }
+        },
+        "quickStats": [
+            {
+                "label": "Bugün Toplanan",
+                "value": "12,450,000 IQD",
+                "count": 34,
+                "change": "+18%",
+                "trend": "up",
+                "color": "#10b981",
+                "icon": "💰"
+            },
+            {
+                "label": "Bekleyen Ödemeler",
+                "value": "23,400,000 IQD",
+                "count": 198,
+                "change": "-5%",
+                "trend": "down",
+                "color": "#f59e0b",
+                "icon": "⏳"
+            },
+            {
+                "label": "Gecikmiş Borçlar",
+                "value": "8,900,000 IQD",
+                "count": 156,
+                "change": "-12%",
+                "trend": "down",
+                "color": "#ef4444",
+                "icon": "⚠️"
+            },
+            {
+                "label": "Bu Ay Toplam",
+                "value": "187,500,000 IQD",
+                "count": 1247,
+                "change": "+12.5%",
+                "trend": "up",
+                "color": "#3b82f6",
+                "icon": "📊"
+            }
+        ],
+        "paymentMethodStats": [
+            {
+                "method": "ZainCash",
+                "amount": 63450000,
+                "percentage": 33.8,
+                "count": 423,
+                "color": "#e11d48",
+                "icon": "📱"
+            },
+            {
+                "method": "AsiaCell Pay",
+                "amount": 55860000,
+                "percentage": 29.8,
+                "count": 298,
+                "color": "#0ea5e9",
+                "icon": "📱"
+            },
+            {
+                "method": "Banka Havalesi",
+                "amount": 39000000,
+                "percentage": 20.8,
+                "count": 234,
+                "color": "#059669",
+                "icon": "🏦"
+            },
+            {
+                "method": "Nakit",
+                "amount": 18720000,
+                "percentage": 10.0,
+                "count": 187,
+                "color": "#d97706",
+                "icon": "💵"
+            },
+            {
+                "method": "Diğer",
+                "amount": 10470000,
+                "percentage": 5.6,
+                "count": 105,
+                "color": "#6b7280",
+                "icon": "💳"
+            }
+        ],
+        "sortOptions": {
+            "currentSort": "transaction_date_desc",
+            "options": [
+                {
+                    "value": "transaction_date_desc",
+                    "label": "En Yeni Önce"
+                },
+                {
+                    "value": "transaction_date_asc",
+                    "label": "En Eski Önce"
+                },
+                {
+                    "value": "amount_desc",
+                    "label": "Tutar (Yüksek→Düşük)"
+                },
+                {
+                    "value": "amount_asc",
+                    "label": "Tutar (Düşük→Yüksek)"
+                },
+                {
+                    "value": "due_date_asc",
+                    "label": "Vade Tarihi (Yakın→Uzak)"
+                },
+                {
+                    "value": "status_asc",
+                    "label": "Duruma Göre"
+                },
+                {
+                    "value": "apartment_asc",
+                    "label": "Daire Numarasına Göre"
+                },
+                {
+                    "value": "payment_method_asc",
+                    "label": "Ödeme Yöntemine Göre"
+                }
+            ]
+        },
+        "pagination": {
+            "currentPage": 1,
+            "totalPages": 25,
+            "itemsPerPage": 50,
+            "totalItems": 1247,
+            "showingFrom": 1,
+            "showingTo": 50,
+            "pageSizeOptions": [
+                25,
+                50,
+                100,
+                200
+            ]
+        },
+        "bulkActions": {
+            "enabled": true,
+            "selectedCount": 0,
+            "selectedAmount": {
+                "amount": 0,
+                "currency": "IQD",
+                "formatted": "0 IQD"
+            },
+            "actions": [
+                {
+                    "id": "mark_paid",
+                    "label": "Ödendi Olarak İşaretle",
+                    "icon": "✅",
+                    "requiresSelection": true,
+                    "confirmationRequired": true,
+                    "restrictedTo": [
+                        "pending",
+                        "overdue"
+                    ]
+                },
+                {
+                    "id": "send_reminder",
+                    "label": "Ödeme Hatırlatması Gönder",
+                    "icon": "📢",
+                    "requiresSelection": true,
+                    "confirmationRequired": false,
+                    "restrictedTo": [
+                        "pending",
+                        "overdue"
+                    ]
+                },
+                {
+                    "id": "apply_penalty",
+                    "label": "Gecikme Cezası Uygula",
+                    "icon": "⚠️",
+                    "requiresSelection": true,
+                    "confirmationRequired": true,
+                    "restrictedTo": [
+                        "overdue"
+                    ]
+                },
+                {
+                    "id": "generate_receipt",
+                    "label": "Makbuz Oluştur",
+                    "icon": "🧾",
+                    "requiresSelection": true,
+                    "confirmationRequired": false,
+                    "restrictedTo": [
+                        "paid"
+                    ]
+                },
+                {
+                    "id": "export_selected",
+                    "label": "Seçilenleri Dışa Aktar",
+                    "icon": "📤",
+                    "requiresSelection": true,
+                    "confirmationRequired": false
+                },
+                {
+                    "id": "cancel_transaction",
+                    "label": "İşlemi İptal Et",
+                    "icon": "❌",
+                    "requiresSelection": true,
+                    "confirmationRequired": true,
+                    "dangerAction": true,
+                    "restrictedTo": [
+                        "pending"
+                    ]
+                }
+            ]
+        },
+        "tableColumns": [
+            {
+                "key": "select",
+                "label": "",
+                "width": "40px",
+                "sortable": false,
+                "type": "checkbox"
+            },
+            {
+                "key": "transactionId",
+                "label": "İşlem ID",
+                "width": "120px",
+                "sortable": true,
+                "type": "link"
+            },
+            {
+                "key": "apartment",
+                "label": "Daire",
+                "width": "100px",
+                "sortable": true,
+                "type": "text"
+            },
+            {
+                "key": "resident",
+                "label": "Sakin",
+                "width": "150px",
+                "sortable": true,
+                "type": "user"
+            },
+            {
+                "key": "transactionType",
+                "label": "İşlem Türü",
+                "width": "120px",
+                "sortable": true,
+                "type": "badge"
+            },
+            {
+                "key": "serviceType",
+                "label": "Hizmet",
+                "width": "120px",
+                "sortable": true,
+                "type": "badge"
+            },
+            {
+                "key": "amount",
+                "label": "Tutar",
+                "width": "120px",
+                "sortable": true,
+                "type": "currency",
+                "align": "right"
+            },
+            {
+                "key": "paymentMethod",
+                "label": "Ödeme Yöntemi",
+                "width": "130px",
+                "sortable": true,
+                "type": "badge"
+            },
+            {
+                "key": "status",
+                "label": "Durum",
+                "width": "100px",
+                "sortable": true,
+                "type": "status"
+            },
+            {
+                "key": "transactionDate",
+                "label": "İşlem Tarihi",
+                "width": "120px",
+                "sortable": true,
+                "type": "datetime"
+            },
+            {
+                "key": "dueDate",
+                "label": "Vade",
+                "width": "100px",
+                "sortable": true,
+                "type": "date"
+            },
+            {
+                "key": "actions",
+                "label": "İşlemler",
+                "width": "100px",
+                "sortable": false,
+                "type": "actions"
+            }
+        ],
+        "transactions": [
+            {
+                "id": "TXN-2025-0789",
+                "transactionId": "TXN-2025-0789",
+                "apartment": {
+                    "number": "A-101",
+                    "block": "A",
+                    "floor": 1,
+                    "owner": "Ahmed Mohammed Al-Rashid",
+                    "tenant": "Sara Hassan Al-Mahmoud"
+                },
+                "resident": {
+                    "name": "Sara Hassan Al-Mahmoud",
+                    "phone": "+964 750 987 6543",
+                    "email": "sara.hassan@email.com",
+                    "avatar": "SH",
+                    "type": "tenant"
+                },
+                "transactionType": {
+                    "id": "payment",
+                    "label": "Ödeme",
+                    "icon": "💳",
+                    "color": "#10b981"
+                },
+                "serviceType": {
+                    "id": "monthly_dues",
+                    "label": "Aylık Aidat",
+                    "icon": "🏠",
+                    "color": "#3b82f6"
+                },
+                "amount": {
+                    "value": 150000,
+                    "currency": "IQD",
+                    "formatted": "150,000 IQD"
+                },
+                "paymentMethod": {
+                    "id": "zaincash",
+                    "label": "ZainCash",
+                    "icon": "📱",
+                    "color": "#e11d48",
+                    "transactionRef": "ZC789456123"
+                },
+                "status": {
+                    "id": "paid",
+                    "label": "Ödendi",
+                    "color": "#10b981",
+                    "bgColor": "#d1fae5"
+                },
+                "transactionDate": "2025-07-28T14:30:00Z",
+                "dueDate": "2025-08-01T23:59:59Z",
+                "paidDate": "2025-07-28T14:30:00Z",
+                "period": "2025-08",
+                "description": "Ağustos 2025 aylık aidat ödemesi",
+                "receiptNumber": "RCP-2025-0789",
+                "fees": {
+                    "processingFee": 2500,
+                    "currency": "IQD"
+                },
+                "isOverdue": false,
+                "daysOverdue": 0,
+                "penalty": {
+                    "amount": 0,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "aylık",
+                    "zaincash",
+                    "a-blok"
+                ]
+            },
+            {
+                "id": "TXN-2025-0788",
+                "transactionId": "TXN-2025-0788",
+                "apartment": {
+                    "number": "B-205",
+                    "block": "B",
+                    "floor": 2,
+                    "owner": "Layla Omar Al-Najjar",
+                    "tenant": null
+                },
+                "resident": {
+                    "name": "Layla Omar Al-Najjar",
+                    "phone": "+964 770 888 9999",
+                    "email": "layla.najjar@email.com",
+                    "avatar": "LN",
+                    "type": "owner"
+                },
+                "transactionType": {
+                    "id": "bill",
+                    "label": "Fatura",
+                    "icon": "📄",
+                    "color": "#f59e0b"
+                },
+                "serviceType": {
+                    "id": "electricity",
+                    "label": "Elektrik",
+                    "icon": "⚡",
+                    "color": "#f59e0b"
+                },
+                "amount": {
+                    "value": 89500,
+                    "currency": "IQD",
+                    "formatted": "89,500 IQD"
+                },
+                "paymentMethod": {
+                    "id": "bank_transfer",
+                    "label": "Banka Havalesi",
+                    "icon": "🏦",
+                    "color": "#059669",
+                    "bankAccount": "****1234"
+                },
+                "status": {
+                    "id": "pending",
+                    "label": "Bekliyor",
+                    "color": "#f59e0b",
+                    "bgColor": "#fef3c7"
+                },
+                "transactionDate": "2025-07-25T09:15:00Z",
+                "dueDate": "2025-08-10T23:59:59Z",
+                "paidDate": null,
+                "period": "2025-07",
+                "description": "Temmuz 2025 elektrik faturası",
+                "consumption": {
+                    "amount": 596,
+                    "unit": "kWh",
+                    "rate": 150,
+                    "currency": "IQD"
+                },
+                "previousReading": 12450,
+                "currentReading": 13046,
+                "meterNumber": "ELC002205",
+                "isOverdue": false,
+                "daysOverdue": 0,
+                "penalty": {
+                    "amount": 0,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "elektrik",
+                    "bekliyor",
+                    "b-blok"
+                ]
+            },
+            {
+                "id": "TXN-2025-0787",
+                "transactionId": "TXN-2025-0787",
+                "apartment": {
+                    "number": "C-308",
+                    "block": "C",
+                    "floor": 3,
+                    "owner": "Hassan Ali Al-Mahmoud",
+                    "tenant": "Maryam Hassan Al-Zahra"
+                },
+                "resident": {
+                    "name": "Maryam Hassan Al-Zahra",
+                    "phone": "+964 750 111 2222",
+                    "email": "maryam.zahra@email.com",
+                    "avatar": "MZ",
+                    "type": "tenant"
+                },
+                "transactionType": {
+                    "id": "payment",
+                    "label": "Ödeme",
+                    "icon": "💳",
+                    "color": "#10b981"
+                },
+                "serviceType": {
+                    "id": "water",
+                    "label": "Su",
+                    "icon": "💧",
+                    "color": "#06b6d4"
+                },
+                "amount": {
+                    "value": 34200,
+                    "currency": "IQD",
+                    "formatted": "34,200 IQD"
+                },
+                "paymentMethod": {
+                    "id": "asiacell",
+                    "label": "AsiaCell Pay",
+                    "icon": "📱",
+                    "color": "#0ea5e9",
+                    "transactionRef": "AC445566778"
+                },
+                "status": {
+                    "id": "paid",
+                    "label": "Ödendi",
+                    "color": "#10b981",
+                    "bgColor": "#d1fae5"
+                },
+                "transactionDate": "2025-07-24T16:45:00Z",
+                "dueDate": "2025-08-05T23:59:59Z",
+                "paidDate": "2025-07-24T16:45:00Z",
+                "period": "2025-07",
+                "description": "Temmuz 2025 su faturası",
+                "consumption": {
+                    "amount": 19,
+                    "unit": "m³",
+                    "rate": 1800,
+                    "currency": "IQD"
+                },
+                "previousReading": 345,
+                "currentReading": 364,
+                "meterNumber": "WTR003308",
+                "isOverdue": false,
+                "daysOverdue": 0,
+                "penalty": {
+                    "amount": 0,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "su",
+                    "asiacell",
+                    "c-blok"
+                ]
+            },
+            {
+                "id": "TXN-2025-0786",
+                "transactionId": "TXN-2025-0786",
+                "apartment": {
+                    "number": "A-205",
+                    "block": "A",
+                    "floor": 2,
+                    "owner": "Mohammed Hassan Al-Timimi",
+                    "tenant": "Fatima Ali Al-Baghdadi"
+                },
+                "resident": {
+                    "name": "Fatima Ali Al-Baghdadi",
+                    "phone": "+964 770 333 4444",
+                    "email": "fatima.baghdadi@email.com",
+                    "avatar": "FB",
+                    "type": "tenant"
+                },
+                "transactionType": {
+                    "id": "due",
+                    "label": "Aidat",
+                    "icon": "🏠",
+                    "color": "#3b82f6"
+                },
+                "serviceType": {
+                    "id": "monthly_dues",
+                    "label": "Aylık Aidat",
+                    "icon": "🏠",
+                    "color": "#3b82f6"
+                },
+                "amount": {
+                    "value": 150000,
+                    "currency": "IQD",
+                    "formatted": "150,000 IQD"
+                },
+                "paymentMethod": null,
+                "status": {
+                    "id": "overdue",
+                    "label": "Gecikmiş",
+                    "color": "#ef4444",
+                    "bgColor": "#fee2e2"
+                },
+                "transactionDate": "2025-07-01T00:00:00Z",
+                "dueDate": "2025-07-15T23:59:59Z",
+                "paidDate": null,
+                "period": "2025-07",
+                "description": "Temmuz 2025 aylık aidat",
+                "isOverdue": true,
+                "daysOverdue": 15,
+                "penalty": {
+                    "amount": 15000,
+                    "currency": "IQD",
+                    "rate": 0.1,
+                    "description": "Günlük %0.1 gecikme cezası"
+                },
+                "remindersSent": 3,
+                "lastReminderDate": "2025-07-25T10:00:00Z",
+                "tags": [
+                    "aidat",
+                    "gecikmiş",
+                    "hatırlatma",
+                    "a-blok"
+                ]
+            },
+            {
+                "id": "TXN-2025-0785",
+                "transactionId": "TXN-2025-0785",
+                "apartment": {
+                    "number": "D-112",
+                    "block": "D",
+                    "floor": 1,
+                    "owner": "Ali Omar Al-Rashid",
+                    "tenant": null
+                },
+                "resident": {
+                    "name": "Ali Omar Al-Rashid",
+                    "phone": "+964 750 666 7777",
+                    "email": "ali.rashid@email.com",
+                    "avatar": "AR",
+                    "type": "owner"
+                },
+                "transactionType": {
+                    "id": "payment",
+                    "label": "Ödeme",
+                    "icon": "💳",
+                    "color": "#10b981"
+                },
+                "serviceType": {
+                    "id": "maintenance",
+                    "label": "Bakım",
+                    "icon": "🔧",
+                    "color": "#8b5cf6"
+                },
+                "amount": {
+                    "value": 275000,
+                    "currency": "IQD",
+                    "formatted": "275,000 IQD"
+                },
+                "paymentMethod": {
+                    "id": "cash",
+                    "label": "Nakit",
+                    "icon": "💵",
+                    "color": "#d97706",
+                    "receivedBy": "Site Muhasebecisi"
+                },
+                "status": {
+                    "id": "paid",
+                    "label": "Ödendi",
+                    "color": "#10b981",
+                    "bgColor": "#d1fae5"
+                },
+                "transactionDate": "2025-07-22T11:20:00Z",
+                "dueDate": "2025-07-25T23:59:59Z",
+                "paidDate": "2025-07-22T11:20:00Z",
+                "period": "2025-07",
+                "description": "Klima bakım ve gaz dolumu",
+                "maintenanceDetails": {
+                    "requestId": "MNT-2025-0245",
+                    "technician": "Sara Ahmed",
+                    "company": "City HVAC Services",
+                    "workDescription": "Salon kliması bakım ve R410A gaz dolumu"
+                },
+                "receiptNumber": "RCP-2025-0785",
+                "isOverdue": false,
+                "daysOverdue": 0,
+                "penalty": {
+                    "amount": 0,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "bakım",
+                    "klima",
+                    "nakit",
+                    "d-blok"
+                ]
+            }
+        ],
+        "exportOptions": {
+            "formats": [
+                {
+                    "value": "excel",
+                    "label": "Excel (.xlsx)",
+                    "icon": "📊"
+                },
+                {
+                    "value": "pdf",
+                    "label": "PDF Raporu",
+                    "icon": "📄"
+                },
+                {
+                    "value": "csv",
+                    "label": "CSV Dosyası",
+                    "icon": "📋"
+                },
+                {
+                    "value": "financial_report",
+                    "label": "Mali Rapor (PDF)",
+                    "icon": "💼"
+                }
+            ],
+            "includeOptions": [
+                {
+                    "key": "basic_info",
+                    "label": "Temel Bilgiler",
+                    "default": true
+                },
+                {
+                    "key": "resident_info",
+                    "label": "Sakin Bilgileri",
+                    "default": true
+                },
+                {
+                    "key": "payment_details",
+                    "label": "Ödeme Detayları",
+                    "default": true
+                },
+                {
+                    "key": "consumption_data",
+                    "label": "Tüketim Verileri",
+                    "default": false
+                },
+                {
+                    "key": "penalty_info",
+                    "label": "Ceza Bilgileri",
+                    "default": false
+                },
+                {
+                    "key": "receipt_numbers",
+                    "label": "Makbuz Numaraları",
+                    "default": true
+                },
+                {
+                    "key": "financial_summary",
+                    "label": "Mali Özet",
+                    "default": false
+                }
+            ],
+            "dateRangeRequired": true
+        },
+        "reportingOptions": {
+            "availableReports": [
+                {
+                    "id": "monthly_collection",
+                    "label": "Aylık Tahsilat Raporu",
+                    "description": "Detaylı gelir analizi ve tahsilat oranları",
+                    "icon": "📊"
+                },
+                {
+                    "id": "overdue_analysis",
+                    "label": "Gecikmiş Ödemeler Analizi",
+                    "description": "Borçlu daireler ve gecikme trendleri",
+                    "icon": "⚠️"
+                },
+                {
+                    "id": "payment_method_breakdown",
+                    "label": "Ödeme Yöntemi Dağılımı",
+                    "description": "Kullanılan ödeme kanalları ve performans",
+                    "icon": "💳"
+                },
+                {
+                    "id": "consumption_trends",
+                    "label": "Tüketim Trend Analizi",
+                    "description": "Elektrik, su, gaz tüketim analizleri",
+                    "icon": "⚡"
+                }
+            ]
+        },
+        "permissions": {
+            "canCreate": true,
+            "canEdit": true,
+            "canDelete": false,
+            "canApprove": true,
+            "canRefund": true,
+            "canExport": true,
+            "canViewCosts": true,
+            "canManagePenalties": true,
+            "canGenerateReports": true,
+            "canBulkEdit": true,
+            "role": "financial_admin"
+        },
+        "integrations": {
+            "paymentGateways": {
+                "zaincash": {
+                    "enabled": true,
+                    "status": "active",
+                    "lastSync": "2025-07-30T10:30:00Z"
+                },
+                "asiacell": {
+                    "enabled": true,
+                    "status": "active",
+                    "lastSync": "2025-07-30T10:25:00Z"
+                },
+                "bankTransfer": {
+                    "enabled": true,
+                    "accounts": [
+                        "Al-Rashid Bank",
+                        "Commercial Bank of Iraq"
+                    ],
+                    "autoReconciliation": true
+                }
+            },
+            "accountingSystem": {
+                "enabled": false,
+                "provider": null,
+                "lastSync": null
+            }
+        }
+    }
+}

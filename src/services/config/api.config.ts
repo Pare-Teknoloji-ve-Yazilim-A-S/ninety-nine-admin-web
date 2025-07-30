@@ -144,6 +144,33 @@ export const apiConfig = {
             base: '/admin/tickets',
             attachments: (ticketId: string) => `/admin/tickets/${ticketId}/attachments`,
         },
+        announcements: {
+            // Admin Panel - Announcement Management (API-99CLUB Compatible)
+            admin: {
+                base: '/admin/announcements',
+                active: '/admin/announcements/active',
+                expired: '/admin/announcements/expired',
+                emergency: '/admin/announcements/emergency',
+                byStatus: (status: string) => `/admin/announcements/status/${status}`,
+                byProperty: (propertyId: string) => `/admin/announcements/property/${propertyId}`,
+                byUser: (userId: string) => `/admin/announcements/user/${userId}`,
+                byId: (id: string) => `/admin/announcements/${id}`,
+                publish: (id: string) => `/admin/announcements/${id}/publish`,
+                archive: (id: string) => `/admin/announcements/${id}/archive`,
+                bulkAction: '/admin/announcements/bulk-action',
+                uploadImage: (id: string) => `/admin/announcements/${id}/upload-image`,
+                stats: '/admin/announcements/stats',
+                search: '/admin/announcements/search',
+            },
+            // Mobile/Tenant Panel - Announcement Reading (Future Implementation)
+            mobile: {
+                base: '/mobile/announcements',
+                active: '/mobile/announcements/active',
+                emergency: '/mobile/announcements/emergency',
+                byProperty: (propertyId: string) => `/mobile/announcements/property/${propertyId}`,
+                byId: (id: string) => `/mobile/announcements/${id}`,
+            },
+        },
     },
 } as const;
 
