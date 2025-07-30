@@ -167,26 +167,7 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
 
     // === APPROVAL MANAGEMENT === //
 
-    /**
-     * Approve or reject resident registration
-     * PUT /admin/users/{id}/approve
-     */
-    async approveResident(id: string, data: ResidentApprovalDto): Promise<ApiResponse<ResidentApprovalResponse>> {
-        try {
 
-
-            const response = await apiClient.put<ResidentApprovalResponse>(
-                apiConfig.endpoints.residents.admin.approve(id),
-                data
-            );
-
-
-            return response;
-        } catch (error) {
-
-            throw error;
-        }
-    }
 
     /**
      * Bulk approve residents

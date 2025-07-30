@@ -168,8 +168,8 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
                 apiConfig.endpoints.properties.admin.byOwner(ownerId)
             );
 
-            this.logger.info(`Fetched ${response.data.length} properties for owner`);
-            return response.data;
+            this.logger.info(`Fetched ${response.data.data.length} properties for owner`);
+            return response.data.data;
         } catch (error) {
             this.logger.error(`Failed to fetch properties for owner: ${ownerId}`, error);
             throw error;
