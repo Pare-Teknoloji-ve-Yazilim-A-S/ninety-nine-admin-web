@@ -9,7 +9,14 @@ import Sidebar from "@/app/components/ui/Sidebar";
 import Card from "@/app/components/ui/Card";
 import Button from "@/app/components/ui/Button";
 import Badge from "@/app/components/ui/Badge";
-import { usePropertyDetail } from "@/hooks/usePropertyDetail";
+import { useUnitDetail } from "@/hooks/useUnitDetail";
+import { useToast } from "@/hooks/useToast";
+import { ToastContainer } from "@/app/components/ui/Toast";
+import BasicInfoSection from "./components/BasicInfoSection";
+import OwnerInfoSection from "./components/OwnerInfoSection";
+import TenantInfoSection from "./components/TenantInfoSection";
+import ResidentsSection from "./components/ResidentsSection";
+import FinancialSummarySection from "./components/FinancialSummarySection";
 import {
   Building,
   Home,
@@ -20,33 +27,65 @@ import {
   CheckCircle,
   RotateCcw,
   Calendar,
+  Edit,
+  Phone,
+  MessageSquare,
+  Settings,
+  Users,
+  DollarSign,
+  Zap,
+  Wrench,
+  UserCheck,
+  FileText
 } from "lucide-react";
 
-const statusConfig = {
-  AVAILABLE: { label: "Boş", color: "info", icon: AlertCircle },
-  OCCUPIED: { label: "Dolu", color: "success", icon: CheckCircle },
-  UNDER_MAINTENANCE: { label: "Bakımda", color: "warning", icon: RotateCcw },
-  RESERVED: { label: "Rezerve", color: "primary", icon: Calendar },
-};
-
-const typeConfig = {
-  RESIDENCE: { label: "Daire", icon: Building, color: "primary" },
-  VILLA: { label: "Villa", icon: Home, color: "success" },
-  COMMERCIAL: { label: "Ticari", icon: Store, color: "info" },
-  PARKING: { label: "Otopark", icon: Car, color: "warning" },
-};
-
-export default function PropertyDetailPage() {
+export default function UnitDetailPage() {
   const params = useParams();
-  const propertyId = params.id as string;
+  const unitId = params.id as string;
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { data: property, loading, error } = usePropertyDetail(propertyId);
+  const [activeTab, setActiveTab] = useState<'residents' | 'financial' | 'consumption' | 'maintenance' | 'visitors' | 'documents'>('residents');
+  const toast = useToast();
+  
+  const { 
+    unit, 
+    loading, 
+    error, 
+    refetch,
+    updateBasicInfo,
+    updateNotes
+  } = useUnitDetail(unitId);
 
   const breadcrumbItems = [
     { label: "Ana Sayfa", href: "/dashboard" },
     { label: "Konutlar", href: "/dashboard/units" },
-    { label: property?.data?.name || "Konut Detayı", active: true },
+    { label: unit?.apartmentNumber || "Konut Detayı", active: true },
   ];
+
+  // Helper functions
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return <CheckCircle className="h-4 w-4 text-semantic-success-500" />;
+      case 'maintenance': return <RotateCcw className="h-4 w-4 text-semantic-warning-500" />;
+      case 'renovation': return <Settings className="h-4 w-4 text-primary-gold" />;
+      case 'inactive': return <AlertCircle className="h-4 w-4 text-primary-red" />;
+      default: return <AlertCircle className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const getStatusColor = (status: string): 'primary' | 'secondary' | 'gold' | 'red' => {
+    switch (status) {
+      case 'active': return 'primary';
+      case 'maintenance': return 'gold';
+      case 'renovation': return 'secondary';
+      case 'inactive': return 'red';
+      default: return 'secondary';
+    }
+  };
+
+  const getInitials = (name: string) => {
+    const parts = name.split(' ');
+    return parts.map(part => part.charAt(0)).join('').toUpperCase().slice(0, 2);
+  };
 
   if (loading) {
     return (
@@ -70,7 +109,7 @@ export default function PropertyDetailPage() {
     );
   }
 
-  if (error || !property) {
+  if (error || !unit) {
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-background-primary">
@@ -99,123 +138,295 @@ export default function PropertyDetailPage() {
     );
   }
 
-  const statusInfo = statusConfig[property.data.status as keyof typeof statusConfig];
-  const typeInfo = typeConfig[property.data.type as keyof typeof typeConfig];
-
-  // Helper to map color to allowed Badge color
-  const mapBadgeColor = (color: string | undefined): 'primary' | 'secondary' | 'gold' | 'red' | 'accent' | undefined => {
-    if (!color) return undefined;
-    if (color === 'info' || color === 'success' || color === 'primary') return 'primary';
-    if (color === 'warning') return 'gold';
-    if (color === 'red') return 'red';
-    if (color === 'secondary') return 'secondary';
-    return undefined;
-  };
-
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-background-light-primary via-background-light-secondary to-primary-gold-light/30 dark:from-background-primary dark:via-background-secondary dark:to-background-card flex flex-col min-h-screen">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="lg:ml-72 flex flex-col flex-1">
-          <DashboardHeader title={property.data.name} breadcrumbItems={breadcrumbItems} />
-          <main className="flex flex-col items-center flex-1 w-full py-12 px-4 sm:px-8 lg:px-16">
-            <div className="w-full max-w-5xl">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-10">
+      <div className="min-h-screen bg-background-primary">
+        {/* Sidebar */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+
+        {/* Main Content Area */}
+        <div className="lg:ml-72">
+          {/* Header */}
+          <DashboardHeader
+            title={unit?.apartmentNumber || 'Konut Detayı'}
+            breadcrumbItems={breadcrumbItems}
+          />
+
+          {/* Main Content */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Page Header with Actions */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+              <div className="flex items-center gap-4">
                 <Link href="/dashboard/units">
                   <Button variant="ghost" icon={ArrowLeft}>
                     Geri Dön
                   </Button>
                 </Link>
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-text-on-light dark:text-on-dark tracking-tight mb-1 flex items-center gap-3">
-                    <span className="text-primary-gold">{property.data.name}</span>
-                    <span className="inline-block">
-                      <Badge variant="soft" color={mapBadgeColor(typeInfo?.color)} className="text-lg px-4 py-1 rounded-xl shadow-md flex items-center gap-2">
-                        {typeInfo?.icon && <typeInfo.icon className="h-5 w-5 mr-1" />}
-                        {typeInfo?.label || property.data.type}
-                      </Badge>
-                    </span>
-                  </h1>
-                  <div className="flex items-center gap-3 mt-2">
-                    {statusInfo && (
-                      <Badge variant="soft" color={mapBadgeColor(statusInfo.color)} className="flex items-center gap-2 px-3 py-1 rounded-lg shadow-sm text-base">
-                        <statusInfo.icon className="h-4 w-4 mr-1" />
-                        {statusInfo.label}
-                      </Badge>
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
+                      {unit?.apartmentNumber || 'Yükleniyor...'}
+                    </h1>
+                    {unit && (
+                      <>
+                        {getStatusIcon(unit.status)}
+                        <Badge variant="soft" color={getStatusColor(unit.status)}>
+                          {unit.basicInfo.data.status.options.find(opt => 
+                            typeof opt === 'object' && opt.value === unit.status
+                          )?.label || unit.status}
+                        </Badge>
+                      </>
                     )}
                   </div>
+                  <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                    {unit?.block} Blok • {unit?.floor}. Kat • {unit?.area} m²
+                  </p>
                 </div>
               </div>
 
-              <Card className="rounded-2xl shadow-xl border border-primary-gold/10 bg-background-light-card/80 dark:bg-background-card/80 backdrop-blur-md">
-                <div className="p-8 space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
-                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Konut Numarası</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.data.propertyNumber || "-"}</p>
+              <div className="flex gap-3">
+                <Button variant="secondary" icon={Phone}>
+                  İletişim
+                </Button>
+                <Button variant="secondary" icon={MessageSquare}>
+                  Note Ekle
+                </Button>
+                <Button variant="primary" icon={Edit}>
+                  Düzenle
+                </Button>
+              </div>
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left Column - Main Info */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Unit Summary */}
+                <Card className="p-6">
+                  <div className="flex items-start gap-6">
+                    {/* Icon */}
+                    <div className="flex-shrink-0">
+                      <div className="w-24 h-24 rounded-lg bg-primary-gold/10 flex items-center justify-center">
+                        <Building className="h-12 w-12 text-primary-gold" />
+                      </div>
                     </div>
-                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
-                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Konut Grubu</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.data.propertyGroup || "-"}</p>
-                    </div>
-                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
-                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Alan (m²)</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.data.area || "-"}</p>
-                    </div>
-                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
-                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Blok</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.data.blockNumber || "-"}</p>
-                    </div>
-                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
-                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Kat</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{property.data.floor ?? "-"}</p>
-                    </div>
-                    <div className="bg-background-light-soft dark:bg-background-soft rounded-xl p-5 shadow-sm border border-primary-gold/5">
-                      <p className="text-text-light-muted dark:text-text-muted text-sm mb-1">Durum</p>
-                      <p className="font-semibold text-lg text-text-on-dark">{statusInfo?.label || property.status}</p>
+
+                    {/* Basic Info */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
+                          {unit?.apartmentNumber}
+                        </h2>
+                        <Badge variant="soft" color="primary">
+                          {unit?.type}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <p className="text-text-light-muted dark:text-text-muted">Blok</p>
+                          <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                            {unit?.block}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-text-light-muted dark:text-text-muted">Kat</p>
+                          <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                            {unit?.floor}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-text-light-muted dark:text-text-muted">Alan</p>
+                          <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                            {unit?.area} m²
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-text-light-muted dark:text-text-muted">Durum</p>
+                          <Badge variant="soft" color={getStatusColor(unit?.status || 'inactive')}>
+                            {unit?.basicInfo.data.status.options.find(opt => 
+                              typeof opt === 'object' && opt.value === unit.status
+                            )?.label}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  {/* Fatura Durumu */}
-                  {property.data.bills && property.data.bills.length > 0 && (() => {
-                    const unpaidBills = property.data.bills.filter((bill: any) => bill.status !== "PAID");
-                    const allPaid = unpaidBills.length === 0;
-                    if (allPaid) {
-                      return (
-                        <div className="mt-8 p-6 bg-semantic-success/10 dark:bg-semantic-success/20 rounded-xl border border-semantic-success/20 flex items-center gap-4">
-                          <CheckCircle className="h-6 w-6 text-semantic-success-600" />
-                          <div className="text-base text-semantic-success-600 font-semibold">
-                            Tüm faturalar ödendi
-                          </div>
+                </Card>
+
+                {/* Basic Info Section */}
+                {unit?.basicInfo && (
+                  <BasicInfoSection
+                    basicInfo={unit.basicInfo}
+                    onUpdate={updateBasicInfo}
+                    loading={loading}
+                    canEdit={unit.permissions.canEdit}
+                  />
+                )}
+
+                {/* Tabbed Content Section */}
+                <Card className="mt-6">
+                  <div className="p-0">
+                    <div className="border-b border-gray-200 dark:border-gray-700 px-6 pt-6">
+                      <nav className="flex space-x-4" aria-label="Tabs">
+                        {[
+                          { label: "Sakinler", key: "residents", icon: Users },
+                          { label: "Finansal", key: "financial", icon: DollarSign },
+                          { label: "Tüketim", key: "consumption", icon: Zap },
+                          { label: "Bakım", key: "maintenance", icon: Wrench },
+                          { label: "Ziyaretçiler", key: "visitors", icon: UserCheck },
+                          { label: "Belgeler", key: "documents", icon: FileText }
+                        ].map((tab) => (
+                          <button
+                            key={tab.key}
+                            className={
+                              (activeTab === tab.key
+                                ? "text-primary-gold border-primary-gold"
+                                : "text-text-light-secondary dark:text-text-secondary border-transparent hover:text-primary-gold hover:border-primary-gold/60") +
+                              " px-3 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-2"
+                            }
+                            onClick={() => setActiveTab(tab.key as any)}
+                            type="button"
+                          >
+                            <tab.icon className="h-4 w-4" />
+                            {tab.label}
+                          </button>
+                        ))}
+                      </nav>
+                    </div>
+                    <div className="px-6 py-6">
+                      {activeTab === "residents" && unit && (
+                        <ResidentsSection
+                          residents={unit.residents}
+                          loading={loading}
+                          canEdit={unit.permissions.canManageResidents}
+                        />
+                      )}
+                      {activeTab === "financial" && unit && (
+                        <FinancialSummarySection
+                          financialSummary={unit.financialSummary}
+                          loading={loading}
+                        />
+                      )}
+                      {activeTab === "consumption" && (
+                        <div className="text-center py-8">
+                          <Zap className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                          <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Tüketim Verileri
+                          </h3>
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">
+                            Elektrik, su ve gaz tüketim verileri burada görüntülenecek.
+                          </p>
                         </div>
-                      );
-                    } else {
-                      return (
-                        <div className="mt-8 p-6 bg-primary-red/10 dark:bg-primary-red/20 rounded-xl border border-primary-red/20">
-                          <div className="flex items-center gap-4 mb-2">
-                            <AlertCircle className="h-6 w-6 text-primary-red" />
-                            <div className="text-base text-primary-red font-semibold">
-                              Ödenmemiş Faturalar Var
-                            </div>
-                          </div>
-                          <ul className="space-y-2 mt-2">
-                            {unpaidBills.map((bill: any) => (
-                              <li key={bill.id} className="flex flex-col md:flex-row md:items-center md:gap-6 bg-background-light-soft dark:bg-background-soft rounded-lg p-3 border border-primary-red/10">
-                                <span className="font-medium text-text-on-dark">{bill.title}</span>
-                                <span className="text-text-light-secondary dark:text-text-secondary">Tutar: <span className="font-semibold">₺{bill.amount}</span></span>
-                                <span className="text-text-light-secondary dark:text-text-secondary">Son Tarih: <span className="font-semibold">{bill.dueDate}</span></span>
-                              </li>
-                            ))}
-                          </ul>
+                      )}
+                      {activeTab === "maintenance" && (
+                        <div className="text-center py-8">
+                          <Wrench className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                          <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Bakım Geçmişi
+                          </h3>
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">
+                            Bu konut için bakım kayıtları burada görüntülenecek.
+                          </p>
                         </div>
-                      );
-                    }
-                  })()}
-                </div>
-              </Card>
+                      )}
+                      {activeTab === "visitors" && (
+                        <div className="text-center py-8">
+                          <UserCheck className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                          <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Ziyaretçi Geçmişi
+                          </h3>
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">
+                            Bu konut için ziyaretçi kayıtları burada görüntülenecek.
+                          </p>
+                        </div>
+                      )}
+                      {activeTab === "documents" && (
+                        <div className="text-center py-8">
+                          <FileText className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                          <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Belgeler
+                          </h3>
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">
+                            Bu konut için belgeler burada görüntülenecek.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Right Column - Sidebar */}
+              <div className="space-y-6">
+                {/* Owner Information */}
+                {unit?.ownerInfo && (
+                  <OwnerInfoSection
+                    ownerInfo={unit.ownerInfo}
+                    loading={loading}
+                    canEdit={unit.permissions.canEdit}
+                  />
+                )}
+
+                {/* Tenant Information */}
+                <TenantInfoSection
+                  tenantInfo={unit?.tenantInfo}
+                  loading={loading}
+                  canEdit={unit?.permissions.canEdit}
+                />
+
+                {/* Financial Summary Sidebar */}
+                {unit?.financialSummary && (
+                  <Card>
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-primary-gold" />
+                        Finansal Durum
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="bg-background-light-soft dark:bg-background-soft rounded-lg p-4">
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">Güncel Bakiye</p>
+                          <p className={`text-lg font-semibold ${unit.financialSummary.data.currentBalance.value < 0 ? 'text-primary-red' : 'text-primary-gold'}`}>
+                            {new Intl.NumberFormat('tr-TR').format(Math.abs(unit.financialSummary.data.currentBalance.value))} {unit.financialSummary.data.currentBalance.currency}
+                          </p>
+                        </div>
+                        <Button 
+                          variant="primary" 
+                          className="w-full" 
+                          onClick={() => setActiveTab('financial')}
+                        >
+                          Finansal Detayları Gör
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Notes */}
+                {unit?.notes.data.generalNotes?.value && (
+                  <Card>
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-primary-gold" />
+                        Notlar
+                      </h3>
+                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                        {unit.notes.data.generalNotes.value}
+                      </p>
+                    </div>
+                  </Card>
+                )}
+              </div>
             </div>
           </main>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
     </ProtectedRoute>
   );
 } 

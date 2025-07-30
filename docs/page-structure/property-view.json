@@ -1,0 +1,562 @@
+{
+    "housingDetail": {
+        "id": "HSE-2024-0101",
+        "apartmentNumber": "A-101",
+        "block": "A",
+        "floor": 1,
+        "type": "3+1",
+        "area": 120,
+        "status": "active",
+        "createdDate": "2024-01-15T10:30:00Z",
+        "lastUpdated": "2025-07-28T14:20:00Z",
+        "basicInfo": {
+            "title": "Konut Temel Bilgileri",
+            "icon": "🏠",
+            "data": {
+                "apartmentNumber": {
+                    "label": "Daire No",
+                    "value": "A-101",
+                    "type": "text",
+                    "required": true
+                },
+                "block": {
+                    "label": "Blok",
+                    "value": "A Blok",
+                    "type": "select",
+                    "options": [
+                        "A Blok",
+                        "B Blok",
+                        "C Blok",
+                        "D Blok"
+                    ],
+                    "required": true
+                },
+                "floor": {
+                    "label": "Kat",
+                    "value": 1,
+                    "type": "number",
+                    "min": -1,
+                    "max": 20,
+                    "required": true
+                },
+                "apartmentType": {
+                    "label": "Daire Tipi",
+                    "value": "3+1 (120m²)",
+                    "type": "select",
+                    "options": [
+                        "1+0 (45m²)",
+                        "1+1 (65m²)",
+                        "2+1 (85m²)",
+                        "3+1 (120m²)",
+                        "4+1 (150m²)",
+                        "5+1 (180m²)"
+                    ],
+                    "required": true
+                },
+                "area": {
+                    "label": "Alan (m²)",
+                    "value": 120,
+                    "type": "number",
+                    "min": 30,
+                    "max": 500,
+                    "required": true
+                },
+                "status": {
+                    "label": "Durum",
+                    "value": "active",
+                    "type": "select",
+                    "options": [
+                        {
+                            "value": "active",
+                            "label": "Aktif",
+                            "color": "green"
+                        },
+                        {
+                            "value": "inactive",
+                            "label": "Pasif",
+                            "color": "red"
+                        },
+                        {
+                            "value": "maintenance",
+                            "label": "Bakımda",
+                            "color": "orange"
+                        },
+                        {
+                            "value": "renovation",
+                            "label": "Tadilat",
+                            "color": "blue"
+                        }
+                    ],
+                    "required": true
+                }
+            }
+        },
+        "ownerInfo": {
+            "title": "Malik Bilgileri",
+            "icon": "👤",
+            "data": {
+                "fullName": {
+                    "label": "Ad Soyad",
+                    "value": "Ahmed Mohammed Al-Rashid",
+                    "type": "text",
+                    "required": true,
+                    "validation": "name"
+                },
+                "phone": {
+                    "label": "Telefon",
+                    "value": "+964 770 123 4567",
+                    "type": "tel",
+                    "format": "+964 XXX XXX XXXX",
+                    "required": true,
+                    "validation": "iraq_phone"
+                },
+                "email": {
+                    "label": "E-posta",
+                    "value": "ahmed.rashid@email.com",
+                    "type": "email",
+                    "required": false,
+                    "validation": "email"
+                },
+                "nationalId": {
+                    "label": "Kimlik No",
+                    "value": "12345678901",
+                    "type": "text",
+                    "required": false,
+                    "validation": "national_id"
+                },
+                "address": {
+                    "label": "Adres",
+                    "value": "Baghdad, Karrada District, Street 15, Building 42",
+                    "type": "textarea",
+                    "required": false
+                },
+                "ownershipType": {
+                    "label": "Sahiplik Türü",
+                    "value": "owner",
+                    "type": "select",
+                    "options": [
+                        {
+                            "value": "owner",
+                            "label": "Malik",
+                            "color": "blue"
+                        },
+                        {
+                            "value": "investor",
+                            "label": "Yatırımcı",
+                            "color": "purple"
+                        },
+                        {
+                            "value": "inherited",
+                            "label": "Miras",
+                            "color": "green"
+                        }
+                    ],
+                    "required": true
+                }
+            }
+        },
+        "tenantInfo": {
+            "title": "Kiracı Bilgileri",
+            "icon": "🏠",
+            "isRented": true,
+            "data": {
+                "isRented": {
+                    "label": "Kiralık Daire",
+                    "value": true,
+                    "type": "checkbox"
+                },
+                "tenantName": {
+                    "label": "Kiracı Adı",
+                    "value": "Sara Hassan Al-Mahmoud",
+                    "type": "text",
+                    "required": true,
+                    "dependsOn": "isRented",
+                    "validation": "name"
+                },
+                "tenantPhone": {
+                    "label": "Kiracı Telefon",
+                    "value": "+964 750 987 6543",
+                    "type": "tel",
+                    "format": "+964 XXX XXX XXXX",
+                    "required": true,
+                    "dependsOn": "isRented",
+                    "validation": "iraq_phone"
+                },
+                "tenantEmail": {
+                    "label": "Kiracı E-posta",
+                    "value": "sara.hassan@email.com",
+                    "type": "email",
+                    "required": false,
+                    "dependsOn": "isRented"
+                },
+                "leaseStartDate": {
+                    "label": "Kira Başlangıç",
+                    "value": "2024-01-01",
+                    "type": "date",
+                    "required": true,
+                    "dependsOn": "isRented"
+                },
+                "leaseEndDate": {
+                    "label": "Kira Bitiş",
+                    "value": "2024-12-31",
+                    "type": "date",
+                    "required": true,
+                    "dependsOn": "isRented"
+                },
+                "monthlyRent": {
+                    "label": "Aylık Kira (IQD)",
+                    "value": 800000,
+                    "type": "currency",
+                    "currency": "IQD",
+                    "required": true,
+                    "dependsOn": "isRented"
+                },
+                "deposit": {
+                    "label": "Depozit (IQD)",
+                    "value": 1600000,
+                    "type": "currency",
+                    "currency": "IQD",
+                    "required": false,
+                    "dependsOn": "isRented"
+                }
+            }
+        },
+        "residents": {
+            "title": "Mevcut Sakinler",
+            "icon": "👥",
+            "count": 3,
+            "data": [
+                {
+                    "id": "RES-001",
+                    "name": "Sara Hassan Al-Mahmoud",
+                    "role": "tenant",
+                    "roleLabel": "Kiracı",
+                    "phone": "+964 750 987 6543",
+                    "email": "sara.hassan@email.com",
+                    "age": 34,
+                    "nationalId": "98765432101",
+                    "isMainResident": true,
+                    "moveInDate": "2024-01-01",
+                    "emergencyContact": {
+                        "name": "Hassan Al-Mahmoud",
+                        "phone": "+964 770 555 1234",
+                        "relation": "Eş"
+                    }
+                },
+                {
+                    "id": "RES-002",
+                    "name": "Omar Hassan Al-Mahmoud",
+                    "role": "family_member",
+                    "roleLabel": "Aile Üyesi",
+                    "phone": "+964 750 111 2222",
+                    "email": "",
+                    "age": 16,
+                    "nationalId": "",
+                    "isMainResident": false,
+                    "moveInDate": "2024-01-01",
+                    "relation": "Çocuk"
+                },
+                {
+                    "id": "RES-003",
+                    "name": "Layla Hassan Al-Mahmoud",
+                    "role": "family_member",
+                    "roleLabel": "Aile Üyesi",
+                    "phone": "",
+                    "email": "",
+                    "age": 12,
+                    "nationalId": "",
+                    "isMainResident": false,
+                    "moveInDate": "2024-01-01",
+                    "relation": "Çocuk"
+                }
+            ]
+        },
+        "billingInfo": {
+            "title": "Fatura Ayarları",
+            "icon": "💰",
+            "data": {
+                "monthlyDues": {
+                    "label": "Aylık Aidat (IQD)",
+                    "value": 150000,
+                    "type": "currency",
+                    "currency": "IQD",
+                    "required": true
+                },
+                "electricityMeterNo": {
+                    "label": "Elektrik Sayacı No",
+                    "value": "ELC001234",
+                    "type": "text",
+                    "required": false,
+                    "validation": "meter_number"
+                },
+                "waterMeterNo": {
+                    "label": "Su Sayacı No",
+                    "value": "WTR005678",
+                    "type": "text",
+                    "required": false,
+                    "validation": "meter_number"
+                },
+                "gasMeterNo": {
+                    "label": "Gaz Sayacı No",
+                    "value": "GAS009012",
+                    "type": "text",
+                    "required": false,
+                    "validation": "meter_number"
+                },
+                "internetConnection": {
+                    "label": "İnternet Bağlantısı",
+                    "value": true,
+                    "type": "checkbox"
+                },
+                "parkingSpace": {
+                    "label": "Otopark",
+                    "value": "P-A-15",
+                    "type": "text",
+                    "required": false
+                }
+            }
+        },
+        "financialSummary": {
+            "title": "Finansal Özet",
+            "icon": "📊",
+            "data": {
+                "currentBalance": {
+                    "label": "Güncel Bakiye",
+                    "value": -75000,
+                    "type": "currency",
+                    "currency": "IQD",
+                    "status": "debt"
+                },
+                "lastPaymentDate": {
+                    "label": "Son Ödeme",
+                    "value": "2025-06-15T10:30:00Z",
+                    "type": "datetime"
+                },
+                "lastPaymentAmount": {
+                    "label": "Son Ödeme Tutarı",
+                    "value": 150000,
+                    "type": "currency",
+                    "currency": "IQD"
+                },
+                "overdueAmount": {
+                    "label": "Gecikmiş Tutar",
+                    "value": 75000,
+                    "type": "currency",
+                    "currency": "IQD",
+                    "status": "overdue"
+                },
+                "nextDueDate": {
+                    "label": "Sonraki Vade",
+                    "value": "2025-08-01",
+                    "type": "date"
+                }
+            }
+        },
+        "consumptionData": {
+            "title": "Tüketim Verileri",
+            "icon": "⚡",
+            "period": "monthly",
+            "data": {
+                "electricity": {
+                    "label": "Elektrik",
+                    "currentMonth": {
+                        "consumption": 450,
+                        "unit": "kWh",
+                        "cost": 67500,
+                        "currency": "IQD"
+                    },
+                    "previousMonth": {
+                        "consumption": 420,
+                        "unit": "kWh",
+                        "cost": 63000,
+                        "currency": "IQD"
+                    },
+                    "trend": "increase",
+                    "percentage": 7.1
+                },
+                "water": {
+                    "label": "Su",
+                    "currentMonth": {
+                        "consumption": 18,
+                        "unit": "m³",
+                        "cost": 27000,
+                        "currency": "IQD"
+                    },
+                    "previousMonth": {
+                        "consumption": 16,
+                        "unit": "m³",
+                        "cost": 24000,
+                        "currency": "IQD"
+                    },
+                    "trend": "increase",
+                    "percentage": 12.5
+                },
+                "gas": {
+                    "label": "Gaz",
+                    "currentMonth": {
+                        "consumption": 85,
+                        "unit": "m³",
+                        "cost": 42500,
+                        "currency": "IQD"
+                    },
+                    "previousMonth": {
+                        "consumption": 92,
+                        "unit": "m³",
+                        "cost": 46000,
+                        "currency": "IQD"
+                    },
+                    "trend": "decrease",
+                    "percentage": -7.6
+                }
+            }
+        },
+        "maintenanceHistory": {
+            "title": "Bakım Geçmişi",
+            "icon": "🔧",
+            "count": 5,
+            "data": [
+                {
+                    "id": "MNT-2025-0156",
+                    "type": "Elektrik Arızası",
+                    "category": "electrical",
+                    "priority": "high",
+                    "status": "in_progress",
+                    "createdDate": "2025-07-25T14:30:00Z",
+                    "assignedTo": "Ali Hassan",
+                    "company": "Mahmoud Electrical Services",
+                    "estimatedCompletion": "2025-07-30",
+                    "description": "Mutfak prizlerinde elektrik yok"
+                },
+                {
+                    "id": "MNT-2025-0134",
+                    "type": "Su Sızıntısı",
+                    "category": "plumbing",
+                    "priority": "medium",
+                    "status": "completed",
+                    "createdDate": "2025-07-15T09:15:00Z",
+                    "completedDate": "2025-07-16T16:45:00Z",
+                    "assignedTo": "Mohammed Ali",
+                    "company": "Baghdad Plumbing Co.",
+                    "cost": 75000,
+                    "currency": "IQD",
+                    "description": "Banyo lavabo altında sızıntı"
+                }
+            ]
+        },
+        "visitorHistory": {
+            "title": "Ziyaretçi Geçmişi",
+            "icon": "👥",
+            "period": "last_30_days",
+            "count": 12,
+            "data": [
+                {
+                    "id": "VIS-2025-0789",
+                    "visitorName": "Fatima Al-Zahra",
+                    "visitorPhone": "+964 750 555 9999",
+                    "visitDate": "2025-07-28T15:30:00Z",
+                    "exitDate": "2025-07-28T18:45:00Z",
+                    "duration": "3h 15m",
+                    "purpose": "Sosyal Ziyaret",
+                    "authorizedBy": "Sara Hassan Al-Mahmoud",
+                    "qrCode": "QR789456123",
+                    "status": "completed"
+                },
+                {
+                    "id": "VIS-2025-0756",
+                    "visitorName": "Delivery - Talabat",
+                    "visitDate": "2025-07-27T12:15:00Z",
+                    "exitDate": "2025-07-27T12:25:00Z",
+                    "duration": "10m",
+                    "purpose": "Teslimat",
+                    "authorizedBy": "Omar Hassan Al-Mahmoud",
+                    "qrCode": "QR789123456",
+                    "status": "completed"
+                }
+            ]
+        },
+        "notes": {
+            "title": "Notlar ve Özel Durumlar",
+            "icon": "📝",
+            "data": {
+                "generalNotes": {
+                    "label": "Genel Notlar",
+                    "value": "Bu daire kiralık olup, kira sözleşmesi 31/12/2024 tarihinde sona erecektir. Kiracı düzenli ödeme yapan güvenilir bir müşteridir.",
+                    "type": "textarea",
+                    "maxLength": 1000
+                },
+                "maintenanceNotes": {
+                    "label": "Bakım Notları",
+                    "value": "Elektrik sayacında geçen ay küçük bir arıza yaşanmış ancak giderilmiştir. Düzenli kontrol gerekli.",
+                    "type": "textarea",
+                    "maxLength": 1000
+                },
+                "specialRequests": {
+                    "label": "Özel İstekler",
+                    "value": "Sakin yaşlı annesi ile yaşadığı için acil durumlarda öncelik verilmeli.",
+                    "type": "textarea",
+                    "maxLength": 1000
+                },
+                "accessRestrictions": {
+                    "label": "Erişim Kısıtlamaları",
+                    "value": "",
+                    "type": "textarea",
+                    "maxLength": 500
+                }
+            }
+        },
+        "documents": {
+            "title": "Belgeler",
+            "icon": "📄",
+            "data": [
+                {
+                    "id": "DOC-001",
+                    "name": "Kira Sözleşmesi",
+                    "type": "contract",
+                    "format": "PDF",
+                    "size": "2.3 MB",
+                    "uploadDate": "2024-01-01T10:00:00Z",
+                    "expiryDate": "2024-12-31",
+                    "status": "active",
+                    "downloadUrl": "/documents/lease-contract-a101.pdf"
+                },
+                {
+                    "id": "DOC-002",
+                    "name": "Malik Kimlik Fotokopisi",
+                    "type": "identity",
+                    "format": "PDF",
+                    "size": "1.1 MB",
+                    "uploadDate": "2024-01-01T10:00:00Z",
+                    "status": "active",
+                    "downloadUrl": "/documents/owner-id-a101.pdf"
+                },
+                {
+                    "id": "DOC-003",
+                    "name": "Daire Teslim Tutanağı",
+                    "type": "handover",
+                    "format": "PDF",
+                    "size": "3.8 MB",
+                    "uploadDate": "2024-01-01T10:00:00Z",
+                    "status": "active",
+                    "downloadUrl": "/documents/handover-a101.pdf"
+                }
+            ]
+        },
+        "permissions": {
+            "canEdit": true,
+            "canDelete": false,
+            "canViewFinancials": true,
+            "canManageResidents": true,
+            "canAccessDocuments": true,
+            "role": "admin"
+        },
+        "systemInfo": {
+            "createdBy": "System Admin",
+            "createdDate": "2024-01-15T10:30:00Z",
+            "lastModifiedBy": "Apartment Manager",
+            "lastModifiedDate": "2025-07-28T14:20:00Z",
+            "version": "1.7",
+            "syncStatus": "synced",
+            "backupDate": "2025-07-28T02:00:00Z"
+        }
+    }
+}
