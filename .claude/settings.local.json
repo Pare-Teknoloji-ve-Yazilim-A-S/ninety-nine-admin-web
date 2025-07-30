@@ -13,7 +13,8 @@
       "Bash(gh repo create:*)",
       "Bash(gh api:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(mkdir:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
