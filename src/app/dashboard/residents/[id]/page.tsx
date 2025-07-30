@@ -397,14 +397,31 @@ export default function ResidentViewPage() {
                                                                 {resident.status.label}
                                                             </Badge>
                                                             {resident.verificationStatus && (
-                                                                <Badge variant="outline" color={
-                                                                    resident.verificationStatus.color === 'green' ? 'primary' :
-                                                                        resident.verificationStatus.color === 'yellow' ? 'secondary' :
-                                                                            resident.verificationStatus.color === 'red' ? 'red' :
-                                                                                'secondary'
-                                                                }>
-                                                                    {resident.verificationStatus.label}
-                                                                </Badge>
+                                                                <div className="flex items-center gap-2">
+                                                                    {/* Only show badge for non-pending states */}
+                                                                    {resident.verificationStatus.color !== 'yellow' && (
+                                                                        <Badge variant="outline" color={
+                                                                            resident.verificationStatus.color === 'green' ? 'primary' :
+                                                                                resident.verificationStatus.color === 'red' ? 'red' :
+                                                                                    'secondary'
+                                                                        }>
+                                                                            {resident.verificationStatus.label}
+                                                                        </Badge>
+                                                                    )}
+                                                                    {/* Show approval button for pending states */}
+                                                                    {resident.verificationStatus.color === 'yellow' && (
+                                                                        <Button 
+                                                                            variant="primary" 
+                                                                            size="sm"
+                                                                            onClick={() => {
+                                                                                // TODO: Implement verification approval
+                                                                                console.log('Approve verification for resident:', residentId);
+                                                                            }}
+                                                                        >
+                                                                            Onayla
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
                                                             )}
                                                         </div>
 
