@@ -5,6 +5,7 @@ import Modal from './Modal';
 import Button from './Button';
 import Input from './Input';
 import Select from './Select';
+import DatePicker from './DatePicker';
 import { Edit, Save } from 'lucide-react';
 
 export interface EditFormData {
@@ -13,7 +14,11 @@ export interface EditFormData {
     phone: string;
     email: string;
     role: 'resident' | 'tenant';
-    membershipTier: 'GOLD' | 'SILVER' | 'STANDARD';
+    identityNumber?: string;
+    gender?: string;
+    birthDate?: string;
+    birthPlace?: string;
+    bloodType?: string;
 }
 
 interface EditModalProps {
@@ -39,7 +44,11 @@ const EditModal: React.FC<EditModalProps> = ({
         phone: '',
         email: '',
         role: 'resident',
-        membershipTier: 'STANDARD'
+        identityNumber: '',
+        gender: '',
+        birthDate: '',
+        birthPlace: '',
+        bloodType: ''
     });
 
     const [errors, setErrors] = useState<Partial<EditFormData>>({});
@@ -66,6 +75,9 @@ const EditModal: React.FC<EditModalProps> = ({
         if (!formData.email.trim()) {
             newErrors.email = 'E-posta gereklidir';
         }
+        if (!formData.identityNumber?.trim()) {
+            newErrors.identityNumber = 'Ulusal kimlik numarası gereklidir';
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -89,10 +101,23 @@ const EditModal: React.FC<EditModalProps> = ({
         { value: 'tenant', label: 'Kiracı' }
     ];
 
-    const membershipTierOptions = [
-        { value: 'GOLD', label: 'Altın' },
-        { value: 'SILVER', label: 'Gümüş' },
-        { value: 'STANDARD', label: 'Standart' }
+    const genderOptions = [
+        { value: '', label: 'Seçiniz' },
+        { value: 'Erkek', label: 'Erkek' },
+        { value: 'Kadın', label: 'Kadın' },
+        { value: 'Diğer', label: 'Diğer' }
+    ];
+
+    const bloodTypeOptions = [
+        { value: '', label: 'Seçiniz' },
+        { value: 'A+', label: 'A+' },
+        { value: 'A-', label: 'A-' },
+        { value: 'B+', label: 'B+' },
+        { value: 'B-', label: 'B-' },
+        { value: 'AB+', label: 'AB+' },
+        { value: 'AB-', label: 'AB-' },
+        { value: 'O+', label: 'O+' },
+        { value: 'O-', label: 'O-' }
     ];
 
     return (
@@ -106,6 +131,20 @@ const EditModal: React.FC<EditModalProps> = ({
             closable={!loading}
         >
             <div className="space-y-6">
+                {/* Ulusal kimlik numarası - En üstte tek başına */}
+                <div>
+                    <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                        Ulusal kimlik numarası / Pasaport numarası *
+                    </label>
+                    <Input
+                        placeholder="12345678901 veya AA1234567"
+                        value={formData.identityNumber || ''}
+                        onChange={(e) => handleInputChange('identityNumber', e.target.value)}
+                        error={errors.identityNumber}
+                        disabled={loading}
+                    />
+                </div>
+
                 {/* Name and Surname */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -163,29 +202,69 @@ const EditModal: React.FC<EditModalProps> = ({
                     </div>
                 </div>
 
-                {/* Role and Membership */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Rol *
-                        </label>
-                        <Select
-                            value={formData.role}
-                            onChange={(e) => handleInputChange('role', e.target.value)}
-                            options={roleOptions}
-                            disabled={loading}
-                        />
+                {/* Role */}
+                <div>
+                    <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                        Rol *
+                    </label>
+                    <Select
+                        value={formData.role}
+                        onChange={(e) => handleInputChange('role', e.target.value)}
+                        options={roleOptions}
+                        disabled={loading}
+                    />
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Cinsiyet
+                            </label>
+                            <Select
+                                value={formData.gender || ''}
+                                onChange={(e) => handleInputChange('gender', e.target.value)}
+                                options={genderOptions}
+                                disabled={loading}
+                            />
+                        </div>
+                        <div>
+                            <DatePicker
+                                label="Doğum Tarihi"
+                                value={formData.birthDate || ''}
+                                onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                                maxDate={new Date().toISOString().split('T')[0]}
+                                variant="default"
+                                showIcon={true}
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Üyelik Seviyesi *
-                        </label>
-                        <Select
-                            value={formData.membershipTier}
-                            onChange={(e) => handleInputChange('membershipTier', e.target.value)}
-                            options={membershipTierOptions}
-                            disabled={loading}
-                        />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Doğum Yeri
+                            </label>
+                            <Input
+                                placeholder="İstanbul, Türkiye"
+                                value={formData.birthPlace || ''}
+                                onChange={(e) => handleInputChange('birthPlace', e.target.value)}
+                                disabled={loading}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                Kan Grubu
+                            </label>
+                            <Select
+                                value={formData.bloodType || ''}
+                                onChange={(e) => handleInputChange('bloodType', e.target.value)}
+                                options={bloodTypeOptions}
+                                disabled={loading}
+                            />
+                        </div>
                     </div>
                 </div>
 
