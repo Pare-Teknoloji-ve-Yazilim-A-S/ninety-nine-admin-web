@@ -280,9 +280,9 @@ const DataTable: React.FC<DataTableProps> = ({
                     </th>
                 )}
                 {expandable && <th className={cn('w-10', paddingClasses[size])} />}
-                {columns.map((column) => (
+                {columns.map((column, columnIndex) => (
                     <th
-                        key={column.id}
+                        key={column.id || `column-${columnIndex}`}
                         className={cn(
                             'text-left font-medium text-text-light-secondary dark:text-text-secondary',
                             paddingClasses[size],
@@ -356,11 +356,11 @@ const DataTable: React.FC<DataTableProps> = ({
                                     </Button>
                                 </td>
                             )}
-                            {columns.map((column) => {
+                            {columns.map((column, columnIndex) => {
                                 const value = getCellValue(row, column);
                                 return (
                                     <td
-                                        key={column.id}
+                                        key={column.id || `cell-${columnIndex}`}
                                         className={cn(
                                             'text-text-on-light dark:text-text-on-dark',
                                             paddingClasses[size],

@@ -1,5 +1,12 @@
+import { BaseService } from './core/base.service';
 import { apiClient } from './api/client';
-import { ApiResponse } from './core/types';
+import { ApiResponse, PaginatedResponse } from './core/types';
+import {
+  CreateBillDto,
+  ResponseBillDto,
+  UpdateBillDto,
+  BillStatus
+} from './types/billing.types';
 
 export interface BillAssignedTo {
   id: string;
@@ -28,6 +35,9 @@ export interface Bill {
   paidAt?: string | null;
   assignedTo?: BillAssignedTo;
   property?: BillProperty;
+  documentNumber?: string;
+  penaltyStartDate?: string;
+  isPenaltyApplied?: boolean;
 }
 
 function mapApiBill(apiBill: any): Bill {
@@ -41,6 +51,9 @@ function mapApiBill(apiBill: any): Bill {
     billType: apiBill.billType,
     status: apiBill.status,
     paidAt: apiBill.paidAt,
+    documentNumber: apiBill.documentNumber,
+    penaltyStartDate: apiBill.penaltyStartDate,
+    isPenaltyApplied: apiBill.isPenaltyApplied,
     assignedTo: apiBill.assignedTo
       ? {
           id: apiBill.assignedTo.id,
@@ -61,16 +74,148 @@ function mapApiBill(apiBill: any): Bill {
   };
 }
 
-class BillingService {
+class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateBillDto> {
+  protected baseEndpoint = '/admin/billing';
+
+  constructor() {
+    super('BillingService');
+  }
+
   /**
-   * Belirli bir kullanıcıya ait ödeme geçmişini getirir
+   * Yeni fatura oluştur
+   * POST /admin/billing
+   */
+  async createBill(billData: CreateBillDto): Promise<ApiResponse<ResponseBillDto>> {
+    this.logger.info('Creating new bill', billData);
+    
+    const response = await apiClient.post<ResponseBillDto>(this.baseEndpoint, billData);
+    
+    this.logger.info('Bill created successfully', response.data);
+    return response;
+  }
+
+  /**
+   * Tüm faturaları getir
+   * GET /admin/billing
+   */
+  async getAllBills(): Promise<ResponseBillDto[]> {
+    this.logger.info('Fetching all bills');
+    
+    const response = await apiClient.get<ResponseBillDto[]>(this.baseEndpoint);
+    const bills = Array.isArray(response) ? response : [];
+    
+    this.logger.info(`Fetched ${bills.length} bills`);
+    return bills;
+  }
+
+  /**
+   * Belirli bir kullanıcıya ait faturaları getirir
    * GET /admin/billing/user/{userId}
    */
   async getBillsByUser(userId: string): Promise<Bill[]> {
-    const response = await apiClient.get<any[]>(`/admin/billing/user/${userId}`);
-    return Array.isArray(response) ? response.map(mapApiBill) : [];
+    this.logger.info(`Fetching bills for user: ${userId}`);
+    
+    const response = await apiClient.get<any[]>(`${this.baseEndpoint}/user/${userId}`);
+    const bills = Array.isArray(response) ? response.map(mapApiBill) : [];
+    
+    this.logger.info(`Fetched ${bills.length} bills for user ${userId}`);
+    return bills;
+  }
+
+  /**
+   * Belirli bir mülke ait faturaları getirir
+   * GET /admin/billing/property/{propertyId}
+   */
+  async getBillsByProperty(propertyId: string): Promise<ResponseBillDto[]> {
+    this.logger.info(`Fetching bills for property: ${propertyId}`);
+    
+    const response = await apiClient.get<ResponseBillDto[]>(`${this.baseEndpoint}/property/${propertyId}`);
+    const bills = Array.isArray(response) ? response : [];
+    
+    this.logger.info(`Fetched ${bills.length} bills for property ${propertyId}`);
+    return bills;
+  }
+
+  /**
+   * Bekleyen faturaları getirir
+   * GET /admin/billing/pending
+   */
+  async getPendingBills(): Promise<ResponseBillDto[]> {
+    this.logger.info('Fetching pending bills');
+    
+    const response = await apiClient.get<ResponseBillDto[]>(`${this.baseEndpoint}/pending`);
+    const bills = Array.isArray(response) ? response : [];
+    
+    this.logger.info(`Fetched ${bills.length} pending bills`);
+    return bills;
+  }
+
+  /**
+   * Gecikmiş faturaları getirir
+   * GET /admin/billing/overdue
+   */
+  async getOverdueBills(): Promise<ResponseBillDto[]> {
+    this.logger.info('Fetching overdue bills');
+    
+    const response = await apiClient.get<ResponseBillDto[]>(`${this.baseEndpoint}/overdue`);
+    const bills = Array.isArray(response) ? response : [];
+    
+    this.logger.info(`Fetched ${bills.length} overdue bills`);
+    return bills;
+  }
+
+  /**
+   * Faturayı ödendi olarak işaretle
+   * PATCH /admin/billing/{id}/mark-paid
+   */
+  async markBillAsPaid(billId: string): Promise<ApiResponse<ResponseBillDto>> {
+    this.logger.info(`Marking bill as paid: ${billId}`);
+    
+    const response = await apiClient.patch<ResponseBillDto>(`${this.baseEndpoint}/${billId}/mark-paid`);
+    
+    this.logger.info(`Bill ${billId} marked as paid`);
+    return response;
+  }
+
+  /**
+   * Faturayı güncelle
+   * PATCH /admin/billing/{id}
+   */
+  async updateBill(billId: string, updateData: UpdateBillDto): Promise<ApiResponse<ResponseBillDto>> {
+    this.logger.info(`Updating bill: ${billId}`, updateData);
+    
+    const response = await apiClient.patch<ResponseBillDto>(`${this.baseEndpoint}/${billId}`, updateData);
+    
+    this.logger.info(`Bill ${billId} updated successfully`);
+    return response;
+  }
+
+  /**
+   * Fatura detayını getir
+   * GET /admin/billing/{id}
+   */
+  async getBillById(billId: string): Promise<ApiResponse<ResponseBillDto>> {
+    this.logger.info(`Fetching bill details: ${billId}`);
+    
+    const response = await apiClient.get<ResponseBillDto>(`${this.baseEndpoint}/${billId}`);
+    
+    this.logger.info(`Fetched bill ${billId} details`);
+    return response;
+  }
+
+  /**
+   * Faturayı sil
+   * DELETE /admin/billing/{id}
+   */
+  async deleteBill(billId: string): Promise<ApiResponse<void>> {
+    this.logger.info(`Deleting bill: ${billId}`);
+    
+    const response = await apiClient.delete<void>(`${this.baseEndpoint}/${billId}`);
+    
+    this.logger.info(`Bill ${billId} deleted successfully`);
+    return response;
   }
 }
 
 const billingService = new BillingService();
-export default billingService; 
+export default billingService;

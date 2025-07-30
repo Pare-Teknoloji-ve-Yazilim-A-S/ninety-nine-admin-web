@@ -1,0 +1,839 @@
+{
+    "serviceRequestsList": {
+        "pageInfo": {
+            "title": "Hizmet Talepleri",
+            "subtitle": "Bakım ve Arıza Yönetimi",
+            "icon": "🔧",
+            "lastUpdated": "2025-07-30T10:45:00Z"
+        },
+        "filters": {
+            "search": {
+                "placeholder": "Talep ID, açıklama veya daire numarası ile ara...",
+                "value": "",
+                "type": "text"
+            },
+            "status": {
+                "label": "Durum",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Durumlar",
+                        "count": 156
+                    },
+                    {
+                        "value": "new",
+                        "label": "Yeni",
+                        "count": 23,
+                        "color": "#3b82f6"
+                    },
+                    {
+                        "value": "assigned",
+                        "label": "Atandı",
+                        "count": 18,
+                        "color": "#f59e0b"
+                    },
+                    {
+                        "value": "in_progress",
+                        "label": "İşlemde",
+                        "count": 31,
+                        "color": "#8b5cf6"
+                    },
+                    {
+                        "value": "waiting_parts",
+                        "label": "Malzeme Bekliyor",
+                        "count": 12,
+                        "color": "#ef4444"
+                    },
+                    {
+                        "value": "completed",
+                        "label": "Tamamlandı",
+                        "count": 67,
+                        "color": "#10b981"
+                    },
+                    {
+                        "value": "rejected",
+                        "label": "Reddedildi",
+                        "count": 5,
+                        "color": "#6b7280"
+                    }
+                ]
+            },
+            "priority": {
+                "label": "Öncelik",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Öncelikler",
+                        "count": 156
+                    },
+                    {
+                        "value": "emergency",
+                        "label": "Acil",
+                        "count": 8,
+                        "color": "#dc2626",
+                        "icon": "🚨"
+                    },
+                    {
+                        "value": "high",
+                        "label": "Yüksek",
+                        "count": 24,
+                        "color": "#ea580c",
+                        "icon": "🔴"
+                    },
+                    {
+                        "value": "medium",
+                        "label": "Orta",
+                        "count": 89,
+                        "color": "#d97706",
+                        "icon": "🟡"
+                    },
+                    {
+                        "value": "low",
+                        "label": "Düşük",
+                        "count": 35,
+                        "color": "#16a34a",
+                        "icon": "🟢"
+                    }
+                ]
+            },
+            "category": {
+                "label": "Kategori",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Kategoriler",
+                        "count": 156
+                    },
+                    {
+                        "value": "electrical",
+                        "label": "Elektrik",
+                        "count": 45,
+                        "icon": "⚡"
+                    },
+                    {
+                        "value": "plumbing",
+                        "label": "Tesisatçı",
+                        "count": 38,
+                        "icon": "🚿"
+                    },
+                    {
+                        "value": "hvac",
+                        "label": "Klima/Havalandırma",
+                        "count": 22,
+                        "icon": "❄️"
+                    },
+                    {
+                        "value": "general_maintenance",
+                        "label": "Genel Bakım",
+                        "count": 28,
+                        "icon": "🔧"
+                    },
+                    {
+                        "value": "cleaning",
+                        "label": "Temizlik",
+                        "count": 15,
+                        "icon": "🧹"
+                    },
+                    {
+                        "value": "security",
+                        "label": "Güvenlik",
+                        "count": 8,
+                        "icon": "🔒"
+                    }
+                ]
+            },
+            "assignee": {
+                "label": "Atanan Kişi",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Teknisyenler",
+                        "count": 156
+                    },
+                    {
+                        "value": "unassigned",
+                        "label": "Atanmamış",
+                        "count": 23,
+                        "color": "#6b7280"
+                    },
+                    {
+                        "value": "ali_hassan",
+                        "label": "Ali Hassan",
+                        "count": 34,
+                        "company": "Mahmoud Electrical"
+                    },
+                    {
+                        "value": "mohammed_ali",
+                        "label": "Mohammed Ali",
+                        "count": 28,
+                        "company": "Baghdad Plumbing"
+                    },
+                    {
+                        "value": "sara_ahmed",
+                        "label": "Sara Ahmed",
+                        "count": 19,
+                        "company": "City HVAC Services"
+                    },
+                    {
+                        "value": "omar_ibrahim",
+                        "label": "Omar Ibrahim",
+                        "count": 25,
+                        "company": "General Maintenance Co."
+                    }
+                ]
+            },
+            "dateRange": {
+                "label": "Tarih Aralığı",
+                "startDate": "2025-07-01",
+                "endDate": "2025-07-30",
+                "type": "daterange",
+                "presets": [
+                    {
+                        "value": "today",
+                        "label": "Bugün"
+                    },
+                    {
+                        "value": "yesterday",
+                        "label": "Dün"
+                    },
+                    {
+                        "value": "last_7_days",
+                        "label": "Son 7 Gün"
+                    },
+                    {
+                        "value": "last_30_days",
+                        "label": "Son 30 Gün"
+                    },
+                    {
+                        "value": "this_month",
+                        "label": "Bu Ay"
+                    },
+                    {
+                        "value": "last_month",
+                        "label": "Geçen Ay"
+                    }
+                ]
+            },
+            "building": {
+                "label": "Bina/Blok",
+                "value": "all",
+                "type": "select",
+                "options": [
+                    {
+                        "value": "all",
+                        "label": "Tüm Bloklar",
+                        "count": 156
+                    },
+                    {
+                        "value": "block_a",
+                        "label": "A Blok",
+                        "count": 45
+                    },
+                    {
+                        "value": "block_b",
+                        "label": "B Blok",
+                        "count": 38
+                    },
+                    {
+                        "value": "block_c",
+                        "label": "C Blok",
+                        "count": 42
+                    },
+                    {
+                        "value": "common_areas",
+                        "label": "Ortak Alanlar",
+                        "count": 31
+                    }
+                ]
+            }
+        },
+        "summary": {
+            "totalRequests": 156,
+            "activeRequests": 84,
+            "completedToday": 12,
+            "overdueRequests": 8,
+            "averageResponseTime": "4.2 saat",
+            "averageCompletionTime": "2.3 gün",
+            "satisfactionRate": 4.6
+        },
+        "quickStats": [
+            {
+                "label": "Yeni Talepler",
+                "value": 23,
+                "change": "+15%",
+                "trend": "up",
+                "color": "#3b82f6",
+                "icon": "📝"
+            },
+            {
+                "label": "İşlemde",
+                "value": 31,
+                "change": "+8%",
+                "trend": "up",
+                "color": "#8b5cf6",
+                "icon": "⚙️"
+            },
+            {
+                "label": "Tamamlanan",
+                "value": 67,
+                "change": "+23%",
+                "trend": "up",
+                "color": "#10b981",
+                "icon": "✅"
+            },
+            {
+                "label": "Gecikmiş",
+                "value": 8,
+                "change": "-12%",
+                "trend": "down",
+                "color": "#ef4444",
+                "icon": "⏰"
+            }
+        ],
+        "sortOptions": {
+            "currentSort": "created_date_desc",
+            "options": [
+                {
+                    "value": "created_date_desc",
+                    "label": "En Yeni Önce"
+                },
+                {
+                    "value": "created_date_asc",
+                    "label": "En Eski Önce"
+                },
+                {
+                    "value": "priority_desc",
+                    "label": "Öncelik (Yüksek→Düşük)"
+                },
+                {
+                    "value": "priority_asc",
+                    "label": "Öncelik (Düşük→Yüksek)"
+                },
+                {
+                    "value": "due_date_asc",
+                    "label": "Vade Tarihi (Yakın→Uzak)"
+                },
+                {
+                    "value": "status_asc",
+                    "label": "Duruma Göre"
+                },
+                {
+                    "value": "apartment_asc",
+                    "label": "Daire Numarasına Göre"
+                },
+                {
+                    "value": "last_updated_desc",
+                    "label": "Son Güncelleme"
+                }
+            ]
+        },
+        "pagination": {
+            "currentPage": 1,
+            "totalPages": 8,
+            "itemsPerPage": 20,
+            "totalItems": 156,
+            "showingFrom": 1,
+            "showingTo": 20,
+            "pageSizeOptions": [
+                10,
+                20,
+                50,
+                100
+            ]
+        },
+        "bulkActions": {
+            "enabled": true,
+            "selectedCount": 0,
+            "actions": [
+                {
+                    "id": "assign_technician",
+                    "label": "Teknisyen Ata",
+                    "icon": "👷",
+                    "requiresSelection": true,
+                    "confirmationRequired": false
+                },
+                {
+                    "id": "change_priority",
+                    "label": "Öncelik Değiştir",
+                    "icon": "🔄",
+                    "requiresSelection": true,
+                    "confirmationRequired": false
+                },
+                {
+                    "id": "export_selected",
+                    "label": "Seçilenleri Dışa Aktar",
+                    "icon": "📤",
+                    "requiresSelection": true,
+                    "confirmationRequired": false
+                },
+                {
+                    "id": "mark_completed",
+                    "label": "Tamamlandı Olarak İşaretle",
+                    "icon": "✅",
+                    "requiresSelection": true,
+                    "confirmationRequired": true
+                },
+                {
+                    "id": "delete_selected",
+                    "label": "Seçilenleri Sil",
+                    "icon": "🗑️",
+                    "requiresSelection": true,
+                    "confirmationRequired": true,
+                    "dangerAction": true
+                }
+            ]
+        },
+        "tableColumns": [
+            {
+                "key": "select",
+                "label": "",
+                "width": "40px",
+                "sortable": false,
+                "type": "checkbox"
+            },
+            {
+                "key": "requestId",
+                "label": "Talep ID",
+                "width": "120px",
+                "sortable": true,
+                "type": "link"
+            },
+            {
+                "key": "title",
+                "label": "Başlık",
+                "width": "200px",
+                "sortable": true,
+                "type": "text"
+            },
+            {
+                "key": "apartment",
+                "label": "Daire",
+                "width": "100px",
+                "sortable": true,
+                "type": "text"
+            },
+            {
+                "key": "category",
+                "label": "Kategori",
+                "width": "120px",
+                "sortable": true,
+                "type": "badge"
+            },
+            {
+                "key": "priority",
+                "label": "Öncelik",
+                "width": "100px",
+                "sortable": true,
+                "type": "badge"
+            },
+            {
+                "key": "status",
+                "label": "Durum",
+                "width": "120px",
+                "sortable": true,
+                "type": "status"
+            },
+            {
+                "key": "assignee",
+                "label": "Teknisyen",
+                "width": "150px",
+                "sortable": true,
+                "type": "user"
+            },
+            {
+                "key": "createdDate",
+                "label": "Oluşturma",
+                "width": "120px",
+                "sortable": true,
+                "type": "datetime"
+            },
+            {
+                "key": "dueDate",
+                "label": "Vade",
+                "width": "120px",
+                "sortable": true,
+                "type": "date"
+            },
+            {
+                "key": "actions",
+                "label": "İşlemler",
+                "width": "100px",
+                "sortable": false,
+                "type": "actions"
+            }
+        ],
+        "requests": [
+            {
+                "id": "TLP-2025-0156",
+                "requestId": "TLP-2025-0156",
+                "title": "Mutfak elektrik prizlerinde elektrik yok",
+                "description": "Mutfaktaki elektrik prizlerinde elektrik yok. Dün akşamdan beri sorun devam ediyor.",
+                "apartment": {
+                    "number": "A-101",
+                    "block": "A",
+                    "floor": 1,
+                    "owner": "Ahmed Mohammed Al-Rashid",
+                    "tenant": "Sara Hassan Al-Mahmoud",
+                    "phone": "+964 750 987 6543"
+                },
+                "category": {
+                    "id": "electrical",
+                    "label": "Elektrik",
+                    "icon": "⚡",
+                    "color": "#f59e0b"
+                },
+                "priority": {
+                    "id": "high",
+                    "label": "Yüksek",
+                    "level": 3,
+                    "color": "#ea580c",
+                    "icon": "🔴"
+                },
+                "status": {
+                    "id": "in_progress",
+                    "label": "İşlemde",
+                    "color": "#8b5cf6",
+                    "bgColor": "#f3e8ff"
+                },
+                "assignee": {
+                    "id": "ali_hassan",
+                    "name": "Ali Hassan",
+                    "company": "Mahmoud Electrical Services",
+                    "phone": "+964 770 555 1234",
+                    "avatar": "AH",
+                    "rating": 4.8
+                },
+                "createdDate": "2025-07-25T14:30:00Z",
+                "updatedDate": "2025-07-28T09:15:00Z",
+                "dueDate": "2025-07-30T23:59:59Z",
+                "estimatedCompletion": "2025-07-30T16:00:00Z",
+                "responseTime": "18h 15m",
+                "imagesCount": 3,
+                "commentsCount": 4,
+                "cost": {
+                    "estimated": 125000,
+                    "actual": null,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "acil",
+                    "elektrik",
+                    "mutfak"
+                ],
+                "isOverdue": false,
+                "isUrgent": true,
+                "hasImages": true,
+                "hasComments": true
+            },
+            {
+                "id": "TLP-2025-0155",
+                "requestId": "TLP-2025-0155",
+                "title": "Tuvalet sifonu çalışmıyor",
+                "description": "Ana banyo tuvaletinde sifon çalışmıyor. Su gelmiyor.",
+                "apartment": {
+                    "number": "B-205",
+                    "block": "B",
+                    "floor": 2,
+                    "owner": "Layla Omar Al-Najjar",
+                    "tenant": null,
+                    "phone": "+964 770 888 9999"
+                },
+                "category": {
+                    "id": "plumbing",
+                    "label": "Tesisatçı",
+                    "icon": "🚿",
+                    "color": "#06b6d4"
+                },
+                "priority": {
+                    "id": "medium",
+                    "label": "Orta",
+                    "level": 2,
+                    "color": "#d97706",
+                    "icon": "🟡"
+                },
+                "status": {
+                    "id": "assigned",
+                    "label": "Atandı",
+                    "color": "#f59e0b",
+                    "bgColor": "#fef3c7"
+                },
+                "assignee": {
+                    "id": "mohammed_ali",
+                    "name": "Mohammed Ali",
+                    "company": "Baghdad Plumbing Co.",
+                    "phone": "+964 750 333 4444",
+                    "avatar": "MA",
+                    "rating": 4.9
+                },
+                "createdDate": "2025-07-28T08:20:00Z",
+                "updatedDate": "2025-07-28T10:45:00Z",
+                "dueDate": "2025-08-02T23:59:59Z",
+                "estimatedCompletion": "2025-07-31T14:00:00Z",
+                "responseTime": "2h 25m",
+                "imagesCount": 2,
+                "commentsCount": 1,
+                "cost": {
+                    "estimated": 85000,
+                    "actual": null,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "tesisatçı",
+                    "banyo",
+                    "sifon"
+                ],
+                "isOverdue": false,
+                "isUrgent": false,
+                "hasImages": true,
+                "hasComments": true
+            },
+            {
+                "id": "TLP-2025-0154",
+                "requestId": "TLP-2025-0154",
+                "title": "Klima çalışmıyor - soğutma yok",
+                "description": "Salon kliması açılıyor ama soğuk hava vermiyor. Gaz dolumu gerekebilir.",
+                "apartment": {
+                    "number": "C-308",
+                    "block": "C",
+                    "floor": 3,
+                    "owner": "Hassan Ali Al-Mahmoud",
+                    "tenant": "Maryam Hassan Al-Zahra",
+                    "phone": "+964 750 111 2222"
+                },
+                "category": {
+                    "id": "hvac",
+                    "label": "Klima/Havalandırma",
+                    "icon": "❄️",
+                    "color": "#0ea5e9"
+                },
+                "priority": {
+                    "id": "high",
+                    "label": "Yüksek",
+                    "level": 3,
+                    "color": "#ea580c",
+                    "icon": "🔴"
+                },
+                "status": {
+                    "id": "completed",
+                    "label": "Tamamlandı",
+                    "color": "#10b981",
+                    "bgColor": "#d1fae5"
+                },
+                "assignee": {
+                    "id": "sara_ahmed",
+                    "name": "Sara Ahmed",
+                    "company": "City HVAC Services",
+                    "phone": "+964 770 777 8888",
+                    "avatar": "SA",
+                    "rating": 4.7
+                },
+                "createdDate": "2025-07-26T11:15:00Z",
+                "updatedDate": "2025-07-29T15:30:00Z",
+                "dueDate": "2025-08-01T23:59:59Z",
+                "estimatedCompletion": "2025-07-29T16:00:00Z",
+                "completedDate": "2025-07-29T15:30:00Z",
+                "responseTime": "4h 30m",
+                "completionTime": "3d 4h 15m",
+                "imagesCount": 1,
+                "commentsCount": 6,
+                "cost": {
+                    "estimated": 200000,
+                    "actual": 180000,
+                    "currency": "IQD"
+                },
+                "customerRating": 5,
+                "tags": [
+                    "klima",
+                    "gaz",
+                    "salon"
+                ],
+                "isOverdue": false,
+                "isUrgent": false,
+                "hasImages": true,
+                "hasComments": true
+            },
+            {
+                "id": "TLP-2025-0153",
+                "requestId": "TLP-2025-0153",
+                "title": "Ortak alan temizliği - merdiven",
+                "description": "3. kat merdivenlerinde temizlik gerekli. Leke ve kir birikimi var.",
+                "apartment": {
+                    "number": "Ortak Alan",
+                    "block": "B",
+                    "floor": 3,
+                    "owner": null,
+                    "tenant": null,
+                    "phone": null
+                },
+                "category": {
+                    "id": "cleaning",
+                    "label": "Temizlik",
+                    "icon": "🧹",
+                    "color": "#84cc16"
+                },
+                "priority": {
+                    "id": "low",
+                    "label": "Düşük",
+                    "level": 1,
+                    "color": "#16a34a",
+                    "icon": "🟢"
+                },
+                "status": {
+                    "id": "new",
+                    "label": "Yeni",
+                    "color": "#3b82f6",
+                    "bgColor": "#dbeafe"
+                },
+                "assignee": null,
+                "createdDate": "2025-07-29T16:45:00Z",
+                "updatedDate": "2025-07-29T16:45:00Z",
+                "dueDate": "2025-08-05T23:59:59Z",
+                "estimatedCompletion": null,
+                "responseTime": null,
+                "imagesCount": 0,
+                "commentsCount": 0,
+                "cost": {
+                    "estimated": 50000,
+                    "actual": null,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "temizlik",
+                    "ortak alan",
+                    "merdiven"
+                ],
+                "isOverdue": false,
+                "isUrgent": false,
+                "hasImages": false,
+                "hasComments": false
+            },
+            {
+                "id": "TLP-2025-0152",
+                "requestId": "TLP-2025-0152",
+                "title": "Giriş kapısı kilidi arızalı",
+                "description": "Ana giriş kapısının elektronik kilidi çalışmıyor. Kart okuyucu yanıt vermiyor.",
+                "apartment": {
+                    "number": "Ortak Alan",
+                    "block": "Giriş",
+                    "floor": 0,
+                    "owner": null,
+                    "tenant": null,
+                    "phone": null
+                },
+                "category": {
+                    "id": "security",
+                    "label": "Güvenlik",
+                    "icon": "🔒",
+                    "color": "#dc2626"
+                },
+                "priority": {
+                    "id": "emergency",
+                    "label": "Acil",
+                    "level": 4,
+                    "color": "#dc2626",
+                    "icon": "🚨"
+                },
+                "status": {
+                    "id": "waiting_parts",
+                    "label": "Malzeme Bekliyor",
+                    "color": "#ef4444",
+                    "bgColor": "#fee2e2"
+                },
+                "assignee": {
+                    "id": "omar_ibrahim",
+                    "name": "Omar Ibrahim",
+                    "company": "Security Systems Iraq",
+                    "phone": "+964 770 444 5555",
+                    "avatar": "OI",
+                    "rating": 4.6
+                },
+                "createdDate": "2025-07-24T22:30:00Z",
+                "updatedDate": "2025-07-28T14:20:00Z",
+                "dueDate": "2025-07-26T23:59:59Z",
+                "estimatedCompletion": "2025-08-02T10:00:00Z",
+                "responseTime": "45m",
+                "imagesCount": 2,
+                "commentsCount": 8,
+                "cost": {
+                    "estimated": 350000,
+                    "actual": null,
+                    "currency": "IQD"
+                },
+                "tags": [
+                    "güvenlik",
+                    "kilit",
+                    "acil",
+                    "elektronik"
+                ],
+                "isOverdue": true,
+                "isUrgent": true,
+                "hasImages": true,
+                "hasComments": true
+            }
+        ],
+        "exportOptions": {
+            "formats": [
+                {
+                    "value": "excel",
+                    "label": "Excel (.xlsx)",
+                    "icon": "📊"
+                },
+                {
+                    "value": "pdf",
+                    "label": "PDF Raporu",
+                    "icon": "📄"
+                },
+                {
+                    "value": "csv",
+                    "label": "CSV Dosyası",
+                    "icon": "📋"
+                }
+            ],
+            "includeOptions": [
+                {
+                    "key": "basic_info",
+                    "label": "Temel Bilgiler",
+                    "default": true
+                },
+                {
+                    "key": "assignee_info",
+                    "label": "Teknisyen Bilgileri",
+                    "default": true
+                },
+                {
+                    "key": "cost_info",
+                    "label": "Maliyet Bilgileri",
+                    "default": false
+                },
+                {
+                    "key": "comments",
+                    "label": "Yorumlar",
+                    "default": false
+                },
+                {
+                    "key": "images",
+                    "label": "Fotoğraflar",
+                    "default": false
+                }
+            ]
+        },
+        "permissions": {
+            "canCreate": true,
+            "canEdit": true,
+            "canDelete": true,
+            "canAssign": true,
+            "canExport": true,
+            "canViewCosts": true,
+            "canBulkEdit": true,
+            "role": "admin"
+        }
+    }
+}

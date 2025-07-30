@@ -7,13 +7,14 @@ interface SelectOption {
     disabled?: boolean
 }
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
     label?: string
     error?: string
     helperText?: string
     placeholder?: string
     options?: SelectOption[] // Optional yapıyoruz
     isRequired?: boolean
+    onChange?: (value: string) => void
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -25,6 +26,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
         options = [], // Default değer ekliyoruz
         isRequired = false,
         className = '',
+        onChange,
         ...props
     }, ref) => {
         const baseClasses = 'w-full px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-gold/50 appearance-none bg-background-secondary text-text-primary'
@@ -49,6 +51,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               ${error ? errorClasses : normalClasses}
               ${className}
             `}
+                        onChange={(e) => onChange?.(e.target.value)}
                         {...props}
                     >
                         {placeholder && (

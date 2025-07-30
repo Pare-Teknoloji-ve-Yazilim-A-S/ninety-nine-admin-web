@@ -1,13 +1,14 @@
 import { forwardRef, InputHTMLAttributes } from 'react'
 import { LucideIcon } from 'lucide-react'
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
     label?: string
     error?: string
     helperText?: string
     icon?: LucideIcon
     variant?: 'default' | 'filled' | 'outlined'
     isRequired?: boolean
+    onChange?: (value: string) => void
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -19,6 +20,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         variant = 'default',
         isRequired = false,
         className = '',
+        onChange,
         ...props
     }, ref) => {
         const baseClasses = 'w-full px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-gold/50'
@@ -54,6 +56,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               ${Icon ? 'pl-10' : ''}
               ${className}
             `}
+                        onChange={(e) => onChange?.(e.target.value)}
                         {...props}
                     />
                 </div>

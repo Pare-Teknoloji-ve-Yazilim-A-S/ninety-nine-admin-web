@@ -123,8 +123,9 @@ const StatsCard: React.FC<StatsCardProps> = ({
     };
 
     const formatTrendValue = (val: number) => {
+        if (!trend) return '';
         const formatted = Math.abs(val).toLocaleString('tr-TR');
-        return trend?.isPercentage ? `${formatted}%` : formatted;
+        return trend.isPercentage ? `${formatted}%` : formatted;
     };
 
     return (
