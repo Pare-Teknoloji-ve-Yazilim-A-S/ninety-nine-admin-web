@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
+import DatePicker from '@/app/components/ui/DatePicker';
 import { OwnerInfo, UpdateOwnerInfoDto } from '@/services/types/unit-detail.types';
-import { User, Phone, Mail, MapPin, Edit, Save, X, IdCard } from 'lucide-react';
+import { User, Phone, Mail, Edit, Save, X, IdCard, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { residentService } from '@/services/resident.service';
 
 interface OwnerInfoSectionProps {
   ownerInfo: OwnerInfo;
@@ -15,6 +17,15 @@ interface OwnerInfoSectionProps {
   onRemove?: () => Promise<void>;
   loading?: boolean;
   canEdit?: boolean;
+}
+
+interface Resident {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  phone?: string;
+  email?: string;
 }
 
 export default function OwnerInfoSection({ 
@@ -25,14 +36,28 @@ export default function OwnerInfoSection({
   canEdit = true 
 }: OwnerInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddNewResident, setShowAddNewResident] = useState(false);
   const [formData, setFormData] = useState({
     fullName: ownerInfo.data.fullName.value,
     phone: ownerInfo.data.phone.value,
     email: ownerInfo.data.email.value,
     nationalId: ownerInfo.data.nationalId.value,
-    address: ownerInfo.data.address.value,
     ownershipType: ownerInfo.data.ownershipType.value
   });
+  const [newResidentData, setNewResidentData] = useState({
+    identityNumber: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    relationship: '',
+    gender: '',
+    birthDate: '',
+    birthPlace: '',
+    bloodType: ''
+  });
+  const [selectedResident, setSelectedResident] = useState('');
+  const [residents, setResidents] = useState<Resident[]>([]);
+  const [loadingResidents, setLoadingResidents] = useState(false);
   const [saving, setSaving] = useState(false);
   const toast = useToast();
 
@@ -43,9 +68,30 @@ export default function OwnerInfoSection({
       phone: ownerInfo.data.phone.value,
       email: ownerInfo.data.email.value,
       nationalId: ownerInfo.data.nationalId.value,
-      address: ownerInfo.data.address.value,
       ownershipType: ownerInfo.data.ownershipType.value
     });
+    loadResidents();
+  };
+
+  const loadResidents = async () => {
+    setLoadingResidents(true);
+    try {
+      const response = await residentService.getAllResidents({ limit: 1000 });
+      const residentsList = response.data.map((resident: any) => ({
+        id: resident.id,
+        firstName: resident.firstName,
+        lastName: resident.lastName,
+        fullName: `${resident.firstName} ${resident.lastName}`,
+        phone: resident.phone,
+        email: resident.email
+      }));
+      setResidents(residentsList);
+    } catch (error) {
+      console.error('Failed to load residents:', error);
+      toast.error('Sakinler yüklenirken hata oluştu');
+    } finally {
+      setLoadingResidents(false);
+    }
   };
 
   const handleSave = async () => {
@@ -58,13 +104,77 @@ export default function OwnerInfoSection({
         phone: formData.phone,
         email: formData.email,
         nationalId: formData.nationalId,
-        address: formData.address,
         ownershipType: formData.ownershipType as 'owner' | 'investor' | 'inherited'
       });
       setShowEditModal(false);
       toast.success('Malik bilgileri güncellendi');
     } catch (error) {
       toast.error('Güncelleme başarısız oldu');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResidentSelect = (residentId: string) => {
+    if (!residentId) return;
+    
+    const selectedResidentData = residents.find(r => r.id === residentId);
+    if (selectedResidentData) {
+      setFormData({
+        fullName: selectedResidentData.fullName,
+        phone: selectedResidentData.phone || '',
+        email: selectedResidentData.email || '',
+        nationalId: formData.nationalId,
+        ownershipType: formData.ownershipType
+      });
+      setSelectedResident(residentId);
+    }
+  };
+
+  const handleAddNewResident = () => {
+    setShowAddNewResident(true);
+  };
+
+  const handleNewResidentInputChange = (field: string, value: string) => {
+    setNewResidentData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleCreateNewResident = async () => {
+    if (!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship) {
+      toast.error('Lütfen tüm zorunlu alanları doldurun');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Burada yeni sakin oluşturma API'si çağrılacak
+      // Şimdilik sadece form verilerini kullanıyoruz
+      setFormData({
+        fullName: `${newResidentData.firstName} ${newResidentData.lastName}`,
+        phone: newResidentData.phone,
+        email: '',
+        nationalId: newResidentData.identityNumber,
+        ownershipType: 'owner'
+      });
+      
+      setShowAddNewResident(false);
+      setNewResidentData({
+        identityNumber: '',
+        firstName: '',
+        lastName: '',
+        phone: '',
+        relationship: '',
+        gender: '',
+        birthDate: '',
+        birthPlace: '',
+        bloodType: ''
+      });
+      toast.success('Yeni sakin bilgileri eklendi');
+    } catch (error) {
+      toast.error('Sakin eklenirken hata oluştu');
     } finally {
       setSaving(false);
     }
@@ -208,16 +318,6 @@ export default function OwnerInfoSection({
                     </span>
                   </div>
                 )}
-
-                {/* Address */}
-                {ownerInfo.data.address.value && (
-                  <div className="flex items-start gap-2 md:col-span-2">
-                    <MapPin className="h-4 w-4 text-text-light-muted dark:text-text-muted mt-0.5" />
-                    <span className="text-text-on-light dark:text-text-on-dark">
-                      {ownerInfo.data.address.value}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -232,7 +332,7 @@ export default function OwnerInfoSection({
         icon={User}
         size="lg"
       >
-        <div className="space-y-6">
+        <div className="space-y-6 max-h-[80vh] overflow-y-auto">
           <div>
             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
               {ownerInfo.data.fullName.label}
@@ -304,21 +404,6 @@ export default function OwnerInfoSection({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-              {ownerInfo.data.address.label}
-              {ownerInfo.data.address.required && <span className="text-primary-red ml-1">*</span>}
-            </label>
-            <textarea
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="Adres bilgileri"
-              rows={3}
-              className="w-full px-3 py-2 text-text-on-light dark:text-text-on-dark bg-background-light-secondary dark:bg-background-secondary border border-background-light-soft dark:border-background-soft rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-gold"
-              disabled={saving}
-            />
-          </div>
-
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button 
               variant="secondary" 
@@ -336,6 +421,212 @@ export default function OwnerInfoSection({
             >
               Kaydet
             </Button>
+          </div>
+
+          {/* Sakin Seçimi - Divider altında */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <div>
+              <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                Sakin Seçin
+              </label>
+              <Select
+                value={selectedResident}
+                onChange={(e) => handleResidentSelect(e.target.value)}
+                options={[
+                  { value: '', label: 'Sakin seçiniz' },
+                  ...residents.map(resident => ({
+                    value: resident.id,
+                    label: `${resident.fullName}${resident.phone ? ` (${resident.phone})` : ''}`
+                  }))
+                ]}
+                disabled={loadingResidents || saving}
+              />
+              {loadingResidents && (
+                <p className="text-sm text-text-light-muted dark:text-text-muted mt-2">
+                  Sakinler yükleniyor...
+                </p>
+              )}
+            </div>
+
+            {/* Yeni Sakin Ekle Butonu */}
+            <div className="mt-4">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={UserPlus}
+                onClick={handleAddNewResident}
+                disabled={saving}
+                className="w-full"
+              >
+                Yeni Sakin Ekle
+              </Button>
+            </div>
+
+            {/* Yeni Sakin Ekleme Formu */}
+            {showAddNewResident && (
+              <div className="mt-6 space-y-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                {/* Ulusal kimlik numarası - En üstte tek başına */}
+                <div>
+                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                    Ulusal kimlik numarası / Pasaport numarası *
+                  </label>
+                  <Input
+                    placeholder="12345678901 veya AA1234567"
+                    value={newResidentData.identityNumber}
+                    onChange={(e) => handleNewResidentInputChange('identityNumber', e.target.value)}
+                    disabled={saving}
+                  />
+                </div>
+
+                {/* Name and Surname */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Ad *
+                    </label>
+                    <Input
+                      placeholder="Ad"
+                      value={newResidentData.firstName}
+                      onChange={(e) => handleNewResidentInputChange('firstName', e.target.value)}
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Soyad *
+                    </label>
+                    <Input
+                      placeholder="Soyad"
+                      value={newResidentData.lastName}
+                      onChange={(e) => handleNewResidentInputChange('lastName', e.target.value)}
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+
+                {/* Phone and Relationship */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Telefon *
+                    </label>
+                    <Input
+                      type="tel"
+                      placeholder="+90 555 123 45 67"
+                      value={newResidentData.phone}
+                      onChange={(e) => handleNewResidentInputChange('phone', e.target.value)}
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Yakınlık derecesi *
+                    </label>
+                    <Select
+                      value={newResidentData.relationship}
+                      onChange={(e) => handleNewResidentInputChange('relationship', e.target.value)}
+                      options={[
+                        { value: '', label: 'Seçiniz' },
+                        { value: 'Eş', label: 'Eş' },
+                        { value: 'Çocuk', label: 'Çocuk' },
+                        { value: 'Anne', label: 'Anne' },
+                        { value: 'Baba', label: 'Baba' },
+                        { value: 'Kardeş', label: 'Kardeş' },
+                        { value: 'Diğer', label: 'Diğer' }
+                      ]}
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                        Cinsiyet
+                      </label>
+                      <Select
+                        value={newResidentData.gender}
+                        onChange={(e) => handleNewResidentInputChange('gender', e.target.value)}
+                        options={[
+                          { value: '', label: 'Seçiniz' },
+                          { value: 'Erkek', label: 'Erkek' },
+                          { value: 'Kadın', label: 'Kadın' },
+                          { value: 'Diğer', label: 'Diğer' }
+                        ]}
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <DatePicker
+                        label="Doğum Tarihi"
+                        value={newResidentData.birthDate}
+                        onChange={(e) => handleNewResidentInputChange('birthDate', e.target.value)}
+                        maxDate={new Date().toISOString().split('T')[0]}
+                        variant="default"
+                        showIcon={true}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                        Doğum Yeri
+                      </label>
+                      <Input
+                        placeholder="İstanbul, Türkiye"
+                        value={newResidentData.birthPlace}
+                        onChange={(e) => handleNewResidentInputChange('birthPlace', e.target.value)}
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                        Kan Grubu
+                      </label>
+                      <Select
+                        value={newResidentData.bloodType}
+                        onChange={(e) => handleNewResidentInputChange('bloodType', e.target.value)}
+                        options={[
+                          { value: '', label: 'Seçiniz' },
+                          { value: 'A+', label: 'A+' },
+                          { value: 'A-', label: 'A-' },
+                          { value: 'B+', label: 'B+' },
+                          { value: 'B-', label: 'B-' },
+                          { value: 'AB+', label: 'AB+' },
+                          { value: 'AB-', label: 'AB-' },
+                          { value: 'O+', label: 'O+' },
+                          { value: 'O-', label: 'O-' }
+                        ]}
+                        disabled={saving}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* New Resident Action Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => setShowAddNewResident(false)}
+                    disabled={saving}
+                  >
+                    İptal
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    icon={Save}
+                    onClick={handleCreateNewResident}
+                    isLoading={saving}
+                    disabled={!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship}
+                  >
+                    Ekle
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Modal>

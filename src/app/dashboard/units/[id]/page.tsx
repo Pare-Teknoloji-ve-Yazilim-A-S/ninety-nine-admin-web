@@ -187,7 +187,7 @@ export default function UnitDetailPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              {/* <div className="flex gap-3">
                 <Button variant="secondary" icon={Phone}>
                   İletişim
                 </Button>
@@ -197,7 +197,7 @@ export default function UnitDetailPage() {
                 <Button variant="primary" icon={Edit}>
                   Düzenle
                 </Button>
-              </div>
+              </div> */}
             </div>
 
             {/* Main Content Grid */}
@@ -305,11 +305,16 @@ export default function UnitDetailPage() {
                           canEdit={unit.permissions.canManageResidents}
                         />
                       )}
-                      {activeTab === "financial" && unit && (
-                        <FinancialSummarySection
-                          financialSummary={unit.financialSummary}
-                          loading={loading}
-                        />
+                      {activeTab === "financial" && (
+                        <div className="text-center py-8">
+                          <DollarSign className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
+                          <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Finansal Detaylar
+                          </h3>
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">
+                            Bu konut için finansal detaylar burada görüntülenecek.
+                          </p>
+                        </div>
                       )}
                       {activeTab === "consumption" && (
                         <div className="text-center py-8">
@@ -393,13 +398,6 @@ export default function UnitDetailPage() {
                             {new Intl.NumberFormat('tr-TR').format(Math.abs(unit.financialSummary.data.currentBalance.value))} {unit.financialSummary.data.currentBalance.currency}
                           </p>
                         </div>
-                        <Button 
-                          variant="primary" 
-                          className="w-full" 
-                          onClick={() => setActiveTab('financial')}
-                        >
-                          Finansal Detayları Gör
-                        </Button>
                       </div>
                     </div>
                   </Card>

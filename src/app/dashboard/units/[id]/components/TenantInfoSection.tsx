@@ -165,7 +165,6 @@ export default function TenantInfoSection({
                 <Home className="h-5 w-5 text-primary-gold" />
                 {tenantInfo.title}
               </h3>
-              {getLeaseStatusBadge()}
             </div>
             {canEdit && (
               <div className="flex gap-2">
@@ -236,37 +235,6 @@ export default function TenantInfoSection({
                     >
                       {tenantInfo.data.tenantEmail.value}
                     </a>
-                  </div>
-                )}
-
-                {/* Lease Period */}
-                {tenantInfo.data.leaseStartDate?.value && tenantInfo.data.leaseEndDate?.value && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-text-light-muted dark:text-text-muted" />
-                    <span className="text-text-on-light dark:text-text-on-dark">
-                      {new Date(tenantInfo.data.leaseStartDate.value).toLocaleDateString('tr-TR')} - {' '}
-                      {new Date(tenantInfo.data.leaseEndDate.value).toLocaleDateString('tr-TR')}
-                    </span>
-                  </div>
-                )}
-
-                {/* Monthly Rent */}
-                {tenantInfo.data.monthlyRent?.value && (
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-text-light-muted dark:text-text-muted" />
-                    <span className="text-text-on-light dark:text-text-on-dark font-medium">
-                      {formatCurrency(tenantInfo.data.monthlyRent.value, tenantInfo.data.monthlyRent.currency)} / ay
-                    </span>
-                  </div>
-                )}
-
-                {/* Deposit */}
-                {tenantInfo.data.deposit?.value && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-text-light-muted dark:text-text-muted" />
-                    <span className="text-text-on-light dark:text-text-on-dark">
-                      Depozit: {formatCurrency(tenantInfo.data.deposit.value, tenantInfo.data.deposit.currency)}
-                    </span>
                   </div>
                 )}
               </div>
