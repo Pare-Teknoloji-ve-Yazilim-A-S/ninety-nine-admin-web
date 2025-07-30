@@ -14,6 +14,7 @@ export interface EditFormData {
     phone: string;
     email: string;
     role: 'resident' | 'tenant';
+    membershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
     identityNumber?: string;
     gender?: string;
     birthDate?: string;
@@ -44,6 +45,7 @@ const EditModal: React.FC<EditModalProps> = ({
         phone: '',
         email: '',
         role: 'resident',
+        membershipTier: 'STANDARD',
         identityNumber: '',
         gender: '',
         birthDate: '',
@@ -99,6 +101,12 @@ const EditModal: React.FC<EditModalProps> = ({
     const roleOptions = [
         { value: 'resident', label: 'Mülk Sahibi' },
         { value: 'tenant', label: 'Kiracı' }
+    ];
+
+    const membershipTierOptions = [
+        { value: 'STANDARD', label: 'Standart' },
+        { value: 'SILVER', label: 'Gümüş' },
+        { value: 'GOLD', label: 'Altın' }
     ];
 
     const genderOptions = [
@@ -202,17 +210,30 @@ const EditModal: React.FC<EditModalProps> = ({
                     </div>
                 </div>
 
-                {/* Role */}
-                <div>
-                    <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                        Rol *
-                    </label>
-                    <Select
-                        value={formData.role}
-                        onChange={(e) => handleInputChange('role', e.target.value)}
-                        options={roleOptions}
-                        disabled={loading}
-                    />
+                {/* Role and Membership Tier */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Rol *
+                        </label>
+                        <Select
+                            value={formData.role}
+                            onChange={(e) => handleInputChange('role', e.target.value)}
+                            options={roleOptions}
+                            disabled={loading}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Üyelik Seviyesi
+                        </label>
+                        <Select
+                            value={formData.membershipTier || 'STANDARD'}
+                            onChange={(e) => handleInputChange('membershipTier', e.target.value)}
+                            options={membershipTierOptions}
+                            disabled={loading}
+                        />
+                    </div>
                 </div>
 
                 {/* Divider */}
