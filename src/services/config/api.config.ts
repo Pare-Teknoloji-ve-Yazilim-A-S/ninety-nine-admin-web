@@ -98,7 +98,7 @@ export const apiConfig = {
                 base: '/admin/properties',
                 search: '/admin/properties/search',
                 byStatus: '/admin/properties/by-status',
-                byOwner: '/admin/properties/by-owner',
+                byOwner: (ownerId: string) => `/admin/properties/owner/${ownerId}`,
                 byTenant: '/admin/properties/by-tenant',
                 byId: (id: string) => `/admin/properties/${id}`,
 
