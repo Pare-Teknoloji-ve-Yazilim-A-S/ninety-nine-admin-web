@@ -90,6 +90,26 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
     }
 
     /**
+     * Get user's own properties
+     * GET /admin/properties/my-properties
+     */
+    async getMyProperties(): Promise<ApiResponse<Property[]>> {
+        try {
+            this.logger.info('Fetching user properties');
+
+            const response = await apiClient.get<Property[]>(
+                '/admin/properties/my-properties'
+            );
+
+            this.logger.info(`Fetched ${response.data?.length || 0} user properties`);
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch user properties', error);
+            throw error;
+        }
+    }
+
+    /**
      * Search properties with advanced filters
      * GET /admin/properties/search
      */
@@ -141,7 +161,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             this.logger.info(`Fetching properties for owner: ${ownerId}`);
 
             const response = await apiClient.get<Property[]>(
-                `${apiConfig.endpoints.properties.admin.byOwner}?ownerId=${ownerId}`
+                `${apiConfig.endpoints.properties.admin.byOwner}/${ownerId}`
             );
 
             this.logger.info(`Fetched ${response.data.length} properties for owner`);

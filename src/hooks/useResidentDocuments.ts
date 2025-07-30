@@ -69,7 +69,7 @@ export const useResidentDocuments = ({
                 // If response contains a blob or URL, create object URL
                 const url = response.data instanceof Blob 
                     ? URL.createObjectURL(response.data)
-                    : response.data;
+                    : response.data.staticUrl || response.data; // Use staticUrl if available
                     
                 setNationalIdDoc({ loading: false, error: null, url });
             } else {
@@ -95,7 +95,7 @@ export const useResidentDocuments = ({
                 // If response contains a blob or URL, create object URL
                 const url = response.data instanceof Blob 
                     ? URL.createObjectURL(response.data)
-                    : response.data;
+                    : response.data.staticUrl || response.data; // Use staticUrl if available
                     
                 setOwnershipDoc({ loading: false, error: null, url });
             } else {
