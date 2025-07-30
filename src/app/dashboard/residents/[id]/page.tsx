@@ -944,16 +944,6 @@ export default function ResidentViewPage() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        ) : propertiesError ? (
-                                            <div className="text-center py-8">
-                                                <AlertCircle className="h-8 w-8 text-primary-red mx-auto mb-2" />
-                                                <p className="text-sm text-text-light-muted dark:text-text-muted mb-3">
-                                                    Konut bilgileri yüklenemedi
-                                                </p>
-                                                <Button variant="secondary" size="sm" onClick={refreshProperties}>
-                                                    Tekrar Dene
-                                                </Button>
-                                            </div>
                                         ) : properties.length > 0 ? (
                                             <div className="space-y-6">
                                                 {properties.map((property, index) => (
@@ -996,14 +986,21 @@ export default function ResidentViewPage() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="text-center py-8">
-                                                <Building className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
-                                                <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                    Henüz konut atanmamış
-                                                </h3>
-                                                <p className="text-sm text-text-light-muted dark:text-text-muted">
-                                                    Bu sakin için henüz konut bilgisi bulunmuyor.
-                                                </p>
+                                            <div className="text-center py-8 relative">
+                                                {/* Background Icon */}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-5">
+                                                    <Home className="h-32 w-32 text-primary-gold" />
+                                                </div>
+                                                
+                                                {/* Content */}
+                                                <div className="relative z-10">
+                                                    <h3 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">
+                                                        Konut Bilgileri
+                                                    </h3>
+                                                    <p className="text-sm text-text-light-muted dark:text-text-muted">
+                                                        Bu sakin için konut bilgileri burada görüntülenecek.
+                                                    </p>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
