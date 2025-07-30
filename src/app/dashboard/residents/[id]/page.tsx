@@ -583,76 +583,60 @@ export default function ResidentViewPage() {
                                                     <div className="space-y-6">
                                                         {/* National ID Document */}
                                                         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                                            <div className="flex items-center gap-3 mb-3">
-                                                                <IdCard className="h-5 w-5 text-primary-gold" />
-                                                                <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
-                                                            </div>
-                                                            
-                                                            {nationalIdDoc.loading ? (
-                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold"></div>
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <IdCard className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
                                                                 </div>
-                                                            ) : nationalIdDoc.error ? (
-                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                                                    <div className="text-center">
-                                                                        <AlertCircle className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
-                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">{nationalIdDoc.error}</p>
+                                                                
+                                                                {nationalIdDoc.loading ? (
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
+                                                                ) : nationalIdDoc.error ? (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <AlertCircle className="h-4 w-4 text-primary-red" />
+                                                                        <span className="text-sm text-primary-red">Hata: {nationalIdDoc.error}</span>
                                                                     </div>
-                                                                </div>
-                                                            ) : nationalIdDoc.url ? (
-                                                                <div className="relative">
-                                                                    <img
-                                                                        src={nationalIdDoc.url}
-                                                                        alt="Kimlik Belgesi"
-                                                                        className="w-full h-48 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg cursor-pointer"
+                                                                ) : nationalIdDoc.url ? (
+                                                                    <Button 
+                                                                        variant="secondary" 
+                                                                        size="sm"
                                                                         onClick={() => window.open(nationalIdDoc.url, '_blank')}
-                                                                    />
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                                                    <div className="text-center">
-                                                                        <FileText className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
-                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</p>
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                                    >
+                                                                        Görüntüle
+                                                                    </Button>
+                                                                ) : (
+                                                                    <span className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</span>
+                                                                )}
+                                                            </div>
                                                         </div>
 
                                                         {/* Ownership Document */}
                                                         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                                            <div className="flex items-center gap-3 mb-3">
-                                                                <FileText className="h-5 w-5 text-primary-gold" />
-                                                                <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
-                                                            </div>
-                                                            
-                                                            {ownershipDoc.loading ? (
-                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold"></div>
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <FileText className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
                                                                 </div>
-                                                            ) : ownershipDoc.error ? (
-                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                                                    <div className="text-center">
-                                                                        <AlertCircle className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
-                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">{ownershipDoc.error}</p>
+                                                                
+                                                                {ownershipDoc.loading ? (
+                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
+                                                                ) : ownershipDoc.error ? (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <AlertCircle className="h-4 w-4 text-primary-red" />
+                                                                        <span className="text-sm text-primary-red">Hata: {ownershipDoc.error}</span>
                                                                     </div>
-                                                                </div>
-                                                            ) : ownershipDoc.url ? (
-                                                                <div className="relative">
-                                                                    <img
-                                                                        src={ownershipDoc.url}
-                                                                        alt="Mülkiyet Belgesi"
-                                                                        className="w-full h-48 object-contain bg-gray-100 dark:bg-gray-800 rounded-lg cursor-pointer"
+                                                                ) : ownershipDoc.url ? (
+                                                                    <Button 
+                                                                        variant="secondary" 
+                                                                        size="sm"
                                                                         onClick={() => window.open(ownershipDoc.url, '_blank')}
-                                                                    />
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex items-center justify-center h-32 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                                                                    <div className="text-center">
-                                                                        <FileText className="h-8 w-8 text-text-light-muted dark:text-text-muted mx-auto mb-2" />
-                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</p>
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                                    >
+                                                                        Görüntüle
+                                                                    </Button>
+                                                                ) : (
+                                                                    <span className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
