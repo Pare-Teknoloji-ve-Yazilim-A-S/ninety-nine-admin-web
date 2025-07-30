@@ -473,6 +473,29 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
     async getResidentsByVerificationStatus(verificationStatus: 'PENDING' | 'APPROVED' | 'REJECTED', params?: Omit<ResidentFilterParams, 'verificationStatus'>): Promise<PaginatedResponse<Resident>> {
         return await this.getAllResidents({ ...params, verificationStatus });
     }
+
+    // === RESIDENT APPROVAL === //
+
+    /**
+     * Approve or reject a resident
+     * PUT /admin/users/:id/approve
+     */
+    async approveResident(id: string, data: ResidentApprovalDto): Promise<ApiResponse<ResidentApprovalResponse>> {
+        try {
+            this.logger.info('Approving/rejecting resident', { id, decision: data.decision });
+
+            const response = await apiClient.put<ResidentApprovalResponse>(
+                apiConfig.endpoints.residents.admin.approve(id),
+                data
+            );
+
+            this.logger.info(`Resident ${data.decision} successfully`, { id });
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to approve/reject resident', error);
+            throw error;
+        }
+    }
 }
 
 // Export singleton instance

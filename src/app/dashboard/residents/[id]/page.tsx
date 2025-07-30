@@ -39,6 +39,7 @@ import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
 import DocumentUploadModal from '@/app/components/ui/DocumentUploadModal';
+import ApprovalModal, { ApprovalFormData } from '@/app/components/ui/ApprovalModal';
 import { useResidentDocuments } from '@/hooks/useResidentDocuments';
 import { useResidentTickets } from '@/hooks/useResidentTickets';
 import { useToast } from '@/hooks/useToast';
@@ -49,6 +50,7 @@ import { Ticket } from '@/services/ticket.service';
 import { useFamilyMembers } from '@/hooks/useFamilyMembers';
 import { CreateFamilyMemberDto, FamilyMember } from '@/services/types/family-member.types';
 import { useMyProperties } from '@/hooks/useMyProperties';
+import { adminResidentService } from '@/services/admin-resident.service';
 
 
 
@@ -61,6 +63,8 @@ export default function ResidentViewPage() {
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
     const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
     const [showTicketDetailModal, setShowTicketDetailModal] = useState(false);
+    const [showApprovalModal, setShowApprovalModal] = useState(false);
+    const [approvalLoading, setApprovalLoading] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
     
@@ -185,6 +189,41 @@ export default function ResidentViewPage() {
 
     const getFamilyMemberInitials = (member: FamilyMember) => {
         return `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
+    };
+
+    // Handle approval submission
+    const handleApprovalSubmit = async (data: ApprovalFormData) => {
+        try {
+            setApprovalLoading(true);
+            
+            const approvalData = {
+                decision: data.decision,
+                reason: data.reason,
+                assignedRole: data.assignedRole,
+                initialMembershipTier: data.initialMembershipTier
+            };
+
+            await adminResidentService.approveResident(residentId, approvalData);
+            
+            toast.success(
+                data.decision === 'approved' 
+                    ? 'Kullanıcı başarıyla onaylandı!' 
+                    : 'Kullanıcı başarıyla reddedildi!'
+            );
+            
+            // Refresh resident data to update verification status
+            // Note: useResidentData hook should have a refresh method
+            window.location.reload(); // Temporary solution
+            
+        } catch (error: any) {
+            console.error('Approval failed:', error);
+            toast.error(
+                error?.response?.data?.message || 
+                'Onaylama işlemi başarısız oldu. Lütfen tekrar deneyin.'
+            );
+        } finally {
+            setApprovalLoading(false);
+        }
     };
 
     // Handle add family member
@@ -413,10 +452,7 @@ export default function ResidentViewPage() {
                                                                         <Button 
                                                                             variant="primary" 
                                                                             size="sm"
-                                                                            onClick={() => {
-                                                                                // TODO: Implement verification approval
-                                                                                console.log('Approve verification for resident:', residentId);
-                                                                            }}
+                                                                            onClick={() => setShowApprovalModal(true)}
                                                                         >
                                                                             Onayla
                                                                         </Button>
@@ -1165,6 +1201,15 @@ export default function ResidentViewPage() {
                     refreshTickets();
                 }}
                 toast={toast}
+            />
+
+            {/* Approval Modal */}
+            <ApprovalModal
+                isOpen={showApprovalModal}
+                onClose={() => setShowApprovalModal(false)}
+                onSubmit={handleApprovalSubmit}
+                loading={approvalLoading}
+                userName={resident?.fullName || 'Kullanıcı'}
             />
 
             {/* Toast Container */}
