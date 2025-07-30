@@ -5,7 +5,7 @@ import Modal from './Modal';
 import Button from './Button';
 import Input from './Input';
 import Select from './Select';
-import { UserCheck, UserX, AlertCircle } from 'lucide-react';
+import { UserCheck, UserX, AlertCircle, Save, X } from 'lucide-react';
 
 export interface ApprovalFormData {
     decision: 'approved' | 'rejected';
@@ -53,27 +53,27 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
             newErrors.reason = 'Açıklama gereklidir';
         }
 
-        if (!formData.assignedRole) {
-            newErrors.assignedRole = 'Rol seçimi gereklidir';
-        }
+        if (formData.decision === 'approved') {
+            if (!formData.assignedRole) {
+                newErrors.assignedRole = 'Rol seçimi gereklidir';
+            }
 
-        if (!formData.initialMembershipTier) {
-            newErrors.initialMembershipTier = 'Üyelik seviyesi seçimi gereklidir';
+            if (!formData.initialMembershipTier) {
+                newErrors.initialMembershipTier = 'Üyelik seviyesi seçimi gereklidir';
+            }
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (decision: 'approved' | 'rejected') => {
-        const submitData = { ...formData, decision };
-        
+    const handleSubmit = async () => {
         if (!validateForm()) {
             return;
         }
 
         try {
-            await onSubmit(submitData);
+            await onSubmit(formData);
             // Reset form on success
             setFormData({
                 decision: 'approved',
@@ -115,115 +115,159 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
                     <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3">
                         Karar
                     </label>
-                    <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="decision"
-                                value="approved"
-                                checked={formData.decision === 'approved'}
-                                onChange={(e) => handleInputChange('decision', e.target.value as 'approved' | 'rejected')}
-                                className="w-4 h-4 text-primary-gold focus:ring-0 focus:ring-offset-0 outline-none"
-                                disabled={loading}
-                            />
-                            <UserCheck className="h-4 w-4 text-semantic-success-500" />
-                            <span className="text-text-on-light dark:text-text-on-dark">Onayla</span>
+                    <div className="flex gap-6">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative">
+                                <input
+                                    type="radio"
+                                    name="decision"
+                                    value="approved"
+                                    checked={formData.decision === 'approved'}
+                                    onChange={(e) => handleInputChange('decision', e.target.value as 'approved' | 'rejected')}
+                                    className="sr-only"
+                                    disabled={loading}
+                                />
+                                <div className={`
+                                    w-5 h-5 rounded-full border-2 flex items-center justify-center
+                                    transition-all duration-200
+                                    ${formData.decision === 'approved' 
+                                        ? 'border-primary-gold bg-primary-gold' 
+                                        : 'border-gray-300 dark:border-gray-600 bg-transparent'
+                                    }
+                                    ${!loading && 'group-hover:border-primary-gold/60'}
+                                    ${loading && 'opacity-50 cursor-not-allowed'}
+                                `}>
+                                    {formData.decision === 'approved' && (
+                                        <div className="w-2 h-2 rounded-full bg-white"></div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <UserCheck className="h-4 w-4 text-semantic-success-500" />
+                                <span className="text-text-on-light dark:text-text-on-dark font-medium">
+                                    Onayla
+                                </span>
+                            </div>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                name="decision"
-                                value="rejected"
-                                checked={formData.decision === 'rejected'}
-                                onChange={(e) => handleInputChange('decision', e.target.value as 'approved' | 'rejected')}
-                                className="w-4 h-4 text-primary-red focus:ring-0 focus:ring-offset-0 outline-none"
-                                disabled={loading}
-                            />
-                            <UserX className="h-4 w-4 text-primary-red" />
-                            <span className="text-text-on-light dark:text-text-on-dark">Reddet</span>
+                        
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <div className="relative">
+                                <input
+                                    type="radio"
+                                    name="decision"
+                                    value="rejected"
+                                    checked={formData.decision === 'rejected'}
+                                    onChange={(e) => handleInputChange('decision', e.target.value as 'approved' | 'rejected')}
+                                    className="sr-only"
+                                    disabled={loading}
+                                />
+                                <div className={`
+                                    w-5 h-5 rounded-full border-2 flex items-center justify-center
+                                    transition-all duration-200
+                                    ${formData.decision === 'rejected' 
+                                        ? 'border-primary-red bg-primary-red' 
+                                        : 'border-gray-300 dark:border-gray-600 bg-transparent'
+                                    }
+                                    ${!loading && 'group-hover:border-primary-red/60'}
+                                    ${loading && 'opacity-50 cursor-not-allowed'}
+                                `}>
+                                    {formData.decision === 'rejected' && (
+                                        <div className="w-2 h-2 rounded-full bg-white"></div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <UserX className="h-4 w-4 text-primary-red" />
+                                <span className="text-text-on-light dark:text-text-on-dark font-medium">
+                                    Reddet
+                                </span>
+                            </div>
                         </label>
                     </div>
                 </div>
 
-                {/* Reason Textarea */}
-                <div>
-                    <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                        Açıklama *
-                    </label>
-                    <textarea
-                        value={formData.reason}
-                        onChange={(e) => handleInputChange('reason', e.target.value)}
-                        placeholder="Onay/red nedeninizi açıklayın..."
-                        rows={3}
-                        disabled={loading}
-                        className={`
-                            w-full px-3 py-2 border rounded-lg resize-none
-                            focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold
-                            disabled:opacity-50 disabled:cursor-not-allowed
-                            bg-background-light-card dark:bg-background-card
-                            text-text-on-light dark:text-text-on-dark
-                            ${errors.reason ? 'border-primary-red' : 'border-gray-200 dark:border-gray-700'}
-                        `}
-                    />
-                    {errors.reason && (
-                        <div className="flex items-center gap-1 mt-1">
-                            <AlertCircle className="h-4 w-4 text-primary-red" />
-                            <span className="text-sm text-primary-red">{errors.reason}</span>
+                {/* Conditional Content Based on Decision */}
+                {formData.decision === 'rejected' ? (
+                    /* Rejection Form - Only Reason Textarea */
+                    <div>
+                        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                            Açıklama *
+                        </label>
+                        <textarea
+                            value={formData.reason}
+                            onChange={(e) => handleInputChange('reason', e.target.value)}
+                            placeholder="Red nedeninizi açıklayın..."
+                            rows={3}
+                            disabled={loading}
+                            className={`
+                                w-full px-3 py-2 border rounded-lg resize-none
+                                focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                                bg-background-light-card dark:bg-background-card
+                                text-text-on-light dark:text-text-on-dark
+                                ${errors.reason ? 'border-primary-red' : 'border-gray-200 dark:border-gray-700'}
+                            `}
+                        />
+                        {errors.reason && (
+                            <div className="flex items-center gap-1 mt-1">
+                                <AlertCircle className="h-4 w-4 text-primary-red" />
+                                <span className="text-sm text-primary-red">{errors.reason}</span>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    /* Approval Form - Role and Membership Tier */
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                Atanacak Rol *
+                            </label>
+                            <Select
+                                value={formData.assignedRole}
+                                onChange={(e) => handleInputChange('assignedRole', e.target.value)}
+                                options={roleOptions}
+                                placeholder="Rol seçin"
+                                disabled={loading}
+                                error={errors.assignedRole}
+                            />
                         </div>
-                    )}
-                </div>
 
-                {/* Assigned Role Dropdown */}
-                <div>
-                    <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                        Atanacak Rol *
-                    </label>
-                    <Select
-                        value={formData.assignedRole}
-                        onChange={(e) => handleInputChange('assignedRole', e.target.value)}
-                        options={roleOptions}
-                        placeholder="Rol seçin"
-                        disabled={loading}
-                        error={errors.assignedRole}
-                    />
-                </div>
-
-                {/* Membership Tier Dropdown */}
-                <div>
-                    <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                        Üyelik Seviyesi *
-                    </label>
-                    <Select
-                        value={formData.initialMembershipTier}
-                        onChange={(e) => handleInputChange('initialMembershipTier', e.target.value)}
-                        options={membershipTierOptions}
-                        placeholder="Üyelik seviyesi seçin"
-                        disabled={loading}
-                        error={errors.initialMembershipTier}
-                    />
-                </div>
+                        <div>
+                            <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                Üyelik Seviyesi *
+                            </label>
+                            <Select
+                                value={formData.initialMembershipTier}
+                                onChange={(e) => handleInputChange('initialMembershipTier', e.target.value)}
+                                options={membershipTierOptions}
+                                placeholder="Üyelik seviyesi seçin"
+                                disabled={loading}
+                                error={errors.initialMembershipTier}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <Button
-                        variant="primary"
-                        onClick={() => handleSubmit('approved')}
+                        variant="secondary"
+                        onClick={onClose}
                         disabled={loading}
-                        isLoading={loading}
-                        icon={UserCheck}
+                        icon={X}
                         className="flex-1"
                     >
-                        Onayla
+                        Vazgeç
                     </Button>
                     <Button
-                        variant="danger"
-                        onClick={() => handleSubmit('rejected')}
+                        variant="primary"
+                        onClick={handleSubmit}
                         disabled={loading}
                         isLoading={loading}
-                        icon={UserX}
+                        icon={Save}
                         className="flex-1"
                     >
-                        Reddet
+                        Kaydet
                     </Button>
                 </div>
             </div>

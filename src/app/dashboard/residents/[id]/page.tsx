@@ -43,6 +43,7 @@ import Select from '@/app/components/ui/Select';
 import DatePicker from '@/app/components/ui/DatePicker';
 import DocumentUploadModal from '@/app/components/ui/DocumentUploadModal';
 import ApprovalModal, { ApprovalFormData } from '@/app/components/ui/ApprovalModal';
+import EditModal, { EditFormData } from '@/app/components/ui/EditModal';
 import { useResidentDocuments } from '@/hooks/useResidentDocuments';
 import { useResidentTickets } from '@/hooks/useResidentTickets';
 import { useToast } from '@/hooks/useToast';
@@ -70,7 +71,9 @@ export default function ResidentViewPage() {
     const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
     const [showTicketDetailModal, setShowTicketDetailModal] = useState(false);
     const [showApprovalModal, setShowApprovalModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [approvalLoading, setApprovalLoading] = useState(false);
+    const [editLoading, setEditLoading] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [activeTab, setActiveTab] = useState<'family' | 'properties' | 'documents' | 'requests' | 'activity'>('family');
     
@@ -162,7 +165,7 @@ export default function ResidentViewPage() {
                 return <Clock className="h-4 w-4 text-semantic-warning-500" />;
             case 'inactive':
             case 'suspended':
-                return <AlertCircle className="h-4 w-4 text-primary-red" />;
+                return null; // Remove icon for inactive/pasif status
             default:
                 return <AlertCircle className="h-4 w-4 text-gray-500" />;
         }
@@ -199,6 +202,25 @@ export default function ResidentViewPage() {
 
     const getFamilyMemberInitials = (member: FamilyMember) => {
         return `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
+    };
+
+    // Handle edit submission
+    const handleEditSubmit = async (data: EditFormData) => {
+        try {
+            setEditLoading(true);
+            // TODO: API call to update resident data
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API call
+            toast.success('Kullanıcı bilgileri başarıyla güncellendi!');
+            await refreshData();
+        } catch (error: any) {
+            console.error('Edit failed:', error);
+            toast.error(
+                error?.response?.data?.message || 
+                'Güncelleme işlemi başarısız oldu. Lütfen tekrar deneyin.'
+            );
+        } finally {
+            setEditLoading(false);
+        }
     };
 
     // Handle approval submission
@@ -406,18 +428,6 @@ export default function ResidentViewPage() {
                                 {/* Profile Summary */}
                                 <Card>
                                     <div className="p-6">
-                                        {/* Edit Button - Top Right */}
-                                        <div className="flex justify-end mb-4">
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                className="flex items-center gap-2"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                                Düzenle
-                                            </Button>
-                                        </div>
-                                        
                                         <div className="flex items-start gap-6">
                                             {/* Avatar */}
                                             <div className="flex-shrink-0">
@@ -436,18 +446,31 @@ export default function ResidentViewPage() {
 
                                             {/* Basic Info */}
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
-                                                        {resident?.fullName || 'Yükleniyor...'}
-                                                    </h2>
-                                                    {resident && (
-                                                        <Badge
-                                                            variant="soft"
-                                                            color={getTypeColor(resident.residentType.type)}
-                                                        >
-                                                            {resident.residentType.label}
-                                                        </Badge>
-                                                    )}
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
+                                                            {resident?.fullName || 'Yükleniyor...'}
+                                                        </h2>
+                                                        {resident && (
+                                                            <Badge
+                                                                variant="soft"
+                                                                color={getTypeColor(resident.residentType.type)}
+                                                            >
+                                                                {resident.residentType.label}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Edit Button - Same level as name */}
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="flex items-center gap-2"
+                                                        onClick={() => setShowEditModal(true)}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                        Düzenle
+                                                    </Button>
                                                 </div>
 
                                                 {resident && (
@@ -934,7 +957,7 @@ export default function ResidentViewPage() {
                                         ) : properties.length > 0 ? (
                                             <div className="space-y-6">
                                                 {properties.map((property, index) => (
-                                                    <div key={property.id || index} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div key={property.id || index} className="grid grid-cols-1  gap-4">
                                                         {/* Konut Bilgisi */}
                                                         <div className="space-y-2">
                                                             <h4 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">Konut</h4>
@@ -1379,6 +1402,23 @@ export default function ResidentViewPage() {
                 onSubmit={handleApprovalSubmit}
                 loading={approvalLoading}
                 userName={resident?.fullName || 'Kullanıcı'}
+            />
+
+            {/* Edit Modal */}
+            <EditModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                onSubmit={handleEditSubmit}
+                loading={editLoading}
+                userName={resident?.fullName}
+                initialData={resident ? {
+                    firstName: resident.firstName,
+                    lastName: resident.lastName,
+                    phone: resident.contact?.phone || '',
+                    email: resident.contact?.email || '',
+                    role: resident.residentType.type as 'resident' | 'tenant',
+                    membershipTier: resident.membershipTier as 'GOLD' | 'SILVER' | 'STANDARD'
+                } : undefined}
             />
 
             {/* Toast Container */}
