@@ -406,6 +406,18 @@ export default function ResidentViewPage() {
                                 {/* Profile Summary */}
                                 <Card>
                                     <div className="p-6">
+                                        {/* Edit Button - Top Right */}
+                                        <div className="flex justify-end mb-4">
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="flex items-center gap-2"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                                Düzenle
+                                            </Button>
+                                        </div>
+                                        
                                         <div className="flex items-start gap-6">
                                             {/* Avatar */}
                                             <div className="flex-shrink-0">
@@ -441,21 +453,33 @@ export default function ResidentViewPage() {
                                                 {resident && (
                                                     <>
                                                         <div className="flex items-center gap-2 mb-3">
-                                                            {getStatusIcon(resident.status.type)}
-                                                            <Badge
-                                                                variant="soft"
-                                                                color={getStatusColor(resident.status.color)}
-                                                            >
-                                                                {resident.status.label}
-                                                            </Badge>
-                                                            {resident.verificationStatus && resident.verificationStatus.color === 'yellow' && (
-                                                                <Button 
-                                                                    variant="primary" 
-                                                                    size="sm"
-                                                                    onClick={() => setShowApprovalModal(true)}
+                                                            {/* Hide status icon when user is pending */}
+                                                            {resident.status.label !== 'Beklemede' && getStatusIcon(resident.status.type)}
+                                                            {/* Hide "beklemede" text when user is pending */}
+                                                            {resident.status.label !== 'Beklemede' && (
+                                                                <Badge
+                                                                    variant="soft"
+                                                                    color={getStatusColor(resident.status.color)}
                                                                 >
-                                                                    Onayla
-                                                                </Button>
+                                                                    {resident.status.label}
+                                                                </Badge>
+                                                            )}
+                                                            {resident.verificationStatus && resident.verificationStatus.color === 'yellow' && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Button 
+                                                                        variant="primary" 
+                                                                        size="sm"
+                                                                        onClick={() => setShowApprovalModal(true)}
+                                                                        disabled={resident.status.label === 'Beklemede'}
+                                                                    >
+                                                                        Onayla
+                                                                    </Button>
+                                                                    {resident.status.label === 'Beklemede' && (
+                                                                        <span className="text-sm text-text-light-muted dark:text-text-muted">
+                                                                            Belgelerin yüklenmesi gerek
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             )}
                                                         </div>
 
