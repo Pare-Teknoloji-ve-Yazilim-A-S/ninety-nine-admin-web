@@ -154,14 +154,18 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
 
     /**
      * Get properties by owner
-     * GET /admin/properties/by-owner
+     * GET /admin/properties/owner/:ownerId
      */
     async getPropertiesByOwner(ownerId: string): Promise<Property[]> {
         try {
             this.logger.info(`Fetching properties for owner: ${ownerId}`);
 
-            const response = await apiClient.get<Property[]>(
-                `${apiConfig.endpoints.properties.admin.byOwner}/${ownerId}`
+            const response = await apiClient.get<{
+                success: boolean;
+                message: string;
+                data: Property[];
+            }>(
+                apiConfig.endpoints.properties.admin.byOwner(ownerId)
             );
 
             this.logger.info(`Fetched ${response.data.length} properties for owner`);

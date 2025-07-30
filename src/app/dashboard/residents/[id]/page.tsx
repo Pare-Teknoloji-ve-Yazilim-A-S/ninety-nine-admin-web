@@ -33,12 +33,17 @@ import {
     Plus,
     ChevronRight,
     Wrench,
-    ExternalLink
+    ExternalLink,
+    Trash2,
+    Upload
 } from 'lucide-react';
 import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
+import DatePicker from '@/app/components/ui/DatePicker';
 import DocumentUploadModal from '@/app/components/ui/DocumentUploadModal';
+import ApprovalModal, { ApprovalFormData } from '@/app/components/ui/ApprovalModal';
+import EditModal, { EditFormData } from '@/app/components/ui/EditModal';
 import { useResidentDocuments } from '@/hooks/useResidentDocuments';
 import { useResidentTickets } from '@/hooks/useResidentTickets';
 import { useToast } from '@/hooks/useToast';
@@ -49,6 +54,7 @@ import { Ticket } from '@/services/ticket.service';
 import { useFamilyMembers } from '@/hooks/useFamilyMembers';
 import { CreateFamilyMemberDto, FamilyMember } from '@/services/types/family-member.types';
 import { useMyProperties } from '@/hooks/useMyProperties';
+import { adminResidentService } from '@/services/admin-resident.service';
 
 
 
@@ -59,10 +65,17 @@ export default function ResidentViewPage() {
     const [showDocumentsModal, setShowDocumentsModal] = useState(false);
     const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
+    const [showUploadPopup, setShowUploadPopup] = useState(false);
+    const [uploadDocumentType, setUploadDocumentType] = useState<'national_id' | 'ownership' | null>(null);
+    const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0, arrowLeft: 0 });
     const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
     const [showTicketDetailModal, setShowTicketDetailModal] = useState(false);
+    const [showApprovalModal, setShowApprovalModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [approvalLoading, setApprovalLoading] = useState(false);
+    const [editLoading, setEditLoading] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-    const [activeTab, setActiveTab] = useState<'family' | 'documents' | 'requests' | 'activity'>('family');
+    const [activeTab, setActiveTab] = useState<'family' | 'properties' | 'documents' | 'requests' | 'activity'>('family');
     
     // Toast system
     const toast = useToast();
@@ -74,7 +87,11 @@ export default function ResidentViewPage() {
         relationship: '',
         age: '',
         phone: '',
-        identityNumber: ''
+        identityNumber: '',
+        gender: '',
+        birthDate: '',
+        birthPlace: '',
+        bloodType: ''
     });
     
     // Use document management hook
@@ -101,7 +118,7 @@ export default function ResidentViewPage() {
         autoFetch: true
     });
 
-    const { resident, loading, error } = useResidentData({
+    const { resident, loading, error, refreshData } = useResidentData({
         residentId,
         autoFetch: true
     });
@@ -148,7 +165,7 @@ export default function ResidentViewPage() {
                 return <Clock className="h-4 w-4 text-semantic-warning-500" />;
             case 'inactive':
             case 'suspended':
-                return <AlertCircle className="h-4 w-4 text-primary-red" />;
+                return null; // Remove icon for inactive/pasif status
             default:
                 return <AlertCircle className="h-4 w-4 text-gray-500" />;
         }
@@ -187,17 +204,70 @@ export default function ResidentViewPage() {
         return `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
     };
 
+    // Handle edit submission
+    const handleEditSubmit = async (data: EditFormData) => {
+        try {
+            setEditLoading(true);
+            // TODO: API call to update resident data
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API call
+            toast.success('Kullanıcı bilgileri başarıyla güncellendi!');
+            await refreshData();
+        } catch (error: any) {
+            console.error('Edit failed:', error);
+            toast.error(
+                error?.response?.data?.message || 
+                'Güncelleme işlemi başarısız oldu. Lütfen tekrar deneyin.'
+            );
+        } finally {
+            setEditLoading(false);
+        }
+    };
+
+    // Handle approval submission
+    const handleApprovalSubmit = async (data: ApprovalFormData) => {
+        try {
+            setApprovalLoading(true);
+            
+            const approvalData = {
+                decision: data.decision,
+                reason: data.reason,
+                assignedRole: data.assignedRole,
+                initialMembershipTier: data.initialMembershipTier
+            };
+
+            await adminResidentService.approveResident(residentId, approvalData);
+            
+            toast.success(
+                data.decision === 'approved' 
+                    ? 'Kullanıcı başarıyla onaylandı!' 
+                    : 'Kullanıcı başarıyla reddedildi!'
+            );
+            
+            // Refresh resident data to update verification status
+            await refreshData();
+            
+        } catch (error: any) {
+            console.error('Approval failed:', error);
+            toast.error(
+                error?.response?.data?.message || 
+                'Onaylama işlemi başarısız oldu. Lütfen tekrar deneyin.'
+            );
+        } finally {
+            setApprovalLoading(false);
+        }
+    };
+
     // Handle add family member
     const handleAddFamilyMember = async () => {
-        if (familyFormData.firstName && familyFormData.lastName && familyFormData.relationship && familyFormData.age) {
+        if (familyFormData.firstName && familyFormData.lastName && familyFormData.relationship && familyFormData.phone && familyFormData.identityNumber) {
             try {
                 const newMemberData: CreateFamilyMemberDto = {
                     firstName: familyFormData.firstName,
                     lastName: familyFormData.lastName,
                     relationship: familyFormData.relationship,
-                    age: parseInt(familyFormData.age),
-                    phone: familyFormData.phone || undefined,
-                    identityNumber: familyFormData.identityNumber || undefined
+                    age: 0, // Yaş alanı kaldırıldığı için default değer
+                    phone: familyFormData.phone,
+                    identityNumber: familyFormData.identityNumber
                 };
                 
                 await createFamilyMember(residentId, newMemberData);
@@ -209,7 +279,11 @@ export default function ResidentViewPage() {
                     relationship: '',
                     age: '',
                     phone: '',
-                    identityNumber: ''
+                    identityNumber: '',
+                    gender: '',
+                    birthDate: '',
+                    birthPlace: '',
+                    bloodType: ''
                 });
                 setShowAddFamilyModal(false);
                 toast.success('Aile üyesi başarıyla eklendi!');
@@ -340,7 +414,7 @@ export default function ResidentViewPage() {
                                     Mesaj
                                 </Button>
                                 <Link href={`/dashboard/residents/${residentId}/edit`}>
-                                    <Button variant="danger" icon={Edit}>
+                                    <Button variant="danger" icon={Trash2}>
                                         Kaldır
                                     </Button>
                                 </Link>
@@ -372,39 +446,63 @@ export default function ResidentViewPage() {
 
                                             {/* Basic Info */}
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
-                                                        {resident?.fullName || 'Yükleniyor...'}
-                                                    </h2>
-                                                    {resident && (
-                                                        <Badge
-                                                            variant="soft"
-                                                            color={getTypeColor(resident.residentType.type)}
-                                                        >
-                                                            {resident.residentType.label}
-                                                        </Badge>
-                                                    )}
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
+                                                            {resident?.fullName || 'Yükleniyor...'}
+                                                        </h2>
+                                                        {resident && (
+                                                            <Badge
+                                                                variant="soft"
+                                                                color={getTypeColor(resident.residentType.type)}
+                                                            >
+                                                                {resident.residentType.label}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Edit Button - Same level as name */}
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="flex items-center gap-2"
+                                                        onClick={() => setShowEditModal(true)}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                        Düzenle
+                                                    </Button>
                                                 </div>
 
                                                 {resident && (
                                                     <>
                                                         <div className="flex items-center gap-2 mb-3">
-                                                            {getStatusIcon(resident.status.type)}
-                                                            <Badge
-                                                                variant="soft"
-                                                                color={getStatusColor(resident.status.color)}
-                                                            >
-                                                                {resident.status.label}
-                                                            </Badge>
-                                                            {resident.verificationStatus && (
-                                                                <Badge variant="outline" color={
-                                                                    resident.verificationStatus.color === 'green' ? 'primary' :
-                                                                        resident.verificationStatus.color === 'yellow' ? 'secondary' :
-                                                                            resident.verificationStatus.color === 'red' ? 'red' :
-                                                                                'secondary'
-                                                                }>
-                                                                    {resident.verificationStatus.label}
+                                                            {/* Hide status icon when user is pending */}
+                                                            {resident.status.label !== 'Beklemede' && getStatusIcon(resident.status.type)}
+                                                            {/* Hide "beklemede" text when user is pending */}
+                                                            {resident.status.label !== 'Beklemede' && (
+                                                                <Badge
+                                                                    variant="soft"
+                                                                    color={getStatusColor(resident.status.color)}
+                                                                >
+                                                                    {resident.status.label}
                                                                 </Badge>
+                                                            )}
+                                                            {resident.verificationStatus && resident.verificationStatus.color === 'yellow' && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Button 
+                                                                        variant="primary" 
+                                                                        size="sm"
+                                                                        onClick={() => setShowApprovalModal(true)}
+                                                                        disabled={resident.status.label === 'Beklemede'}
+                                                                    >
+                                                                        Onayla
+                                                                    </Button>
+                                                                    {resident.status.label === 'Beklemede' && (
+                                                                        <span className="text-sm text-text-light-muted dark:text-text-muted">
+                                                                            Belgelerin yüklenmesi gerek
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             )}
                                                         </div>
 
@@ -435,10 +533,10 @@ export default function ResidentViewPage() {
                                         <div className="border-b border-gray-200 dark:border-gray-700 px-6 pt-6">
                                             <nav className="flex space-x-4" aria-label="Tabs">
                                                 {[
-                                                    { label: "Aile Üyeleri", key: "family" },
-                                                    { label: "Belgeler", key: "documents" },
-                                                    { label: "Talepler", key: "requests" },
-                                                    { label: "Aktivite Günlüğü", key: "activity" }
+                                                    { label: `Aile Üyeleri (${familyMembers.length})`, key: "family" },
+                                                    { label: `Belgeler (${[nationalIdDoc.url, ownershipDoc.url].filter(Boolean).length})`, key: "documents" },
+                                                    { label: `Talepler (${residentTickets.length})`, key: "requests" },
+                                                    { label: "Aktivite Günlüğü (0)", key: "activity" }
                                                 ].map((tab, idx) => (
                                                     <button
                                                         key={tab.key}
@@ -573,11 +671,8 @@ export default function ResidentViewPage() {
                                             )}
                                             {activeTab === "documents" && (
                                                 <div>
-                                                    <div className="flex justify-between items-center mb-6">
+                                                    <div className="mb-6">
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Belgeler</h4>
-                                                        <Button variant="primary" icon={Plus} onClick={() => setShowDocumentUploadModal(true)}>
-                                                            Belge Ekle
-                                                        </Button>
                                                     </div>
 
                                                     <div className="space-y-6">
@@ -591,21 +686,37 @@ export default function ResidentViewPage() {
                                                                 
                                                                 {nationalIdDoc.loading ? (
                                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
-                                                                ) : nationalIdDoc.error ? (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <AlertCircle className="h-4 w-4 text-primary-red" />
-                                                                        <span className="text-sm text-primary-red">Hata: {nationalIdDoc.error}</span>
-                                                                    </div>
-                                                                ) : nationalIdDoc.url ? (
-                                                                    <Button 
-                                                                        variant="secondary" 
-                                                                        size="sm"
-                                                                        onClick={() => window.open(nationalIdDoc.url, '_blank')}
-                                                                    >
-                                                                        Görüntüle
-                                                                    </Button>
                                                                 ) : (
-                                                                    <span className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        {!nationalIdDoc.url && (
+                                                                            <Button 
+                                                                                variant="primary" 
+                                                                                size="sm"
+                                                                                icon={Upload}
+                                                                                onClick={(e) => {
+                                                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                                                    const buttonCenter = rect.width / 2;
+                                                                                    setPopupPosition({
+                                                                                        top: rect.top - 200, // Popup yüksekliği ~180px, 20px margin
+                                                                                        left: rect.left,
+                                                                                        arrowLeft: buttonCenter - 8 // 8px = arrow width/2
+                                                                                    });
+                                                                                    setUploadDocumentType('national_id');
+                                                                                    setShowUploadPopup(true);
+                                                                                }}
+                                                                            >
+                                                                                Yükle
+                                                                            </Button>
+                                                                        )}
+                                                                        <Button 
+                                                                            variant="secondary" 
+                                                                            size="sm"
+                                                                            disabled={!nationalIdDoc.url}
+                                                                            onClick={() => nationalIdDoc.url && window.open(nationalIdDoc.url, '_blank')}
+                                                                        >
+                                                                            Görüntüle
+                                                                        </Button>
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -620,21 +731,37 @@ export default function ResidentViewPage() {
                                                                 
                                                                 {ownershipDoc.loading ? (
                                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
-                                                                ) : ownershipDoc.error ? (
-                                                                    <div className="flex items-center gap-2">
-                                                                        <AlertCircle className="h-4 w-4 text-primary-red" />
-                                                                        <span className="text-sm text-primary-red">Hata: {ownershipDoc.error}</span>
-                                                                    </div>
-                                                                ) : ownershipDoc.url ? (
-                                                                    <Button 
-                                                                        variant="secondary" 
-                                                                        size="sm"
-                                                                        onClick={() => window.open(ownershipDoc.url, '_blank')}
-                                                                    >
-                                                                        Görüntüle
-                                                                    </Button>
                                                                 ) : (
-                                                                    <span className="text-sm text-text-light-muted dark:text-text-muted">Belge bulunamadı</span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        {!ownershipDoc.url && (
+                                                                            <Button 
+                                                                                variant="primary" 
+                                                                                size="sm"
+                                                                                icon={Upload}
+                                                                                onClick={(e) => {
+                                                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                                                    const buttonCenter = rect.width / 2;
+                                                                                    setPopupPosition({
+                                                                                        top: rect.top - 200, // Popup yüksekliği ~180px, 20px margin
+                                                                                        left: rect.left,
+                                                                                        arrowLeft: buttonCenter - 8 // 8px = arrow width/2
+                                                                                    });
+                                                                                    setUploadDocumentType('ownership');
+                                                                                    setShowUploadPopup(true);
+                                                                                }}
+                                                                            >
+                                                                                Yükle
+                                                                            </Button>
+                                                                        )}
+                                                                        <Button 
+                                                                            variant="secondary" 
+                                                                            size="sm"
+                                                                            disabled={!ownershipDoc.url}
+                                                                            onClick={() => ownershipDoc.url && window.open(ownershipDoc.url, '_blank')}
+                                                                        >
+                                                                            Görüntüle
+                                                                        </Button>
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -645,7 +772,7 @@ export default function ResidentViewPage() {
                                                 <div>
                                                     <div className="flex justify-between items-center mb-6">
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">
-                                                            Talepler <span className="text-primary-gold">({residentTickets.length})</span>
+                                                            Talep Listesi 
                                                         </h4>
                                                         <Button 
                                                             variant="primary" 
@@ -828,59 +955,39 @@ export default function ResidentViewPage() {
                                                 </Button>
                                             </div>
                                         ) : properties.length > 0 ? (
-                                            <div className="space-y-4">
+                                            <div className="space-y-6">
                                                 {properties.map((property, index) => (
-                                                    <div key={property.id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                            <div className="space-y-4">
+                                                    <div key={property.id || index} className="grid grid-cols-1  gap-4">
+                                                        {/* Konut Bilgisi */}
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">Konut</h4>
+                                                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gradient-to-r from-primary-gold-light/10 to-transparent">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
                                                                         <Building className="h-5 w-5 text-primary-gold" />
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Konut</p>
                                                                         <p className="font-medium text-text-on-light dark:text-text-on-dark">
                                                                             {property.name || property.propertyNumber || `Konut ${index + 1}`}
                                                                         </p>
-                                                                        {property.blockNumber && (
-                                                                            <p className="text-xs text-text-light-muted dark:text-text-muted">
-                                                                                Blok: {property.blockNumber}
-                                                                            </p>
-                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </div>
+                                                        </div>
 
-                                                            <div className="space-y-4">
+                                                        {/* Borç Bilgisi */}
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">Borç Durumu</h4>
+                                                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gradient-to-r from-primary-red/5 to-transparent">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                                        <CreditCard className="h-5 w-5 text-primary-gold" />
+                                                                    <div className="w-10 h-10 bg-primary-red/10 rounded-lg flex items-center justify-center">
+                                                                        <CreditCard className="h-5 w-5 text-primary-red" />
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Durum</p>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Badge 
-                                                                                variant="soft" 
-                                                                                color={
-                                                                                    property.status === 'OCCUPIED' ? 'primary' :
-                                                                                    property.status === 'AVAILABLE' ? 'secondary' :
-                                                                                    property.status === 'UNDER_MAINTENANCE' ? 'gold' :
-                                                                                    property.status === 'RESERVED' ? 'accent' :
-                                                                                    'secondary'
-                                                                                }
-                                                                            >
-                                                                                {property.status === 'OCCUPIED' ? 'Dolu' :
-                                                                                 property.status === 'AVAILABLE' ? 'Müsait' :
-                                                                                 property.status === 'UNDER_MAINTENANCE' ? 'Bakımda' :
-                                                                                 property.status === 'RESERVED' ? 'Rezerve' :
-                                                                                 property.status}
-                                                                            </Badge>
-                                                                        </div>
-                                                                        {property.area && (
-                                                                            <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
-                                                                                {property.area} m²
-                                                                            </p>
-                                                                        )}
+                                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                                                                            {/* Borç bilgisi için placeholder - API'den gelecek */}
+                                                                            {Math.floor(Math.random() * 5000)} ₺
+                                                                        </p>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1015,6 +1122,18 @@ export default function ResidentViewPage() {
                 size="lg"
             >
                 <div className="space-y-6">
+                    {/* Ulusal kimlik numarası - En üstte tek başına */}
+                    <div>
+                        <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                            Ulusal kimlik numarası / Pasaport numarası *
+                        </label>
+                        <Input
+                            placeholder="12345678901 veya AA1234567"
+                            value={familyFormData.identityNumber}
+                            onChange={(e) => setFamilyFormData({...familyFormData, identityNumber: e.target.value})}
+                        />
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
@@ -1041,7 +1160,7 @@ export default function ResidentViewPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                İlişki *
+                                Yakınlık derecesi *
                             </label>
                             <Select
                                 value={familyFormData.relationship}
@@ -1059,21 +1178,7 @@ export default function ResidentViewPage() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                Yaş *
-                            </label>
-                            <Input
-                                type="number"
-                                placeholder="25"
-                                value={familyFormData.age}
-                                onChange={(e) => setFamilyFormData({...familyFormData, age: e.target.value})}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                Telefon
+                                Telefon *
                             </label>
                             <Input
                                 placeholder="0555 123 4567"
@@ -1081,15 +1186,73 @@ export default function ResidentViewPage() {
                                 onChange={(e) => setFamilyFormData({...familyFormData, phone: e.target.value})}
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                Kimlik No
-                            </label>
-                            <Input
-                                placeholder="12345678901"
-                                value={familyFormData.identityNumber}
-                                onChange={(e) => setFamilyFormData({...familyFormData, identityNumber: e.target.value})}
-                            />
+                    </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                        <h5 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-4">
+                            Ek Bilgiler (Opsiyonel)
+                        </h5>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                    Cinsiyet
+                                </label>
+                                <Select
+                                    value={familyFormData.gender}
+                                    onChange={(e) => setFamilyFormData({...familyFormData, gender: e.target.value})}
+                                    options={[
+                                        { value: '', label: 'Seçiniz' },
+                                        { value: 'Erkek', label: 'Erkek' },
+                                        { value: 'Kadın', label: 'Kadın' },
+                                        { value: 'Diğer', label: 'Diğer' }
+                                    ]}
+                                />
+                            </div>
+                            <div>
+                                <DatePicker
+                                    label="Doğum Tarihi"
+                                    value={familyFormData.birthDate}
+                                    onChange={(e) => setFamilyFormData({...familyFormData, birthDate: e.target.value})}
+                                    maxDate={new Date().toISOString().split('T')[0]}
+                                    variant="default"
+                                    showIcon={true}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                    Doğum Yeri
+                                </label>
+                                <Input
+                                    placeholder="İstanbul, Türkiye"
+                                    value={familyFormData.birthPlace}
+                                    onChange={(e) => setFamilyFormData({...familyFormData, birthPlace: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                    Kan Grubu
+                                </label>
+                                <Select
+                                    value={familyFormData.bloodType}
+                                    onChange={(e) => setFamilyFormData({...familyFormData, bloodType: e.target.value})}
+                                    options={[
+                                        { value: '', label: 'Seçiniz' },
+                                        { value: 'A+', label: 'A+' },
+                                        { value: 'A-', label: 'A-' },
+                                        { value: 'B+', label: 'B+' },
+                                        { value: 'B-', label: 'B-' },
+                                        { value: 'AB+', label: 'AB+' },
+                                        { value: 'AB-', label: 'AB-' },
+                                        { value: 'O+', label: 'O+' },
+                                        { value: 'O-', label: 'O-' }
+                                    ]}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -1107,7 +1270,8 @@ export default function ResidentViewPage() {
                                 !familyFormData.firstName || 
                                 !familyFormData.lastName || 
                                 !familyFormData.relationship || 
-                                !familyFormData.age ||
+                                !familyFormData.phone ||
+                                !familyFormData.identityNumber ||
                                 familyMembersSaving
                             }
                             isLoading={familyMembersSaving}
@@ -1126,6 +1290,87 @@ export default function ResidentViewPage() {
                 onUploadOwnership={uploadOwnershipDocument}
                 uploadStates={uploadStates}
             />
+
+            {/* Upload Popup */}
+            {showUploadPopup && (
+                <>
+                    {/* Backdrop - clicking outside closes popup */}
+                    <div 
+                        className="fixed inset-0 z-40"
+                        onClick={() => {
+                            setShowUploadPopup(false);
+                            setUploadDocumentType(null);
+                            setPopupPosition({ top: 0, left: 0, arrowLeft: 0 });
+                        }}
+                    />
+                    
+                    {/* Popup Content */}
+                    <div 
+                        className="fixed z-50 w-80 bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl animate-in slide-in-from-bottom-2 duration-200"
+                        style={{
+                            top: `${popupPosition.top}px`,
+                            left: `${popupPosition.left}px`,
+                        }}
+                    >
+                        {/* Arrow pointing down to button */}
+                        <div 
+                            className="absolute -bottom-2 w-4 h-4 bg-background-light-card dark:bg-background-card border-r border-b border-gray-200 dark:border-gray-700 transform rotate-45"
+                            style={{ left: `${popupPosition.arrowLeft}px` }}
+                        ></div>
+                        <div className="p-4">
+                            <div className="flex items-center justify-between mb-4">
+                                <h4 className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
+                                    {uploadDocumentType === 'national_id' ? 'Kimlik Belgesi' : 'Tapu / Mülkiyet Belgesi'}
+                                </h4>
+                                <button 
+                                    onClick={() => {
+                                        setShowUploadPopup(false);
+                                        setUploadDocumentType(null);
+                                        setPopupPosition({ top: 0, left: 0, arrowLeft: 0 });
+                                    }}
+                                    className="text-text-light-muted dark:text-text-muted hover:text-text-on-light dark:hover:text-text-on-dark"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <div className="
+                                    relative border-2 border-dashed rounded-lg p-4 text-center transition-colors
+                                    border-primary-gold/30 hover:border-primary-gold/50
+                                    bg-background-light-secondary dark:bg-background-secondary
+                                ">
+                                    <input 
+                                        accept="image/jpeg,image/png,image/jpg,application/pdf" 
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                                        type="file"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                console.log('Dosya seçildi:', file.name);
+                                                // Burada dosya yükleme işlemi yapılacak
+                                                setShowUploadPopup(false);
+                                                setUploadDocumentType(null);
+                                                setPopupPosition({ top: 0, left: 0, arrowLeft: 0 });
+                                            }
+                                        }}
+                                    />
+                                    <div className="space-y-2">
+                                        <Upload className="mx-auto h-8 w-8 text-text-light-secondary dark:text-text-secondary" />
+                                        <div className="text-xs text-text-on-light dark:text-text-on-dark">
+                                            <span className="font-medium">Dosya seçin</span>
+                                            <span className="text-text-light-secondary dark:text-text-secondary"> veya sürükleyin</span>
+                                        </div>
+                                        <p className="text-xs text-text-light-secondary dark:text-text-secondary">
+                                            JPEG, PNG, PDF • Max 10MB
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* Create Ticket Modal */}
             <CreateTicketModal
@@ -1148,6 +1393,32 @@ export default function ResidentViewPage() {
                     refreshTickets();
                 }}
                 toast={toast}
+            />
+
+            {/* Approval Modal */}
+            <ApprovalModal
+                isOpen={showApprovalModal}
+                onClose={() => setShowApprovalModal(false)}
+                onSubmit={handleApprovalSubmit}
+                loading={approvalLoading}
+                userName={resident?.fullName || 'Kullanıcı'}
+            />
+
+            {/* Edit Modal */}
+            <EditModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                onSubmit={handleEditSubmit}
+                loading={editLoading}
+                userName={resident?.fullName}
+                initialData={resident ? {
+                    firstName: resident.firstName,
+                    lastName: resident.lastName,
+                    phone: resident.contact?.phone || '',
+                    email: resident.contact?.email || '',
+                    role: resident.residentType.type as 'resident' | 'tenant',
+                    membershipTier: resident.membershipTier as 'GOLD' | 'SILVER' | 'STANDARD'
+                } : undefined}
             />
 
             {/* Toast Container */}
