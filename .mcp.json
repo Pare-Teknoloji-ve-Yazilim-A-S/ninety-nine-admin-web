@@ -6,9 +6,30 @@
       "args": [
         "-y",
         "apidog-mcp-server@latest",
-        "--oas=http://localhost:5001/api-docs-json"
+        "--oas=https://ninetynineclub-api.onrender.com/api-docs-json"
       ],
       "env": {}
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp"
+      ]
     }
   }
 }
