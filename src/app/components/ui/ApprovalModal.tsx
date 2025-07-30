@@ -36,18 +36,18 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
         initialMembershipTier: 'STANDARD'
     });
 
-    const [errors, setErrors] = useState<Partial<ApprovalFormData>>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleInputChange = (field: keyof ApprovalFormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         // Clear error when user starts typing
         if (errors[field]) {
-            setErrors(prev => ({ ...prev, [field]: undefined }));
+            setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
 
     const validateForm = (): boolean => {
-        const newErrors: Partial<ApprovalFormData> = {};
+        const newErrors: Record<string, string> = {};
 
         if (!formData.reason.trim()) {
             newErrors.reason = 'Açıklama gereklidir';
