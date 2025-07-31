@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
+import Select from '@/app/components/ui/Select';
+import DatePicker from '@/app/components/ui/DatePicker';
 import { TenantInfo, UpdateTenantInfoDto } from '@/services/types/unit-detail.types';
 import { 
   Home, 
@@ -15,9 +17,13 @@ import {
   UserX, 
   Save, 
   X,
-  Clock
+  Clock,
+  User,
+  UserPlus,
+  IdCard
 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+import { residentService } from '@/services/resident.service';
 
 interface TenantInfoSectionProps {
   tenantInfo?: TenantInfo;
@@ -25,6 +31,15 @@ interface TenantInfoSectionProps {
   onRemove?: () => Promise<void>;
   loading?: boolean;
   canEdit?: boolean;
+}
+
+interface Resident {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  phone?: string;
+  email?: string;
 }
 
 export default function TenantInfoSection({ 
@@ -35,31 +50,59 @@ export default function TenantInfoSection({
   canEdit = true 
 }: TenantInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddNewResident, setShowAddNewResident] = useState(false);
   const [formData, setFormData] = useState({
-    isRented: tenantInfo?.isRented || false,
     tenantName: tenantInfo?.data.tenantName?.value || '',
     tenantPhone: tenantInfo?.data.tenantPhone?.value || '',
-    tenantEmail: tenantInfo?.data.tenantEmail?.value || '',
-    leaseStartDate: tenantInfo?.data.leaseStartDate?.value || '',
-    leaseEndDate: tenantInfo?.data.leaseEndDate?.value || '',
-    monthlyRent: tenantInfo?.data.monthlyRent?.value || 0,
-    deposit: tenantInfo?.data.deposit?.value || 0
+    tenantEmail: tenantInfo?.data.tenantEmail?.value || ''
   });
+  const [newResidentData, setNewResidentData] = useState({
+    identityNumber: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    relationship: '',
+    gender: '',
+    birthDate: '',
+    birthPlace: '',
+    bloodType: ''
+  });
+  const [selectedResident, setSelectedResident] = useState('');
+  const [residents, setResidents] = useState<Resident[]>([]);
+  const [loadingResidents, setLoadingResidents] = useState(false);
   const [saving, setSaving] = useState(false);
   const toast = useToast();
 
   const handleEdit = () => {
     setShowEditModal(true);
+    setShowAddNewResident(false); // Yeni sakin ekleme formunu kapat
     setFormData({
-      isRented: tenantInfo?.isRented || false,
       tenantName: tenantInfo?.data.tenantName?.value || '',
       tenantPhone: tenantInfo?.data.tenantPhone?.value || '',
-      tenantEmail: tenantInfo?.data.tenantEmail?.value || '',
-      leaseStartDate: tenantInfo?.data.leaseStartDate?.value || '',
-      leaseEndDate: tenantInfo?.data.leaseEndDate?.value || '',
-      monthlyRent: tenantInfo?.data.monthlyRent?.value || 0,
-      deposit: tenantInfo?.data.deposit?.value || 0
+      tenantEmail: tenantInfo?.data.tenantEmail?.value || ''
     });
+    loadResidents();
+  };
+
+  const loadResidents = async () => {
+    setLoadingResidents(true);
+    try {
+      const response = await residentService.getAllResidents({ limit: 1000 });
+      const residentsList = response.data.map((resident: any) => ({
+        id: resident.id,
+        firstName: resident.firstName,
+        lastName: resident.lastName,
+        fullName: `${resident.firstName} ${resident.lastName}`,
+        phone: resident.phone,
+        email: resident.email
+      }));
+      setResidents(residentsList);
+    } catch (error) {
+      console.error('Failed to load residents:', error);
+      toast.error('Sakinler yüklenirken hata oluştu');
+    } finally {
+      setLoadingResidents(false);
+    }
   };
 
   const handleSave = async () => {
@@ -68,19 +111,75 @@ export default function TenantInfoSection({
     setSaving(true);
     try {
       await onUpdate({
-        isRented: formData.isRented,
         tenantName: formData.tenantName,
         tenantPhone: formData.tenantPhone,
-        tenantEmail: formData.tenantEmail,
-        leaseStartDate: formData.leaseStartDate,
-        leaseEndDate: formData.leaseEndDate,
-        monthlyRent: formData.monthlyRent,
-        deposit: formData.deposit
+        tenantEmail: formData.tenantEmail
       });
       setShowEditModal(false);
       toast.success('Kiracı bilgileri güncellendi');
     } catch (error) {
       toast.error('Güncelleme başarısız oldu');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResidentSelect = (residentId: string) => {
+    if (!residentId) return;
+    
+    const selectedResidentData = residents.find(r => r.id === residentId);
+    if (selectedResidentData) {
+      setFormData({
+        tenantName: selectedResidentData.fullName,
+        tenantPhone: selectedResidentData.phone || '',
+        tenantEmail: selectedResidentData.email || ''
+      });
+      setSelectedResident(residentId);
+    }
+  };
+
+  const handleAddNewResident = () => {
+    setShowAddNewResident(true);
+  };
+
+  const handleNewResidentInputChange = (field: string, value: string) => {
+    setNewResidentData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleCreateNewResident = async () => {
+    if (!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship) {
+      toast.error('Lütfen tüm zorunlu alanları doldurun');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      // Burada yeni sakin oluşturma API'si çağrılacak
+      // Şimdilik sadece form verilerini kullanıyoruz
+      setFormData({
+        tenantName: `${newResidentData.firstName} ${newResidentData.lastName}`,
+        tenantPhone: newResidentData.phone,
+        tenantEmail: ''
+      });
+      
+      setShowAddNewResident(false);
+      setNewResidentData({
+        identityNumber: '',
+        firstName: '',
+        lastName: '',
+        phone: '',
+        relationship: '',
+        gender: '',
+        birthDate: '',
+        birthPlace: '',
+        bloodType: ''
+      });
+      toast.success('Yeni sakin bilgileri eklendi');
+    } catch (error) {
+      toast.error('Sakin eklenirken hata oluştu');
     } finally {
       setSaving(false);
     }
@@ -171,20 +270,20 @@ export default function TenantInfoSection({
                 <Button
                   variant="ghost"
                   size="sm"
-                  icon={Edit}
-                  onClick={handleEdit}
-                  disabled={loading}
-                >
-                  Düzenle
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
                   icon={UserX}
                   onClick={handleRemoveTenant}
                   disabled={loading}
                 >
                   Kaldır
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={Edit}
+                  onClick={handleEdit}
+                  disabled={loading}
+                >
+                  Düzenle
                 </Button>
               </div>
             )}
@@ -251,118 +350,46 @@ export default function TenantInfoSection({
         icon={Home}
         size="lg"
       >
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="isRented"
-              checked={formData.isRented}
-              onChange={(e) => setFormData({ ...formData, isRented: e.target.checked })}
-              className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
+        <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+          <div>
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+              Kiracı Adı *
+            </label>
+            <Input
+              value={formData.tenantName}
+              onChange={(e) => setFormData({ ...formData, tenantName: e.target.value })}
+              placeholder="Ad Soyad"
               disabled={saving}
             />
-            <label htmlFor="isRented" className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-              Bu konut kiralık
-            </label>
           </div>
 
-          {formData.isRented && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                  Kiracı Adı *
-                </label>
-                <Input
-                  value={formData.tenantName}
-                  onChange={(e) => setFormData({ ...formData, tenantName: e.target.value })}
-                  placeholder="Ad Soyad"
-                  disabled={saving}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                Telefon *
+              </label>
+              <Input
+                type="tel"
+                value={formData.tenantPhone}
+                onChange={(e) => setFormData({ ...formData, tenantPhone: e.target.value })}
+                placeholder="+964 XXX XXX XXXX"
+                disabled={saving}
+              />
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Telefon *
-                  </label>
-                  <Input
-                    type="tel"
-                    value={formData.tenantPhone}
-                    onChange={(e) => setFormData({ ...formData, tenantPhone: e.target.value })}
-                    placeholder="+964 XXX XXX XXXX"
-                    disabled={saving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    E-posta
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.tenantEmail}
-                    onChange={(e) => setFormData({ ...formData, tenantEmail: e.target.value })}
-                    placeholder="ornek@email.com"
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Kira Başlangıç *
-                  </label>
-                  <Input
-                    type="date"
-                    value={formData.leaseStartDate}
-                    onChange={(e) => setFormData({ ...formData, leaseStartDate: e.target.value })}
-                    disabled={saving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Kira Bitiş *
-                  </label>
-                  <Input
-                    type="date"
-                    value={formData.leaseEndDate}
-                    onChange={(e) => setFormData({ ...formData, leaseEndDate: e.target.value })}
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Aylık Kira (IQD) *
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.monthlyRent}
-                    onChange={(e) => setFormData({ ...formData, monthlyRent: parseInt(e.target.value) || 0 })}
-                    placeholder="800000"
-                    disabled={saving}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Depozit (IQD)
-                  </label>
-                  <Input
-                    type="number"
-                    value={formData.deposit}
-                    onChange={(e) => setFormData({ ...formData, deposit: parseInt(e.target.value) || 0 })}
-                    placeholder="1600000"
-                    disabled={saving}
-                  />
-                </div>
-              </div>
-            </>
-          )}
+            <div>
+              <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                E-posta
+              </label>
+              <Input
+                type="email"
+                value={formData.tenantEmail}
+                onChange={(e) => setFormData({ ...formData, tenantEmail: e.target.value })}
+                placeholder="ornek@email.com"
+                disabled={saving}
+              />
+            </div>
+          </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button 
@@ -377,10 +404,211 @@ export default function TenantInfoSection({
               icon={Save}
               onClick={handleSave}
               isLoading={saving}
-              disabled={formData.isRented && (!formData.tenantName || !formData.tenantPhone || !formData.leaseStartDate || !formData.leaseEndDate || !formData.monthlyRent)}
+              disabled={!formData.tenantName || !formData.tenantPhone}
             >
               Kaydet
             </Button>
+          </div>
+
+          {/* Kiracı Seçimi - Divider altında */}
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <div>
+              <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                Kiracı Seçin
+              </label>
+              <Select
+                value={selectedResident}
+                onChange={(e) => handleResidentSelect(e.target.value)}
+                options={[
+                  { value: '', label: 'Kiracı seçiniz' },
+                  ...residents.map(resident => ({
+                    value: resident.id,
+                    label: `${resident.fullName}${resident.phone ? ` (${resident.phone})` : ''}`
+                  }))
+                ]}
+                disabled={loadingResidents || saving}
+              />
+            </div>
+
+            {/* Yeni Kiracı Ekle Butonu */}
+            <div className="mt-4">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={UserPlus}
+                onClick={handleAddNewResident}
+                disabled={saving}
+                className="w-full"
+              >
+                Yeni Kiracı Ekle
+              </Button>
+            </div>
+
+            {/* Yeni Kiracı Ekleme Formu */}
+            {showAddNewResident && (
+              <div className="mt-6 space-y-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                {/* Ulusal kimlik numarası - En üstte tek başına */}
+                <div>
+                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                    Ulusal kimlik numarası / Pasaport numarası *
+                  </label>
+                  <Input
+                    placeholder="12345678901 veya AA1234567"
+                    value={newResidentData.identityNumber}
+                    onChange={(e) => handleNewResidentInputChange('identityNumber', e.target.value)}
+                    disabled={saving}
+                  />
+                </div>
+
+                {/* Name and Surname */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Ad *
+                    </label>
+                    <Input
+                      placeholder="Ad"
+                      value={newResidentData.firstName}
+                      onChange={(e) => handleNewResidentInputChange('firstName', e.target.value)}
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Soyad *
+                    </label>
+                    <Input
+                      placeholder="Soyad"
+                      value={newResidentData.lastName}
+                      onChange={(e) => handleNewResidentInputChange('lastName', e.target.value)}
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+
+                {/* Phone and Relationship */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Telefon *
+                    </label>
+                    <Input
+                      type="tel"
+                      placeholder="+964 XXX XXX XXXX"
+                      value={newResidentData.phone}
+                      onChange={(e) => handleNewResidentInputChange('phone', e.target.value)}
+                      disabled={saving}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Yakınlık derecesi *
+                    </label>
+                    <Select
+                      value={newResidentData.relationship}
+                      onChange={(e) => handleNewResidentInputChange('relationship', e.target.value)}
+                      options={[
+                        { value: '', label: 'Seçiniz' },
+                        { value: 'Eş', label: 'Eş' },
+                        { value: 'Çocuk', label: 'Çocuk' },
+                        { value: 'Anne', label: 'Anne' },
+                        { value: 'Baba', label: 'Baba' },
+                        { value: 'Kardeş', label: 'Kardeş' },
+                        { value: 'Diğer', label: 'Diğer' }
+                      ]}
+                      disabled={saving}
+                    />
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                        Cinsiyet
+                      </label>
+                      <Select
+                        value={newResidentData.gender}
+                        onChange={(e) => handleNewResidentInputChange('gender', e.target.value)}
+                        options={[
+                          { value: '', label: 'Seçiniz' },
+                          { value: 'Erkek', label: 'Erkek' },
+                          { value: 'Kadın', label: 'Kadın' },
+                          { value: 'Diğer', label: 'Diğer' }
+                        ]}
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <DatePicker
+                        label="Doğum Tarihi"
+                        value={newResidentData.birthDate}
+                        onChange={(e) => handleNewResidentInputChange('birthDate', e.target.value)}
+                        maxDate={new Date().toISOString().split('T')[0]}
+                        variant="default"
+                        showIcon={true}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                        Doğum Yeri
+                      </label>
+                      <Input
+                        placeholder="İstanbul, Türkiye"
+                        value={newResidentData.birthPlace}
+                        onChange={(e) => handleNewResidentInputChange('birthPlace', e.target.value)}
+                        disabled={saving}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                        Kan Grubu
+                      </label>
+                      <Select
+                        value={newResidentData.bloodType}
+                        onChange={(e) => handleNewResidentInputChange('bloodType', e.target.value)}
+                        options={[
+                          { value: '', label: 'Seçiniz' },
+                          { value: 'A+', label: 'A+' },
+                          { value: 'A-', label: 'A-' },
+                          { value: 'B+', label: 'B+' },
+                          { value: 'B-', label: 'B-' },
+                          { value: 'AB+', label: 'AB+' },
+                          { value: 'AB-', label: 'AB-' },
+                          { value: 'O+', label: 'O+' },
+                          { value: 'O-', label: 'O-' }
+                        ]}
+                        disabled={saving}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* New Resident Action Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => setShowAddNewResident(false)}
+                    disabled={saving}
+                  >
+                    İptal
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    icon={Save}
+                    onClick={handleCreateNewResident}
+                    isLoading={saving}
+                    disabled={!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship}
+                  >
+                    Ekle
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Modal>
