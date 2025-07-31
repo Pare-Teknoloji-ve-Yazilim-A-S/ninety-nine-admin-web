@@ -134,7 +134,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                         <Input
                             placeholder={group.placeholder || 'Ara...'}
                             value={currentValue || ''}
-                            onChange={(e) => updateFilter(group.id, e.target.value)}
+                            onChange={(e: any) => updateFilter(group.id, e.target.value)}
                             icon={Search}
                         />
                     );
@@ -148,7 +148,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                     return (
                         <Select
                             value={currentValue || ''}
-                            onChange={(e) => updateFilter(group.id, e.target.value)}
+                            onChange={(e: any) => updateFilter(group.id, e.target.value)}
                             placeholder={group.placeholder || 'Seçiniz...'}
                             options={selectOptions}
                         />
@@ -162,7 +162,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     key={option.id}
                                     id={`${group.id}-${option.id}`}
                                     checked={currentValue?.includes(option.value) || false}
-                                    onChange={(e) => {
+                                    onChange={(e: any) => {
                                         const current = currentValue || [];
                                         if (e.target.checked) {
                                             updateFilter(group.id, [...current, option.value]);
@@ -191,7 +191,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                         <RadioButton
                             name={group.id}
                             value={currentValue}
-                            onChange={(e) => updateFilter(group.id, e.target.value)}
+                            onChange={(e: any) => updateFilter(group.id, e.target.value)}
                             options={group.options?.map(option => ({
                                 value: option.value,
                                 label: `${option.label}${showFilterCount && option.count ? ` (${option.count})` : ''}`
@@ -207,7 +207,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             <DatePicker
                                 label="Başlangıç"
                                 value={currentValue?.start || ''}
-                                onChange={(e) => updateFilter(group.id, {
+                                onChange={(e: any) => updateFilter(group.id, {
                                     ...currentValue,
                                     start: e.target.value
                                 })}
@@ -217,7 +217,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                             <DatePicker
                                 label="Bitiş"
                                 value={currentValue?.end || ''}
-                                onChange={(e) => updateFilter(group.id, {
+                                onChange={(e: any) => updateFilter(group.id, {
                                     ...currentValue,
                                     end: e.target.value
                                 })}
@@ -234,7 +234,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 type="number"
                                 label="Minimum"
                                 value={currentValue?.min || ''}
-                                onChange={(e) => updateFilter(group.id, {
+                                onChange={(e: any) => updateFilter(group.id, {
                                     ...currentValue,
                                     min: Number(e.target.value)
                                 })}
@@ -243,7 +243,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                 type="number"
                                 label="Maksimum"
                                 value={currentValue?.max || ''}
-                                onChange={(e) => updateFilter(group.id, {
+                                onChange={(e: any) => updateFilter(group.id, {
                                     ...currentValue,
                                     max: Number(e.target.value)
                                 })}
@@ -259,7 +259,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                                     key={option.id}
                                     id={`${group.id}-${option.id}`}
                                     checked={currentValue?.[option.id] || false}
-                                    onChange={(e) => updateFilter(group.id, {
+                                    onChange={(e: any) => updateFilter(group.id, {
                                         ...currentValue,
                                         [option.id]: e.target.checked
                                     })}

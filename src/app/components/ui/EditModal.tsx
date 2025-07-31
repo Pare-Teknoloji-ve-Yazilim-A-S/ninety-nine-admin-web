@@ -147,7 +147,7 @@ const EditModal: React.FC<EditModalProps> = ({
                     <Input
                         placeholder="12345678901 veya AA1234567"
                         value={formData.identityNumber || ''}
-                        onChange={(e) => handleInputChange('identityNumber', e.target.value)}
+                        onChange={(e: any) => handleInputChange('identityNumber', e.target.value)}
                         error={errors.identityNumber}
                         disabled={loading}
                     />
@@ -161,7 +161,7 @@ const EditModal: React.FC<EditModalProps> = ({
                         </label>
                         <Input
                             value={formData.firstName}
-                            onChange={(e) => handleInputChange('firstName', e.target.value)}
+                            onChange={(e: any) => handleInputChange('firstName', e.target.value)}
                             placeholder="Ad"
                             error={errors.firstName}
                             disabled={loading}
@@ -173,7 +173,7 @@ const EditModal: React.FC<EditModalProps> = ({
                         </label>
                         <Input
                             value={formData.lastName}
-                            onChange={(e) => handleInputChange('lastName', e.target.value)}
+                            onChange={(e: any) => handleInputChange('lastName', e.target.value)}
                             placeholder="Soyad"
                             error={errors.lastName}
                             disabled={loading}
@@ -189,7 +189,7 @@ const EditModal: React.FC<EditModalProps> = ({
                         </label>
                         <Input
                             value={formData.phone}
-                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            onChange={(e: any) => handleInputChange('phone', e.target.value)}
                             placeholder="0555 123 4567"
                             error={errors.phone}
                             disabled={loading}
@@ -201,7 +201,7 @@ const EditModal: React.FC<EditModalProps> = ({
                         </label>
                         <Input
                             value={formData.email}
-                            onChange={(e) => handleInputChange('email', e.target.value)}
+                            onChange={(e: any) => handleInputChange('email', e.target.value)}
                             placeholder="ornek@email.com"
                             error={errors.email}
                             disabled={loading}
@@ -218,7 +218,7 @@ const EditModal: React.FC<EditModalProps> = ({
                         </label>
                         <Select
                             value={formData.role}
-                            onChange={(e) => handleInputChange('role', e.target.value)}
+                            onChange={(e: any) => handleInputChange('role', e.target.value)}
                             options={roleOptions}
                             disabled={loading}
                         />
@@ -229,7 +229,7 @@ const EditModal: React.FC<EditModalProps> = ({
                         </label>
                         <Select
                             value={formData.membershipTier || 'STANDARD'}
-                            onChange={(e) => handleInputChange('membershipTier', e.target.value)}
+                            onChange={(e: any) => handleInputChange('membershipTier', e.target.value)}
                             options={membershipTierOptions}
                             disabled={loading}
                         />
@@ -246,7 +246,7 @@ const EditModal: React.FC<EditModalProps> = ({
                             </label>
                             <Select
                                 value={formData.gender || ''}
-                                onChange={(e) => handleInputChange('gender', e.target.value)}
+                                onChange={(e: any) => handleInputChange('gender', e.target.value)}
                                 options={genderOptions}
                                 disabled={loading}
                             />
@@ -255,7 +255,7 @@ const EditModal: React.FC<EditModalProps> = ({
                             <DatePicker
                                 label="Doğum Tarihi"
                                 value={formData.birthDate || ''}
-                                onChange={(e) => handleInputChange('birthDate', e.target.value)}
+                                onChange={(e: any) => handleInputChange('birthDate', e.target.value)}
                                 maxDate={new Date().toISOString().split('T')[0]}
                                 variant="default"
                                 showIcon={true}
@@ -271,7 +271,7 @@ const EditModal: React.FC<EditModalProps> = ({
                             <Input
                                 placeholder="İstanbul, Türkiye"
                                 value={formData.birthPlace || ''}
-                                onChange={(e) => handleInputChange('birthPlace', e.target.value)}
+                                onChange={(e: any) => handleInputChange('birthPlace', e.target.value)}
                                 disabled={loading}
                             />
                         </div>
@@ -281,7 +281,7 @@ const EditModal: React.FC<EditModalProps> = ({
                             </label>
                             <Select
                                 value={formData.bloodType || ''}
-                                onChange={(e) => handleInputChange('bloodType', e.target.value)}
+                                onChange={(e: any) => handleInputChange('bloodType', e.target.value)}
                                 options={bloodTypeOptions}
                                 disabled={loading}
                             />

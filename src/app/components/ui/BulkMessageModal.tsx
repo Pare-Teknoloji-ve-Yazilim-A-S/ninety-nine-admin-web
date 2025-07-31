@@ -70,7 +70,7 @@ export default function BulkMessageModal({
                 <div className="mb-6">
                     <TextArea
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        onChange={(e: any) => setMessage(e.target.value)}
                         placeholder={placeholder}
                         rows={6}
                         className="w-full"

@@ -224,7 +224,7 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
                             </label>
                             <Select
                                 value={formData.assignedRole}
-                                onChange={(e) => handleInputChange('assignedRole', e.target.value)}
+                                onChange={(e: any) => handleInputChange('assignedRole', e.target.value)}
                                 options={roleOptions}
                                 placeholder="Rol seçin"
                                 disabled={loading}
@@ -238,7 +238,7 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
                             </label>
                             <Select
                                 value={formData.initialMembershipTier}
-                                onChange={(e) => handleInputChange('initialMembershipTier', e.target.value)}
+                                onChange={(e: any) => handleInputChange('initialMembershipTier', e.target.value)}
                                 options={membershipTierOptions}
                                 placeholder="Üyelik seviyesi seçin"
                                 disabled={loading}

@@ -169,7 +169,7 @@ export default function AnnouncementForm({
                             <Input
                                 label="Başlık"
                                 value={formData.title}
-                                onChange={(value) => handleInputChange('title', value)}
+                                onChange={(e: any) => handleInputChange('title', e.target.value)}
                                 error={errors.title}
                                 placeholder="Duyuru başlığını girin..."
                                 required
@@ -182,7 +182,7 @@ export default function AnnouncementForm({
                             <TextArea
                                 label="İçerik"
                                 value={formData.content}
-                                onChange={(value) => handleInputChange('content', value)}
+                                onChange={(e: any) => handleInputChange('content', e.target.value)}
                                 error={errors.content}
                                 placeholder="Duyuru içeriğini girin..."
                                 required
@@ -197,7 +197,7 @@ export default function AnnouncementForm({
                                 <Select
                                     label="Duyuru Tipi"
                                     value={formData.type}
-                                    onChange={(value) => handleInputChange('type', value)}
+                                    onChange={(e: any) => handleInputChange('type', e.target.value)}
                                     options={typeOptions}
                                     required
                                 />
@@ -206,7 +206,7 @@ export default function AnnouncementForm({
                                 <Select
                                     label="Durum"
                                     value={formData.status}
-                                    onChange={(value) => handleInputChange('status', value)}
+                                    onChange={(e: any) => handleInputChange('status', e.target.value)}
                                     options={statusOptions}
                                     required
                                 />
@@ -229,7 +229,7 @@ export default function AnnouncementForm({
                             <DatePicker
                                 label="Yayınlanma Tarihi"
                                 value={formData.publishDate?.toISOString().split('T')[0]}
-                                onChange={(value) => handleInputChange('publishDate', value ? new Date(value) : undefined)}
+                                onChange={(e: any) => handleInputChange('publishDate', e.target.value ? new Date(e.target.value) : undefined)}
                                 placeholder="Yayınlanma tarihini seçin..."
                             />
                             <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1">
@@ -242,7 +242,7 @@ export default function AnnouncementForm({
                             <DatePicker
                                 label="Bitiş Tarihi"
                                 value={formData.expiryDate?.toISOString().split('T')[0]}
-                                onChange={(value) => handleInputChange('expiryDate', value ? new Date(value) : undefined)}
+                                onChange={(e: any) => handleInputChange('expiryDate', e.target.value ? new Date(e.target.value) : undefined)}
                                 error={errors.expiryDate}
                                 placeholder="Bitiş tarihini seçin..."
                             />
