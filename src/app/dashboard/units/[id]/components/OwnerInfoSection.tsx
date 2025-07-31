@@ -63,6 +63,7 @@ export default function OwnerInfoSection({
 
   const handleEdit = () => {
     setShowEditModal(true);
+    setShowAddNewResident(false); // Yeni sakin ekleme formunu kapat
     setFormData({
       fullName: ownerInfo.data.fullName.value,
       phone: ownerInfo.data.phone.value,
@@ -441,11 +442,6 @@ export default function OwnerInfoSection({
                 ]}
                 disabled={loadingResidents || saving}
               />
-              {loadingResidents && (
-                <p className="text-sm text-text-light-muted dark:text-text-muted mt-2">
-                  Sakinler yükleniyor...
-                </p>
-              )}
             </div>
 
             {/* Yeni Sakin Ekle Butonu */}

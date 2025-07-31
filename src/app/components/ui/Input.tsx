@@ -8,7 +8,7 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChan
     icon?: LucideIcon
     variant?: 'default' | 'filled' | 'outlined'
     isRequired?: boolean
-    onChange?: (value: string) => void
+    onChange?: any
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -56,7 +56,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               ${Icon ? 'pl-10' : ''}
               ${className}
             `}
-                        onChange={(e) => onChange?.(e.target.value)}
+                        onChange={onChange}
                         {...props}
                     />
                 </div>
