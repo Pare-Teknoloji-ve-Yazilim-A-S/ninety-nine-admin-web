@@ -81,7 +81,7 @@ export default function Demo() {
                                         label="Ad Soyad"
                                         placeholder="Adınızı ve soyadınızı girin"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={(e: any) => setFormData({ ...formData, name: e.target.value })}
                                         icon={User}
                                         isRequired
                                         className="bg-background-secondary border-primary-gold/30 text-text-primary placeholder:text-text-secondary"
@@ -92,7 +92,7 @@ export default function Demo() {
                                         type="email"
                                         placeholder="example@email.com"
                                         value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        onChange={(e: any) => setFormData({ ...formData, email: e.target.value })}
                                         icon={Mail}
                                         isRequired
                                         className="bg-background-secondary border-primary-gold/30 text-text-primary placeholder:text-text-secondary"
@@ -104,7 +104,7 @@ export default function Demo() {
                                     type="password"
                                     placeholder="Güçlü bir şifre girin"
                                     value={formData.password}
-                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    onChange={(e: any) => setFormData({ ...formData, password: e.target.value })}
                                     icon={Lock}
                                     variant="filled"
                                     helperText="En az 8 karakter, büyük harf, küçük harf ve rakam içermelidir"
@@ -115,7 +115,7 @@ export default function Demo() {
                                 <DatePicker
                                     label="Doğum Tarihi"
                                     value={formData.birthdate}
-                                    onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
+                                    onChange={(e: any) => setFormData({ ...formData, birthdate: e.target.value })}
                                     maxDate={new Date().toISOString().split('T')[0]}
                                     className="bg-background-secondary border-primary-gold/30 text-text-primary"
                                 />
@@ -136,7 +136,7 @@ export default function Demo() {
                                         placeholder="Ülkenizi seçin"
                                         options={countries}
                                         value={formData.country}
-                                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                        onChange={(e: any) => setFormData({ ...formData, country: e.target.value })}
                                         isRequired
                                         className="bg-background-secondary border-primary-gold/30 text-text-primary"
                                     />
@@ -147,7 +147,7 @@ export default function Demo() {
                                             options={genderOptions}
                                             name="gender"
                                             value={formData.gender}
-                                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                            onChange={(e: any) => setFormData({ ...formData, gender: e.target.value })}
                                             direction="horizontal"
                                             className="text-text-primary"
                                         />
@@ -168,7 +168,7 @@ export default function Demo() {
                                     label="Mesaj"
                                     placeholder="Mesajınızı yazın..."
                                     value={formData.message}
-                                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                    onChange={(e: any) => setFormData({ ...formData, message: e.target.value })}
                                     maxLength={500}
                                     showCount
                                     helperText="Geri bildirimlerinizi, sorularınızı veya önerilerinizi paylaşın"

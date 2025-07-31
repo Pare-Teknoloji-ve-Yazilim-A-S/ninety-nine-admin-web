@@ -341,7 +341,7 @@ export default function OwnerInfoSection({
             </label>
             <Input
               value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e: any) => setFormData({ ...formData, fullName: e.target.value })}
               placeholder="Ad Soyad"
               disabled={saving}
             />
@@ -356,7 +356,7 @@ export default function OwnerInfoSection({
               <Input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder={ownerInfo.data.phone.format}
                 disabled={saving}
               />
@@ -370,7 +370,7 @@ export default function OwnerInfoSection({
               <Input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="ornek@email.com"
                 disabled={saving}
               />
@@ -385,7 +385,7 @@ export default function OwnerInfoSection({
               </label>
               <Input
                 value={formData.nationalId}
-                onChange={(e) => setFormData({ ...formData, nationalId: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, nationalId: e.target.value })}
                 placeholder="12345678901"
                 disabled={saving}
               />
@@ -398,7 +398,7 @@ export default function OwnerInfoSection({
               </label>
               <Select
                 value={formData.ownershipType}
-                onChange={(e) => setFormData({ ...formData, ownershipType: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, ownershipType: e.target.value })}
                 options={ownerInfo.data.ownershipType.options}
                 disabled={saving}
               />
@@ -432,7 +432,7 @@ export default function OwnerInfoSection({
               </label>
               <Select
                 value={selectedResident}
-                onChange={(e) => handleResidentSelect(e.target.value)}
+                onChange={(e: any) => handleResidentSelect(e.target.value)}
                 options={[
                   { value: '', label: 'Sakin seçiniz' },
                   ...residents.map(resident => ({
@@ -469,7 +469,7 @@ export default function OwnerInfoSection({
                   <Input
                     placeholder="12345678901 veya AA1234567"
                     value={newResidentData.identityNumber}
-                    onChange={(e) => handleNewResidentInputChange('identityNumber', e.target.value)}
+                    onChange={(e: any) => handleNewResidentInputChange('identityNumber', e.target.value)}
                     disabled={saving}
                   />
                 </div>
@@ -483,7 +483,7 @@ export default function OwnerInfoSection({
                     <Input
                       placeholder="Ad"
                       value={newResidentData.firstName}
-                      onChange={(e) => handleNewResidentInputChange('firstName', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('firstName', e.target.value)}
                       disabled={saving}
                     />
                   </div>
@@ -494,7 +494,7 @@ export default function OwnerInfoSection({
                     <Input
                       placeholder="Soyad"
                       value={newResidentData.lastName}
-                      onChange={(e) => handleNewResidentInputChange('lastName', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('lastName', e.target.value)}
                       disabled={saving}
                     />
                   </div>
@@ -510,7 +510,7 @@ export default function OwnerInfoSection({
                       type="tel"
                       placeholder="+90 555 123 45 67"
                       value={newResidentData.phone}
-                      onChange={(e) => handleNewResidentInputChange('phone', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('phone', e.target.value)}
                       disabled={saving}
                     />
                   </div>
@@ -520,7 +520,7 @@ export default function OwnerInfoSection({
                     </label>
                     <Select
                       value={newResidentData.relationship}
-                      onChange={(e) => handleNewResidentInputChange('relationship', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('relationship', e.target.value)}
                       options={[
                         { value: '', label: 'Seçiniz' },
                         { value: 'Eş', label: 'Eş' },
@@ -544,7 +544,7 @@ export default function OwnerInfoSection({
                       </label>
                       <Select
                         value={newResidentData.gender}
-                        onChange={(e) => handleNewResidentInputChange('gender', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('gender', e.target.value)}
                         options={[
                           { value: '', label: 'Seçiniz' },
                           { value: 'Erkek', label: 'Erkek' },
@@ -558,7 +558,7 @@ export default function OwnerInfoSection({
                       <DatePicker
                         label="Doğum Tarihi"
                         value={newResidentData.birthDate}
-                        onChange={(e) => handleNewResidentInputChange('birthDate', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('birthDate', e.target.value)}
                         maxDate={new Date().toISOString().split('T')[0]}
                         variant="default"
                         showIcon={true}
@@ -574,7 +574,7 @@ export default function OwnerInfoSection({
                       <Input
                         placeholder="İstanbul, Türkiye"
                         value={newResidentData.birthPlace}
-                        onChange={(e) => handleNewResidentInputChange('birthPlace', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('birthPlace', e.target.value)}
                         disabled={saving}
                       />
                     </div>
@@ -584,7 +584,7 @@ export default function OwnerInfoSection({
                       </label>
                       <Select
                         value={newResidentData.bloodType}
-                        onChange={(e) => handleNewResidentInputChange('bloodType', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('bloodType', e.target.value)}
                         options={[
                           { value: '', label: 'Seçiniz' },
                           { value: 'A+', label: 'A+' },

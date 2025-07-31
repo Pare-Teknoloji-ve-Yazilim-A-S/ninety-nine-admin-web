@@ -288,7 +288,7 @@ export default function ResidentsSection({
             </label>
             <Input
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e: any) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Örn: Ahmet Yılmaz"
               disabled={saving}
             />
@@ -301,7 +301,7 @@ export default function ResidentsSection({
               </label>
               <Select
                 value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as 'owner' | 'tenant' | 'family_member' })}
+                onChange={(e: any) => setFormData({ ...formData, role: e.target.value as 'owner' | 'tenant' | 'family_member' })}
                 options={[
                   { value: 'owner', label: 'Malik' },
                   { value: 'tenant', label: 'Kiracı' },
@@ -317,7 +317,7 @@ export default function ResidentsSection({
               </label>
               <Select
                 value={formData.relation}
-                onChange={(e) => setFormData({ ...formData, relation: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, relation: e.target.value })}
                 options={[
                   { value: '', label: 'Seçiniz' },
                   { value: 'Eş', label: 'Eş' },
@@ -340,7 +340,7 @@ export default function ResidentsSection({
               <Input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="+964 XXX XXX XXXX"
                 disabled={saving}
               />
@@ -353,7 +353,7 @@ export default function ResidentsSection({
               <Input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="ornek@email.com"
                 disabled={saving}
               />
@@ -366,7 +366,7 @@ export default function ResidentsSection({
               <Input
                 type="number"
                 value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, age: e.target.value })}
                 placeholder="25"
                 min="0"
                 max="120"
@@ -381,7 +381,7 @@ export default function ResidentsSection({
             </label>
             <Input
               value={formData.nationalId}
-              onChange={(e) => setFormData({ ...formData, nationalId: e.target.value })}
+              onChange={(e: any) => setFormData({ ...formData, nationalId: e.target.value })}
               placeholder="12345678901"
               disabled={saving}
             />
@@ -400,7 +400,7 @@ export default function ResidentsSection({
                 </label>
                 <Input
                   value={formData.emergencyContactName}
-                  onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
+                  onChange={(e: any) => setFormData({ ...formData, emergencyContactName: e.target.value })}
                   placeholder="Acil durum kişisi"
                   disabled={saving}
                 />
@@ -413,7 +413,7 @@ export default function ResidentsSection({
                 <Input
                   type="tel"
                   value={formData.emergencyContactPhone}
-                  onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
+                  onChange={(e: any) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
                   placeholder="+964 XXX XXX XXXX"
                   disabled={saving}
                 />
@@ -425,7 +425,7 @@ export default function ResidentsSection({
                 </label>
                 <Input
                   value={formData.emergencyContactRelation}
-                  onChange={(e) => setFormData({ ...formData, emergencyContactRelation: e.target.value })}
+                  onChange={(e: any) => setFormData({ ...formData, emergencyContactRelation: e.target.value })}
                   placeholder="Örn: Eş, Kardeş"
                   disabled={saving}
                 />

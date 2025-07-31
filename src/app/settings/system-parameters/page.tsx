@@ -94,12 +94,10 @@ function GeneralTab() {
           <Input
             label="Site Adı"
             placeholder="NinetyNine Property Management"
-            description="Ana başlıkta görünecek site adı"
           />
           <Input
             label="Site Sloganı"
             placeholder="Akıllı Apartman Yönetimi"
-            description="Site adının altında gösterilecek açıklama"
           />
           <Select
             label="Varsayılan Dil"
@@ -107,7 +105,6 @@ function GeneralTab() {
               { value: 'tr', label: 'Türkçe' },
               { value: 'en', label: 'English' }
             ]}
-            description="Sistemin varsayılan dili"
           />
           <Select
             label="Zaman Dilimi"
@@ -115,7 +112,6 @@ function GeneralTab() {
               { value: 'Europe/Istanbul', label: 'İstanbul (UTC+3)' },
               { value: 'Europe/London', label: 'Londra (UTC+0)' }
             ]}
-            description="Tarih ve saat gösterimleri için"
           />
         </div>
       </Card>
@@ -135,7 +131,6 @@ function GeneralTab() {
             label="Birincil Renk"
             type="color"
             defaultValue="#AC8D6A"
-            description="Ana tema rengi (altın)"
           />
           <Select
             label="Varsayılan Tema"
@@ -144,7 +139,6 @@ function GeneralTab() {
               { value: 'dark', label: 'Koyu Tema' },
               { value: 'auto', label: 'Sistem Tercihine Göre' }
             ]}
-            description="Yeni kullanıcılar için varsayılan tema"
           />
         </div>
       </Card>
@@ -170,29 +164,21 @@ function FinancialTab() {
             label="Apartman Dairesi"
             type="number"
             placeholder="450.00"
-            suffix="₺"
-            description="1+1, 2+1 ve 3+1 daireler için"
           />
           <Input
             label="Villa"
             type="number"
             placeholder="850.00"
-            suffix="₺"
-            description="Müstakil villa üniteleri için"
           />
           <Input
             label="Ticari Alan"
             type="number"
             placeholder="1200.00"
-            suffix="₺"
-            description="Dükkân ve ofis alanları için"
           />
           <Input
             label="Otopark"
             type="number"
             placeholder="75.00"
-            suffix="₺"
-            description="Kapalı otopark alanları için"
           />
         </div>
       </Card>
@@ -212,22 +198,16 @@ function FinancialTab() {
             label="Gecikme Faiz Oranı"
             type="number"
             placeholder="2.5"
-            suffix="%/ay"
-            description="Aylık gecikme faiz oranı"
           />
           <Input
             label="Ödeme Vadesi"
             type="number"
             placeholder="10"
-            suffix="gün"
-            description="Fatura tarihinden itibaren"
           />
           <Input
             label="Borç Uyarı Eşiği"
             type="number"
             placeholder="1000.00"
-            suffix="₺"
-            description="Bu tutarı aşan borçlar için uyarı"
           />
         </div>
       </Card>
@@ -287,7 +267,6 @@ function NotificationTab() {
             <Input
               label="Hatırlatma Günleri"
               placeholder="7,3,1"
-              description="Vade öncesi kaç gün önce hatırlatma gönderilsin (virgülle ayır)"
             />
             <Select
               label="E-posta Şablonu"
@@ -296,7 +275,6 @@ function NotificationTab() {
                 { value: 'friendly', label: 'Samimi' },
                 { value: 'formal', label: 'Resmi' }
               ]}
-              description="E-posta görünümü ve tonu"
             />
           </div>
         </div>
@@ -323,7 +301,6 @@ function SecurityTab() {
             label="Minimum Karakter Sayısı"
             type="number"
             placeholder="8"
-            description="Şifre en az kaç karakter olmalı"
           />
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">

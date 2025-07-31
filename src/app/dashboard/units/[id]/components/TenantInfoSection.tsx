@@ -357,7 +357,7 @@ export default function TenantInfoSection({
             </label>
             <Input
               value={formData.tenantName}
-              onChange={(e) => setFormData({ ...formData, tenantName: e.target.value })}
+              onChange={(e: any) => setFormData({ ...formData, tenantName: e.target.value })}
               placeholder="Ad Soyad"
               disabled={saving}
             />
@@ -371,7 +371,7 @@ export default function TenantInfoSection({
               <Input
                 type="tel"
                 value={formData.tenantPhone}
-                onChange={(e) => setFormData({ ...formData, tenantPhone: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, tenantPhone: e.target.value })}
                 placeholder="+964 XXX XXX XXXX"
                 disabled={saving}
               />
@@ -384,7 +384,7 @@ export default function TenantInfoSection({
               <Input
                 type="email"
                 value={formData.tenantEmail}
-                onChange={(e) => setFormData({ ...formData, tenantEmail: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, tenantEmail: e.target.value })}
                 placeholder="ornek@email.com"
                 disabled={saving}
               />
@@ -418,7 +418,7 @@ export default function TenantInfoSection({
               </label>
               <Select
                 value={selectedResident}
-                onChange={(e) => handleResidentSelect(e.target.value)}
+                onChange={(e: any) => handleResidentSelect(e.target.value)}
                 options={[
                   { value: '', label: 'Kiracı seçiniz' },
                   ...residents.map(resident => ({
@@ -455,7 +455,7 @@ export default function TenantInfoSection({
                   <Input
                     placeholder="12345678901 veya AA1234567"
                     value={newResidentData.identityNumber}
-                    onChange={(e) => handleNewResidentInputChange('identityNumber', e.target.value)}
+                    onChange={(e: any) => handleNewResidentInputChange('identityNumber', e.target.value)}
                     disabled={saving}
                   />
                 </div>
@@ -469,7 +469,7 @@ export default function TenantInfoSection({
                     <Input
                       placeholder="Ad"
                       value={newResidentData.firstName}
-                      onChange={(e) => handleNewResidentInputChange('firstName', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('firstName', e.target.value)}
                       disabled={saving}
                     />
                   </div>
@@ -480,7 +480,7 @@ export default function TenantInfoSection({
                     <Input
                       placeholder="Soyad"
                       value={newResidentData.lastName}
-                      onChange={(e) => handleNewResidentInputChange('lastName', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('lastName', e.target.value)}
                       disabled={saving}
                     />
                   </div>
@@ -496,7 +496,7 @@ export default function TenantInfoSection({
                       type="tel"
                       placeholder="+964 XXX XXX XXXX"
                       value={newResidentData.phone}
-                      onChange={(e) => handleNewResidentInputChange('phone', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('phone', e.target.value)}
                       disabled={saving}
                     />
                   </div>
@@ -506,7 +506,7 @@ export default function TenantInfoSection({
                     </label>
                     <Select
                       value={newResidentData.relationship}
-                      onChange={(e) => handleNewResidentInputChange('relationship', e.target.value)}
+                      onChange={(e: any) => handleNewResidentInputChange('relationship', e.target.value)}
                       options={[
                         { value: '', label: 'Seçiniz' },
                         { value: 'Eş', label: 'Eş' },
@@ -530,7 +530,7 @@ export default function TenantInfoSection({
                       </label>
                       <Select
                         value={newResidentData.gender}
-                        onChange={(e) => handleNewResidentInputChange('gender', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('gender', e.target.value)}
                         options={[
                           { value: '', label: 'Seçiniz' },
                           { value: 'Erkek', label: 'Erkek' },
@@ -544,7 +544,7 @@ export default function TenantInfoSection({
                       <DatePicker
                         label="Doğum Tarihi"
                         value={newResidentData.birthDate}
-                        onChange={(e) => handleNewResidentInputChange('birthDate', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('birthDate', e.target.value)}
                         maxDate={new Date().toISOString().split('T')[0]}
                         variant="default"
                         showIcon={true}
@@ -560,7 +560,7 @@ export default function TenantInfoSection({
                       <Input
                         placeholder="İstanbul, Türkiye"
                         value={newResidentData.birthPlace}
-                        onChange={(e) => handleNewResidentInputChange('birthPlace', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('birthPlace', e.target.value)}
                         disabled={saving}
                       />
                     </div>
@@ -570,7 +570,7 @@ export default function TenantInfoSection({
                       </label>
                       <Select
                         value={newResidentData.bloodType}
-                        onChange={(e) => handleNewResidentInputChange('bloodType', e.target.value)}
+                        onChange={(e: any) => handleNewResidentInputChange('bloodType', e.target.value)}
                         options={[
                           { value: '', label: 'Seçiniz' },
                           { value: 'A+', label: 'A+' },

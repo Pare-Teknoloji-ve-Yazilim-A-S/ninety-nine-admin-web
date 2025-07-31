@@ -238,7 +238,7 @@ export default function EditUnitPage() {
                                         <Input
                                             label="Daire Numarası"
                                             value={formData.propertyNumber || ''}
-                                            onChange={(value) => handleInputChange('propertyNumber', value)}
+                                            onChange={(value: any) => handleInputChange('propertyNumber', value)}
                                             error={errors.propertyNumber}
                                             placeholder="Örn: A1, B25, Villa-1"
                                             required
@@ -250,7 +250,7 @@ export default function EditUnitPage() {
                                         <Input
                                             label="İsim (Opsiyonel)"
                                             value={formData.name || ''}
-                                            onChange={(value) => handleInputChange('name', value)}
+                                            onChange={(value: any) => handleInputChange('name', value)}
                                             placeholder="Konut ismi"
                                         />
                                     </div>
@@ -260,7 +260,7 @@ export default function EditUnitPage() {
                                         <Select
                                             label="Konut Tipi"
                                             value={formData.type || ''}
-                                            onChange={(value) => handleInputChange('type', value)}
+                                            onChange={(value: any) => handleInputChange('type', value)}
                                             error={errors.type}
                                             options={[
                                                 { value: '', label: 'Tip Seçiniz' },
@@ -278,7 +278,7 @@ export default function EditUnitPage() {
                                         <Select
                                             label="Durum"
                                             value={formData.status || ''}
-                                            onChange={(value) => handleInputChange('status', value)}
+                                            onChange={(value: any) => handleInputChange('status', value)}
                                             error={errors.status}
                                             options={[
                                                 { value: '', label: 'Durum Seçiniz' },
@@ -296,7 +296,7 @@ export default function EditUnitPage() {
                                         <Input
                                             label="Blok"
                                             value={formData.blockNumber || ''}
-                                            onChange={(value) => handleInputChange('blockNumber', value)}
+                                            onChange={(value: any) => handleInputChange('blockNumber', value)}
                                             placeholder="Örn: A, B, C"
                                         />
                                     </div>
@@ -307,7 +307,7 @@ export default function EditUnitPage() {
                                             label="Kat"
                                             type="number"
                                             value={formData.floor || ''}
-                                            onChange={(value) => handleInputChange('floor', value)}
+                                            onChange={(value: any) => handleInputChange('floor', value)}
                                             placeholder="Kat numarası"
                                         />
                                     </div>
@@ -318,7 +318,7 @@ export default function EditUnitPage() {
                                             label="Alan (m²)"
                                             type="number"
                                             value={formData.area || ''}
-                                            onChange={(value) => handleInputChange('area', value)}
+                                            onChange={(value: any) => handleInputChange('area', value)}
                                             placeholder="Metrekare"
                                         />
                                     </div>
@@ -328,7 +328,7 @@ export default function EditUnitPage() {
                                         <Input
                                             label="Oda Sayısı"
                                             value={formData.rooms || ''}
-                                            onChange={(value) => handleInputChange('rooms', value)}
+                                            onChange={(value: any) => handleInputChange('rooms', value)}
                                             placeholder="Örn: 2+1, 3+1"
                                         />
                                     </div>
