@@ -89,7 +89,7 @@ export default function RequestsBulkActionsBar({
             </p>
             <Select
               value={actionData.technicianId || ''}
-              onChange={(e) => setActionData({ technicianId: e.target.value })}
+              onChange={(e: any) => setActionData({ technicianId: e.target.value })}
               options={[
                 { value: '', label: 'Teknisyen seçin...' },
                 { value: 'ali_hassan', label: 'Ali Hassan - Mahmoud Electrical' },
@@ -109,7 +109,7 @@ export default function RequestsBulkActionsBar({
             </p>
             <Select
               value={actionData.priority || ''}
-              onChange={(e) => setActionData({ priority: e.target.value })}
+              onChange={(e: any) => setActionData({ priority: e.target.value })}
               options={[
                 { value: '', label: 'Öncelik seçin...' },
                 { value: 'emergency', label: '🚨 Acil' },

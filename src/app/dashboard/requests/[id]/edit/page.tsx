@@ -84,7 +84,8 @@ export default function EditTicketPage() {
         handleSubmit,
         setValue,
         formState: { errors, isDirty },
-        reset
+        reset,
+        watch
     } = useForm<EditTicketFormData>();
 
     // Breadcrumb
@@ -324,13 +325,8 @@ export default function EditTicketPage() {
                                             label="Açıklama"
                                             placeholder="Talep açıklamasını girin"
                                             rows={4}
-                                            {...register('description', {
-                                                required: 'Açıklama zorunludur',
-                                                minLength: {
-                                                    value: 10,
-                                                    message: 'Açıklama en az 10 karakter olmalıdır'
-                                                }
-                                            })}
+                                            value={watch('description')}
+                                            onChange={(e: any) => setValue('description', e.target.value)}
                                             error={errors.description?.message}
                                         />
                                     </div>

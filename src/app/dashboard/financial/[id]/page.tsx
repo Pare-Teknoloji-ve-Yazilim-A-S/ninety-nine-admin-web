@@ -133,7 +133,7 @@ export default function TransactionDetailPage() {
 
               <Card className="p-8">
                 <EmptyState
-                  icon={AlertCircle}
+                  icon={<AlertCircle className="h-8 w-8" />}
                   title="İşlem Detayları Yüklenemedi"
                   description={error}
                   action={
@@ -180,7 +180,7 @@ export default function TransactionDetailPage() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <Card className="p-8">
                 <EmptyState
-                  icon={FileText}
+                  icon={<FileText className="h-8 w-8" />}
                   title="İşlem Bulunamadı"
                   description="Aradığınız finansal işlem bulunamadı veya silinmiş olabilir."
                   action={
@@ -246,7 +246,7 @@ export default function TransactionDetailPage() {
                   <p className="text-gray-600 dark:text-gray-400">
                     {isBillTransaction(transaction) 
                       ? transaction.data.title
-                      : `${transaction.data.paymentMethod} ile ödeme`
+                      : `${(transaction.data as any).paymentMethod} ile ödeme`
                     }
                   </p>
                 </div>

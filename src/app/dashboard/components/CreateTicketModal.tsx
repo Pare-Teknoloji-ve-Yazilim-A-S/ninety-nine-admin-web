@@ -74,7 +74,8 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
         handleSubmit,
         formState: { errors, isValid },
         reset,
-        watch
+        watch,
+        setValue
     } = useForm<CreateTicketFormData>({
         mode: 'onChange',
         defaultValues: {
@@ -371,13 +372,8 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                     resize="vertical"
                     maxLength={1000}
                     showCount
-                    {...register('description', {
-                        required: 'Açıklama gereklidir',
-                        minLength: {
-                            value: 10,
-                            message: 'Açıklama en az 10 karakter olmalıdır'
-                        }
-                    })}
+                    value={watch('description')}
+                    onChange={(e: any) => setValue('description', e.target.value)}
                     error={errors.description?.message}
                     disabled={isLoading}
                 />
@@ -389,7 +385,8 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                     resize="vertical"
                     maxLength={500}
                     showCount
-                    {...register('initialComment')}
+                    value={watch('initialComment')}
+                    onChange={(e: any) => setValue('initialComment', e.target.value)}
                     error={errors.initialComment?.message}
                     disabled={isLoading}
                 />

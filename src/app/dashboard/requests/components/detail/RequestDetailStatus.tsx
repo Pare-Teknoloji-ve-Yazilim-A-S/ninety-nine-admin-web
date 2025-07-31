@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Play, CheckCircle, PauseCircle, RotateCcw, X, AlertCircle } from 'lucide-react';
+import { Play, CheckCircle, PauseCircle, RotateCcw, X, AlertCircle, UserCheck } from 'lucide-react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
-import { RequestDetailStatusProps, STATUS_CONFIGS } from '@/services/types/request-detail.types';
+import { RequestDetailStatusProps, STATUS_CONFIGS, RequestDetailAction } from '@/services/types/request-detail.types';
 
 const RequestDetailStatus: React.FC<RequestDetailStatusProps> = ({
   request,
@@ -16,7 +16,7 @@ const RequestDetailStatus: React.FC<RequestDetailStatusProps> = ({
   const allowedActions = statusConfig.allowedActions;
 
   // Handle status change with loading state
-  const handleAction = async (action: string) => {
+  const handleAction = async (action: RequestDetailAction) => {
     try {
       setActionLoading(action);
       await onStatusChange(action);
@@ -37,10 +37,17 @@ const RequestDetailStatus: React.FC<RequestDetailStatusProps> = ({
       description: 'Talebi işleme alın ve çalışmaya başlayın'
     },
     {
+      action: 'assign',
+      label: 'Ata',
+      icon: UserCheck,
+      variant: 'primary' as const,
+      description: 'Talebi bir kişiye atayın'
+    },
+    {
       action: 'resolve',
       label: 'Çöz',
       icon: CheckCircle,
-      variant: 'success' as const,
+      variant: 'primary' as const,
       description: 'Talebi çözülmüş olarak işaretleyin'
     },
     {
@@ -54,14 +61,14 @@ const RequestDetailStatus: React.FC<RequestDetailStatusProps> = ({
       action: 'close',
       label: 'Kapat',
       icon: CheckCircle,
-      variant: 'success' as const,
-      description: 'Talebi kalıcı olarak kapatın'
+      variant: 'primary' as const,
+      description: 'Talebi kapatın'
     },
     {
       action: 'reopen',
       label: 'Yeniden Aç',
       icon: RotateCcw,
-      variant: 'warning' as const,
+      variant: 'secondary' as const,
       description: 'Kapalı/çözülmüş talebi yeniden açın'
     },
     {
@@ -137,9 +144,9 @@ const RequestDetailStatus: React.FC<RequestDetailStatusProps> = ({
                 <Button
                   variant={actionConfig.variant}
                   icon={IconComponent}
-                  onClick={() => handleAction(actionConfig.action)}
+                  onClick={() => handleAction(actionConfig.action as RequestDetailAction)}
                   disabled={loading || isLoading}
-                  loading={isLoading}
+                  isLoading={isLoading}
                   className="w-full justify-start"
                 >
                   {actionConfig.label}

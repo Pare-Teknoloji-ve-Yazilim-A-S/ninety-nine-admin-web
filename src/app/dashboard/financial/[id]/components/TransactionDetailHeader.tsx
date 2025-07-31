@@ -37,7 +37,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
         return 'danger';
       case 'cancelled':
       case 'canceled':
-        return 'secondary';
+        return 'default';
       default:
         return 'info';
     }

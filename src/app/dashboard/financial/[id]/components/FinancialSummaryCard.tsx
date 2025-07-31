@@ -71,7 +71,7 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
   // Calculate days overdue
   const getDaysOverdue = () => {
     if (!isOverdue()) return 0;
-    const dueDate = new Date(transaction.data.dueDate);
+    const dueDate = new Date((transaction.data as any).dueDate);
     const now = new Date();
     const diffTime = now.getTime() - dueDate.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));

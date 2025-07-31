@@ -55,7 +55,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
         return 'danger';
       case 'cancelled':
       case 'canceled':
-        return 'secondary';
+        return 'default';
       default:
         return 'info';
     }
@@ -115,7 +115,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
 
         {payments.length === 0 ? (
           <EmptyState
-            icon={CreditCard}
+            icon={<CreditCard className="h-8 w-8" />}
             title="Henüz Ödeme Yapılmamış"
             description="Bu faturaya henüz hiç ödeme kaydedilmemiş."
           />
@@ -202,7 +202,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
 
   // Render for Payment (showing related bill)
   if (isPaymentTransaction(transaction)) {
-    const bill = transaction.relatedTransactions;
+    const bill = transaction.relatedTransactions as any;
 
     return (
       <Card className="p-6">
@@ -224,7 +224,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
 
         {!bill ? (
           <EmptyState
-            icon={FileText}
+            icon={<FileText className="h-8 w-8" />}
             title="İlgili Fatura Bulunamadı"
             description="Bu ödemeye ait fatura bilgisi bulunamadı."
           />

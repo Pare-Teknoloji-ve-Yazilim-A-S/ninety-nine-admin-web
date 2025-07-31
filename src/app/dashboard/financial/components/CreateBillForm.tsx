@@ -337,7 +337,8 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
             Açıklama
           </label>
           <TextArea
-            {...register('description')}
+            value={watch('description')}
+            onChange={(e: any) => setValue('description', e.target.value)}
             placeholder="Fatura hakkında ek bilgiler..."
             rows={3}
             disabled={isLoading}

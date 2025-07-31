@@ -1127,7 +1127,7 @@ export default function ResidentViewPage() {
                         <Input
                             placeholder="12345678901 veya AA1234567"
                             value={familyFormData.identityNumber}
-                            onChange={(e) => setFamilyFormData({...familyFormData, identityNumber: e.target.value})}
+                            onChange={(e: any) => setFamilyFormData({...familyFormData, identityNumber: e.target.value})}
                         />
                     </div>
 
@@ -1139,7 +1139,7 @@ export default function ResidentViewPage() {
                             <Input
                                 placeholder="Ayşe"
                                 value={familyFormData.firstName}
-                                onChange={(e) => setFamilyFormData({...familyFormData, firstName: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({...familyFormData, firstName: e.target.value})}
                             />
                         </div>
                         <div>
@@ -1149,7 +1149,7 @@ export default function ResidentViewPage() {
                             <Input
                                 placeholder="Yılmaz"
                                 value={familyFormData.lastName}
-                                onChange={(e) => setFamilyFormData({...familyFormData, lastName: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({...familyFormData, lastName: e.target.value})}
                             />
                         </div>
                     </div>
@@ -1161,7 +1161,7 @@ export default function ResidentViewPage() {
                             </label>
                             <Select
                                 value={familyFormData.relationship}
-                                onChange={(e) => setFamilyFormData({...familyFormData, relationship: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({...familyFormData, relationship: e.target.value})}
                                 options={[
                                     { value: '', label: 'Seçiniz' },
                                     { value: 'Eş', label: 'Eş' },
@@ -1180,7 +1180,7 @@ export default function ResidentViewPage() {
                             <Input
                                 placeholder="0555 123 4567"
                                 value={familyFormData.phone}
-                                onChange={(e) => setFamilyFormData({...familyFormData, phone: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({...familyFormData, phone: e.target.value})}
                             />
                         </div>
                     </div>
@@ -1198,7 +1198,7 @@ export default function ResidentViewPage() {
                                 </label>
                                 <Select
                                     value={familyFormData.gender}
-                                    onChange={(e) => setFamilyFormData({...familyFormData, gender: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({...familyFormData, gender: e.target.value})}
                                     options={[
                                         { value: '', label: 'Seçiniz' },
                                         { value: 'Erkek', label: 'Erkek' },
@@ -1211,7 +1211,7 @@ export default function ResidentViewPage() {
                                 <DatePicker
                                     label="Doğum Tarihi"
                                     value={familyFormData.birthDate}
-                                    onChange={(e) => setFamilyFormData({...familyFormData, birthDate: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({...familyFormData, birthDate: e.target.value})}
                                     maxDate={new Date().toISOString().split('T')[0]}
                                     variant="default"
                                     showIcon={true}
@@ -1227,7 +1227,7 @@ export default function ResidentViewPage() {
                                 <Input
                                     placeholder="İstanbul, Türkiye"
                                     value={familyFormData.birthPlace}
-                                    onChange={(e) => setFamilyFormData({...familyFormData, birthPlace: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({...familyFormData, birthPlace: e.target.value})}
                                 />
                             </div>
                             <div>
@@ -1236,7 +1236,7 @@ export default function ResidentViewPage() {
                                 </label>
                                 <Select
                                     value={familyFormData.bloodType}
-                                    onChange={(e) => setFamilyFormData({...familyFormData, bloodType: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({...familyFormData, bloodType: e.target.value})}
                                     options={[
                                         { value: '', label: 'Seçiniz' },
                                         { value: 'A+', label: 'A+' },

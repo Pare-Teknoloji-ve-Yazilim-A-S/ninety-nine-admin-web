@@ -200,11 +200,7 @@ export function useRequestsList(): UseRequestsListResult {
     filters.status,
     filters.priority,
     filters.category,
-    filters.assignee,
-    filters.dateRange?.start,
-    filters.dateRange?.end,
-    filters.urgent,
-    filters.overdue
+    filters.assignee
   ]);
 
   const memoizedPagination = useMemo(() => pagination, [

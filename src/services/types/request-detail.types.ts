@@ -102,7 +102,7 @@ export interface RequestDetailTimelineProps {
 
 export interface RequestDetailStatusProps {
   request: ServiceRequestDetail;
-  onStatusChange: (action: string) => void;
+  onStatusChange: (action: RequestDetailAction) => void;
   loading?: boolean;
 }
 
@@ -128,7 +128,7 @@ export interface UseRequestDetailResult {
   error: string | null;
   handleEdit: () => void;
   handleDelete: () => void;
-  handleStatusChange: (action: string) => Promise<void>;
+  handleStatusChange: (action: RequestDetailAction) => Promise<void>;
   refetch: () => Promise<void>;
 }
 

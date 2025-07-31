@@ -395,7 +395,8 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
             Notlar
           </label>
           <TextArea
-            {...register('notes')}
+            value={watch('notes')}
+            onChange={(e: any) => setValue('notes', e.target.value)}
             placeholder="Ödeme hakkında ek notlar..."
             rows={3}
             disabled={isLoading}

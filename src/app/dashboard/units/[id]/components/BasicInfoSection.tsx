@@ -158,7 +158,7 @@ export default function BasicInfoSection({
             {isEditing ? (
               <Input
                 value={formData.apartmentNumber}
-                onChange={(e) => setFormData({ ...formData, apartmentNumber: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, apartmentNumber: e.target.value })}
                 placeholder="Örn: A-101"
                 disabled={saving}
               />
@@ -178,7 +178,7 @@ export default function BasicInfoSection({
             {isEditing ? (
               <Select
                 value={formData.block}
-                onChange={(e) => setFormData({ ...formData, block: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, block: e.target.value })}
                 options={basicInfo.data.block.options.map(opt => 
                   typeof opt === 'string' ? { value: opt, label: opt } : opt
                 )}
@@ -201,7 +201,7 @@ export default function BasicInfoSection({
               <Input
                 type="number"
                 value={formData.floor}
-                onChange={(e) => setFormData({ ...formData, floor: parseInt(e.target.value) || 0 })}
+                onChange={(e: any) => setFormData({ ...formData, floor: parseInt(e.target.value) || 0 })}
                 min={basicInfo.data.floor.min}
                 max={basicInfo.data.floor.max}
                 disabled={saving}
@@ -222,7 +222,7 @@ export default function BasicInfoSection({
             {isEditing ? (
               <Select
                 value={formData.apartmentType}
-                onChange={(e) => setFormData({ ...formData, apartmentType: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, apartmentType: e.target.value })}
                 options={basicInfo.data.apartmentType.options.map(opt => 
                   typeof opt === 'string' ? { value: opt, label: opt } : opt
                 )}
@@ -245,7 +245,7 @@ export default function BasicInfoSection({
               <Input
                 type="number"
                 value={formData.area}
-                onChange={(e) => setFormData({ ...formData, area: parseInt(e.target.value) || 0 })}
+                onChange={(e: any) => setFormData({ ...formData, area: parseInt(e.target.value) || 0 })}
                 min={basicInfo.data.area.min}
                 max={basicInfo.data.area.max}
                 disabled={saving}
@@ -266,7 +266,7 @@ export default function BasicInfoSection({
             {isEditing ? (
               <Select
                 value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, status: e.target.value })}
                 options={basicInfo.data.status.options}
                 disabled={saving}
               />

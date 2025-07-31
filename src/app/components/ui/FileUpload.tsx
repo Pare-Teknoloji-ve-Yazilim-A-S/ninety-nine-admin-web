@@ -6,6 +6,7 @@ interface FileUploadProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 't
     label?: string
     error?: string
     helperText?: string
+    description?: string
     isRequired?: boolean
     acceptedTypes?: string[]
     maxSize?: number // in MB
@@ -21,6 +22,7 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
         label,
         error,
         helperText,
+        description,
         isRequired = false,
         acceptedTypes = [],
         maxSize = 5,
@@ -134,8 +136,12 @@ const FileUpload = forwardRef<HTMLInputElement, FileUploadProps>(
                             <span className="text-text-secondary"> veya sürükleyip bırakın</span>
                         </div>
                         <p className="text-xs text-text-secondary font-inter">
-                            {acceptedTypes.length > 0 && `Desteklenen formatlar: ${acceptedTypes.join(', ')}`}
-                            {maxSize && ` • Maksimum boyut: ${maxSize}MB`}
+                            {description || (
+                                <>
+                                    {acceptedTypes.length > 0 && `Desteklenen formatlar: ${acceptedTypes.join(', ')}`}
+                                    {maxSize && ` • Maksimum boyut: ${maxSize}MB`}
+                                </>
+                            )}
                         </p>
                     </div>
                 </div>

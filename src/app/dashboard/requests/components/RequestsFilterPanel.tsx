@@ -78,7 +78,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.status || 'all'}
-              onChange={(e) => handleFilterChange('status', e.target.value === 'all' ? undefined : e.target.value)}
+              onChange={(e: any) => handleFilterChange('status', e.target.value === 'all' ? undefined : e.target.value)}
               options={filters.status.options?.map(opt => ({
                 value: opt.value,
                 label: opt.count ? `${opt.label} (${opt.count})` : opt.label
@@ -95,7 +95,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.priority || 'all'}
-              onChange={(e) => handleFilterChange('priority', e.target.value === 'all' ? undefined : e.target.value)}
+              onChange={(e: any) => handleFilterChange('priority', e.target.value === 'all' ? undefined : e.target.value)}
               options={filters.priority.options?.map(opt => ({
                 value: opt.value,
                 label: opt.count ? `${opt.icon || ''} ${opt.label} (${opt.count})` : `${opt.icon || ''} ${opt.label}`
@@ -112,7 +112,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.category || 'all'}
-              onChange={(e) => handleFilterChange('category', e.target.value === 'all' ? undefined : e.target.value)}
+              onChange={(e: any) => handleFilterChange('category', e.target.value === 'all' ? undefined : e.target.value)}
               options={filters.category.options?.map(opt => ({
                 value: opt.value,
                 label: opt.count ? `${opt.icon || ''} ${opt.label} (${opt.count})` : `${opt.icon || ''} ${opt.label}`
@@ -129,7 +129,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.assignee || 'all'}
-              onChange={(e) => handleFilterChange('assignee', e.target.value === 'all' ? undefined : e.target.value)}
+              onChange={(e: any) => handleFilterChange('assignee', e.target.value === 'all' ? undefined : e.target.value)}
               options={filters.assignee.options?.map(opt => ({
                 value: opt.value,
                 label: opt.count 
@@ -148,7 +148,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.building || 'all'}
-              onChange={(e) => handleFilterChange('building', e.target.value === 'all' ? undefined : e.target.value)}
+              onChange={(e: any) => handleFilterChange('building', e.target.value === 'all' ? undefined : e.target.value)}
               options={filters.building.options?.map(opt => ({
                 value: opt.value,
                 label: opt.count ? `${opt.label} (${opt.count})` : opt.label
@@ -195,7 +195,7 @@ export default function RequestsFilterPanel({
                 <Input
                   type="date"
                   value={localFilters.startDate || ''}
-                  onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                  onChange={(e: any) => handleFilterChange('startDate', e.target.value)}
                 />
               </div>
               <div>
@@ -205,7 +205,7 @@ export default function RequestsFilterPanel({
                 <Input
                   type="date"
                   value={localFilters.endDate || ''}
-                  onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                  onChange={(e: any) => handleFilterChange('endDate', e.target.value)}
                 />
               </div>
             </div>

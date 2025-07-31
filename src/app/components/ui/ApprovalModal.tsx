@@ -3,9 +3,8 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import Button from './Button';
-import Input from './Input';
 import Select from './Select';
-import { UserCheck, UserX, AlertCircle, Save, X } from 'lucide-react';
+import { CheckCircle, UserX, AlertCircle, X, Save } from 'lucide-react';
 
 export interface ApprovalFormData {
     decision: 'approved' | 'rejected';
@@ -40,7 +39,6 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
 
     const handleInputChange = (field: keyof ApprovalFormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
-        // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
@@ -49,17 +47,16 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!formData.reason.trim()) {
-            newErrors.reason = 'Açıklama gereklidir';
+        if (formData.decision === 'rejected' && !formData.reason.trim()) {
+            newErrors.reason = 'Red nedeni gereklidir';
         }
 
         if (formData.decision === 'approved') {
             if (!formData.assignedRole) {
                 newErrors.assignedRole = 'Rol seçimi gereklidir';
             }
-
             if (!formData.initialMembershipTier) {
-                newErrors.initialMembershipTier = 'Üyelik seviyesi seçimi gereklidir';
+                newErrors.initialMembershipTier = 'Üyelik seviyesi gereklidir';
             }
         }
 
@@ -68,13 +65,10 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
     };
 
     const handleSubmit = async () => {
-        if (!validateForm()) {
-            return;
-        }
+        if (!validateForm()) return;
 
         try {
             await onSubmit(formData);
-            // Reset form on success
             setFormData({
                 decision: 'approved',
                 reason: '',
@@ -82,100 +76,65 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
                 initialMembershipTier: 'STANDARD'
             });
             setErrors({});
-            onClose();
         } catch (error) {
             console.error('Approval submission failed:', error);
         }
     };
 
     const roleOptions = [
-        { value: 'resident', label: 'Mülk Sahibi' },
+        { value: 'resident', label: 'Sakin' },
         { value: 'tenant', label: 'Kiracı' }
     ];
 
     const membershipTierOptions = [
-        { value: 'GOLD', label: 'Altın' },
-        { value: 'SILVER', label: 'Gümüş' },
-        { value: 'STANDARD', label: 'Standart' }
+        { value: 'GOLD', label: 'Altın Üyelik' },
+        { value: 'SILVER', label: 'Gümüş Üyelik' },
+        { value: 'STANDARD', label: 'Standart Üyelik' }
     ];
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title={`${userName} - Kullanıcı Onayı`}
-            subtitle="Kullanıcının üyelik durumunu onaylayın veya reddedin"
-            icon={UserCheck}
-            size="lg"
-            closable={!loading}
-        >
-            <div className="space-y-6">
+        <Modal isOpen={isOpen} onClose={onClose} size="md">
+            <div className="p-6">
+                <div className="mb-6">
+                    <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-2">
+                        Kullanıcı Onayı
+                    </h2>
+                    <p className="text-text-light-secondary dark:text-text-secondary">
+                        <strong>{userName}</strong> kullanıcısının başvurusunu değerlendirin
+                    </p>
+                </div>
+
                 {/* Decision Radio Buttons */}
-                <div>
+                <div className="mb-6">
                     <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3">
-                        Karar
+                        Karar *
                     </label>
-                    <div className="flex gap-6">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className="relative">
-                                <input
-                                    type="radio"
-                                    name="decision"
-                                    value="approved"
-                                    checked={formData.decision === 'approved'}
-                                    onChange={(e) => handleInputChange('decision', e.target.value as 'approved' | 'rejected')}
-                                    className="sr-only"
-                                    disabled={loading}
-                                />
-                                <div className={`
-                                    w-5 h-5 rounded-full border-2 flex items-center justify-center
-                                    transition-all duration-200
-                                    ${formData.decision === 'approved' 
-                                        ? 'border-primary-gold bg-primary-gold' 
-                                        : 'border-gray-300 dark:border-gray-600 bg-transparent'
-                                    }
-                                    ${!loading && 'group-hover:border-primary-gold/60'}
-                                    ${loading && 'opacity-50 cursor-not-allowed'}
-                                `}>
-                                    {formData.decision === 'approved' && (
-                                        <div className="w-2 h-2 rounded-full bg-white"></div>
-                                    )}
-                                </div>
-                            </div>
+                    <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="decision"
+                                value="approved"
+                                checked={formData.decision === 'approved'}
+                                onChange={(e: any) => handleInputChange('decision', e.target.value)}
+                                className="w-4 h-4 text-primary-gold border-gray-300 focus:ring-primary-gold"
+                            />
                             <div className="flex items-center gap-2">
-                                <UserCheck className="h-4 w-4 text-semantic-success-500" />
+                                <CheckCircle className="h-4 w-4 text-semantic-success-500" />
                                 <span className="text-text-on-light dark:text-text-on-dark font-medium">
                                     Onayla
                                 </span>
                             </div>
                         </label>
-                        
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className="relative">
-                                <input
-                                    type="radio"
-                                    name="decision"
-                                    value="rejected"
-                                    checked={formData.decision === 'rejected'}
-                                    onChange={(e) => handleInputChange('decision', e.target.value as 'approved' | 'rejected')}
-                                    className="sr-only"
-                                    disabled={loading}
-                                />
-                                <div className={`
-                                    w-5 h-5 rounded-full border-2 flex items-center justify-center
-                                    transition-all duration-200
-                                    ${formData.decision === 'rejected' 
-                                        ? 'border-primary-red bg-primary-red' 
-                                        : 'border-gray-300 dark:border-gray-600 bg-transparent'
-                                    }
-                                    ${!loading && 'group-hover:border-primary-red/60'}
-                                    ${loading && 'opacity-50 cursor-not-allowed'}
-                                `}>
-                                    {formData.decision === 'rejected' && (
-                                        <div className="w-2 h-2 rounded-full bg-white"></div>
-                                    )}
-                                </div>
-                            </div>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="decision"
+                                value="rejected"
+                                checked={formData.decision === 'rejected'}
+                                onChange={(e: any) => handleInputChange('decision', e.target.value)}
+                                className="w-4 h-4 text-primary-gold border-gray-300 focus:ring-primary-gold"
+                            />
                             <div className="flex items-center gap-2">
                                 <UserX className="h-4 w-4 text-primary-red" />
                                 <span className="text-text-on-light dark:text-text-on-dark font-medium">

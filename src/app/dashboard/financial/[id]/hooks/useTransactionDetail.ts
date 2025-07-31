@@ -78,7 +78,7 @@ export const useTransactionDetail = (id: string): UseTransactionDetailReturn => 
             id,
             type: 'payment',
             data: paymentResponse.data,
-            relatedTransactions: relatedBill
+            relatedTransactions: relatedBill || undefined
           });
           return;
         }
