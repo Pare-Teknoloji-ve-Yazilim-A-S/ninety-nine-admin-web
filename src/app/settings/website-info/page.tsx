@@ -83,7 +83,7 @@ export default function WebsiteInfoPage() {
                   <input
                     type="text"
                     value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
+                    onChange={(e: any) => setCompanyName(e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                   />
                 </div>
@@ -95,7 +95,7 @@ export default function WebsiteInfoPage() {
                   <input
                     type="email"
                     value={companyEmail}
-                    onChange={(e) => setCompanyEmail(e.target.value)}
+                    onChange={(e: any) => setCompanyEmail(e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                   />
                 </div>
@@ -167,7 +167,7 @@ export default function WebsiteInfoPage() {
                   <input
                     type="tel"
                     value={companyPhone}
-                    onChange={(e) => setCompanyPhone(e.target.value)}
+                    onChange={(e: any) => setCompanyPhone(e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                   />
                 </div>
@@ -179,7 +179,7 @@ export default function WebsiteInfoPage() {
                   <input
                     type="url"
                     value={websiteUrl}
-                    onChange={(e) => setWebsiteUrl(e.target.value)}
+                    onChange={(e: any) => setWebsiteUrl(e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                   />
                 </div>
@@ -191,7 +191,7 @@ export default function WebsiteInfoPage() {
                   <input
                     type="text"
                     value={companyAddress}
-                    onChange={(e) => setCompanyAddress(e.target.value)}
+                    onChange={(e: any) => setCompanyAddress(e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                   />
                 </div>
@@ -202,7 +202,7 @@ export default function WebsiteInfoPage() {
                   </label>
                   <textarea
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e: any) => setDescription(e.target.value)}
                     rows={4}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                     placeholder="Ziyaretçilere şirketiniz hakkında bilgi verin..."

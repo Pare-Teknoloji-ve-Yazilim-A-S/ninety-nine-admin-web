@@ -250,7 +250,7 @@ export default function UserManagementPage() {
                     </label>
                     <select 
                       value={userSettings.defaultRole}
-                      onChange={(e) => setUserSettings({...userSettings, defaultRole: e.target.value})}
+                      onChange={(e: any) => setUserSettings({...userSettings, defaultRole: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                     >
                       <option value="resident">Sakin</option>
@@ -272,7 +272,7 @@ export default function UserManagementPage() {
                     <input
                       type="checkbox"
                       checked={userSettings.registrationApproval}
-                      onChange={(e) => setUserSettings({...userSettings, registrationApproval: e.target.checked})}
+                      onChange={(e: any) => setUserSettings({...userSettings, registrationApproval: e.target.checked})}
                       className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -291,7 +291,7 @@ export default function UserManagementPage() {
                     <input
                       type="checkbox"
                       checked={userSettings.passwordResetEmail}
-                      onChange={(e) => setUserSettings({...userSettings, passwordResetEmail: e.target.checked})}
+                      onChange={(e: any) => setUserSettings({...userSettings, passwordResetEmail: e.target.checked})}
                       className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -308,7 +308,7 @@ export default function UserManagementPage() {
                     <input
                       type="checkbox"
                       checked={userSettings.userAccountLocking}
-                      onChange={(e) => setUserSettings({...userSettings, userAccountLocking: e.target.checked})}
+                      onChange={(e: any) => setUserSettings({...userSettings, userAccountLocking: e.target.checked})}
                       className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -330,7 +330,7 @@ export default function UserManagementPage() {
                     </label>
                     <select 
                       value={teamSettings.maxAdminUsers}
-                      onChange={(e) => setTeamSettings({...teamSettings, maxAdminUsers: e.target.value})}
+                      onChange={(e: any) => setTeamSettings({...teamSettings, maxAdminUsers: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                     >
                       <option value="3">3 kullanıcı</option>
@@ -352,7 +352,7 @@ export default function UserManagementPage() {
                     <input
                       type="checkbox"
                       checked={teamSettings.roleBasedAccess}
-                      onChange={(e) => setTeamSettings({...teamSettings, roleBasedAccess: e.target.checked})}
+                      onChange={(e: any) => setTeamSettings({...teamSettings, roleBasedAccess: e.target.checked})}
                       className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -371,7 +371,7 @@ export default function UserManagementPage() {
                     <input
                       type="checkbox"
                       checked={teamSettings.auditLogging}
-                      onChange={(e) => setTeamSettings({...teamSettings, auditLogging: e.target.checked})}
+                      onChange={(e: any) => setTeamSettings({...teamSettings, auditLogging: e.target.checked})}
                       className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -388,7 +388,7 @@ export default function UserManagementPage() {
                     <input
                       type="checkbox"
                       checked={teamSettings.sessionTracking}
-                      onChange={(e) => setTeamSettings({...teamSettings, sessionTracking: e.target.checked})}
+                      onChange={(e: any) => setTeamSettings({...teamSettings, sessionTracking: e.target.checked})}
                       className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -599,7 +599,7 @@ export default function UserManagementPage() {
                       <input
                         type="text"
                         value={newUserName}
-                        onChange={(e) => setNewUserName(e.target.value)}
+                        onChange={(e: any) => setNewUserName(e.target.value)}
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                         placeholder="Ad ve soyadı girin"
                       />
@@ -612,7 +612,7 @@ export default function UserManagementPage() {
                       <input
                         type="email"
                         value={newUserEmail}
-                        onChange={(e) => setNewUserEmail(e.target.value)}
+                        onChange={(e: any) => setNewUserEmail(e.target.value)}
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark"
                         placeholder="E-posta adresini girin"
                       />

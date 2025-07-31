@@ -151,7 +151,7 @@ export default function RequestsTableView({
                 <Checkbox
                   checked={isAllSelected}
                   indeterminate={isIndeterminate}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  onChange={(e: any) => handleSelectAll(e.target.checked)}
                 />
               </th>
 
@@ -199,7 +199,7 @@ export default function RequestsTableView({
                     <td className="p-4">
                       <Checkbox
                         checked={isRowSelected}
-                        onChange={(e) => handleSelectRow(request, e.target.checked)}
+                        onChange={(e: any) => handleSelectRow(request, e.target.checked)}
                       />
                     </td>
                     {/* <td className="p-4">

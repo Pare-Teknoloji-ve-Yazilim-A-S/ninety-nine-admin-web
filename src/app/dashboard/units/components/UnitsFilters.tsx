@@ -54,7 +54,7 @@ export const UnitsFilters: React.FC<UnitsFiltersProps> = ({
                     <select
                         className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
                         value={filters.type || 'all'}
-                        onChange={(e) => handleFilterChange('type', e.target.value)}
+                        onChange={(e: any) => handleFilterChange('type', e.target.value)}
                     >
                         <option value="all">Tümü</option>
                         <option value="RESIDENCE">Daire</option>
@@ -70,7 +70,7 @@ export const UnitsFilters: React.FC<UnitsFiltersProps> = ({
                     <select
                         className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
                         value={filters.status || 'all'}
-                        onChange={(e) => handleFilterChange('status', e.target.value)}
+                        onChange={(e: any) => handleFilterChange('status', e.target.value)}
                     >
                         <option value="all">Tümü</option>
                         <option value="OCCUPIED">Dolu</option>
@@ -87,7 +87,7 @@ export const UnitsFilters: React.FC<UnitsFiltersProps> = ({
                     <select
                         className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
                         value={filters.blockNumber || 'all'}
-                        onChange={(e) => handleFilterChange('blockNumber', e.target.value)}
+                        onChange={(e: any) => handleFilterChange('blockNumber', e.target.value)}
                     >
                         <option value="all">Tümü</option>
                         <option value="A">A Blok</option>
@@ -105,7 +105,7 @@ export const UnitsFilters: React.FC<UnitsFiltersProps> = ({
                     <select
                         className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
                         value={filters.rooms || 'all'}
-                        onChange={(e) => handleFilterChange('rooms', e.target.value)}
+                        onChange={(e: any) => handleFilterChange('rooms', e.target.value)}
                     >
                         <option value="all">Tümü</option>
                         <option value="1+1">1+1</option>
@@ -122,7 +122,7 @@ export const UnitsFilters: React.FC<UnitsFiltersProps> = ({
                     <select
                         className="w-full px-3 py-2 bg-background-light-soft dark:bg-background-soft border border-border-light dark:border-border-dark rounded-lg text-text-on-light dark:text-text-on-dark"
                         value={filters.debtStatus || 'all'}
-                        onChange={(e) => handleFilterChange('debtStatus', e.target.value)}
+                        onChange={(e: any) => handleFilterChange('debtStatus', e.target.value)}
                     >
                         <option value="all">Tümü</option>
                         <option value="clean">Temiz Hesap</option>

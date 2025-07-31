@@ -206,7 +206,7 @@ export default function RequestsListPage() {
                     columns={data.tableColumns}
                     loading={loading}
                     selectedRequests={selectedRequests}
-                    onSelectionChange={setSelectedRequests}
+                    onSelectionChange={(e: any) => setSelectedRequests(e.target.value)}
                     onRequestAction={handleRequestAction}
                     sortOptions={data.sortOptions}
                     onSortChange={(sort) => console.log('Sort changed:', sort)}
@@ -216,7 +216,7 @@ export default function RequestsListPage() {
                     requests={data.requests}
                     loading={loading}
                     selectedRequests={selectedRequests}
-                    onSelectionChange={setSelectedRequests}
+                    onSelectionChange={(e: any) => setSelectedRequests(e.target.value)}
                     onRequestAction={handleRequestAction}
                     loadingCardCount={8}
                   />

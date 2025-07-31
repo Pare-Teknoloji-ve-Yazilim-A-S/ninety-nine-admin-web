@@ -442,7 +442,7 @@ export default function UnitsListPage() {
                     <div className="flex items-center gap-3">
                         <ui.Checkbox
                             checked={selectedItems.includes(unit.id)}
-                            onChange={() => onSelect(unit.id)}
+                            onChange={(e: any) => onSelect(unit.id)}
                             className="focus:ring-2 focus:ring-primary-gold/30"
                         />
                         <div>

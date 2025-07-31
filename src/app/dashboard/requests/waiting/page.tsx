@@ -367,7 +367,7 @@ export default function WaitingRequestsPage() {
                     <div className="flex items-center gap-3">
                         <ui.Checkbox
                             checked={selectedItems.includes(req.id)}
-                            onChange={() => onSelect(req.id)}
+                            onChange={(e: any) => onSelect(req.id)}
                             className="focus:ring-2 focus:ring-primary-gold/30"
                         />
                         <div>

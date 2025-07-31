@@ -164,7 +164,7 @@ export default function EmptyUnitsPage() {
                     <SearchBar
                       placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
                       value={searchInput}
-                      onChange={handleSearchInputChange}
+                      onChange={(e: any) => handleSearchInputChange(e.target.value)}
                       onSearch={handleSearchInputChange}
                       debounceMs={500}
                     />

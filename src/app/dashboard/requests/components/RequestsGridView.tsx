@@ -138,7 +138,7 @@ export default function RequestsGridView({
           <Checkbox
             checked={selectedRequests.length === requests.length}
             indeterminate={selectedRequests.length > 0 && selectedRequests.length < requests.length}
-            onChange={(e) => handleSelectAll(e.target.checked)}
+            onChange={(e: any) => handleSelectAll(e.target.checked)}
           />
           <span className="text-sm text-text-light-secondary dark:text-text-secondary">
             {selectedRequests.length > 0
@@ -207,7 +207,7 @@ function RequestCard({
         <div className="flex items-start gap-3">
           <Checkbox
             checked={isSelected}
-            onChange={(e) => onSelect(e.target.checked)}
+            onChange={(e: any) => onSelect(e.target.checked)}
             className="mt-1"
           />
           <div className="flex gap-1">

@@ -359,27 +359,21 @@ function OperationalTab() {
             label="Yanıtlama Süresi"
             type="number"
             placeholder="2"
-            suffix="saat"
-            description="Taleplere ilk yanıt süresi"
           />
           <Input
             label="Çözüm Süresi"
             type="number"
             placeholder="24"
-            suffix="saat"
-            description="Talebin çözülmesi gereken süre"
           />
           <Input
             label="Çalışma Başlangıcı"
             type="time"
             defaultValue="09:00"
-            description="Günlük çalışma başlangıç saati"
           />
           <Input
             label="Çalışma Bitişi"
             type="time"
             defaultValue="18:00"
-            description="Günlük çalışma bitiş saati"
           />
         </div>
       </Card>
@@ -408,21 +402,16 @@ function ReportingTab() {
               { value: 'excel', label: 'Excel' },
               { value: 'csv', label: 'CSV' }
             ]}
-            description="Export edilecek dosya formatı"
           />
           <Input
             label="Data Saklama Süresi"
             type="number"
             placeholder="12"
-            suffix="ay"
-            description="Veriler ne kadar süre saklanacak"
           />
           <Input
             label="Export Limiti"
             type="number"
             placeholder="1000"
-            suffix="kayıt"
-            description="Tek seferde export edilebilecek maksimum kayıt"
           />
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <div>

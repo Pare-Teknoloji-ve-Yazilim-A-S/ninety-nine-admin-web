@@ -175,7 +175,7 @@ export default function SystemSettingsPage() {
                     <input
                       type="text"
                       value={emailSettings.smtpHost}
-                      onChange={(e) => setEmailSettings({...emailSettings, smtpHost: e.target.value})}
+                      onChange={(e: any) => setEmailSettings({...emailSettings, smtpHost: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                       placeholder="smtp.gmail.com"
                     />
@@ -189,7 +189,7 @@ export default function SystemSettingsPage() {
                       <input
                         type="text"
                         value={emailSettings.smtpPort}
-                        onChange={(e) => setEmailSettings({...emailSettings, smtpPort: e.target.value})}
+                        onChange={(e: any) => setEmailSettings({...emailSettings, smtpPort: e.target.value})}
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                         placeholder="587"
                       />
@@ -215,7 +215,7 @@ export default function SystemSettingsPage() {
                     <input
                       type="text"
                       value={emailSettings.smtpUser}
-                      onChange={(e) => setEmailSettings({...emailSettings, smtpUser: e.target.value})}
+                      onChange={(e: any) => setEmailSettings({...emailSettings, smtpUser: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                     />
                   </div>
@@ -227,7 +227,7 @@ export default function SystemSettingsPage() {
                     <input
                       type="password"
                       value={emailSettings.smtpPassword}
-                      onChange={(e) => setEmailSettings({...emailSettings, smtpPassword: e.target.value})}
+                      onChange={(e: any) => setEmailSettings({...emailSettings, smtpPassword: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                       placeholder="••••••••••"
                     />
@@ -241,7 +241,7 @@ export default function SystemSettingsPage() {
                       <input
                         type="email"
                         value={emailSettings.fromEmail}
-                        onChange={(e) => setEmailSettings({...emailSettings, fromEmail: e.target.value})}
+                        onChange={(e: any) => setEmailSettings({...emailSettings, fromEmail: e.target.value})}
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                       />
                     </div>
@@ -252,7 +252,7 @@ export default function SystemSettingsPage() {
                       <input
                         type="text"
                         value={emailSettings.fromName}
-                        onChange={(e) => setEmailSettings({...emailSettings, fromName: e.target.value})}
+                        onChange={(e: any) => setEmailSettings({...emailSettings, fromName: e.target.value})}
                         className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                       />
                     </div>
@@ -287,7 +287,7 @@ export default function SystemSettingsPage() {
                     <input
                       type="checkbox"
                       checked={securitySettings.twoFactorAuth}
-                      onChange={(e) => setSecuritySettings({...securitySettings, twoFactorAuth: e.target.checked})}
+                      onChange={(e: any) => setSecuritySettings({...securitySettings, twoFactorAuth: e.target.checked})}
                       className="w-4 h-4 rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -298,7 +298,7 @@ export default function SystemSettingsPage() {
                     </label>
                     <select
                       value={securitySettings.sessionTimeout}
-                      onChange={(e) => setSecuritySettings({...securitySettings, sessionTimeout: e.target.value})}
+                      onChange={(e: any) => setSecuritySettings({...securitySettings, sessionTimeout: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                     >
                       <option value="30">30 dakika</option>
@@ -314,7 +314,7 @@ export default function SystemSettingsPage() {
                     </label>
                     <select
                       value={securitySettings.passwordExpiry}
-                      onChange={(e) => setSecuritySettings({...securitySettings, passwordExpiry: e.target.value})}
+                      onChange={(e: any) => setSecuritySettings({...securitySettings, passwordExpiry: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                     >
                       <option value="30">30 gün</option>
@@ -331,7 +331,7 @@ export default function SystemSettingsPage() {
                     </label>
                     <select
                       value={securitySettings.maxLoginAttempts}
-                      onChange={(e) => setSecuritySettings({...securitySettings, maxLoginAttempts: e.target.value})}
+                      onChange={(e: any) => setSecuritySettings({...securitySettings, maxLoginAttempts: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                     >
                       <option value="3">3 deneme</option>
@@ -374,7 +374,7 @@ export default function SystemSettingsPage() {
                     <input
                       type="checkbox"
                       checked={backupSettings.autoBackup}
-                      onChange={(e) => setBackupSettings({...backupSettings, autoBackup: e.target.checked})}
+                      onChange={(e: any) => setBackupSettings({...backupSettings, autoBackup: e.target.checked})}
                       className="w-4 h-4 rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                     />
                   </div>
@@ -385,7 +385,7 @@ export default function SystemSettingsPage() {
                     </label>
                     <select 
                       value={backupSettings.frequency}
-                      onChange={(e) => setBackupSettings({...backupSettings, frequency: e.target.value})}
+                      onChange={(e: any) => setBackupSettings({...backupSettings, frequency: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                     >
                       <option value="hourly">Saatlik</option>
@@ -402,7 +402,7 @@ export default function SystemSettingsPage() {
                     <input
                       type="time"
                       value={backupSettings.time}
-                      onChange={(e) => setBackupSettings({...backupSettings, time: e.target.value})}
+                      onChange={(e: any) => setBackupSettings({...backupSettings, time: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                     />
                   </div>
@@ -413,7 +413,7 @@ export default function SystemSettingsPage() {
                     </label>
                     <select 
                       value={backupSettings.retention}
-                      onChange={(e) => setBackupSettings({...backupSettings, retention: e.target.value})}
+                      onChange={(e: any) => setBackupSettings({...backupSettings, retention: e.target.value})}
                       className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                     >
                       <option value="7">7 gün</option>
