@@ -489,7 +489,7 @@ export default function SystemParametersPage() {
               
               <div className="flex flex-wrap gap-3">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={handleImport}
                   icon={Upload}
@@ -497,7 +497,7 @@ export default function SystemParametersPage() {
                   İçe Aktar
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={handleExport}
                   icon={Download}
@@ -505,7 +505,7 @@ export default function SystemParametersPage() {
                   Dışa Aktar
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={handlePreview}
                   icon={Eye}
@@ -514,7 +514,7 @@ export default function SystemParametersPage() {
                   Önizle
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={handleReset}
                   icon={RotateCcw}
