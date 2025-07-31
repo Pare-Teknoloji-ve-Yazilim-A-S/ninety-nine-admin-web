@@ -14,7 +14,7 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onC
     placeholder?: string
     options?: SelectOption[] // Optional yapıyoruz
     isRequired?: boolean
-    onChange?: (value: string) => void
+    onChange?: any
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -51,7 +51,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               ${error ? errorClasses : normalClasses}
               ${className}
             `}
-                        onChange={(e) => onChange?.(e.target.value)}
+                        onChange={onChange}
                         {...props}
                     >
                         {placeholder && (
