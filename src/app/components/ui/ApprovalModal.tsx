@@ -195,7 +195,7 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
                         </label>
                         <textarea
                             value={formData.reason}
-                            onChange={(e) => handleInputChange('reason', e.target.value)}
+                            onChange={(e: any) => handleInputChange('reason', e.target.value)}
                             placeholder="Red nedeninizi açıklayın..."
                             rows={3}
                             disabled={loading}
