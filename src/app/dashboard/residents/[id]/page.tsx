@@ -55,7 +55,7 @@ import { useFamilyMembers } from '@/hooks/useFamilyMembers';
 import { CreateFamilyMemberDto, FamilyMember } from '@/services/types/family-member.types';
 import { useMyProperties } from '@/hooks/useMyProperties';
 import { adminResidentService } from '@/services/admin-resident.service';
-
+import qrCodeService, { GuestQrCode } from '@/services/qr-code.service';
 
 
 export default function ResidentViewPage() {
@@ -75,8 +75,12 @@ export default function ResidentViewPage() {
     const [approvalLoading, setApprovalLoading] = useState(false);
     const [editLoading, setEditLoading] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-    const [activeTab, setActiveTab] = useState<'family' | 'properties' | 'documents' | 'requests' | 'activity'>('family');
+    const [activeTab, setActiveTab] = useState<'family' | 'properties' | 'documents' | 'requests' | 'activity' | 'guestqrcodes'>('family');
     
+    const [guestQRCodes, setGuestQRCodes] = useState<GuestQrCode[]>([]);
+    const [qrLoading, setQrLoading] = useState(false);
+    const [qrError, setQrError] = useState<string | null>(null);
+
     // Toast system
     const toast = useToast();
     
@@ -149,6 +153,26 @@ export default function ResidentViewPage() {
         autoFetch: true
     });
 
+    useEffect(() => {
+        if (activeTab === 'guestqrcodes' && residentId) {
+            setQrLoading(true);
+            setQrError(null);
+            qrCodeService.getGuestQRCodesByUser(residentId)
+                .then(setGuestQRCodes)
+                .catch(() => setQrError('QR kodlar yüklenemedi'))
+                .finally(() => setQrLoading(false));
+        }
+    }, [activeTab, residentId]);
+
+    // Refresh resident data when edit modal closes
+    const prevShowEditModal = React.useRef(showEditModal);
+    useEffect(() => {
+        if (prevShowEditModal.current && !showEditModal) {
+            refreshData();
+        }
+        prevShowEditModal.current = showEditModal;
+    }, [showEditModal]);
+
     // Breadcrumb for resident view page
     const breadcrumbItems = [
         { label: 'Ana Sayfa', href: '/dashboard' },
@@ -211,7 +235,7 @@ export default function ResidentViewPage() {
             // TODO: API call to update resident data
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API call
             toast.success('Kullanıcı bilgileri başarıyla güncellendi!');
-            await refreshData();
+            await refreshData(); // Refresh resident data after update
         } catch (error: any) {
             console.error('Edit failed:', error);
             toast.error(
@@ -536,7 +560,7 @@ export default function ResidentViewPage() {
                                                     { label: `Aile Üyeleri (${familyMembers.length})`, key: "family" },
                                                     { label: `Belgeler (${[nationalIdDoc.url, ownershipDoc.url].filter(Boolean).length})`, key: "documents" },
                                                     { label: `Talepler (${residentTickets.length})`, key: "requests" },
-                                                    { label: "Aktivite Günlüğü (0)", key: "activity" }
+                                                    { label: "Ziyaretçi QR Kodları", key: "guestqrcodes" }
                                                 ].map((tab, idx) => (
                                                     <button
                                                         key={tab.key}
@@ -546,7 +570,7 @@ export default function ResidentViewPage() {
                                                                 : "text-text-light-secondary dark:text-text-secondary border-transparent hover:text-primary-gold hover:border-primary-gold/60") +
                                                             " px-3 py-2 text-sm font-medium border-b-2 transition-colors"
                                                         }
-                                                        onClick={() => setActiveTab(tab.key as 'family' | 'documents' | 'requests' | 'activity')}
+                                                        onClick={() => setActiveTab(tab.key as 'family' | 'documents' | 'requests' | 'guestqrcodes')}
                                                         type="button"
                                                     >
                                                         {tab.label}
@@ -897,13 +921,39 @@ export default function ResidentViewPage() {
                                                     )}
                                                 </div>
                                             )}
-                                            {activeTab === "activity" && (
+                                            {activeTab === "guestqrcodes" && (
                                                 <div>
-                                                    {/* Aktivite Günlüğü Tab Content */}
-                                                    <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">Aktivite Günlüğü</h4>
-                                                    <div className="text-sm text-text-light-muted dark:text-text-muted">
-                                                        Bu sakinle ilgili aktiviteler burada görüntülenecek. (Yakında)
+                                                    <div className="mb-6">
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Ziyaretçi QR Kodları</h4>
                                                     </div>
+                                                    {qrLoading ? (
+                                                        <div className="text-center py-8">Yükleniyor...</div>
+                                                    ) : qrError ? (
+                                                        <div className="text-center py-8 text-primary-red">{qrError}</div>
+                                                    ) : (guestQRCodes || []).length === 0 ? (
+                                                        <div className="text-center py-8 text-text-light-muted dark:text-text-muted">Henüz QR kod oluşturulmamış.</div>
+                                                    ) : (
+                                                        <div className="overflow-x-auto">
+                                                            <table className="w-full">
+                                                                <thead>
+                                                                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Ziyaretçi Adı</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Oluşturulma Tarihi</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">QR ID</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {(guestQRCodes || []).map(qr => (
+                                                                        <tr key={qr.id} className="border-b border-background-light-soft dark:border-background-soft hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors">
+                                                                            <td className="py-4 px-4">{qr.guestName}</td>
+                                                                            <td className="py-4 px-4">{new Date(qr.createdAt).toLocaleString('tr-TR')}</td>
+                                                                            <td className="py-4 px-4">{qr.id}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -1409,12 +1459,8 @@ export default function ResidentViewPage() {
                 loading={editLoading}
                 userName={resident?.fullName}
                 initialData={resident ? {
-                    firstName: resident.firstName,
-                    lastName: resident.lastName,
-                    phone: resident.contact?.phone || '',
-                    email: resident.contact?.email || '',
+                    id: resident.id,
                     role: resident.residentType.type as 'resident' | 'tenant',
-                    membershipTier: resident.membershipTier as 'GOLD' | 'SILVER' | 'STANDARD'
                 } : undefined}
             />
 

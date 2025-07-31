@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import Button from './Button';
 import Input from './Input';
 import Select from './Select';
 import DatePicker from './DatePicker';
 import { Edit, Save } from 'lucide-react';
+import { adminResidentService } from '@/services/admin-resident.service';
+import { userService } from '@/services/user.service';
 
 export interface EditFormData {
     firstName: string;
@@ -39,21 +41,69 @@ const EditModal: React.FC<EditModalProps> = ({
     initialData,
     userName = 'Kullanıcı'
 }) => {
-    const [formData, setFormData] = useState<EditFormData>(initialData || {
-        firstName: '',
-        lastName: '',
-        phone: '',
-        email: '',
-        role: 'resident',
-        membershipTier: 'STANDARD',
-        identityNumber: '',
-        gender: '',
-        birthDate: '',
-        birthPlace: '',
-        bloodType: ''
+    const [formData, setFormData] = useState<EditFormData>({
+        firstName: initialData?.firstName || '',
+        lastName: initialData?.lastName || '',
+        phone: initialData?.phone || '',
+        email: initialData?.email || '',
+        role: initialData?.role || 'resident',
+        identityNumber: initialData?.identityNumber || '',
+        gender: initialData?.gender || '',
+        birthDate: initialData?.birthDate || '',
+        birthPlace: initialData?.birthPlace || '',
+        bloodType: initialData?.bloodType || ''
     });
 
     const [errors, setErrors] = useState<Partial<EditFormData>>({});
+    const [roles, setRoles] = useState<{ label: string; value: string }[]>([]);
+    const [rolesLoading, setRolesLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setFormData(initialData || {
+                firstName: '',
+                lastName: '',
+                phone: '',
+                email: '',
+                role: 'resident',
+                identityNumber: '',
+                gender: '',
+                birthDate: '',
+                birthPlace: '',
+                bloodType: ''
+            });
+            setErrors({});
+        }
+        if (!isOpen) {
+            setFormData({
+                firstName: '',
+                lastName: '',
+                phone: '',
+                email: '',
+                role: 'resident',
+                identityNumber: '',
+                gender: '',
+                birthDate: '',
+                birthPlace: '',
+                bloodType: ''
+            });
+            setErrors({});
+        }
+    }, [isOpen, initialData]);
+
+    useEffect(() => {
+        setRolesLoading(true);
+        userService.getAllRoles()
+            .then(res => {
+                setRoles(
+                    (res.data || [])
+                        .filter(role => ['resident', 'tenant'].includes(role.slug))
+                        .map(role => ({ label: role.name, value: role.id }))
+                );
+            })
+            .catch(() => setRoles([]))
+            .finally(() => setRolesLoading(false));
+    }, []);
 
     const handleInputChange = (field: keyof EditFormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -63,24 +113,11 @@ const EditModal: React.FC<EditModalProps> = ({
     };
 
     const validateForm = (): boolean => {
+        // No required fields, only validate if identityNumber is present and not numeric
         const newErrors: Partial<EditFormData> = {};
-
-        if (!formData.firstName.trim()) {
-            newErrors.firstName = 'Ad gereklidir';
+        if (formData.identityNumber && !/^[0-9]+$/.test(formData.identityNumber)) {
+            newErrors.identityNumber = 'Ulusal kimlik numarası sadece rakamlardan oluşmalıdır';
         }
-        if (!formData.lastName.trim()) {
-            newErrors.lastName = 'Soyad gereklidir';
-        }
-        if (!formData.phone.trim()) {
-            newErrors.phone = 'Telefon gereklidir';
-        }
-        if (!formData.email.trim()) {
-            newErrors.email = 'E-posta gereklidir';
-        }
-        if (!formData.identityNumber?.trim()) {
-            newErrors.identityNumber = 'Ulusal kimlik numarası gereklidir';
-        }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -89,25 +126,29 @@ const EditModal: React.FC<EditModalProps> = ({
         if (!validateForm()) {
             return;
         }
-
+        if (!initialData?.id) {
+            console.error('Kullanıcı ID bulunamadı, güncelleme yapılamaz.');
+            setErrors(prev => ({ ...prev, form: 'Kullanıcı ID bulunamadı, güncelleme yapılamaz.' }));
+            return;
+        }
         try {
-            await onSubmit(formData);
+            // Only include changed fields in the payload, and skip empty strings
+            const payload: any = {};
+            if (formData.firstName !== initialData?.firstName && formData.firstName) payload.firstName = formData.firstName;
+            if (formData.lastName !== initialData?.lastName && formData.lastName) payload.lastName = formData.lastName;
+            if (formData.phone !== initialData?.phone && formData.phone) payload.phone = formData.phone;
+            if (formData.gender && formData.gender !== initialData?.gender) payload.gender = formData.gender === 'Erkek' ? 'MALE' : formData.gender === 'Kadın' ? 'FEMALE' : 'OTHER';
+            if (formData.birthPlace && formData.birthPlace !== initialData?.birthPlace) payload.placeOfBirth = formData.birthPlace;
+            if (formData.bloodType && formData.bloodType !== initialData?.bloodType) payload.bloodType = formData.bloodType;
+            if (formData.birthDate && formData.birthDate !== initialData?.birthDate) payload.dateOfBirth = formData.birthDate;
+            if (formData.role !== initialData?.role && formData.role) payload.roleId = formData.role;
+            if (formData.identityNumber && formData.identityNumber !== initialData?.identityNumber) payload.identityNumber = formData.identityNumber;
+            await adminResidentService.updateResident(initialData.id, payload);
             onClose();
         } catch (error) {
             console.error('Edit submission failed:', error);
         }
     };
-
-    const roleOptions = [
-        { value: 'resident', label: 'Mülk Sahibi' },
-        { value: 'tenant', label: 'Kiracı' }
-    ];
-
-    const membershipTierOptions = [
-        { value: 'STANDARD', label: 'Standart' },
-        { value: 'SILVER', label: 'Gümüş' },
-        { value: 'GOLD', label: 'Altın' }
-    ];
 
     const genderOptions = [
         { value: '', label: 'Seçiniz' },
@@ -145,9 +186,9 @@ const EditModal: React.FC<EditModalProps> = ({
                         Ulusal kimlik numarası / Pasaport numarası *
                     </label>
                     <Input
-                        placeholder="12345678901 veya AA1234567"
+                        placeholder="12345678901"
                         value={formData.identityNumber || ''}
-                        onChange={(e: any) => handleInputChange('identityNumber', e.target.value)}
+                        onChange={(e: any) => handleInputChange('identityNumber', e.target.value.replace(/[^0-9]/g, ''))}
                         error={errors.identityNumber}
                         disabled={loading}
                     />
@@ -210,30 +251,17 @@ const EditModal: React.FC<EditModalProps> = ({
                     </div>
                 </div>
 
-                {/* Role and Membership Tier */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Rol *
-                        </label>
-                        <Select
-                            value={formData.role}
-                            onChange={(e: any) => handleInputChange('role', e.target.value)}
-                            options={roleOptions}
-                            disabled={loading}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Üyelik Seviyesi
-                        </label>
-                        <Select
-                            value={formData.membershipTier || 'STANDARD'}
-                            onChange={(e: any) => handleInputChange('membershipTier', e.target.value)}
-                            options={membershipTierOptions}
-                            disabled={loading}
-                        />
-                    </div>
+                {/* Role (remove Membership Tier) */}
+                <div>
+                    <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                        Rol *
+                    </label>
+                    <Select
+                        value={formData.role}
+                        onChange={(e: any) => handleInputChange('role', e.target.value)}
+                        options={roles}
+                        disabled={loading || rolesLoading}
+                    />
                 </div>
 
                 {/* Divider */}

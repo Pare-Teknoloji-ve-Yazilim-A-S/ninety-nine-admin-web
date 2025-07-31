@@ -34,6 +34,7 @@ export { familyMemberService } from './family-member.service';
 export { default as billingService } from './billing.service';
 export { default as paymentService } from './payment.service';
 export { default as announcementService } from './announcement.service';
+export { default as qrCodeService } from './qr-code.service';
 
 // Re-export commonly used types for convenience
 export type {

@@ -11,6 +11,7 @@ import {
     UserFilterParams,
     UserListResponse,
     UserStatsResponse,
+    UserRole,
 } from './types/user.types';
 import { ApiResponse, PaginatedResponse } from './core/types';
 
@@ -445,6 +446,22 @@ class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
             return response;
         } catch (error) {
             this.logger.error('Users import failed', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Fetch all roles (for admin user management)
+     * GET /admin/roles
+     */
+    async getAllRoles(): Promise<ApiResponse<UserRole[]>> {
+        try {
+            this.logger.info('Fetching all roles');
+            const response = await apiClient.get<UserRole[]>(apiConfig.endpoints.admin.roles);
+            this.logger.info('Roles fetched successfully');
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch roles', error);
             throw error;
         }
     }
