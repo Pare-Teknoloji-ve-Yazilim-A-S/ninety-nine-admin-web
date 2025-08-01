@@ -56,6 +56,7 @@ import { CreateFamilyMemberDto, FamilyMember } from '@/services/types/family-mem
 import { useMyProperties } from '@/hooks/useMyProperties';
 import { adminResidentService } from '@/services/admin-resident.service';
 import qrCodeService, { GuestQrCode } from '@/services/qr-code.service';
+import { useRouter } from 'next/navigation';
 
 
 export default function ResidentViewPage() {
@@ -157,6 +158,8 @@ export default function ResidentViewPage() {
         ownerId: residentId,
         autoFetch: true
     });
+
+    const router = useRouter();
 
     useEffect(() => {
         if (activeTab === 'guestqrcodes' && residentId) {
@@ -359,6 +362,19 @@ export default function ResidentViewPage() {
         toast.success('Talep başarıyla oluşturuldu!');
     };
 
+    // Delete resident handler
+    const handleDeleteResident = async () => {
+        if (!residentId) return;
+        if (!window.confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return;
+        try {
+            await adminResidentService.deleteResident(residentId);
+            toast.success('Kullanıcı başarıyla silindi!');
+            router.push('/dashboard/residents');
+        } catch (error) {
+            toast.error('Kullanıcı silinirken bir hata oluştu.');
+        }
+    };
+
     if (loading) {
         return (
             <ProtectedRoute>
@@ -461,7 +477,7 @@ export default function ResidentViewPage() {
                                 <Button variant="secondary" icon={MessageSquare}>
                                     Mesaj
                                 </Button>
-                                <Link href={`/dashboard/residents/${residentId}/edit`}>
+                                <Link href="#" onClick={e => { e.preventDefault(); handleDeleteResident(); }}>
                                     <Button variant="danger" icon={Trash2}>
                                         Kaldır
                                     </Button>
