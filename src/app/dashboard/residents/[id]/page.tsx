@@ -165,6 +165,11 @@ export default function ResidentViewPage() {
     const [propertyLoading, setPropertyLoading] = useState(false);
     const [propertyError, setPropertyError] = useState<string | null>(null);
 
+    // Add state for total debt
+    const [totalDebt, setTotalDebt] = useState<number | null>(null);
+    const [debtLoading, setDebtLoading] = useState(false);
+    const [debtError, setDebtError] = useState<string | null>(null);
+
     useEffect(() => {
         if (residentId) {
             setPropertyLoading(true);
@@ -183,6 +188,29 @@ export default function ResidentViewPage() {
                 .finally(() => setPropertyLoading(false));
         }
     }, [residentId]);
+
+    // Update debt fetch to use propertyInfo.id
+    useEffect(() => {
+        if (propertyInfo?.id) {
+            setDebtLoading(true);
+            setDebtError(null);
+            fetch(`/api/proxy/admin/billing/total-debt/${propertyInfo.id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            })
+                .then(async (res) => {
+                    if (!res.ok) {
+                        setTotalDebt(0);
+                        return;
+                    }
+                    const data = await res.json();
+                    setTotalDebt(typeof data?.data === 'number' ? data.data : 0);
+                })
+                .catch(() => setTotalDebt(0))
+                .finally(() => setDebtLoading(false));
+        }
+    }, [propertyInfo?.id]);
 
     const router = useRouter();
 
@@ -1071,14 +1099,10 @@ export default function ResidentViewPage() {
                                                     <span className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Borç</span>
                                                 </div>
                                                 <Card className="bg-background-light-soft dark:bg-background-soft rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center min-h-[80px]">
-                                                    {propertyLoading ? (
+                                                    {debtLoading ? (
                                                         <div className="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
-                                                    ) : propertyError ? (
-                                                        <div className="text-primary-red text-sm">{propertyError}</div>
-                                                    ) : propertyInfo ? (
-                                                        <span className={`text-2xl font-bold ${propertyInfo.debtAmount > 0 ? 'text-primary-red' : 'text-text-on-light dark:text-text-on-dark'}`}>{propertyInfo.debtAmount !== undefined ? `${propertyInfo.debtAmount} ع.د` : '0 ع.د'}</span>
                                                     ) : (
-                                                        <span className="text-text-light-muted dark:text-text-muted text-sm">Konut bilgisi bulunamadı.</span>
+                                                        <span className={`text-2xl font-bold ${totalDebt > 0 ? 'text-primary-red' : 'text-text-on-light dark:text-text-on-dark'}`}>{typeof totalDebt === 'number' ? `${totalDebt} ع.د` : '0 ع.د'}</span>
                                                     )}
                                                 </Card>
                                             </div>
