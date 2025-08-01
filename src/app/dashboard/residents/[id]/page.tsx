@@ -35,7 +35,8 @@ import {
     Wrench,
     ExternalLink,
     Trash2,
-    Upload
+    Upload,
+    Tag
 } from 'lucide-react';
 import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
@@ -158,6 +159,30 @@ export default function ResidentViewPage() {
         ownerId: residentId,
         autoFetch: true
     });
+
+    // Property info state for sidebar
+    const [propertyInfo, setPropertyInfo] = useState<any>(null);
+    const [propertyLoading, setPropertyLoading] = useState(false);
+    const [propertyError, setPropertyError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (residentId) {
+            setPropertyLoading(true);
+            setPropertyError(null);
+            fetch(`/api/proxy/admin/properties/by-user/${residentId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            })
+                .then(async (res) => {
+                    if (!res.ok) throw new Error('Konut bilgisi yüklenemedi');
+                    const data = await res.json();
+                    setPropertyInfo(data?.data || null);
+                })
+                .catch(() => setPropertyError('Konut bilgisi yüklenemedi'))
+                .finally(() => setPropertyLoading(false));
+        }
+    }, [residentId]);
 
     const router = useRouter();
 
@@ -745,32 +770,40 @@ export default function ResidentViewPage() {
                                                                 <div className="flex items-center gap-3">
                                                                     <IdCard className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
+                                                                    {/* Status indicator */}
+                                                                    {nationalIdDoc.staticUrl ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title="Yüklü"></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title="Eksik"></span>
+                                                                    )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Button
-                                                                        variant="primary"
-                                                                        size="sm"
-                                                                        icon={Upload}
-                                                                        onClick={(e) => {
-                                                                            const rect = e.currentTarget.getBoundingClientRect();
-                                                                            const buttonCenter = rect.width / 2;
-                                                                            setPopupPosition({
-                                                                                top: rect.top - 200,
-                                                                                left: rect.left,
-                                                                                arrowLeft: buttonCenter - 8
-                                                                            });
-                                                                            setUploadDocumentType('national_id');
-                                                                            setShowUploadPopup(true);
-                                                                        }}
-                                                                        disabled={nationalIdDoc.loading}
-                                                                    >
-                                                                        Yükle
-                                                                    </Button>
+                                                                    {!nationalIdDoc.staticUrl && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('national_id');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={nationalIdDoc.loading}
+                                                                        >
+                                                                            Yükle
+                                                                        </Button>
+                                                                    )}
                                                                     <Button
                                                                         variant="secondary"
                                                                         size="sm"
-                                                                        disabled={!nationalIdDoc.url}
-                                                                        onClick={() => nationalIdDoc.url && window.open(nationalIdDoc.url, '_blank')}
+                                                                        disabled={!nationalIdDoc.staticUrl}
+                                                                        onClick={() => nationalIdDoc.staticUrl && window.open(nationalIdDoc.staticUrl, '_blank')}
                                                                     >
                                                                         Görüntüle
                                                                     </Button>
@@ -786,32 +819,40 @@ export default function ResidentViewPage() {
                                                                 <div className="flex items-center gap-3">
                                                                     <FileText className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
+                                                                    {/* Status indicator */}
+                                                                    {ownershipDoc.staticUrl ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title="Yüklü"></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title="Eksik"></span>
+                                                                    )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
-                                                                    <Button
-                                                                        variant="primary"
-                                                                        size="sm"
-                                                                        icon={Upload}
-                                                                        onClick={(e) => {
-                                                                            const rect = e.currentTarget.getBoundingClientRect();
-                                                                            const buttonCenter = rect.width / 2;
-                                                                            setPopupPosition({
-                                                                                top: rect.top - 200,
-                                                                                left: rect.left,
-                                                                                arrowLeft: buttonCenter - 8
-                                                                            });
-                                                                            setUploadDocumentType('ownership');
-                                                                            setShowUploadPopup(true);
-                                                                        }}
-                                                                        disabled={ownershipDoc.loading}
-                                                                    >
-                                                                        Yükle
-                                                                    </Button>
+                                                                    {!ownershipDoc.staticUrl && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('ownership');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={ownershipDoc.loading}
+                                                                        >
+                                                                            Yükle
+                                                                        </Button>
+                                                                    )}
                                                                     <Button
                                                                         variant="secondary"
                                                                         size="sm"
-                                                                        disabled={!ownershipDoc.url}
-                                                                        onClick={() => ownershipDoc.url && window.open(ownershipDoc.url, '_blank')}
+                                                                        disabled={!ownershipDoc.staticUrl}
+                                                                        onClick={() => ownershipDoc.staticUrl && window.open(ownershipDoc.staticUrl, '_blank')}
                                                                     >
                                                                         Görüntüle
                                                                     </Button>
@@ -1004,89 +1045,44 @@ export default function ResidentViewPage() {
                                             <Home className="h-5 w-5 text-primary-gold" />
                                             Konut Bilgileri
                                         </h3>
-
-                                        {propertiesLoading ? (
-                                            <div className="animate-pulse">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                                                            <div className="flex-1">
-                                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
-                                                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-                                                            <div className="flex-1">
-                                                                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
-                                                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                            {/* Konut Adı Başlık + Kart */}
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <Tag className="h-5 w-5 text-primary-gold" />
+                                                    <span className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Konut Adı</span>
                                                 </div>
+                                                <Card className="bg-background-light-soft dark:bg-background-soft rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center min-h-[80px]">
+                                                    {propertyLoading ? (
+                                                        <div className="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+                                                    ) : propertyError ? (
+                                                        <div className="text-primary-red text-sm">{propertyError}</div>
+                                                    ) : propertyInfo ? (
+                                                        <span className="text-2xl font-bold text-primary-gold">{propertyInfo.name || '-'}</span>
+                                                    ) : (
+                                                        <span className="text-text-light-muted dark:text-text-muted text-sm">Konut bilgisi bulunamadı.</span>
+                                                    )}
+                                                </Card>
                                             </div>
-                                        ) : properties.length > 0 ? (
-                                            <div className="space-y-6">
-                                                {properties.map((property, index) => (
-                                                    <div key={property.id || index} className="grid grid-cols-1  gap-4">
-                                                        {/* Konut Bilgisi */}
-                                                        <div className="space-y-2">
-                                                            <h4 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">Konut</h4>
-                                                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gradient-to-r from-primary-gold-light/10 to-transparent">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
-                                                                        <Building className="h-5 w-5 text-primary-gold" />
-                                                                    </div>
-                                                                    <div>
-                                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                                            {property.name || property.propertyNumber || `Konut ${index + 1}`}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Borç Bilgisi */}
-                                                        <div className="space-y-2">
-                                                            <h4 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">Borç Durumu</h4>
-                                                            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gradient-to-r from-primary-red/5 to-transparent">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-10 h-10 bg-primary-red/10 rounded-lg flex items-center justify-center">
-                                                                        <CreditCard className="h-5 w-5 text-primary-red" />
-                                                                    </div>
-                                                                    <div>
-                                                                        <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                                            {/* Borç bilgisi için placeholder - API'den gelecek */}
-                                                                            {Math.floor(Math.random() * 5000)} ₺
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-8 relative">
-                                                {/* Background Icon */}
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-5">
-                                                    <Home className="h-32 w-32 text-primary-gold" />
+                                            {/* Borç Başlık + Kart */}
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <CreditCard className="h-5 w-5 text-primary-red" />
+                                                    <span className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Borç</span>
                                                 </div>
-
-                                                {/* Content */}
-                                                <div className="relative z-10">
-                                                    <h3 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-                                                        Konut Bilgileri
-                                                    </h3>
-                                                    <p className="text-sm text-text-light-muted dark:text-text-muted">
-                                                        Bu sakin için konut bilgileri burada görüntülenecek.
-                                                    </p>
-                                                </div>
+                                                <Card className="bg-background-light-soft dark:bg-background-soft rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center min-h-[80px]">
+                                                    {propertyLoading ? (
+                                                        <div className="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+                                                    ) : propertyError ? (
+                                                        <div className="text-primary-red text-sm">{propertyError}</div>
+                                                    ) : propertyInfo ? (
+                                                        <span className={`text-2xl font-bold ${propertyInfo.debtAmount > 0 ? 'text-primary-red' : 'text-text-on-light dark:text-text-on-dark'}`}>{propertyInfo.debtAmount !== undefined ? `${propertyInfo.debtAmount} ع.د` : '0 ع.د'}</span>
+                                                    ) : (
+                                                        <span className="text-text-light-muted dark:text-text-muted text-sm">Konut bilgisi bulunamadı.</span>
+                                                    )}
+                                                </Card>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 </Card>
 
