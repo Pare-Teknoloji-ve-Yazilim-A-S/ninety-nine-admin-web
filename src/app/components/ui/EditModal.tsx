@@ -141,7 +141,13 @@ const EditModal: React.FC<EditModalProps> = ({
             if (formData.gender && formData.gender !== initialData?.gender) payload.gender = formData.gender === 'Erkek' ? 'MALE' : formData.gender === 'Kadın' ? 'FEMALE' : 'OTHER';
             if (formData.birthPlace && formData.birthPlace !== initialData?.birthPlace) payload.placeOfBirth = formData.birthPlace;
             if (formData.bloodType && formData.bloodType !== initialData?.bloodType) payload.bloodType = formData.bloodType;
-            if (formData.birthDate && formData.birthDate !== initialData?.birthDate) payload.dateOfBirth = formData.birthDate;
+            if (formData.birthDate && formData.birthDate !== initialData?.birthDate) {
+                let dateStr = formData.birthDate;
+                if (dateStr instanceof Date) {
+                    dateStr = dateStr.toISOString().split('T')[0];
+                }
+                payload.dateOfBirth = dateStr;
+            }
             if (formData.role !== initialData?.role && formData.role) payload.roleId = formData.role;
             if (formData.identityNumber && formData.identityNumber !== initialData?.identityNumber) payload.identityNumber = formData.identityNumber;
             await adminResidentService.updateResident(initialData.id, payload);
@@ -284,10 +290,17 @@ const EditModal: React.FC<EditModalProps> = ({
                             <DatePicker
                                 label="Doğum Tarihi"
                                 value={formData.birthDate || ''}
-                                onChange={(e: any) => handleInputChange('birthDate', e.target.value)}
+                                onChange={(e: any) => {
+                                    let value = e.target.value;
+                                    if (value instanceof Date) {
+                                        value = value.toISOString().split('T')[0];
+                                    }
+                                    setFormData({ ...formData, birthDate: value });
+                                }}
                                 maxDate={new Date().toISOString().split('T')[0]}
                                 variant="default"
                                 showIcon={true}
+                                disabled={loading}
                             />
                         </div>
                     </div>

@@ -81,6 +81,11 @@ export default function ResidentViewPage() {
     const [qrLoading, setQrLoading] = useState(false);
     const [qrError, setQrError] = useState<string | null>(null);
 
+    // QRCode Audit Logs State
+    const [qrAuditLogs, setQrAuditLogs] = useState<any[]>([]);
+    const [qrAuditLoading, setQrAuditLoading] = useState(false);
+    const [qrAuditError, setQrAuditError] = useState<string | null>(null);
+
     // Toast system
     const toast = useToast();
 
@@ -161,6 +166,25 @@ export default function ResidentViewPage() {
                 .then(setGuestQRCodes)
                 .catch(() => setQrError('QR kodlar yüklenemedi'))
                 .finally(() => setQrLoading(false));
+        }
+    }, [activeTab, residentId]);
+
+    useEffect(() => {
+        if (activeTab === 'activity' && residentId) {
+            setQrAuditLoading(true);
+            setQrAuditError(null);
+            fetch(`/api/proxy/admin/logging/audit-logs/user/${residentId}/qrcode?limit=10&page=1`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            })
+                .then(async (res) => {
+                    if (!res.ok) throw new Error('Loglar yüklenemedi');
+                    const data = await res.json();
+                    setQrAuditLogs(data?.data?.data || []);
+                })
+                .catch(() => setQrAuditError('Loglar yüklenemedi'))
+                .finally(() => setQrAuditLoading(false));
         }
     }, [activeTab, residentId]);
 
@@ -560,7 +584,7 @@ export default function ResidentViewPage() {
                                                     { label: `Aile Üyeleri (${familyMembers.length})`, key: "family" },
                                                     { label: `Belgeler (${[nationalIdDoc.url, ownershipDoc.url].filter(Boolean).length})`, key: "documents" },
                                                     { label: `Talepler (${residentTickets.length})`, key: "requests" },
-                                                    { label: "Ziyaretçi QR Kodları", key: "guestqrcodes" }
+                                                    { label: `Aktivite (${qrAuditLogs.length})`, key: "activity" }
                                                 ].map((tab, idx) => (
                                                     <button
                                                         key={tab.key}
@@ -570,7 +594,7 @@ export default function ResidentViewPage() {
                                                                 : "text-text-light-secondary dark:text-text-secondary border-transparent hover:text-primary-gold hover:border-primary-gold/60") +
                                                             " px-3 py-2 text-sm font-medium border-b-2 transition-colors"
                                                         }
-                                                        onClick={() => setActiveTab(tab.key as 'family' | 'documents' | 'requests' | 'guestqrcodes')}
+                                                        onClick={() => setActiveTab(tab.key as 'family' | 'documents' | 'requests' | 'activity')}
                                                         type="button"
                                                     >
                                                         {tab.label}
@@ -698,7 +722,6 @@ export default function ResidentViewPage() {
                                                     <div className="mb-6">
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Belgeler</h4>
                                                     </div>
-
                                                     <div className="space-y-6">
                                                         {/* National ID Document */}
                                                         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -707,44 +730,40 @@ export default function ResidentViewPage() {
                                                                     <IdCard className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
                                                                 </div>
-
-                                                                {nationalIdDoc.loading ? (
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
-                                                                ) : (
-                                                                    <div className="flex items-center gap-2">
-                                                                        {!nationalIdDoc.url && (
-                                                                            <Button
-                                                                                variant="primary"
-                                                                                size="sm"
-                                                                                icon={Upload}
-                                                                                onClick={(e) => {
-                                                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                                                    const buttonCenter = rect.width / 2;
-                                                                                    setPopupPosition({
-                                                                                        top: rect.top - 200, // Popup yüksekliği ~180px, 20px margin
-                                                                                        left: rect.left,
-                                                                                        arrowLeft: buttonCenter - 8 // 8px = arrow width/2
-                                                                                    });
-                                                                                    setUploadDocumentType('national_id');
-                                                                                    setShowUploadPopup(true);
-                                                                                }}
-                                                                            >
-                                                                                Yükle
-                                                                            </Button>
-                                                                        )}
-                                                                        <Button
-                                                                            variant="secondary"
-                                                                            size="sm"
-                                                                            disabled={!nationalIdDoc.url}
-                                                                            onClick={() => nationalIdDoc.url && window.open(nationalIdDoc.url, '_blank')}
-                                                                        >
-                                                                            Görüntüle
-                                                                        </Button>
-                                                                    </div>
-                                                                )}
+                                                                <div className="flex items-center gap-2">
+                                                                    <Button
+                                                                        variant="primary"
+                                                                        size="sm"
+                                                                        icon={Upload}
+                                                                        onClick={(e) => {
+                                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                                            const buttonCenter = rect.width / 2;
+                                                                            setPopupPosition({
+                                                                                top: rect.top - 200,
+                                                                                left: rect.left,
+                                                                                arrowLeft: buttonCenter - 8
+                                                                            });
+                                                                            setUploadDocumentType('national_id');
+                                                                            setShowUploadPopup(true);
+                                                                        }}
+                                                                        disabled={nationalIdDoc.loading}
+                                                                    >
+                                                                        Yükle
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!nationalIdDoc.url}
+                                                                        onClick={() => nationalIdDoc.url && window.open(nationalIdDoc.url, '_blank')}
+                                                                    >
+                                                                        Görüntüle
+                                                                    </Button>
+                                                                    {nationalIdDoc.loading && (
+                                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
-
                                                         {/* Ownership Document */}
                                                         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                                                             <div className="flex items-center justify-between">
@@ -752,41 +771,38 @@ export default function ResidentViewPage() {
                                                                     <FileText className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
                                                                 </div>
-
-                                                                {ownershipDoc.loading ? (
-                                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
-                                                                ) : (
-                                                                    <div className="flex items-center gap-2">
-                                                                        {!ownershipDoc.url && (
-                                                                            <Button
-                                                                                variant="primary"
-                                                                                size="sm"
-                                                                                icon={Upload}
-                                                                                onClick={(e) => {
-                                                                                    const rect = e.currentTarget.getBoundingClientRect();
-                                                                                    const buttonCenter = rect.width / 2;
-                                                                                    setPopupPosition({
-                                                                                        top: rect.top - 200, // Popup yüksekliği ~180px, 20px margin
-                                                                                        left: rect.left,
-                                                                                        arrowLeft: buttonCenter - 8 // 8px = arrow width/2
-                                                                                    });
-                                                                                    setUploadDocumentType('ownership');
-                                                                                    setShowUploadPopup(true);
-                                                                                }}
-                                                                            >
-                                                                                Yükle
-                                                                            </Button>
-                                                                        )}
-                                                                        <Button
-                                                                            variant="secondary"
-                                                                            size="sm"
-                                                                            disabled={!ownershipDoc.url}
-                                                                            onClick={() => ownershipDoc.url && window.open(ownershipDoc.url, '_blank')}
-                                                                        >
-                                                                            Görüntüle
-                                                                        </Button>
-                                                                    </div>
-                                                                )}
+                                                                <div className="flex items-center gap-2">
+                                                                    <Button
+                                                                        variant="primary"
+                                                                        size="sm"
+                                                                        icon={Upload}
+                                                                        onClick={(e) => {
+                                                                            const rect = e.currentTarget.getBoundingClientRect();
+                                                                            const buttonCenter = rect.width / 2;
+                                                                            setPopupPosition({
+                                                                                top: rect.top - 200,
+                                                                                left: rect.left,
+                                                                                arrowLeft: buttonCenter - 8
+                                                                            });
+                                                                            setUploadDocumentType('ownership');
+                                                                            setShowUploadPopup(true);
+                                                                        }}
+                                                                        disabled={ownershipDoc.loading}
+                                                                    >
+                                                                        Yükle
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!ownershipDoc.url}
+                                                                        onClick={() => ownershipDoc.url && window.open(ownershipDoc.url, '_blank')}
+                                                                    >
+                                                                        Görüntüle
+                                                                    </Button>
+                                                                    {ownershipDoc.loading && (
+                                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -921,33 +937,35 @@ export default function ResidentViewPage() {
                                                     )}
                                                 </div>
                                             )}
-                                            {activeTab === "guestqrcodes" && (
+                                            {activeTab === "activity" && (
                                                 <div>
                                                     <div className="mb-6">
-                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Ziyaretçi QR Kodları</h4>
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">QR Kod Aktivite Günlüğü</h4>
                                                     </div>
-                                                    {qrLoading ? (
+                                                    {qrAuditLoading ? (
                                                         <div className="text-center py-8">Yükleniyor...</div>
-                                                    ) : qrError ? (
-                                                        <div className="text-center py-8 text-primary-red">{qrError}</div>
-                                                    ) : (guestQRCodes || []).length === 0 ? (
-                                                        <div className="text-center py-8 text-text-light-muted dark:text-text-muted">Henüz QR kod oluşturulmamış.</div>
+                                                    ) : qrAuditError ? (
+                                                        <div className="text-center py-8 text-primary-red">{qrAuditError}</div>
+                                                    ) : qrAuditLogs.length === 0 ? (
+                                                        <div className="text-center py-8 text-text-light-muted dark:text-text-muted">Henüz QR kod aktivitesi yok.</div>
                                                     ) : (
                                                         <div className="overflow-x-auto">
                                                             <table className="w-full">
                                                                 <thead>
                                                                     <tr className="border-b border-gray-200 dark:border-gray-700">
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Ziyaretçi Adı</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Oluşturulma Tarihi</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">QR ID</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Tarih</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Aksiyon</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Tip</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">QR Kod ID</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {(guestQRCodes || []).map(qr => (
-                                                                        <tr key={qr.id} className="border-b border-background-light-soft dark:border-background-soft hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors">
-                                                                            <td className="py-4 px-4">{qr.guestName}</td>
-                                                                            <td className="py-4 px-4">{new Date(qr.createdAt).toLocaleString('tr-TR')}</td>
-                                                                            <td className="py-4 px-4">{qr.id}</td>
+                                                                    {qrAuditLogs.map((log) => (
+                                                                        <tr key={log.id} className="border-b border-background-light-soft dark:border-background-soft hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors">
+                                                                            <td className="py-4 px-4">{new Date(log.createdAt).toLocaleString('tr-TR')}</td>
+                                                                            <td className="py-4 px-4">{log.action}</td>
+                                                                            <td className="py-4 px-4">{log.metadata?.type || '-'}</td>
+                                                                            <td className="py-4 px-4">{log.metadata?.qrcodeId || '-'}</td>
                                                                         </tr>
                                                                     ))}
                                                                 </tbody>
