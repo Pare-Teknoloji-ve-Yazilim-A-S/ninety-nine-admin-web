@@ -1102,7 +1102,7 @@ export default function ResidentViewPage() {
                                                     {debtLoading ? (
                                                         <div className="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
                                                     ) : (
-                                                        <span className={`text-2xl font-bold ${totalDebt > 0 ? 'text-primary-red' : 'text-text-on-light dark:text-text-on-dark'}`}>{typeof totalDebt === 'number' ? `${totalDebt} ع.د` : '0 ع.د'}</span>
+                                                        <span className={`text-2xl font-bold ${(totalDebt ?? 0) > 0 ? 'text-primary-red' : 'text-text-on-light dark:text-text-on-dark'}`}>{`${(totalDebt ?? 0)} ع.د`}</span>
                                                     )}
                                                 </Card>
                                             </div>
