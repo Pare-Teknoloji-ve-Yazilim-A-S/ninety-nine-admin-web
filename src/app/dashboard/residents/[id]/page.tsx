@@ -771,14 +771,14 @@ export default function ResidentViewPage() {
                                                                     <IdCard className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
                                                                     {/* Status indicator */}
-                                                                    {nationalIdDoc.staticUrl ? (
+                                                                    {nationalIdDoc.url ? (
                                                                         <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title="Yüklü"></span>
                                                                     ) : (
                                                                         <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title="Eksik"></span>
                                                                     )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
-                                                                    {!nationalIdDoc.staticUrl && (
+                                                                    {!nationalIdDoc.url && (
                                                                         <Button
                                                                             variant="primary"
                                                                             size="sm"
@@ -802,8 +802,8 @@ export default function ResidentViewPage() {
                                                                     <Button
                                                                         variant="secondary"
                                                                         size="sm"
-                                                                        disabled={!nationalIdDoc.staticUrl}
-                                                                        onClick={() => nationalIdDoc.staticUrl && window.open(nationalIdDoc.staticUrl, '_blank')}
+                                                                        disabled={!nationalIdDoc.url}
+                                                                        onClick={() => nationalIdDoc.url && window.open(nationalIdDoc.url, '_blank')}
                                                                     >
                                                                         Görüntüle
                                                                     </Button>
@@ -820,14 +820,14 @@ export default function ResidentViewPage() {
                                                                     <FileText className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
                                                                     {/* Status indicator */}
-                                                                    {ownershipDoc.staticUrl ? (
+                                                                    {ownershipDoc.url ? (
                                                                         <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title="Yüklü"></span>
                                                                     ) : (
                                                                         <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title="Eksik"></span>
                                                                     )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
-                                                                    {!ownershipDoc.staticUrl && (
+                                                                    {!ownershipDoc.url && (
                                                                         <Button
                                                                             variant="primary"
                                                                             size="sm"
@@ -851,8 +851,8 @@ export default function ResidentViewPage() {
                                                                     <Button
                                                                         variant="secondary"
                                                                         size="sm"
-                                                                        disabled={!ownershipDoc.staticUrl}
-                                                                        onClick={() => ownershipDoc.staticUrl && window.open(ownershipDoc.staticUrl, '_blank')}
+                                                                        disabled={!ownershipDoc.url}
+                                                                        onClick={() => ownershipDoc.url && window.open(ownershipDoc.url, '_blank')}
                                                                     >
                                                                         Görüntüle
                                                                     </Button>
