@@ -11,6 +11,7 @@ import { adminResidentService } from '@/services/admin-resident.service';
 import { userService } from '@/services/user.service';
 
 export interface EditFormData {
+    id?: string;
     firstName: string;
     lastName: string;
     phone: string;
@@ -266,7 +267,7 @@ const EditModal: React.FC<EditModalProps> = ({
 
                 {/* Divider */}
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
