@@ -142,11 +142,7 @@ const EditModal: React.FC<EditModalProps> = ({
             if (formData.birthPlace && formData.birthPlace !== initialData?.birthPlace) payload.placeOfBirth = formData.birthPlace;
             if (formData.bloodType && formData.bloodType !== initialData?.bloodType) payload.bloodType = formData.bloodType;
             if (formData.birthDate && formData.birthDate !== initialData?.birthDate) {
-                let dateStr = formData.birthDate;
-                if (dateStr instanceof Date) {
-                    dateStr = dateStr.toISOString().split('T')[0];
-                }
-                payload.dateOfBirth = dateStr;
+                payload.dateOfBirth = formData.birthDate;
             }
             if (formData.role !== initialData?.role && formData.role) payload.roleId = formData.role;
             if (formData.identityNumber && formData.identityNumber !== initialData?.identityNumber) payload.identityNumber = formData.identityNumber;
