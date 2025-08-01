@@ -76,14 +76,14 @@ export default function ResidentViewPage() {
     const [editLoading, setEditLoading] = useState(false);
     const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
     const [activeTab, setActiveTab] = useState<'family' | 'properties' | 'documents' | 'requests' | 'activity' | 'guestqrcodes'>('family');
-    
+
     const [guestQRCodes, setGuestQRCodes] = useState<GuestQrCode[]>([]);
     const [qrLoading, setQrLoading] = useState(false);
     const [qrError, setQrError] = useState<string | null>(null);
 
     // Toast system
     const toast = useToast();
-    
+
     // Family member form data
     const [familyFormData, setFamilyFormData] = useState({
         firstName: '',
@@ -97,7 +97,7 @@ export default function ResidentViewPage() {
         birthPlace: '',
         bloodType: ''
     });
-    
+
     // Use document management hook
     const {
         nationalIdDoc,
@@ -239,7 +239,7 @@ export default function ResidentViewPage() {
         } catch (error: any) {
             console.error('Edit failed:', error);
             toast.error(
-                error?.response?.data?.message || 
+                error?.response?.data?.message ||
                 'Güncelleme işlemi başarısız oldu. Lütfen tekrar deneyin.'
             );
         } finally {
@@ -251,7 +251,7 @@ export default function ResidentViewPage() {
     const handleApprovalSubmit = async (data: ApprovalFormData) => {
         try {
             setApprovalLoading(true);
-            
+
             const approvalData = {
                 decision: data.decision,
                 reason: data.reason,
@@ -260,20 +260,20 @@ export default function ResidentViewPage() {
             };
 
             await adminResidentService.approveResident(residentId, approvalData);
-            
+
             toast.success(
-                data.decision === 'approved' 
-                    ? 'Kullanıcı başarıyla onaylandı!' 
+                data.decision === 'approved'
+                    ? 'Kullanıcı başarıyla onaylandı!'
                     : 'Kullanıcı başarıyla reddedildi!'
             );
-            
+
             // Refresh resident data to update verification status
             await refreshData();
-            
+
         } catch (error: any) {
             console.error('Approval failed:', error);
             toast.error(
-                error?.response?.data?.message || 
+                error?.response?.data?.message ||
                 'Onaylama işlemi başarısız oldu. Lütfen tekrar deneyin.'
             );
         } finally {
@@ -293,9 +293,9 @@ export default function ResidentViewPage() {
                     phone: familyFormData.phone,
                     identityNumber: familyFormData.identityNumber
                 };
-                
+
                 await createFamilyMember(residentId, newMemberData);
-                
+
                 // Clear form data
                 setFamilyFormData({
                     firstName: '',
@@ -484,7 +484,7 @@ export default function ResidentViewPage() {
                                                             </Badge>
                                                         )}
                                                     </div>
-                                                    
+
                                                     {/* Edit Button - Same level as name */}
                                                     <Button
                                                         variant="secondary"
@@ -513,8 +513,8 @@ export default function ResidentViewPage() {
                                                             )}
                                                             {resident.verificationStatus && resident.verificationStatus.color === 'yellow' && (
                                                                 <div className="flex items-center gap-2">
-                                                                    <Button 
-                                                                        variant="primary" 
+                                                                    <Button
+                                                                        variant="primary"
                                                                         size="sm"
                                                                         onClick={() => setShowApprovalModal(true)}
                                                                         disabled={resident.status.label === 'Beklemede'}
@@ -583,16 +583,16 @@ export default function ResidentViewPage() {
                                                 <div>
                                                     <div className="flex justify-between items-center mb-6">
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Aile Üyeleri</h4>
-                                                        <Button 
-                                                            variant="primary" 
-                                                            icon={Plus} 
+                                                        <Button
+                                                            variant="primary"
+                                                            icon={Plus}
                                                             onClick={() => setShowAddFamilyModal(true)}
                                                             disabled={familyMembersSaving}
                                                         >
                                                             Aile Üyesi Ekle
                                                         </Button>
                                                     </div>
-                                                    
+
                                                     {familyMembersLoading ? (
                                                         <div className="space-y-4">
                                                             {[1, 2, 3].map((i) => (
@@ -707,14 +707,14 @@ export default function ResidentViewPage() {
                                                                     <IdCard className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
                                                                 </div>
-                                                                
+
                                                                 {nationalIdDoc.loading ? (
                                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
                                                                 ) : (
                                                                     <div className="flex items-center gap-2">
                                                                         {!nationalIdDoc.url && (
-                                                                            <Button 
-                                                                                variant="primary" 
+                                                                            <Button
+                                                                                variant="primary"
                                                                                 size="sm"
                                                                                 icon={Upload}
                                                                                 onClick={(e) => {
@@ -732,8 +732,8 @@ export default function ResidentViewPage() {
                                                                                 Yükle
                                                                             </Button>
                                                                         )}
-                                                                        <Button 
-                                                                            variant="secondary" 
+                                                                        <Button
+                                                                            variant="secondary"
                                                                             size="sm"
                                                                             disabled={!nationalIdDoc.url}
                                                                             onClick={() => nationalIdDoc.url && window.open(nationalIdDoc.url, '_blank')}
@@ -752,14 +752,14 @@ export default function ResidentViewPage() {
                                                                     <FileText className="h-5 w-5 text-primary-gold" />
                                                                     <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
                                                                 </div>
-                                                                
+
                                                                 {ownershipDoc.loading ? (
                                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
                                                                 ) : (
                                                                     <div className="flex items-center gap-2">
                                                                         {!ownershipDoc.url && (
-                                                                            <Button 
-                                                                                variant="primary" 
+                                                                            <Button
+                                                                                variant="primary"
                                                                                 size="sm"
                                                                                 icon={Upload}
                                                                                 onClick={(e) => {
@@ -777,8 +777,8 @@ export default function ResidentViewPage() {
                                                                                 Yükle
                                                                             </Button>
                                                                         )}
-                                                                        <Button 
-                                                                            variant="secondary" 
+                                                                        <Button
+                                                                            variant="secondary"
                                                                             size="sm"
                                                                             disabled={!ownershipDoc.url}
                                                                             onClick={() => ownershipDoc.url && window.open(ownershipDoc.url, '_blank')}
@@ -796,12 +796,12 @@ export default function ResidentViewPage() {
                                                 <div>
                                                     <div className="flex justify-between items-center mb-6">
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">
-                                                            Talep Listesi 
+                                                            Talep Listesi
                                                         </h4>
-                                                        <Button 
-                                                            variant="primary" 
-                                                            size="md" 
-                                                            icon={Plus} 
+                                                        <Button
+                                                            variant="primary"
+                                                            size="md"
+                                                            icon={Plus}
                                                             onClick={handleCreateTicket}
                                                         >
                                                             Yeni Talep
@@ -837,8 +837,8 @@ export default function ResidentViewPage() {
                                                     ) : residentTickets.length > 0 ? (
                                                         <div className="space-y-4">
                                                             {residentTickets.map((ticket) => (
-                                                                <div 
-                                                                    key={ticket.id} 
+                                                                <div
+                                                                    key={ticket.id}
                                                                     className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary-gold/30 transition-colors cursor-pointer"
                                                                     onClick={() => handleViewTicketDetail(ticket)}
                                                                 >
@@ -857,26 +857,26 @@ export default function ResidentViewPage() {
                                                                             </div>
                                                                         </div>
                                                                         <div className="flex items-center gap-2">
-                                                                            <Badge 
-                                                                                variant="soft" 
+                                                                            <Badge
+                                                                                variant="soft"
                                                                                 color={
                                                                                     ticket.status === 'OPEN' ? 'gold' :
-                                                                                    ticket.status === 'IN_PROGRESS' ? 'accent' :
-                                                                                    ticket.status === 'RESOLVED' ? 'primary' :
-                                                                                    ticket.status === 'CLOSED' ? 'primary' :
-                                                                                    'secondary'
+                                                                                        ticket.status === 'IN_PROGRESS' ? 'accent' :
+                                                                                            ticket.status === 'RESOLVED' ? 'primary' :
+                                                                                                ticket.status === 'CLOSED' ? 'primary' :
+                                                                                                    'secondary'
                                                                                 }
                                                                             >
                                                                                 {ticket.status === 'OPEN' ? 'Açık' :
-                                                                                 ticket.status === 'IN_PROGRESS' ? 'İşlemde' :
-                                                                                 ticket.status === 'RESOLVED' ? 'Çözüldü' :
-                                                                                 ticket.status === 'CLOSED' ? 'Kapatıldı' :
-                                                                                 ticket.status}
+                                                                                    ticket.status === 'IN_PROGRESS' ? 'İşlemde' :
+                                                                                        ticket.status === 'RESOLVED' ? 'Çözüldü' :
+                                                                                            ticket.status === 'CLOSED' ? 'Kapatıldı' :
+                                                                                                ticket.status}
                                                                             </Badge>
                                                                             <ExternalLink className="h-4 w-4 text-text-light-muted dark:text-text-muted" />
                                                                         </div>
                                                                     </div>
-                                                                    
+
                                                                     <p className="text-sm text-text-light-secondary dark:text-text-secondary mb-3" style={{
                                                                         display: '-webkit-box',
                                                                         WebkitLineClamp: 2,
@@ -885,7 +885,7 @@ export default function ResidentViewPage() {
                                                                     }}>
                                                                         {ticket.description}
                                                                     </p>
-                                                                    
+
                                                                     <div className="flex items-center justify-between text-xs text-text-light-muted dark:text-text-muted">
                                                                         <div className="flex items-center gap-4">
                                                                             <span className="flex items-center gap-1">
@@ -894,10 +894,10 @@ export default function ResidentViewPage() {
                                                                             </span>
                                                                             <Badge variant="outline" color="secondary" className="text-xs">
                                                                                 {ticket.type === 'FAULT_REPAIR' ? 'Arıza/Tamir' :
-                                                                                 ticket.type === 'COMPLAINT' ? 'Şikayet' :
-                                                                                 ticket.type === 'REQUEST' ? 'Talep' :
-                                                                                 ticket.type === 'MAINTENANCE' ? 'Bakım' :
-                                                                                 ticket.type}
+                                                                                    ticket.type === 'COMPLAINT' ? 'Şikayet' :
+                                                                                        ticket.type === 'REQUEST' ? 'Talep' :
+                                                                                            ticket.type === 'MAINTENANCE' ? 'Bakım' :
+                                                                                                ticket.type}
                                                                             </Badge>
                                                                         </div>
                                                                         <span className="flex items-center gap-1">
@@ -1041,7 +1041,7 @@ export default function ResidentViewPage() {
                                                 <div className="absolute inset-0 flex items-center justify-center opacity-5">
                                                     <Home className="h-32 w-32 text-primary-gold" />
                                                 </div>
-                                                
+
                                                 {/* Content */}
                                                 <div className="relative z-10">
                                                     <h3 className="text-base font-semibold text-text-on-light dark:text-text-on-dark mb-2">
@@ -1121,7 +1121,7 @@ export default function ResidentViewPage() {
                                             </div>
 
                                             <div className="space-y-6">
-                                                
+
 
                                                 {resident?.lastActivity && (
                                                     <div className="flex items-center gap-3">
@@ -1177,7 +1177,7 @@ export default function ResidentViewPage() {
                         <Input
                             placeholder="12345678901 veya AA1234567"
                             value={familyFormData.identityNumber}
-                            onChange={(e: any) => setFamilyFormData({...familyFormData, identityNumber: e.target.value})}
+                            onChange={(e: any) => setFamilyFormData({ ...familyFormData, identityNumber: e.target.value })}
                         />
                     </div>
 
@@ -1189,7 +1189,7 @@ export default function ResidentViewPage() {
                             <Input
                                 placeholder="Ayşe"
                                 value={familyFormData.firstName}
-                                onChange={(e: any) => setFamilyFormData({...familyFormData, firstName: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({ ...familyFormData, firstName: e.target.value })}
                             />
                         </div>
                         <div>
@@ -1199,7 +1199,7 @@ export default function ResidentViewPage() {
                             <Input
                                 placeholder="Yılmaz"
                                 value={familyFormData.lastName}
-                                onChange={(e: any) => setFamilyFormData({...familyFormData, lastName: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({ ...familyFormData, lastName: e.target.value })}
                             />
                         </div>
                     </div>
@@ -1211,7 +1211,7 @@ export default function ResidentViewPage() {
                             </label>
                             <Select
                                 value={familyFormData.relationship}
-                                onChange={(e: any) => setFamilyFormData({...familyFormData, relationship: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({ ...familyFormData, relationship: e.target.value })}
                                 options={[
                                     { value: '', label: 'Seçiniz' },
                                     { value: 'Eş', label: 'Eş' },
@@ -1230,7 +1230,7 @@ export default function ResidentViewPage() {
                             <Input
                                 placeholder="0555 123 4567"
                                 value={familyFormData.phone}
-                                onChange={(e: any) => setFamilyFormData({...familyFormData, phone: e.target.value})}
+                                onChange={(e: any) => setFamilyFormData({ ...familyFormData, phone: e.target.value })}
                             />
                         </div>
                     </div>
@@ -1240,7 +1240,7 @@ export default function ResidentViewPage() {
                         <h5 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-4">
                             Ek Bilgiler (Opsiyonel)
                         </h5>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
@@ -1248,7 +1248,7 @@ export default function ResidentViewPage() {
                                 </label>
                                 <Select
                                     value={familyFormData.gender}
-                                    onChange={(e: any) => setFamilyFormData({...familyFormData, gender: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({ ...familyFormData, gender: e.target.value })}
                                     options={[
                                         { value: '', label: 'Seçiniz' },
                                         { value: 'Erkek', label: 'Erkek' },
@@ -1261,7 +1261,7 @@ export default function ResidentViewPage() {
                                 <DatePicker
                                     label="Doğum Tarihi"
                                     value={familyFormData.birthDate}
-                                    onChange={(e: any) => setFamilyFormData({...familyFormData, birthDate: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({ ...familyFormData, birthDate: e.target.value })}
                                     maxDate={new Date().toISOString().split('T')[0]}
                                     variant="default"
                                     showIcon={true}
@@ -1277,7 +1277,7 @@ export default function ResidentViewPage() {
                                 <Input
                                     placeholder="İstanbul, Türkiye"
                                     value={familyFormData.birthPlace}
-                                    onChange={(e: any) => setFamilyFormData({...familyFormData, birthPlace: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({ ...familyFormData, birthPlace: e.target.value })}
                                 />
                             </div>
                             <div>
@@ -1286,7 +1286,7 @@ export default function ResidentViewPage() {
                                 </label>
                                 <Select
                                     value={familyFormData.bloodType}
-                                    onChange={(e: any) => setFamilyFormData({...familyFormData, bloodType: e.target.value})}
+                                    onChange={(e: any) => setFamilyFormData({ ...familyFormData, bloodType: e.target.value })}
                                     options={[
                                         { value: '', label: 'Seçiniz' },
                                         { value: 'A+', label: 'A+' },
@@ -1304,19 +1304,19 @@ export default function ResidentViewPage() {
                     </div>
 
                     <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <Button 
-                            variant="secondary" 
+                        <Button
+                            variant="secondary"
                             onClick={() => setShowAddFamilyModal(false)}
                         >
                             İptal
                         </Button>
-                        <Button 
-                            variant="primary" 
+                        <Button
+                            variant="primary"
                             onClick={handleAddFamilyMember}
                             disabled={
-                                !familyFormData.firstName || 
-                                !familyFormData.lastName || 
-                                !familyFormData.relationship || 
+                                !familyFormData.firstName ||
+                                !familyFormData.lastName ||
+                                !familyFormData.relationship ||
                                 !familyFormData.phone ||
                                 !familyFormData.identityNumber ||
                                 familyMembersSaving
@@ -1342,7 +1342,7 @@ export default function ResidentViewPage() {
             {showUploadPopup && (
                 <>
                     {/* Backdrop - clicking outside closes popup */}
-                    <div 
+                    <div
                         className="fixed inset-0 z-40"
                         onClick={() => {
                             setShowUploadPopup(false);
@@ -1350,9 +1350,9 @@ export default function ResidentViewPage() {
                             setPopupPosition({ top: 0, left: 0, arrowLeft: 0 });
                         }}
                     />
-                    
+
                     {/* Popup Content */}
-                    <div 
+                    <div
                         className="fixed z-50 w-80 bg-background-light-card dark:bg-background-card border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl animate-in slide-in-from-bottom-2 duration-200"
                         style={{
                             top: `${popupPosition.top}px`,
@@ -1360,7 +1360,7 @@ export default function ResidentViewPage() {
                         }}
                     >
                         {/* Arrow pointing down to button */}
-                        <div 
+                        <div
                             className="absolute -bottom-2 w-4 h-4 bg-background-light-card dark:bg-background-card border-r border-b border-gray-200 dark:border-gray-700 transform rotate-45"
                             style={{ left: `${popupPosition.arrowLeft}px` }}
                         ></div>
@@ -1369,7 +1369,7 @@ export default function ResidentViewPage() {
                                 <h4 className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
                                     {uploadDocumentType === 'national_id' ? 'Kimlik Belgesi' : 'Tapu / Mülkiyet Belgesi'}
                                 </h4>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowUploadPopup(false);
                                         setUploadDocumentType(null);
@@ -1380,16 +1380,16 @@ export default function ResidentViewPage() {
                                     ✕
                                 </button>
                             </div>
-                            
+
                             <div className="space-y-2">
                                 <div className="
                                     relative border-2 border-dashed rounded-lg p-4 text-center transition-colors
                                     border-primary-gold/30 hover:border-primary-gold/50
                                     bg-background-light-secondary dark:bg-background-secondary
                                 ">
-                                    <input 
-                                        accept="image/jpeg,image/png,image/jpg,application/pdf" 
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                                    <input
+                                        accept="image/jpeg,image/png,image/jpg,application/pdf"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                         type="file"
                                         onChange={(e) => {
                                             const file = e.target.files?.[0];
@@ -1459,8 +1459,17 @@ export default function ResidentViewPage() {
                 loading={editLoading}
                 userName={resident?.fullName}
                 initialData={resident ? {
-                    id: resident.id,
+                    id: String(resident.id),
+                    firstName: resident.firstName || '',
+                    lastName: resident.lastName || '',
+                    phone: resident.contact?.formattedPhone || '',
+                    email: resident.contact?.email || '',
                     role: resident.residentType.type as 'resident' | 'tenant',
+                    identityNumber: '',
+                    gender: '',
+                    birthDate: '',
+                    birthPlace: '',
+                    bloodType: ''
                 } : undefined}
             />
 
