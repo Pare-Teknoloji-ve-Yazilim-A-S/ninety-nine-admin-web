@@ -29,6 +29,7 @@ interface TenantInfoSectionProps {
   tenantInfo?: TenantInfo;
   onUpdate?: (data: UpdateTenantInfoDto) => Promise<void>;
   onRemove?: () => Promise<void>;
+  onAddTenant?: () => void;
   loading?: boolean;
   canEdit?: boolean;
 }
@@ -46,6 +47,7 @@ export default function TenantInfoSection({
   tenantInfo, 
   onUpdate, 
   onRemove,
+  onAddTenant,
   loading = false,
   canEdit = true 
 }: TenantInfoSectionProps) {
@@ -227,8 +229,8 @@ export default function TenantInfoSection({
               <Home className="h-5 w-5 text-primary-gold" />
               Kiracı Bilgileri
             </h3>
-            {canEdit && (
-              <Button variant="primary" size="sm" icon={Edit} onClick={handleEdit}>
+            {canEdit && onAddTenant && (
+              <Button variant="primary" size="sm" icon={UserPlus} onClick={onAddTenant}>
                 Kiracı Ekle
               </Button>
             )}

@@ -275,9 +275,10 @@ export interface UpdateBasicInfoDto {
   apartmentNumber?: string;
   block?: string;
   floor?: number;
+  propertyType?: string;
   apartmentType?: string;
   area?: number;
-  status?: 'active' | 'inactive' | 'maintenance' | 'renovation';
+  status?: 'occupied' | 'available';
 }
 
 export interface UpdateOwnerInfoDto {

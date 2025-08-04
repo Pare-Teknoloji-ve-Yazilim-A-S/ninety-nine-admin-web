@@ -26,6 +26,7 @@ export default function BasicInfoSection({
     apartmentNumber: basicInfo.data.apartmentNumber.value,
     block: basicInfo.data.block.value,
     floor: basicInfo.data.floor.value,
+    propertyType: basicInfo.data.propertyType?.value || 'RESIDENCE',
     apartmentType: basicInfo.data.apartmentType.value,
     area: basicInfo.data.area.value,
     status: basicInfo.data.status.value
@@ -39,6 +40,7 @@ export default function BasicInfoSection({
       apartmentNumber: basicInfo.data.apartmentNumber.value,
       block: basicInfo.data.block.value,
       floor: basicInfo.data.floor.value,
+      propertyType: basicInfo.data.propertyType?.value || 'RESIDENCE',
       apartmentType: basicInfo.data.apartmentType.value,
       area: basicInfo.data.area.value,
       status: basicInfo.data.status.value
@@ -51,6 +53,7 @@ export default function BasicInfoSection({
       apartmentNumber: basicInfo.data.apartmentNumber.value,
       block: basicInfo.data.block.value,
       floor: basicInfo.data.floor.value,
+      propertyType: basicInfo.data.propertyType?.value || 'RESIDENCE',
       apartmentType: basicInfo.data.apartmentType.value,
       area: basicInfo.data.area.value,
       status: basicInfo.data.status.value
@@ -66,9 +69,10 @@ export default function BasicInfoSection({
         apartmentNumber: formData.apartmentNumber,
         block: formData.block,
         floor: formData.floor,
+        propertyType: formData.propertyType,
         apartmentType: formData.apartmentType,
         area: formData.area,
-        status: formData.status as 'active' | 'inactive' | 'maintenance' | 'renovation'
+        status: formData.status as 'occupied' | 'available'
       });
       setIsEditing(false);
       toast.success('Konut bilgileri güncellendi');
@@ -79,21 +83,26 @@ export default function BasicInfoSection({
     }
   };
 
-  const getStatusColor = (status: string): 'primary' | 'secondary' | 'gold' | 'red' => {
+  const getStatusColor = (status: string): 'primary' | 'secondary' | 'gold' | 'red' | 'success' => {
     switch (status) {
-      case 'active': return 'primary';
-      case 'inactive': return 'red';
-      case 'maintenance': return 'gold';
-      case 'renovation': return 'secondary';
+      case 'occupied': return 'red';     // Dolu - Kırmızı
+      case 'available': return 'success'; // Müsait - Yeşil
       default: return 'secondary';
     }
   };
 
   const getStatusLabel = (status: string): string => {
-    const option = basicInfo.data.status.options.find(opt => 
-      typeof opt === 'object' && opt.value === status
-    );
-    return typeof option === 'object' ? option.label : status;
+    // Direct mapping for simplicity
+    switch (status) {
+      case 'occupied': return 'Dolu';
+      case 'available': return 'Müsait';
+      default:
+        // Fallback to options if available
+        const option = basicInfo.data.status.options.find(opt => 
+          typeof opt === 'object' && opt.value === status
+        );
+        return typeof option === 'object' ? option.label : status;
+    }
   };
 
   return (
@@ -212,6 +221,32 @@ export default function BasicInfoSection({
               </p>
             )}
           </div>
+
+          {/* Property Type */}
+          {basicInfo.data.propertyType && (
+            <div>
+              <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
+                {basicInfo.data.propertyType.label}
+                {basicInfo.data.propertyType.required && <span className="text-primary-red ml-1">*</span>}
+              </label>
+              {isEditing ? (
+                <Select
+                  value={formData.propertyType}
+                  onChange={(e: any) => setFormData({ ...formData, propertyType: e.target.value })}
+                  options={basicInfo.data.propertyType.options.map(opt => 
+                    typeof opt === 'string' ? { value: opt, label: opt } : opt
+                  )}
+                  disabled={saving}
+                />
+              ) : (
+                <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                  {basicInfo.data.propertyType.options.find((opt: any) => 
+                    opt.value === basicInfo.data.propertyType.value
+                  )?.label || basicInfo.data.propertyType.value}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Apartment Type */}
           <div>

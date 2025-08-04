@@ -17,6 +17,7 @@ import OwnerInfoSection from "./components/OwnerInfoSection";
 import TenantInfoSection from "./components/TenantInfoSection";
 import ResidentsSection from "./components/ResidentsSection";
 import FinancialSummarySection from "./components/FinancialSummarySection";
+import AddTenantModal from "./components/AddTenantModal";
 import {
   Building,
   Home,
@@ -40,6 +41,7 @@ import {
   UserX
 } from "lucide-react";
 import Modal from "@/app/components/ui/Modal";
+import { UpdateBasicInfoDto } from "@/services/types/unit-detail.types";
 
 export default function UnitDetailPage() {
   const params = useParams();
@@ -57,6 +59,9 @@ export default function UnitDetailPage() {
   const [removingTenant, setRemovingTenant] = useState(false);
   const [showRemoveTenantModal, setShowRemoveTenantModal] = useState(false);
   
+  // Add state for tenant addition
+  const [showAddTenantModal, setShowAddTenantModal] = useState(false);
+  
   const { 
     unit, 
     loading, 
@@ -65,6 +70,26 @@ export default function UnitDetailPage() {
     updateBasicInfo,
     updateNotes
   } = useUnitDetail(unitId);
+
+  // Helper function to get property type label in Turkish
+  const getPropertyTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      'RESIDENCE': 'Daire',
+      'VILLA': 'Villa', 
+      'COMMERCIAL': 'Ticari',
+      'OFFICE': 'Ofis'
+    };
+    return typeMap[type] || type;
+  };
+
+  // Helper function to get status info
+  const getStatusInfo = (status: string) => {
+    if (status === 'occupied') {
+      return { label: 'Dolu', color: 'red' as const };
+    } else {
+      return { label: 'Müsait', color: 'success' as const };
+    }
+  };
 
   // Fetch total debt for unit
   React.useEffect(() => {
@@ -92,6 +117,65 @@ export default function UnitDetailPage() {
   // Handle tenant removal request (show modal)
   const handleRemoveTenantRequest = () => {
     setShowRemoveTenantModal(true);
+  };
+
+  // Handle tenant addition request (show modal)
+  const handleAddTenantRequest = () => {
+    setShowAddTenantModal(true);
+  };
+
+  // Handle basic info update
+  const handleUpdateBasicInfo = async (data: UpdateBasicInfoDto) => {
+    if (!unitId) return;
+
+    try {
+      console.log('Updating basic info:', data);
+      
+      // Map frontend data to API format
+      const updatePayload: any = {};
+      
+      if (data.apartmentNumber) updatePayload.propertyNumber = data.apartmentNumber;
+      if (data.block) updatePayload.blockNumber = data.block;
+      if (data.floor !== undefined) updatePayload.floor = data.floor;
+      if (data.area !== undefined) updatePayload.area = data.area;
+      if (data.propertyType) updatePayload.type = data.propertyType;
+      if (data.status) {
+        // Map frontend status to backend status
+        const statusMap: Record<string, string> = {
+          'occupied': 'OCCUPIED',
+          'available': 'AVAILABLE'
+        };
+        updatePayload.status = statusMap[data.status] || data.status.toUpperCase();
+      }
+
+      console.log('API payload:', updatePayload);
+
+      const response = await fetch(`/api/proxy/admin/properties/${unitId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatePayload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Güncelleme başarısız');
+      }
+
+      const result = await response.json();
+      console.log('Update successful:', result);
+
+      // Refresh unit data
+      await refetch();
+      
+      toast.success('Konut bilgileri başarıyla güncellendi!');
+    } catch (error: any) {
+      console.error('Error updating basic info:', error);
+      toast.error(error.message || 'Güncelleme sırasında bir hata oluştu');
+      throw error; // Re-throw to handle in component
+    }
   };
 
   // Handle tenant removal confirmation
@@ -383,7 +467,7 @@ export default function UnitDetailPage() {
                           {unit?.apartmentNumber}
                         </h2>
                         <Badge variant="soft" color="primary">
-                          {unit?.type}
+                          {getPropertyTypeLabel(unit?.type || '')}
                         </Badge>
                       </div>
 
@@ -408,10 +492,8 @@ export default function UnitDetailPage() {
                         </div>
                         <div>
                           <p className="text-text-light-muted dark:text-text-muted">Durum</p>
-                          <Badge variant="soft" color={getStatusColor(unit?.status || 'inactive')}>
-                            {unit?.basicInfo.data.status.options.find(opt => 
-                              typeof opt === 'object' && opt.value === unit.status
-                            )?.label}
+                          <Badge variant="soft" color={getStatusInfo(unit?.status || '').color}>
+                            {getStatusInfo(unit?.status || '').label}
                           </Badge>
                         </div>
                       </div>
@@ -423,7 +505,7 @@ export default function UnitDetailPage() {
                 {unit?.basicInfo && (
                   <BasicInfoSection
                     basicInfo={unit.basicInfo}
-                    onUpdate={updateBasicInfo}
+                    onUpdate={handleUpdateBasicInfo}
                     loading={loading}
                     canEdit={unit.permissions.canEdit}
                   />
@@ -544,6 +626,7 @@ export default function UnitDetailPage() {
                   loading={loading || removingTenant}
                   canEdit={unit?.permissions.canEdit}
                   onRemove={handleRemoveTenantRequest}
+                  onAddTenant={handleAddTenantRequest}
                 />
 
                 {/* Financial Summary Sidebar */}
@@ -589,6 +672,18 @@ export default function UnitDetailPage() {
           </main>
         </div>
       </div>
+
+      {/* Add Tenant Modal */}
+      <AddTenantModal
+        isOpen={showAddTenantModal}
+        onClose={() => setShowAddTenantModal(false)}
+        onSuccess={() => {
+          toast.success('Kiracı başarıyla eklendi!');
+          setShowAddTenantModal(false);
+          refetch();
+        }}
+        propertyId={unitId}
+      />
 
       {/* Remove Tenant Confirmation Modal */}
       <Modal

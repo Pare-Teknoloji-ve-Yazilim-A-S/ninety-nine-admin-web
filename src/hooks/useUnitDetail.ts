@@ -25,9 +25,8 @@ const transformPropertyToUnitDetail = (property: any): UnitDetail => {
     floor: property.floor || 1,
     type: property.type || 'RESIDENCE',
     area: property.area || 120,
-    status: property.status === 'OCCUPIED' ? 'active' : 
-            property.status === 'UNDER_MAINTENANCE' ? 'maintenance' : 
-            property.status === 'AVAILABLE' ? 'inactive' : 'active',
+    status: property.status === 'OCCUPIED' || property.status === 'OWNER_OCCUPIED' || 
+            property.status === 'TENANT_OCCUPIED' || property.status === 'GUEST_OCCUPIED' ? 'occupied' : 'available',
     createdDate: property.createdAt || new Date().toISOString(),
     lastUpdated: property.updatedAt || new Date().toISOString(),
     tenantId: property.tenantId, // Tenant ID from properties table
@@ -56,6 +55,18 @@ const transformPropertyToUnitDetail = (property: any): UnitDetail => {
           max: 20,
           required: true
         },
+        propertyType: {
+          label: 'Mülk Tipi',
+          value: property.type || 'RESIDENCE',
+          type: 'select',
+          options: [
+            { value: 'RESIDENCE', label: 'Daire' },
+            { value: 'VILLA', label: 'Villa' },
+            { value: 'COMMERCIAL', label: 'Ticari' },
+            { value: 'OFFICE', label: 'Ofis' }
+          ],
+          required: true
+        },
         apartmentType: {
           label: 'Daire Tipi',
           value: `${property.rooms || '3+1'} (${property.area || 120}m²)`,
@@ -73,13 +84,12 @@ const transformPropertyToUnitDetail = (property: any): UnitDetail => {
         },
         status: {
           label: 'Durum',
-          value: 'active',
+          value: property.status === 'OCCUPIED' || property.status === 'OWNER_OCCUPIED' || 
+                 property.status === 'TENANT_OCCUPIED' || property.status === 'GUEST_OCCUPIED' ? 'occupied' : 'available',
           type: 'select',
           options: [
-            { value: 'active', label: 'Aktif', color: 'green' },
-            { value: 'inactive', label: 'Pasif', color: 'red' },
-            { value: 'maintenance', label: 'Bakımda', color: 'orange' },
-            { value: 'renovation', label: 'Tadilat', color: 'blue' }
+            { value: 'occupied', label: 'Dolu', color: 'red' },
+            { value: 'available', label: 'Müsait', color: 'green' }
           ],
           required: true
         }
