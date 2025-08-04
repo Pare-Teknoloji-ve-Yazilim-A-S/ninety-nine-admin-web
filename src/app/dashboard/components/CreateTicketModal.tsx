@@ -129,7 +129,7 @@ export default function CreateTicketModal({
             loadUsers();
             // Set current user as creator
             if (user?.id) {
-                setValue('creatorId', String(user.id));
+                setValue('creatorId', user.id as string);
             }
             // Set default assignee if provided
             if (defaultAssigneeId) {

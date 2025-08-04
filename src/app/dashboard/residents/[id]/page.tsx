@@ -1583,7 +1583,7 @@ export default function ResidentViewPage() {
                     // Refresh tickets if needed
                     refreshTickets();
                 }}
-                defaultAssigneeId={resident?.id}
+                defaultAssigneeId={resident?.id as string}
                 defaultAssigneeName={resident?.fullName}
             />
 
