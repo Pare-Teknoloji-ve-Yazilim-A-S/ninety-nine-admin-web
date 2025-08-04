@@ -36,8 +36,10 @@ import {
   Zap,
   Wrench,
   UserCheck,
-  FileText
+  FileText,
+  UserX
 } from "lucide-react";
+import Modal from "@/app/components/ui/Modal";
 
 export default function UnitDetailPage() {
   const params = useParams();
@@ -45,6 +47,15 @@ export default function UnitDetailPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'residents' | 'financial' | 'consumption' | 'maintenance' | 'visitors' | 'documents'>('residents');
   const toast = useToast();
+
+  // Add state for total debt
+  const [totalDebt, setTotalDebt] = useState<number | null>(null);
+  const [debtLoading, setDebtLoading] = useState(false);
+  const [debtError, setDebtError] = useState<string | null>(null);
+  
+  // Add state for tenant removal
+  const [removingTenant, setRemovingTenant] = useState(false);
+  const [showRemoveTenantModal, setShowRemoveTenantModal] = useState(false);
   
   const { 
     unit, 
@@ -54,6 +65,157 @@ export default function UnitDetailPage() {
     updateBasicInfo,
     updateNotes
   } = useUnitDetail(unitId);
+
+  // Fetch total debt for unit
+  React.useEffect(() => {
+    if (unitId) {
+      setDebtLoading(true);
+      setDebtError(null);
+      fetch(`/api/proxy/admin/billing/total-debt/${unitId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            setTotalDebt(0);
+            return;
+          }
+          const data = await res.json();
+          setTotalDebt(typeof data?.data === 'number' ? data.data : 0);
+        })
+        .catch(() => setTotalDebt(0))
+        .finally(() => setDebtLoading(false));
+    }
+  }, [unitId]);
+
+  // Handle tenant removal request (show modal)
+  const handleRemoveTenantRequest = () => {
+    setShowRemoveTenantModal(true);
+  };
+
+  // Handle tenant removal confirmation
+  const handleRemoveTenantConfirm = async () => {
+    let tenantId = unit?.tenantId;
+    
+    console.log('Unit tenantId from properties table:', tenantId);
+    
+
+    
+    // If tenantId not in property data, try to find it via email
+    if (!tenantId && unit?.tenantInfo?.data?.tenantEmail?.value) {
+      const tenantEmail = unit.tenantInfo.data.tenantEmail.value;
+      console.log('Trying to find tenant by email:', tenantEmail);
+      console.log('All tenant info data:', unit.tenantInfo.data);
+      
+      try {
+        const userResponse = await fetch(`/api/proxy/admin/users?email=${encodeURIComponent(tenantEmail)}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          console.log('User search result:', userData);
+          
+          if (userData.data && userData.data.length > 0) {
+            // Find the user with matching email
+            const matchingUser = userData.data.find((user: any) => 
+              user.email === tenantEmail
+            );
+            
+            if (matchingUser) {
+              tenantId = matchingUser.id;
+              console.log('Found matching tenant by email:', matchingUser);
+              console.log('Found tenant ID via email:', tenantId);
+            } else {
+              console.log('No user found with matching email:', tenantEmail);
+              
+              // Try to find by tenant name as fallback
+              const tenantName = unit?.tenantInfo?.data?.tenantName?.value;
+              if (tenantName) {
+                console.log('Trying to find tenant by name:', tenantName);
+                const nameMatchUser = userData.data.find((user: any) => {
+                  const fullName = `${user.firstName} ${user.lastName}`.trim();
+                  return fullName === tenantName || 
+                         user.firstName === tenantName.split(' ')[0] ||
+                         fullName.toLowerCase() === tenantName.toLowerCase();
+                });
+                
+                if (nameMatchUser) {
+                  tenantId = nameMatchUser.id;
+                  console.log('Found tenant by name match:', nameMatchUser);
+                  console.log('Found tenant ID via name:', tenantId);
+                }
+              }
+            }
+          }
+        } else {
+          console.log('User search failed:', userResponse.status);
+        }
+      } catch (error) {
+        console.error('Error searching for user:', error);
+      }
+    }
+    
+    if (!tenantId) {
+      toast.error('Kiracı ID\'si bulunamadı. Backend\'de tenantId field\'ı eksik olabilir.');
+      return;
+    }
+    
+    setRemovingTenant(true);
+    try {
+      console.log('Removing tenant from property:', { unitId, tenantId });
+      
+      const response = await fetch(`/api/proxy/admin/properties/${unitId}/tenant`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Kiracı kaldırma işlemi başarısız');
+      }
+
+      const result = await response.json();
+      console.log('Tenant removal response:', result);
+      
+      // Check if tenant was actually removed
+      if (result.data?.property?.tenantId || result.data?.property?.tenant) {
+        console.warn('Tenant still exists in response:', {
+          tenantId: result.data?.property?.tenantId,
+          tenant: result.data?.property?.tenant
+        });
+      }
+
+      // Force refresh unit data with cache busting
+      console.log('Forcing unit data refresh...');
+      await refetch();
+      
+      // Wait a bit and check if data updated
+      setTimeout(async () => {
+        console.log('Unit data after refresh:', unit);
+        if (unit?.tenantInfo?.isRented && unit?.tenantInfo?.data?.tenantName?.value) {
+          console.warn('Frontend still shows tenant after removal');
+          // Force another refresh
+          await refetch();
+        }
+      }, 1000);
+      
+      toast.success('Kiracı kaldırma işlemi tamamlandı!');
+      setShowRemoveTenantModal(false);
+    } catch (error: any) {
+      console.error('Error removing tenant:', error);
+      toast.error(error.message || 'Kiracı kaldırılırken bir hata oluştu');
+    } finally {
+      setRemovingTenant(false);
+    }
+  };
 
   const breadcrumbItems = [
     { label: "Ana Sayfa", href: "/dashboard" },
@@ -379,8 +541,9 @@ export default function UnitDetailPage() {
                 {/* Tenant Information */}
                 <TenantInfoSection
                   tenantInfo={unit?.tenantInfo}
-                  loading={loading}
+                  loading={loading || removingTenant}
                   canEdit={unit?.permissions.canEdit}
+                  onRemove={handleRemoveTenantRequest}
                 />
 
                 {/* Financial Summary Sidebar */}
@@ -393,10 +556,14 @@ export default function UnitDetailPage() {
                       </h3>
                       <div className="space-y-4">
                         <div className="bg-background-light-soft dark:bg-background-soft rounded-lg p-4">
-                          <p className="text-sm text-text-light-muted dark:text-text-muted">Güncel Bakiye</p>
-                          <p className={`text-lg font-semibold ${unit.financialSummary.data.currentBalance.value < 0 ? 'text-primary-red' : 'text-primary-gold'}`}>
-                            {new Intl.NumberFormat('tr-TR').format(Math.abs(unit.financialSummary.data.currentBalance.value))} {unit.financialSummary.data.currentBalance.currency}
-                          </p>
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">Toplam Borç</p>
+                          {debtLoading ? (
+                            <div className="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                          ) : (
+                            <p className={`text-lg font-semibold ${(totalDebt ?? 0) > 0 ? 'text-primary-red' : 'text-text-on-light dark:text-text-on-dark'}`}>
+                              {typeof totalDebt === 'number' ? `${totalDebt} ع.د` : '0 ع.د'}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -422,6 +589,60 @@ export default function UnitDetailPage() {
           </main>
         </div>
       </div>
+
+      {/* Remove Tenant Confirmation Modal */}
+      <Modal
+        isOpen={showRemoveTenantModal}
+        onClose={() => setShowRemoveTenantModal(false)}
+        title="Kiracıyı Kaldır"
+        icon={UserX}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-6 w-6 text-primary-red" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
+                Kiracıyı kaldırmak istediğinizden emin misiniz?
+              </h3>
+              <p className="mt-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                Bu işlem geri alınamaz. Kiracı bu konuttan kaldırılacak ve konut durumu "Uygun" olarak değiştirilecektir.
+              </p>
+              {unit?.tenantInfo?.data?.tenantName?.value && (
+                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm">
+                    <span className="font-medium text-text-on-light dark:text-text-on-dark">Kiracı: </span>
+                    <span className="text-text-light-secondary dark:text-text-secondary">
+                      {unit.tenantInfo.data.tenantName.value}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button
+            variant="ghost"
+            onClick={() => setShowRemoveTenantModal(false)}
+            disabled={removingTenant}
+          >
+            İptal
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleRemoveTenantConfirm}
+            isLoading={removingTenant}
+            disabled={removingTenant}
+            icon={UserX}
+          >
+            {removingTenant ? 'Kaldırılıyor...' : 'Kiracıyı Kaldır'}
+          </Button>
+        </div>
+      </Modal>
 
       {/* Toast Container */}
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />

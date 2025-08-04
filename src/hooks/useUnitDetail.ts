@@ -30,6 +30,7 @@ const transformPropertyToUnitDetail = (property: any): UnitDetail => {
             property.status === 'AVAILABLE' ? 'inactive' : 'active',
     createdDate: property.createdAt || new Date().toISOString(),
     lastUpdated: property.updatedAt || new Date().toISOString(),
+    tenantId: property.tenantId, // Tenant ID from properties table
     basicInfo: {
       title: 'Konut Temel Bilgileri',
       icon: '🏠',
@@ -373,6 +374,8 @@ export function useUnitDetail(unitId: string | undefined): UseUnitDetailResult {
   }, [fetchUnit]);
 
   const refetch = async () => {
+    // Force refetch with cache busting
+    setUnit(null); // Clear current data
     await fetchUnit();
   };
 

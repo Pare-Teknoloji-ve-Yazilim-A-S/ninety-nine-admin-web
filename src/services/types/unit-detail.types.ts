@@ -10,6 +10,7 @@ export interface UnitDetail {
   status: 'active' | 'inactive' | 'maintenance' | 'renovation';
   createdDate: string;
   lastUpdated: string;
+  tenantId?: string; // Tenant ID from properties table
   basicInfo: BasicInfo;
   ownerInfo: OwnerInfo;
   tenantInfo?: TenantInfo;

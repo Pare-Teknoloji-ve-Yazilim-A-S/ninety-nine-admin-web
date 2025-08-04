@@ -185,16 +185,9 @@ export default function TenantInfoSection({
     }
   };
 
-  const handleRemoveTenant = async () => {
-    if (!onRemove) return;
-
-    if (window.confirm('Kiracı kaydını kaldırmak istediğinizden emin misiniz?')) {
-      try {
-        await onRemove();
-        toast.success('Kiracı kaydı kaldırıldı');
-      } catch (error) {
-        toast.error('Kiracı kaldırma işlemi başarısız');
-      }
+  const handleRemoveTenant = () => {
+    if (onRemove) {
+      onRemove(); // Ana sayfadaki modal'ı aç
     }
   };
 
