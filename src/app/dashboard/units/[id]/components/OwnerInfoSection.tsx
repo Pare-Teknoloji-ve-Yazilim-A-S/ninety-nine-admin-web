@@ -10,6 +10,7 @@ import { OwnerInfo, UpdateOwnerInfoDto } from '@/services/types/unit-detail.type
 import { User, Phone, Mail, Edit, Save, X, IdCard, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { residentService } from '@/services/resident.service';
+import { adminResidentService } from '@/services/admin-resident.service';
 
 interface OwnerInfoSectionProps {
   ownerInfo: OwnerInfo;
@@ -17,6 +18,7 @@ interface OwnerInfoSectionProps {
   onRemove?: () => Promise<void>;
   loading?: boolean;
   canEdit?: boolean;
+  residentId?: string; // Malik için sakin ID'si
 }
 
 interface Resident {
@@ -33,7 +35,8 @@ export default function OwnerInfoSection({
   onUpdate, 
   onRemove,
   loading = false,
-  canEdit = true 
+  canEdit = true,
+  residentId
 }: OwnerInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddNewResident, setShowAddNewResident] = useState(false);
@@ -48,8 +51,8 @@ export default function OwnerInfoSection({
     identityNumber: '',
     firstName: '',
     lastName: '',
+    email: '',
     phone: '',
-    relationship: '',
     gender: '',
     birthDate: '',
     birthPlace: '',
@@ -59,6 +62,7 @@ export default function OwnerInfoSection({
   const [residents, setResidents] = useState<Resident[]>([]);
   const [loadingResidents, setLoadingResidents] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const toast = useToast();
 
   const handleEdit = () => {
@@ -71,7 +75,72 @@ export default function OwnerInfoSection({
       nationalId: ownerInfo.data.nationalId.value,
       ownershipType: ownerInfo.data.ownershipType.value
     });
+    setValidationErrors({}); // Validation hatalarını temizle
     loadResidents();
+  };
+
+  // Form field değişikliklerini handle et ve validation yap
+  const handleFieldChange = (field: string, value: string) => {
+    let processedValue = value;
+    
+    // Telefon için otomatik formatting
+    if (field === 'phone' && value.trim()) {
+      // Sadece sayı ve + işaretine izin ver
+      const cleanPhone = value.replace(/[^\d+]/g, '');
+      processedValue = cleanPhone;
+    }
+    
+    // TC Kimlik için sadece sayı
+    if (field === 'nationalId' && value.trim()) {
+      // Sadece sayı girişlerine izin ver
+      const cleanTc = value.replace(/[^\d]/g, '');
+      processedValue = cleanTc;
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: processedValue }));
+    
+    // Field-specific validation
+    const newErrors = { ...validationErrors };
+    
+    if (field === 'phone') {
+      if (value.trim()) {
+        const formattedPhone = formatPhoneNumber(value);
+        if (!validatePhoneNumber(formattedPhone)) {
+          newErrors.phone = 'Telefon numarası +905551234567 formatında olmalıdır';
+        } else {
+          delete newErrors.phone;
+        }
+      } else {
+        delete newErrors.phone; // Boş alan geçerli
+      }
+    }
+    
+    if (field === 'nationalId') {
+      if (value.trim()) {
+        if (!validateTcKimlik(value)) {
+          newErrors.nationalId = 'TC Kimlik No 11 haneli olmalı ve 0 ile başlayamaz';
+        } else {
+          delete newErrors.nationalId;
+        }
+      } else {
+        delete newErrors.nationalId; // Boş alan geçerli
+      }
+    }
+    
+    if (field === 'email') {
+      if (value.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          newErrors.email = 'Geçerli bir email adresi giriniz';
+        } else {
+          delete newErrors.email;
+        }
+      } else {
+        delete newErrors.email; // Boş alan geçerli
+      }
+    }
+    
+    setValidationErrors(newErrors);
   };
 
   const loadResidents = async () => {
@@ -95,22 +164,197 @@ export default function OwnerInfoSection({
     }
   };
 
-  const handleSave = async () => {
-    if (!onUpdate) return;
+  // Kullanıcıyı email ile bulma
+  const findResidentByEmail = async (email: string): Promise<string | null> => {
+    try {
+      const response = await fetch(`/api/proxy/admin/users?email=${encodeURIComponent(email)}&limit=1`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        if (userData.data && userData.data.length > 0) {
+          return userData.data[0].id;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error finding resident by email:', error);
+      return null;
+    }
+  };
 
+  // Telefon numarası validasyonu
+  const validatePhoneNumber = (phone: string): boolean => {
+    if (!phone.trim()) return true; // Boş ise geçerli (opsiyonel)
+    
+    // International format kontrolü: +905551234567
+    const phoneRegex = /^\+90[0-9]{10}$/;
+    return phoneRegex.test(phone);
+  };
+
+  // TC Kimlik No validasyonu
+  const validateTcKimlik = (tcKimlik: string): boolean => {
+    if (!tcKimlik.trim()) return true; // Boş ise geçerli (opsiyonel)
+    
+    // 11 haneli ve 0 ile başlamaz
+    const tcRegex = /^[1-9][0-9]{10}$/;
+    return tcRegex.test(tcKimlik);
+  };
+
+  // Telefon numarasını international format'a çevir
+  const formatPhoneNumber = (phone: string): string => {
+    if (!phone.trim()) return phone;
+    
+    // Zaten + ile başlıyorsa olduğu gibi bırak
+    if (phone.startsWith('+90')) return phone;
+    
+    // 0 ile başlıyorsa +90 ile değiştir
+    if (phone.startsWith('0')) {
+      return '+90' + phone.substring(1);
+    }
+    
+    // Sadece 10 haneli sayı ise +90 ekle
+    if (/^[0-9]{10}$/.test(phone)) {
+      return '+90' + phone;
+    }
+    
+    return phone;
+  };
+
+  const handleSave = async () => {
     setSaving(true);
     try {
-      await onUpdate({
-        fullName: formData.fullName,
-        phone: formData.phone,
-        email: formData.email,
-        nationalId: formData.nationalId,
-        ownershipType: formData.ownershipType as 'owner' | 'investor' | 'inherited'
-      });
+      // Validation hatalarını kontrol et
+      if (Object.keys(validationErrors).length > 0) {
+        toast.error('Lütfen form hatalarını düzeltin');
+        setSaving(false);
+        return;
+      }
+
+      // Form validasyonu
+      const formattedPhone = formatPhoneNumber(formData.phone);
+      
+      if (formData.phone && !validatePhoneNumber(formattedPhone)) {
+        toast.error('Telefon numarası international formatında olmalıdır (örn: +905551234567)');
+        setSaving(false);
+        return;
+      }
+
+      if (formData.nationalId && !validateTcKimlik(formData.nationalId)) {
+        toast.error('TC Kimlik No 11 haneli olmalı ve 0 ile başlayamaz');
+        setSaving(false);
+        return;
+      }
+
+      let targetResidentId = residentId;
+
+      // Eğer residentId yoksa email ile kullanıcıyı bul
+      if (!targetResidentId) {
+        if (!formData.email || !formData.email.trim()) {
+          toast.error('Kullanıcıyı güncellemek için email adresi gereklidir');
+          setSaving(false);
+          return;
+        }
+        
+        targetResidentId = await findResidentByEmail(formData.email);
+        if (!targetResidentId) {
+          toast.error('Belirtilen email adresiyle kullanıcı bulunamadı. Önce kullanıcıyı sistemde oluşturun.');
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Sadece dolu/değiştirilmiş alanları gönder
+      const updateData: any = {};
+      
+      // Ad Soyad - sadece dolu ve değiştirilmiş ise
+      if (formData.fullName && formData.fullName.trim()) {
+        const currentFullName = ownerInfo.data.fullName.value;
+        if (formData.fullName.trim() !== currentFullName) {
+          const nameParts = formData.fullName.trim().split(' ');
+          updateData.firstName = nameParts[0];
+          if (nameParts.length > 1) {
+            updateData.lastName = nameParts.slice(1).join(' ');
+          }
+        }
+      }
+      
+      // Telefon - sadece dolu ve değiştirilmiş ise, formatlanmış halini gönder
+      if (formData.phone && formData.phone.trim()) {
+        const currentPhone = ownerInfo.data.phone.value;
+        if (formattedPhone !== currentPhone) {
+          updateData.phone = formattedPhone;
+        }
+      }
+      
+      // Email - sadece dolu ve değiştirilmiş ise
+      if (formData.email && formData.email.trim()) {
+        const currentEmail = ownerInfo.data.email.value;
+        if (formData.email.trim() !== currentEmail) {
+          updateData.email = formData.email.trim();
+        }
+      }
+      
+      // TC Kimlik - sadece dolu ve değiştirilmiş ise
+      if (formData.nationalId && formData.nationalId.trim()) {
+        const currentTcKimlik = ownerInfo.data.nationalId.value;
+        if (formData.nationalId.trim() !== currentTcKimlik) {
+          updateData.tcKimlikNo = formData.nationalId.trim();
+        }
+      }
+
+      // En az bir alan dolu olmalı
+      if (Object.keys(updateData).length === 0) {
+        toast.success('Hiçbir değişiklik yapılmadı');
+        setShowEditModal(false);
+        setSaving(false);
+        return;
+      }
+
+      console.log('Updating resident:', { targetResidentId, updateData });
+
+      // API çağrısını yap
+      await adminResidentService.updateResident(targetResidentId, updateData);
+
+      // Başarı durumunda
       setShowEditModal(false);
-      toast.success('Malik bilgileri güncellendi');
-    } catch (error) {
-      toast.error('Güncelleme başarısız oldu');
+      toast.success('Malik bilgileri başarıyla güncellendi!');
+
+      // Eğer onUpdate prop'u varsa onu da çağır (sayfa yenileme için)
+      if (onUpdate) {
+        await onUpdate({
+          fullName: formData.fullName,
+          phone: formattedPhone,
+          email: formData.email,
+          nationalId: formData.nationalId,
+          ownershipType: formData.ownershipType as 'owner' | 'investor' | 'inherited'
+        });
+      }
+    } catch (error: any) {
+      console.error('Error updating resident:', error);
+      
+      // Spesifik hata mesajları
+      const errorMessage = error?.response?.data?.message || error?.message;
+      const statusCode = error?.response?.status;
+      
+      if (statusCode === 409 && errorMessage?.includes('Email already in use')) {
+        toast.error('Bu email adresi zaten başka bir kullanıcı tarafından kullanılıyor');
+      } else if (statusCode === 409) {
+        toast.error('Bu bilgiler zaten başka bir kullanıcıda kayıtlı');
+      } else if (statusCode === 404) {
+        toast.error('Kullanıcı bulunamadı');
+      } else if (statusCode === 400) {
+        toast.error(errorMessage || 'Girilen bilgiler geçersiz');
+      } else {
+        toast.error(
+          errorMessage ||
+          'Malik bilgileri güncellenirken bir hata oluştu'
+        );
+      }
     } finally {
       setSaving(false);
     }
@@ -144,20 +388,54 @@ export default function OwnerInfoSection({
   };
 
   const handleCreateNewResident = async () => {
-    if (!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship) {
+    if (!newResidentData.firstName || !newResidentData.lastName || !newResidentData.email || !newResidentData.phone) {
       toast.error('Lütfen tüm zorunlu alanları doldurun');
       return;
     }
 
     setSaving(true);
     try {
-      // Burada yeni sakin oluşturma API'si çağrılacak
-      // Şimdilik sadece form verilerini kullanıyoruz
+      // Debug log to check what's being sent
+      const payload = {
+        tcKimlikNo: newResidentData.identityNumber,
+        firstName: newResidentData.firstName,
+        lastName: newResidentData.lastName,
+        email: newResidentData.email,
+        phone: newResidentData.phone,
+        ...(newResidentData.gender && newResidentData.gender !== '' && { gender: newResidentData.gender }),
+        ...(newResidentData.birthDate && { dateOfBirth: newResidentData.birthDate }),
+        ...(newResidentData.birthPlace && { placeOfBirth: newResidentData.birthPlace }),
+        ...(newResidentData.bloodType && { bloodType: newResidentData.bloodType })
+      };
+      console.log('OwnerInfoSection - API Payload:', payload);
+      
+      // Call the new residents API endpoint
+      const createResidentResponse = await fetch('/api/proxy/admin/residents', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!createResidentResponse.ok) {
+        const errorData = await createResidentResponse.json();
+        const errorMessage = errorData.message || 'Kullanıcı oluşturulamadı';
+        console.error('Resident creation failed:', errorData);
+        toast.error(`Yeni sakin oluşturulamadı: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
+      const residentData = await createResidentResponse.json();
+      console.log('Resident created successfully:', residentData);
+
+      // Update form data with the new resident info
       setFormData({
         fullName: `${newResidentData.firstName} ${newResidentData.lastName}`,
         phone: newResidentData.phone,
         email: '',
-        nationalId: newResidentData.identityNumber,
+        nationalId: '',
         ownershipType: 'owner'
       });
       
@@ -166,16 +444,18 @@ export default function OwnerInfoSection({
         identityNumber: '',
         firstName: '',
         lastName: '',
+        email: '',
         phone: '',
-        relationship: '',
         gender: '',
         birthDate: '',
         birthPlace: '',
         bloodType: ''
       });
-      toast.success('Yeni sakin bilgileri eklendi');
-    } catch (error) {
-      toast.error('Sakin eklenirken hata oluştu');
+      
+      toast.success(`Yeni sakin "${newResidentData.firstName} ${newResidentData.lastName}" başarıyla oluşturuldu`);
+    } catch (error: any) {
+      console.error('Error creating resident:', error);
+      toast.error(error.message || 'Sakin eklenirken hata oluştu');
     } finally {
       setSaving(false);
     }
@@ -341,7 +621,7 @@ export default function OwnerInfoSection({
             </label>
             <Input
               value={formData.fullName}
-              onChange={(e: any) => setFormData({ ...formData, fullName: e.target.value })}
+              onChange={(e: any) => handleFieldChange('fullName', e.target.value)}
               placeholder="Ad Soyad"
               disabled={saving}
             />
@@ -356,9 +636,11 @@ export default function OwnerInfoSection({
               <Input
                 type="tel"
                 value={formData.phone}
-                onChange={(e: any) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder={ownerInfo.data.phone.format}
+                onChange={(e: any) => handleFieldChange('phone', e.target.value)}
+                placeholder="05551234567 veya +905551234567"
                 disabled={saving}
+                error={validationErrors.phone}
+                maxLength={14}
               />
             </div>
 
@@ -366,14 +648,21 @@ export default function OwnerInfoSection({
               <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
                 {ownerInfo.data.email.label}
                 {ownerInfo.data.email.required && <span className="text-primary-red ml-1">*</span>}
+                {!residentId && <span className="text-primary-red ml-1">*</span>}
               </label>
               <Input
                 type="email"
                 value={formData.email}
-                onChange={(e: any) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e: any) => handleFieldChange('email', e.target.value)}
                 placeholder="ornek@email.com"
                 disabled={saving}
+                error={validationErrors.email}
               />
+              {!residentId && (
+                <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
+                  Kullanıcıyı güncellemek için email adresi gereklidir
+                </p>
+              )}
             </div>
           </div>
 
@@ -384,10 +673,14 @@ export default function OwnerInfoSection({
                 {ownerInfo.data.nationalId.required && <span className="text-primary-red ml-1">*</span>}
               </label>
               <Input
+                type="text"
                 value={formData.nationalId}
-                onChange={(e: any) => setFormData({ ...formData, nationalId: e.target.value })}
-                placeholder="12345678901"
+                onChange={(e: any) => handleFieldChange('nationalId', e.target.value)}
+                placeholder="12345678901 (11 haneli)"
                 disabled={saving}
+                error={validationErrors.nationalId}
+                maxLength={11}
+                inputMode="numeric"
               />
             </div>
 
@@ -398,7 +691,7 @@ export default function OwnerInfoSection({
               </label>
               <Select
                 value={formData.ownershipType}
-                onChange={(e: any) => setFormData({ ...formData, ownershipType: e.target.value })}
+                onChange={(e: any) => handleFieldChange('ownershipType', e.target.value)}
                 options={ownerInfo.data.ownershipType.options}
                 disabled={saving}
               />
@@ -418,7 +711,12 @@ export default function OwnerInfoSection({
               icon={Save}
               onClick={handleSave}
               isLoading={saving}
-              disabled={!formData.fullName || !formData.phone}
+              disabled={
+                saving || 
+                Object.keys(validationErrors).length > 0 ||
+                (!residentId && (!formData.email || !formData.email.trim())) ||
+                (!formData.fullName.trim() && !formData.phone.trim() && !formData.email.trim() && !formData.nationalId.trim())
+              }
             >
               Kaydet
             </Button>
@@ -500,39 +798,32 @@ export default function OwnerInfoSection({
                   </div>
                 </div>
 
-                {/* Phone and Relationship */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                      Telefon *
-                    </label>
-                    <Input
-                      type="tel"
-                      placeholder="+90 555 123 45 67"
-                      value={newResidentData.phone}
-                      onChange={(e: any) => handleNewResidentInputChange('phone', e.target.value)}
-                      disabled={saving}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                      Yakınlık derecesi *
-                    </label>
-                    <Select
-                      value={newResidentData.relationship}
-                      onChange={(e: any) => handleNewResidentInputChange('relationship', e.target.value)}
-                      options={[
-                        { value: '', label: 'Seçiniz' },
-                        { value: 'Eş', label: 'Eş' },
-                        { value: 'Çocuk', label: 'Çocuk' },
-                        { value: 'Anne', label: 'Anne' },
-                        { value: 'Baba', label: 'Baba' },
-                        { value: 'Kardeş', label: 'Kardeş' },
-                        { value: 'Diğer', label: 'Diğer' }
-                      ]}
-                      disabled={saving}
-                    />
-                  </div>
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                    E-posta *
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="ornek@email.com"
+                    value={newResidentData.email}
+                    onChange={(e: any) => handleNewResidentInputChange('email', e.target.value)}
+                    disabled={saving}
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                    Telefon *
+                  </label>
+                  <Input
+                    type="tel"
+                    placeholder="Telefon numarası"
+                    value={newResidentData.phone}
+                    onChange={(e: any) => handleNewResidentInputChange('phone', e.target.value)}
+                    disabled={saving}
+                  />
                 </div>
 
                 {/* Divider */}
@@ -546,10 +837,10 @@ export default function OwnerInfoSection({
                         value={newResidentData.gender}
                         onChange={(e: any) => handleNewResidentInputChange('gender', e.target.value)}
                         options={[
-                          { value: '', label: 'Seçiniz' },
-                          { value: 'Erkek', label: 'Erkek' },
-                          { value: 'Kadın', label: 'Kadın' },
-                          { value: 'Diğer', label: 'Diğer' }
+                          { value: '', label: 'Seçmek istemiyorum' },
+                          { value: 'MALE', label: 'Erkek' },
+                          { value: 'FEMALE', label: 'Kadın' },
+                          { value: 'OTHER', label: 'Diğer' }
                         ]}
                         disabled={saving}
                       />
@@ -616,7 +907,7 @@ export default function OwnerInfoSection({
                     icon={Save}
                     onClick={handleCreateNewResident}
                     isLoading={saving}
-                    disabled={!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship}
+                    disabled={!newResidentData.firstName || !newResidentData.lastName || !newResidentData.email || !newResidentData.phone}
                   >
                     Ekle
                   </Button>

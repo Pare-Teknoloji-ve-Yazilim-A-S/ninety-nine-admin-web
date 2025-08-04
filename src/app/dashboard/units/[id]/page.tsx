@@ -617,6 +617,7 @@ export default function UnitDetailPage() {
                     ownerInfo={unit.ownerInfo}
                     loading={loading}
                     canEdit={unit.permissions.canEdit}
+                    residentId={unit.ownerId}
                   />
                 )}
 

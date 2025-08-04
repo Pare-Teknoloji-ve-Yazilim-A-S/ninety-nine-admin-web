@@ -62,8 +62,8 @@ export default function TenantInfoSection({
     identityNumber: '',
     firstName: '',
     lastName: '',
+    email: '',
     phone: '',
-    relationship: '',
     gender: '',
     birthDate: '',
     birthPlace: '',
@@ -152,15 +152,49 @@ export default function TenantInfoSection({
   };
 
   const handleCreateNewResident = async () => {
-    if (!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship) {
+    if (!newResidentData.firstName || !newResidentData.lastName || !newResidentData.email || !newResidentData.phone) {
       toast.error('Lütfen tüm zorunlu alanları doldurun');
       return;
     }
 
     setSaving(true);
     try {
-      // Burada yeni sakin oluşturma API'si çağrılacak
-      // Şimdilik sadece form verilerini kullanıyoruz
+      // Debug log to check what's being sent
+      const payload = {
+        tcKimlikNo: newResidentData.identityNumber,
+        firstName: newResidentData.firstName,
+        lastName: newResidentData.lastName,
+        email: newResidentData.email,
+        phone: newResidentData.phone,
+        ...(newResidentData.gender && newResidentData.gender !== '' && { gender: newResidentData.gender }),
+        ...(newResidentData.birthDate && { dateOfBirth: newResidentData.birthDate }),
+        ...(newResidentData.birthPlace && { placeOfBirth: newResidentData.birthPlace }),
+        ...(newResidentData.bloodType && { bloodType: newResidentData.bloodType })
+      };
+      console.log('TenantInfoSection - API Payload:', payload);
+      
+      // Call the new residents API endpoint
+      const createResidentResponse = await fetch('/api/proxy/admin/residents', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!createResidentResponse.ok) {
+        const errorData = await createResidentResponse.json();
+        const errorMessage = errorData.message || 'Kullanıcı oluşturulamadı';
+        console.error('Resident creation failed:', errorData);
+        toast.error(`Yeni sakin oluşturulamadı: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
+      const residentData = await createResidentResponse.json();
+      console.log('Resident created successfully:', residentData);
+
+      // Update form data with the new resident info
       setFormData({
         tenantName: `${newResidentData.firstName} ${newResidentData.lastName}`,
         tenantPhone: newResidentData.phone,
@@ -172,16 +206,18 @@ export default function TenantInfoSection({
         identityNumber: '',
         firstName: '',
         lastName: '',
+        email: '',
         phone: '',
-        relationship: '',
         gender: '',
         birthDate: '',
         birthPlace: '',
         bloodType: ''
       });
-      toast.success('Yeni sakin bilgileri eklendi');
-    } catch (error) {
-      toast.error('Sakin eklenirken hata oluştu');
+      
+      toast.success(`Yeni sakin "${newResidentData.firstName} ${newResidentData.lastName}" başarıyla oluşturuldu`);
+    } catch (error: any) {
+      console.error('Error creating resident:', error);
+      toast.error(error.message || 'Sakin eklenirken hata oluştu');
     } finally {
       setSaving(false);
     }
@@ -367,7 +403,7 @@ export default function TenantInfoSection({
                 type="tel"
                 value={formData.tenantPhone}
                 onChange={(e: any) => setFormData({ ...formData, tenantPhone: e.target.value })}
-                placeholder="+964 XXX XXX XXXX"
+                                      placeholder="Telefon numarası"
                 disabled={saving}
               />
             </div>
@@ -448,7 +484,7 @@ export default function TenantInfoSection({
                     Ulusal kimlik numarası / Pasaport numarası *
                   </label>
                   <Input
-                    placeholder="12345678901 veya AA1234567"
+                    placeholder="Herhangi bir kimlik numarası"
                     value={newResidentData.identityNumber}
                     onChange={(e: any) => handleNewResidentInputChange('identityNumber', e.target.value)}
                     disabled={saving}
@@ -481,39 +517,32 @@ export default function TenantInfoSection({
                   </div>
                 </div>
 
-                {/* Phone and Relationship */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                      Telefon *
-                    </label>
-                    <Input
-                      type="tel"
-                      placeholder="+964 XXX XXX XXXX"
-                      value={newResidentData.phone}
-                      onChange={(e: any) => handleNewResidentInputChange('phone', e.target.value)}
-                      disabled={saving}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                      Yakınlık derecesi *
-                    </label>
-                    <Select
-                      value={newResidentData.relationship}
-                      onChange={(e: any) => handleNewResidentInputChange('relationship', e.target.value)}
-                      options={[
-                        { value: '', label: 'Seçiniz' },
-                        { value: 'Eş', label: 'Eş' },
-                        { value: 'Çocuk', label: 'Çocuk' },
-                        { value: 'Anne', label: 'Anne' },
-                        { value: 'Baba', label: 'Baba' },
-                        { value: 'Kardeş', label: 'Kardeş' },
-                        { value: 'Diğer', label: 'Diğer' }
-                      ]}
-                      disabled={saving}
-                    />
-                  </div>
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                    E-posta *
+                  </label>
+                  <Input
+                    type="email"
+                    placeholder="ornek@email.com"
+                    value={newResidentData.email}
+                    onChange={(e: any) => handleNewResidentInputChange('email', e.target.value)}
+                    disabled={saving}
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                    Telefon *
+                  </label>
+                  <Input
+                    type="tel"
+                                          placeholder="Telefon numarası"
+                    value={newResidentData.phone}
+                    onChange={(e: any) => handleNewResidentInputChange('phone', e.target.value)}
+                    disabled={saving}
+                  />
                 </div>
 
                 {/* Divider */}
@@ -527,10 +556,10 @@ export default function TenantInfoSection({
                         value={newResidentData.gender}
                         onChange={(e: any) => handleNewResidentInputChange('gender', e.target.value)}
                         options={[
-                          { value: '', label: 'Seçiniz' },
-                          { value: 'Erkek', label: 'Erkek' },
-                          { value: 'Kadın', label: 'Kadın' },
-                          { value: 'Diğer', label: 'Diğer' }
+                          { value: '', label: 'Seçmek istemiyorum' },
+                          { value: 'MALE', label: 'Erkek' },
+                          { value: 'FEMALE', label: 'Kadın' },
+                          { value: 'OTHER', label: 'Diğer' }
                         ]}
                         disabled={saving}
                       />
@@ -597,7 +626,7 @@ export default function TenantInfoSection({
                     icon={Save}
                     onClick={handleCreateNewResident}
                     isLoading={saving}
-                    disabled={!newResidentData.identityNumber || !newResidentData.firstName || !newResidentData.lastName || !newResidentData.phone || !newResidentData.relationship}
+                    disabled={!newResidentData.firstName || !newResidentData.lastName || !newResidentData.email || !newResidentData.phone}
                   >
                     Ekle
                   </Button>

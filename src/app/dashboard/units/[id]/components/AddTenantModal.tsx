@@ -24,7 +24,7 @@ interface TenantFormData {
   lastName: string;
   email: string;
   phone: string;
-  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  gender: 'MALE' | 'FEMALE' | 'OTHER' | '';
   
   // Lease Information (Required by backend)
   leaseStartDate: string;
@@ -54,7 +54,7 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
     lastName: '',
     email: '',
     phone: '',
-    gender: 'MALE',
+    gender: '',
     leaseStartDate: '',
     leaseEndDate: ''
   });
@@ -131,7 +131,7 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
         lastName: '',
         email: '',
         phone: '',
-        gender: 'MALE',
+        gender: '',
         leaseStartDate: '',
         leaseEndDate: ''
       });
@@ -178,20 +178,27 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
 
       // If creating new user, create user first
       if (formData.searchType === 'new') {
+        const payload = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          ...(formData.gender && { gender: formData.gender }), // Sadece seçilmişse gönder
+          // roleId will be set by backend as default resident role
+        };
+        
+        console.log('🔍 Form Data:', formData);
+        console.log('🚀 API Payload:', payload);
+        console.log('📝 Gender value:', `"${formData.gender}"`);
+        console.log('📝 Gender type:', typeof formData.gender);
+        
         const createUserResponse = await fetch('/api/proxy/admin/users', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            phone: formData.phone,
-            gender: formData.gender,
-            // roleId will be set by backend as default resident role
-          })
+          body: JSON.stringify(payload)
         });
 
         if (!createUserResponse.ok) {
@@ -528,16 +535,17 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
               error={errors.phone}
               required
             />
-            <Select
-              label="Cinsiyet"
-              value={formData.gender}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, gender: e.target.value as 'MALE' | 'FEMALE' | 'OTHER' })}
-              options={[
-                { value: 'MALE', label: 'Erkek' },
-                { value: 'FEMALE', label: 'Kadın' },
-                { value: 'OTHER', label: 'Diğer' }
-              ]}
-            />
+                         <Select
+               label="Cinsiyet (Opsiyonel)"
+               value={formData.gender}
+               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, gender: e.target.value as 'MALE' | 'FEMALE' | 'OTHER' | '' })}
+               options={[
+                 { value: '', label: 'Seçmek istemiyorum' },
+                 { value: 'MALE', label: 'Erkek' },
+                 { value: 'FEMALE', label: 'Kadın' },
+                 { value: 'OTHER', label: 'Diğer' }
+               ]}
+             />
           </div>
         )}
 
