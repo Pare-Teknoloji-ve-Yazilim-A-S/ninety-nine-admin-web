@@ -58,6 +58,7 @@ import { useMyProperties } from '@/hooks/useMyProperties';
 import { adminResidentService } from '@/services/admin-resident.service';
 import qrCodeService, { GuestQrCode } from '@/services/qr-code.service';
 import { useRouter } from 'next/navigation';
+import { familyMemberService } from '@/services/family-member.service';
 
 
 export default function ResidentViewPage() {
@@ -363,19 +364,38 @@ export default function ResidentViewPage() {
 
     // Handle add family member
     const handleAddFamilyMember = async () => {
-        if (familyFormData.firstName && familyFormData.lastName && familyFormData.relationship && familyFormData.phone && familyFormData.identityNumber) {
+        // Debug form data
+        console.log('Family Form Data:', familyFormData);
+        
+        if (
+            familyFormData.firstName &&
+            familyFormData.lastName &&
+            familyFormData.relationship &&
+            familyFormData.phone &&
+            familyFormData.identityNumber &&
+            familyFormData.gender &&
+            familyFormData.birthDate &&
+            familyFormData.birthPlace &&
+            familyFormData.bloodType
+        ) {
             try {
-                const newMemberData: CreateFamilyMemberDto = {
+                const newMemberData = {
+                    identityOrPassportNumber: familyFormData.identityNumber,
                     firstName: familyFormData.firstName,
                     lastName: familyFormData.lastName,
-                    relationship: familyFormData.relationship,
-                    age: 0, // Yaş alanı kaldırıldığı için default değer
+                    relationship: familyFormData.relationship, // Artık doğrudan backend değerleri kullanıyoruz
                     phone: familyFormData.phone,
-                    identityNumber: familyFormData.identityNumber
+                    gender: familyFormData.gender, // Artık doğrudan backend değerleri kullanıyoruz
+                    birthDate: familyFormData.birthDate,
+                    birthPlace: familyFormData.birthPlace,
+                    bloodType: familyFormData.bloodType,
+                    notes: '' // opsiyonel, ekleyebilirsin
                 };
-
-                await createFamilyMember(residentId, newMemberData);
-
+                
+                // Debug API payload
+                console.log('API Payload:', newMemberData);
+                
+                await familyMemberService.createFamilyMemberAdmin(residentId, newMemberData);
                 // Clear form data
                 setFamilyFormData({
                     firstName: '',
@@ -391,9 +411,23 @@ export default function ResidentViewPage() {
                 });
                 setShowAddFamilyModal(false);
                 toast.success('Aile üyesi başarıyla eklendi!');
-            } catch (error) {
-                toast.error('Aile üyesi eklenirken bir hata oluştu.');
+            } catch (error: any) {
+                console.error('Family member creation error:', error);
+                toast.error(error?.response?.data?.message || 'Aile üyesi eklenirken bir hata oluştu.');
             }
+        } else {
+            console.log('Validation failed. Missing fields:', {
+                firstName: !familyFormData.firstName,
+                lastName: !familyFormData.lastName,
+                relationship: !familyFormData.relationship,
+                phone: !familyFormData.phone,
+                identityNumber: !familyFormData.identityNumber,
+                gender: !familyFormData.gender,
+                birthDate: !familyFormData.birthDate,
+                birthPlace: !familyFormData.birthPlace,
+                bloodType: !familyFormData.bloodType
+            });
+            toast.error('Lütfen tüm zorunlu alanları doldurun.');
         }
     };
 
@@ -524,6 +558,9 @@ export default function ResidentViewPage() {
                             </div>
 
                             <div className="flex gap-3">
+                                <Button variant="primary" icon={Plus} onClick={() => setShowCreateTicketModal(true)}>
+                                    Talep Oluştur
+                                </Button>
                                 <Button variant="secondary" icon={Phone}>
                                     Ara
                                 </Button>
@@ -1268,12 +1305,18 @@ export default function ResidentViewPage() {
                                 onChange={(e: any) => setFamilyFormData({ ...familyFormData, relationship: e.target.value })}
                                 options={[
                                     { value: '', label: 'Seçiniz' },
-                                    { value: 'Eş', label: 'Eş' },
-                                    { value: 'Çocuk', label: 'Çocuk' },
-                                    { value: 'Anne', label: 'Anne' },
-                                    { value: 'Baba', label: 'Baba' },
-                                    { value: 'Kardeş', label: 'Kardeş' },
-                                    { value: 'Diğer', label: 'Diğer' }
+                                    { value: 'SPOUSE', label: 'Eş' },
+                                    { value: 'CHILD', label: 'Çocuk' },
+                                    { value: 'MOTHER', label: 'Anne' },
+                                    { value: 'FATHER', label: 'Baba' },
+                                    { value: 'SIBLING', label: 'Kardeş' },
+                                    { value: 'PARENT', label: 'Ebeveyn' },
+                                    { value: 'GRANDPARENT', label: 'Büyükbaba/Büyükanne' },
+                                    { value: 'GRANDCHILD', label: 'Torun' },
+                                    { value: 'UNCLE_AUNT', label: 'Amca/Teyze/Dayı/Hala' },
+                                    { value: 'NEPHEW_NIECE', label: 'Yeğen' },
+                                    { value: 'COUSIN', label: 'Kuzen' },
+                                    { value: 'OTHER', label: 'Diğer' }
                                 ]}
                             />
                         </div>
@@ -1305,9 +1348,9 @@ export default function ResidentViewPage() {
                                     onChange={(e: any) => setFamilyFormData({ ...familyFormData, gender: e.target.value })}
                                     options={[
                                         { value: '', label: 'Seçiniz' },
-                                        { value: 'Erkek', label: 'Erkek' },
-                                        { value: 'Kadın', label: 'Kadın' },
-                                        { value: 'Diğer', label: 'Diğer' }
+                                        { value: 'MALE', label: 'Erkek' },
+                                        { value: 'FEMALE', label: 'Kadın' },
+                                        { value: 'OTHER', label: 'Diğer' }
                                     ]}
                                 />
                             </div>
@@ -1373,6 +1416,10 @@ export default function ResidentViewPage() {
                                 !familyFormData.relationship ||
                                 !familyFormData.phone ||
                                 !familyFormData.identityNumber ||
+                                familyFormData.gender === '' ||
+                                !familyFormData.birthDate ||
+                                !familyFormData.birthPlace ||
+                                !familyFormData.bloodType ||
                                 familyMembersSaving
                             }
                             isLoading={familyMembersSaving}
@@ -1525,6 +1572,19 @@ export default function ResidentViewPage() {
                     birthPlace: '',
                     bloodType: ''
                 } : undefined}
+            />
+
+            {/* Create Ticket Modal */}
+            <CreateTicketModal
+                isOpen={showCreateTicketModal}
+                onClose={() => setShowCreateTicketModal(false)}
+                onSuccess={() => {
+                    toast.success('Talep başarıyla oluşturuldu!');
+                    // Refresh tickets if needed
+                    refreshTickets();
+                }}
+                defaultAssigneeId={resident?.id}
+                defaultAssigneeName={resident?.fullName}
             />
 
             {/* Toast Container */}

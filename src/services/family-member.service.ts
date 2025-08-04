@@ -114,6 +114,75 @@ class FamilyMemberService extends BaseService<FamilyMember, CreateFamilyMemberDt
             throw error;
         }
     }
+
+    /**
+     * Create a new family member for a user (admin endpoint)
+     * POST /family-members/admin/users/:userId/add-family-member
+     */
+    async createFamilyMemberAdmin(userId: string, data: {
+        identityOrPassportNumber: string;
+        firstName: string;
+        lastName: string;
+        relationship: string;
+        phone: string;
+        gender: 'MALE' | 'FEMALE' | 'OTHER';
+        birthDate: string;
+        birthPlace: string;
+        bloodType: string;
+        notes?: string;
+    }): Promise<any> {
+        try {
+            this.logger.info(`Creating family member (admin) for user: ${userId}`, data);
+            
+            // Debug: API'ye gönderilecek veri
+            console.log('SERVICE - API Request Data:', data);
+            console.log('SERVICE - identityOrPassportNumber:', data.identityOrPassportNumber);
+            
+            console.log('🔧 BEFORE HYBRID PAYLOAD CREATION');
+            
+            // Backend'in field mapping sorunu olabilir - her iki formatı da deneyelim
+            const hybridPayload = {
+                // Backend dokümantasyonuna göre camelCase
+                identityOrPassportNumber: data.identityOrPassportNumber,
+                // Database field adı snake_case olabilir
+                identity_or_passport_number: data.identityOrPassportNumber,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                relationship: data.relationship,
+                phone: data.phone,
+                gender: data.gender,
+                birthDate: data.birthDate,
+                birthPlace: data.birthPlace,
+                bloodType: data.bloodType,
+                notes: data.notes || ''
+            };
+            
+            console.log('🚀 SERVICE - Hybrid Payload:', hybridPayload);
+            console.log('🔍 HYBRID - identityOrPassportNumber:', hybridPayload.identityOrPassportNumber);
+            console.log('🔍 HYBRID - identity_or_passport_number:', hybridPayload.identity_or_passport_number);
+            
+            // Eğer hybrid de çalışmazsa, alternatif endpoint dene
+            let response;
+            try {
+                response = await apiClient.post(
+                    `/family-members/admin/users/${userId}/add-family-member`,
+                    hybridPayload
+                );
+            } catch (firstError) {
+                console.log('First endpoint failed, trying alternative...');
+                // Alternatif endpoint denemesi
+                response = await apiClient.post(
+                    `/family-members/users/${userId}/family-members`,
+                    hybridPayload
+                );
+            }
+            this.logger.info(`Created family member (admin) for user ${userId}`);
+            return response;
+        } catch (error) {
+            this.logger.error(`Failed to create family member (admin) for user ${userId}`, error);
+            throw error;
+        }
+    }
 }
 
 // Export singleton instance
