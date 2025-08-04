@@ -279,7 +279,7 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
       }
 
       console.log('API Response Status:', addTenantResponse.status);
-      console.log('API Response Headers:', [...addTenantResponse.headers.entries()]);
+      console.log('API Response Headers:', Array.from(addTenantResponse.headers.entries()));
       
       const responseText = await addTenantResponse.text();
       console.error('Raw API Response:', responseText);
