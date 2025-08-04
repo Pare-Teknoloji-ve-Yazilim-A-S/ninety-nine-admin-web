@@ -385,7 +385,7 @@ export default function ResidentViewPage() {
                     lastName: familyFormData.lastName,
                     relationship: familyFormData.relationship, // Artık doğrudan backend değerleri kullanıyoruz
                     phone: familyFormData.phone,
-                    gender: familyFormData.gender, // Artık doğrudan backend değerleri kullanıyoruz
+                    gender: familyFormData.gender as 'MALE' | 'FEMALE' | 'OTHER', // Type assertion for strict enum
                     birthDate: familyFormData.birthDate,
                     birthPlace: familyFormData.birthPlace,
                     bloodType: familyFormData.bloodType,
