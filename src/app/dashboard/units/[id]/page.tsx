@@ -678,9 +678,8 @@ export default function UnitDetailPage() {
         isOpen={showAddTenantModal}
         onClose={() => setShowAddTenantModal(false)}
         onSuccess={() => {
-          toast.success('Kiracı başarıyla eklendi!');
           setShowAddTenantModal(false);
-          refetch();
+          refetch(); // This will refresh the tenant info card
         }}
         propertyId={unitId}
       />
