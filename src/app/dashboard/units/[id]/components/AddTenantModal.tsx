@@ -276,7 +276,7 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
                   type="text"
                   placeholder={searching ? 'Yükleniyor...' : 'Sakin ara...'}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                   onFocus={() => setDropdownOpen(true)}
                   disabled={searching}
                   className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-primary-gold/30 hover:border-primary-gold/50 focus:border-primary-gold focus:outline-none focus:ring-2 focus:ring-primary-gold/50 bg-background-secondary text-text-primary transition-colors"
@@ -367,14 +367,14 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
             <Input
               label="Ad"
               value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, firstName: e.target.value })}
               error={errors.firstName}
               required
             />
             <Input
               label="Soyad"
               value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, lastName: e.target.value })}
               error={errors.lastName}
               required
             />
@@ -382,21 +382,21 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
               label="E-posta"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, email: e.target.value })}
               error={errors.email}
               required
             />
             <Input
               label="Telefon"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, phone: e.target.value })}
               error={errors.phone}
               required
             />
             <Select
               label="Cinsiyet"
               value={formData.gender}
-              onChange={(e) => setFormData({ ...formData, gender: e.target.value as 'MALE' | 'FEMALE' | 'OTHER' })}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, gender: e.target.value as 'MALE' | 'FEMALE' | 'OTHER' })}
               options={[
                 { value: 'MALE', label: 'Erkek' },
                 { value: 'FEMALE', label: 'Kadın' },

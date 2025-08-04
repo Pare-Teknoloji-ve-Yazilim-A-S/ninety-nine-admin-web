@@ -240,9 +240,12 @@ export default function BasicInfoSection({
                 />
               ) : (
                 <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                  {basicInfo.data.propertyType.options.find((opt: any) => 
-                    opt.value === basicInfo.data.propertyType.value
-                  )?.label || basicInfo.data.propertyType.value}
+                  {(() => {
+                    const option = basicInfo.data.propertyType.options.find((opt: any) => 
+                      typeof opt === 'object' ? opt.value === basicInfo.data.propertyType.value : opt === basicInfo.data.propertyType.value
+                    );
+                    return typeof option === 'object' ? option.label : option || basicInfo.data.propertyType.value;
+                  })()}
                 </p>
               )}
             </div>

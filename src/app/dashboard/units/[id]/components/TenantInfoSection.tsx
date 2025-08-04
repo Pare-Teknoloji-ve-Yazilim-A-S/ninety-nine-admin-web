@@ -28,7 +28,7 @@ import { residentService } from '@/services/resident.service';
 interface TenantInfoSectionProps {
   tenantInfo?: TenantInfo;
   onUpdate?: (data: UpdateTenantInfoDto) => Promise<void>;
-  onRemove?: () => Promise<void>;
+  onRemove?: () => void;
   onAddTenant?: () => void;
   loading?: boolean;
   canEdit?: boolean;

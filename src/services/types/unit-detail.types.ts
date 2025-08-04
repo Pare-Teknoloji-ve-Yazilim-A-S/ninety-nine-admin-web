@@ -7,7 +7,7 @@ export interface UnitDetail {
   floor: number;
   type: string;
   area: number;
-  status: 'active' | 'inactive' | 'maintenance' | 'renovation';
+  status: 'occupied' | 'available' | 'maintenance' | 'renovation';
   createdDate: string;
   lastUpdated: string;
   tenantId?: string; // Tenant ID from properties table
@@ -33,6 +33,7 @@ export interface BasicInfo {
     apartmentNumber: FieldData<string>;
     block: SelectFieldData;
     floor: FieldData<number>;
+    propertyType: SelectFieldData;
     apartmentType: SelectFieldData;
     area: FieldData<number>;
     status: StatusFieldData;
@@ -242,7 +243,7 @@ export interface StatusFieldData extends SelectFieldData {
 }
 
 export interface StatusOption extends SelectOption {
-  value: 'active' | 'inactive' | 'maintenance' | 'renovation';
+  value: 'occupied' | 'available' | 'maintenance' | 'renovation';
   color: 'green' | 'red' | 'orange' | 'blue';
 }
 
