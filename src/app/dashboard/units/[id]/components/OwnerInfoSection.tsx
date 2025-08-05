@@ -241,11 +241,11 @@ export default function OwnerInfoSection({
         updateData.lastName = formData.lastName;
       }
       
-      // Telefon - sadece dolu ve değiştirilmiş ise, formatlanmış halini gönder
+      // Telefon - sadece dolu ve değiştirilmiş ise
       if (formData.phone && formData.phone.trim()) {
         const currentPhone = ownerInfo.data.phone.value;
-        if (formattedPhone !== currentPhone) {
-          updateData.phone = formattedPhone;
+        if (formData.phone.trim() !== currentPhone) {
+          updateData.phone = formData.phone.trim();
         }
       }
       
@@ -287,7 +287,7 @@ export default function OwnerInfoSection({
         const fullName = `${formData.firstName} ${formData.lastName}`.trim();
         await onUpdate({
           fullName: fullName,
-          phone: formattedPhone,
+          phone: formData.phone,
           email: formData.email,
           nationalId: formData.nationalId,
           ownershipType: formData.ownershipType as 'owner' | 'investor' | 'inherited'
