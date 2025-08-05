@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import Modal from "@/app/components/ui/Modal";
 import { UpdateBasicInfoDto, UpdateOwnerInfoDto, UpdateTenantInfoDto } from "@/services/types/unit-detail.types";
+import { PropertyService } from "@/services/property.service";
 
 export default function UnitDetailPage() {
   const params = useParams();
@@ -53,6 +54,19 @@ export default function UnitDetailPage() {
   console.log('📄 UnitDetailPage - unitId:', unitId);
   console.log('📄 UnitDetailPage - typeof unitId:', typeof unitId);
   console.log('📄 UnitDetailPage - unitId length:', unitId?.length);
+  
+  // Initialize PropertyService
+  const propertyService = new PropertyService();
+  
+  // Helper function to format UUID (add hyphens if missing)
+  const formatUUID = (uuid: string): string => {
+    if (!uuid) return uuid;
+    // If UUID is 32 characters (no hyphens), add hyphens
+    if (uuid.length === 32) {
+      return `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${uuid.slice(16, 20)}-${uuid.slice(20)}`;
+    }
+    return uuid;
+  };
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'residents' | 'financial' | 'consumption' | 'maintenance' | 'visitors' | 'documents'>('residents');
@@ -127,17 +141,17 @@ export default function UnitDetailPage() {
   }, [unitId]);
 
   // Handle tenant removal request (show modal)
-  const handleRemoveTenantRequest = () => {
+  const handleRemoveTenantRequest = async () => {
     setShowRemoveTenantModal(true);
   };
 
   // Handle tenant addition request (show modal)
-  const handleAddTenantRequest = () => {
+  const handleAddTenantRequest = async () => {
     setShowAddTenantModal(true);
   };
 
   // Handle owner removal request (show modal)
-  const handleRemoveOwnerRequest = () => {
+  const handleRemoveOwnerRequest = async () => {
     setShowRemoveOwnerModal(true);
   };
 
@@ -606,29 +620,16 @@ export default function UnitDetailPage() {
     try {
       console.log('Removing owner from property:', { unitId, ownerId });
       
-      const response = await fetch(`/api/proxy/admin/properties/${unitId}/owner`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Malik kaldırma işlemi başarısız');
-      }
-
-      const result = await response.json();
-      console.log('Owner removal response:', result);
+      // Format UUIDs to ensure they have hyphens
+      const formattedUnitId = formatUUID(unitId);
+      const formattedOwnerId = formatUUID(ownerId);
       
-      // Check if owner was actually removed
-      if (result.data?.property?.ownerId || result.data?.property?.owner) {
-        console.warn('Owner still exists in response:', {
-          ownerId: result.data?.property?.ownerId,
-          owner: result.data?.property?.owner
-        });
-      }
+      console.log('Formatted UUIDs:', { formattedUnitId, formattedOwnerId });
+      
+      // Use PropertyService instead of direct fetch
+      await propertyService.removeOwner(formattedUnitId, formattedOwnerId);
+      
+      console.log('Owner removal successful via PropertyService');
 
       // Force refresh unit data with cache busting
       console.log('Forcing unit data refresh...');

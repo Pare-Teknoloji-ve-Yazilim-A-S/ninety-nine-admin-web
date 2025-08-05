@@ -101,6 +101,7 @@ export const apiConfig = {
                 byOwner: (ownerId: string) => `/admin/properties/owner/${ownerId}`,
                 byTenant: '/admin/properties/by-tenant',
                 byId: (id: string) => `/admin/properties/${id}`,
+                removeOwner: '/admin/properties/remove-owner',
 
                 // Future Endpoints (to be implemented)
                 statistics: '/admin/properties/statistics',

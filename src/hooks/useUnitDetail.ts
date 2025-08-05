@@ -17,85 +17,87 @@ interface UseUnitDetailResult {
 
 // Mock data transformer - converts API response to UnitDetail format
 const transformPropertyToUnitDetail = (property: any): UnitDetail => {
+  console.log('🔍 DEBUG: Transforming property to unit detail:', property);
+  
   // This is a mock transformer - replace with actual API response mapping
   return {
     id: property.id,
-    apartmentNumber: property.propertyNumber || 'A-101',
-    block: property.blockNumber || 'A',
+    apartmentNumber: property.name || property.propertyNumber || 'A-101',
+    block: property.propertyGroup || property.blockNumber || 'A',
     floor: property.floor || 1,
     type: property.type || 'RESIDENCE',
-    area: property.area || 120,
+    area: parseFloat(property.area) || 120,
     status: property.status === 'OCCUPIED' || property.status === 'OWNER_OCCUPIED' || 
             property.status === 'TENANT_OCCUPIED' || property.status === 'GUEST_OCCUPIED' ? 'occupied' : 'available',
     createdDate: property.createdAt || new Date().toISOString(),
     lastUpdated: property.updatedAt || new Date().toISOString(),
-    tenantId: property.tenantId, // Tenant ID from properties table
-    ownerId: property.owner?.id, // Owner ID from properties table
-    basicInfo: {
-      title: 'Konut Temel Bilgileri',
-      icon: '🏠',
-      data: {
-        apartmentNumber: {
-          label: 'Daire No',
-          value: property.propertyNumber || 'A-101',
-          type: 'text',
-          required: true
-        },
-        block: {
-          label: 'Blok',
-          value: property.blockNumber || 'A Blok',
-          type: 'select',
-          options: ['A Blok', 'B Blok', 'C Blok', 'D Blok'],
-          required: true
-        },
-        floor: {
-          label: 'Kat',
-          value: property.floor || 1,
-          type: 'number',
-          min: -1,
-          max: 20,
-          required: true
-        },
-        propertyType: {
-          label: 'Mülk Tipi',
-          value: property.type || 'RESIDENCE',
-          type: 'select',
-          options: [
-            { value: 'RESIDENCE', label: 'Daire' },
-            { value: 'VILLA', label: 'Villa' },
-            { value: 'COMMERCIAL', label: 'Ticari' },
-            { value: 'OFFICE', label: 'Ofis' }
-          ],
-          required: true
-        },
-        apartmentType: {
-          label: 'Daire Tipi',
-          value: `${property.rooms || '3+1'} (${property.area || 120}m²)`,
-          type: 'select',
-          options: ['1+0 (45m²)', '1+1 (65m²)', '2+1 (85m²)', '3+1 (120m²)', '4+1 (150m²)', '5+1 (180m²)'],
-          required: true
-        },
-        area: {
-          label: 'Alan (m²)',
-          value: property.area || 120,
-          type: 'number',
-          min: 30,
-          max: 500,
-          required: true
-        },
-        status: {
-          label: 'Durum',
-          value: property.status === 'OCCUPIED' || property.status === 'OWNER_OCCUPIED' || 
-                 property.status === 'TENANT_OCCUPIED' || property.status === 'GUEST_OCCUPIED' ? 'occupied' : 'available',
-          type: 'select',
-          options: [
-            { value: 'occupied', label: 'Dolu', color: 'red' },
-            { value: 'available', label: 'Müsait', color: 'green' }
-          ],
-          required: true
+    tenantId: property.tenant?.id, // Tenant ID from tenant object
+    ownerId: property.owner?.id, // Owner ID from owner object
+          basicInfo: {
+        title: 'Konut Temel Bilgileri',
+        icon: '🏠',
+        data: {
+          apartmentNumber: {
+            label: 'Daire No',
+            value: property.name || property.propertyNumber || 'A-101',
+            type: 'text',
+            required: true
+          },
+          block: {
+            label: 'Blok',
+            value: property.propertyGroup || property.blockNumber || 'A Blok',
+            type: 'select',
+            options: ['A Blok', 'B Blok', 'C Blok', 'D Blok'],
+            required: true
+          },
+          floor: {
+            label: 'Kat',
+            value: property.floor || 1,
+            type: 'number',
+            min: -1,
+            max: 20,
+            required: true
+          },
+          propertyType: {
+            label: 'Mülk Tipi',
+            value: property.type || 'RESIDENCE',
+            type: 'select',
+            options: [
+              { value: 'RESIDENCE', label: 'Daire' },
+              { value: 'VILLA', label: 'Villa' },
+              { value: 'COMMERCIAL', label: 'Ticari' },
+              { value: 'OFFICE', label: 'Ofis' }
+            ],
+            required: true
+          },
+          apartmentType: {
+            label: 'Daire Tipi',
+            value: `${property.rooms || '3+1'} (${parseFloat(property.area) || 120}m²)`,
+            type: 'select',
+            options: ['1+0 (45m²)', '1+1 (65m²)', '2+1 (85m²)', '3+1 (120m²)', '4+1 (150m²)', '5+1 (180m²)'],
+            required: true
+          },
+          area: {
+            label: 'Alan (m²)',
+            value: parseFloat(property.area) || 120,
+            type: 'number',
+            min: 30,
+            max: 500,
+            required: true
+          },
+          status: {
+            label: 'Durum',
+            value: property.status === 'OCCUPIED' || property.status === 'OWNER_OCCUPIED' || 
+                   property.status === 'TENANT_OCCUPIED' || property.status === 'GUEST_OCCUPIED' ? 'occupied' : 'available',
+            type: 'select',
+            options: [
+              { value: 'occupied', label: 'Dolu', color: 'red' },
+              { value: 'available', label: 'Müsait', color: 'green' }
+            ],
+            required: true
+          }
         }
-      }
-    },
+      },
     ownerInfo: {
       title: 'Malik Bilgileri',
       icon: '👤',
