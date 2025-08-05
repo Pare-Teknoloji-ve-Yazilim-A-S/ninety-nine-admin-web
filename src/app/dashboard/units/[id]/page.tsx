@@ -67,6 +67,10 @@ export default function UnitDetailPage() {
   const [removingTenant, setRemovingTenant] = useState(false);
   const [showRemoveTenantModal, setShowRemoveTenantModal] = useState(false);
   
+  // Add state for owner removal
+  const [removingOwner, setRemovingOwner] = useState(false);
+  const [showRemoveOwnerModal, setShowRemoveOwnerModal] = useState(false);
+  
   // Add state for tenant addition
   const [showAddTenantModal, setShowAddTenantModal] = useState(false);
   
@@ -130,6 +134,11 @@ export default function UnitDetailPage() {
   // Handle tenant addition request (show modal)
   const handleAddTenantRequest = () => {
     setShowAddTenantModal(true);
+  };
+
+  // Handle owner removal request (show modal)
+  const handleRemoveOwnerRequest = () => {
+    setShowRemoveOwnerModal(true);
   };
 
   // Handle basic info update
@@ -524,6 +533,127 @@ export default function UnitDetailPage() {
     }
   };
 
+  // Handle owner removal confirmation
+  const handleRemoveOwnerConfirm = async () => {
+    let ownerId = unit?.ownerId;
+    
+    console.log('Unit ownerId from properties table:', ownerId);
+    
+    // If ownerId not in property data, try to find it via email
+    if (!ownerId && unit?.ownerInfo?.data?.email?.value) {
+      const ownerEmail = unit.ownerInfo.data.email.value;
+      console.log('Trying to find owner by email:', ownerEmail);
+      console.log('All owner info data:', unit.ownerInfo.data);
+      
+      try {
+        const userResponse = await fetch(`/api/proxy/admin/users?email=${encodeURIComponent(ownerEmail)}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          console.log('User search result:', userData);
+          
+          if (userData.data && userData.data.length > 0) {
+            // Find the user with matching email
+            const matchingUser = userData.data.find((user: any) => 
+              user.email === ownerEmail
+            );
+            
+            if (matchingUser) {
+              ownerId = matchingUser.id;
+              console.log('Found matching owner by email:', matchingUser);
+              console.log('Found owner ID via email:', ownerId);
+            } else {
+              console.log('No user found with matching email:', ownerEmail);
+              
+              // Try to find by owner name as fallback
+              const ownerName = unit?.ownerInfo?.data?.fullName?.value;
+              if (ownerName) {
+                console.log('Trying to find owner by name:', ownerName);
+                const nameMatchUser = userData.data.find((user: any) => {
+                  const fullName = `${user.firstName} ${user.lastName}`.trim();
+                  return fullName === ownerName || 
+                         user.firstName === ownerName.split(' ')[0] ||
+                         fullName.toLowerCase() === ownerName.toLowerCase();
+                });
+                
+                if (nameMatchUser) {
+                  ownerId = nameMatchUser.id;
+                  console.log('Found owner by name match:', nameMatchUser);
+                  console.log('Found owner ID via name:', ownerId);
+                }
+              }
+            }
+          }
+        } else {
+          console.log('User search failed:', userResponse.status);
+        }
+      } catch (error) {
+        console.error('Error searching for user:', error);
+      }
+    }
+    
+    if (!ownerId) {
+      toast.error('Malik ID\'si bulunamadı. Backend\'de ownerId field\'ı eksik olabilir.');
+      return;
+    }
+    
+    setRemovingOwner(true);
+    try {
+      console.log('Removing owner from property:', { unitId, ownerId });
+      
+      const response = await fetch(`/api/proxy/admin/properties/${unitId}/owner`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Malik kaldırma işlemi başarısız');
+      }
+
+      const result = await response.json();
+      console.log('Owner removal response:', result);
+      
+      // Check if owner was actually removed
+      if (result.data?.property?.ownerId || result.data?.property?.owner) {
+        console.warn('Owner still exists in response:', {
+          ownerId: result.data?.property?.ownerId,
+          owner: result.data?.property?.owner
+        });
+      }
+
+      // Force refresh unit data with cache busting
+      console.log('Forcing unit data refresh...');
+      await refetch();
+      
+      // Wait a bit and check if data updated
+      setTimeout(async () => {
+        console.log('Unit data after refresh:', unit);
+        if (unit?.ownerInfo?.data?.fullName?.value) {
+          console.warn('Frontend still shows owner after removal');
+          // Force another refresh
+          await refetch();
+        }
+      }, 1000);
+      
+      toast.success('Malik kaldırma işlemi tamamlandı!');
+      setShowRemoveOwnerModal(false);
+    } catch (error: any) {
+      console.error('Error removing owner:', error);
+      toast.error(error.message || 'Malik kaldırılırken bir hata oluştu');
+    } finally {
+      setRemovingOwner(false);
+    }
+  };
+
   const breadcrumbItems = [
     { label: "Ana Sayfa", href: "/dashboard" },
     { label: "Konutlar", href: "/dashboard/units" },
@@ -839,7 +969,8 @@ export default function UnitDetailPage() {
                   <OwnerInfoSection
                     ownerInfo={unit.ownerInfo}
                     onUpdate={handleUpdateOwnerInfo}
-                    loading={loading}
+                    onRemove={handleRemoveOwnerRequest}
+                    loading={loading || removingOwner}
                     canEdit={unit.permissions.canEdit}
                     residentId={unit.ownerId}
                   />
@@ -960,6 +1091,60 @@ export default function UnitDetailPage() {
             icon={UserX}
           >
             {removingTenant ? 'Kaldırılıyor...' : 'Kiracıyı Kaldır'}
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Remove Owner Confirmation Modal */}
+      <Modal
+        isOpen={showRemoveOwnerModal}
+        onClose={() => setShowRemoveOwnerModal(false)}
+        title="Maliki Kaldır"
+        icon={UserX}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-6 w-6 text-primary-red" />
+            </div>
+            <div>
+              <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
+                Maliki kaldırmak istediğinizden emin misiniz?
+              </h3>
+              <p className="mt-2 text-sm text-text-light-secondary dark:text-text-secondary">
+                Bu işlem geri alınamaz. Malik bu konuttan kaldırılacaktır.
+              </p>
+              {unit?.ownerInfo?.data?.fullName?.value && (
+                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm">
+                    <span className="font-medium text-text-on-light dark:text-text-on-dark">Malik: </span>
+                    <span className="text-text-light-secondary dark:text-text-secondary">
+                      {unit.ownerInfo.data.fullName.value}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button
+            variant="ghost"
+            onClick={() => setShowRemoveOwnerModal(false)}
+            disabled={removingOwner}
+          >
+            İptal
+          </Button>
+          <Button
+            variant="danger"
+            onClick={handleRemoveOwnerConfirm}
+            isLoading={removingOwner}
+            disabled={removingOwner}
+            icon={UserX}
+          >
+            {removingOwner ? 'Kaldırılıyor...' : 'Maliki Kaldır'}
           </Button>
         </div>
       </Modal>

@@ -7,7 +7,7 @@ import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
 import DatePicker from '@/app/components/ui/DatePicker';
 import { OwnerInfo, UpdateOwnerInfoDto } from '@/services/types/unit-detail.types';
-import { User, Phone, Mail, Edit, Save, X, IdCard, UserPlus } from 'lucide-react';
+import { User, Phone, Mail, Edit, Save, X, IdCard, UserPlus, UserX } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 import { adminResidentService } from '@/services/admin-resident.service';
 
@@ -390,15 +390,26 @@ export default function OwnerInfoSection({
               {ownerInfo.title}
             </h3>
             {canEdit && (
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={Edit}
-                onClick={handleEdit}
-                disabled={loading}
-              >
-                Düzenle
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={UserX}
+                  onClick={onRemove}
+                  disabled={loading}
+                >
+                  Kaldır
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon={Edit}
+                  onClick={handleEdit}
+                  disabled={loading}
+                >
+                  Düzenle
+                </Button>
+              </div>
             )}
           </div>
 
