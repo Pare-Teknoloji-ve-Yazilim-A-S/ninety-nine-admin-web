@@ -3,34 +3,38 @@
 import React from 'react';
 import Card from '@/app/components/ui/Card';
 import Badge from '@/app/components/ui/Badge';
-
-interface Transaction {
-    date: string;
-    type: string;
-    unit: string;
-    amount: string;
-    status: 'Ödendi' | 'Bekliyor' | 'Gecikmiş';
-}
+import { useRecentTransactions, Transaction } from '@/hooks/useRecentTransactions';
 
 interface RecentTransactionsProps {
-    transactions?: Transaction[];
     title?: string;
     subtitle?: string;
 }
 
-const defaultTransactions: Transaction[] = [
-    { date: '2024-01-15', type: 'Aidat', unit: 'A-101', amount: '₺1,200', status: 'Ödendi' },
-    { date: '2024-01-15', type: 'Bakım', unit: 'B-205', amount: '₺350', status: 'Bekliyor' },
-    { date: '2024-01-14', type: 'Aidat', unit: 'C-301', amount: '₺1,200', status: 'Ödendi' },
-    { date: '2024-01-14', type: 'Elektrik', unit: 'A-105', amount: '₺180', status: 'Gecikmiş' },
-    { date: '2024-01-13', type: 'Aidat', unit: 'B-102', amount: '₺1,200', status: 'Ödendi' },
-];
-
 export default function RecentTransactions({
-    transactions = defaultTransactions,
     title = "Son İşlemler",
     subtitle = "Bugünün finansal hareketleri"
 }: RecentTransactionsProps) {
+    const { transactions, loading, error } = useRecentTransactions(5);
+    
+    if (loading) {
+        return (
+            <Card title={title} subtitle={subtitle}>
+                <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            </Card>
+        );
+    }
+    
+    if (error) {
+        return (
+            <Card title={title} subtitle={subtitle}>
+                <div className="text-center py-8 text-red-500">
+                    Veriler yüklenirken hata oluştu: {error}
+                </div>
+            </Card>
+        );
+    }
     return (
         <Card title={title} subtitle={subtitle}>
             <div className="overflow-x-auto">
@@ -79,4 +83,4 @@ export default function RecentTransactions({
             </div>
         </Card>
     );
-} 
+}
