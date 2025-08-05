@@ -225,13 +225,15 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
       
       // Try the exact structure from user's original example
       const requestPayload = {
-        residentId: residentId
+        residentId: residentId,
+        status: 'TENANT' // Kiracı durumunu açıkça belirt
       };
       
       // Backend only expects residentId according to the examples
       console.log('Using backend expected structure (residentId only)...');
       let simplePayload = {
-        residentId: residentId
+        residentId: residentId,
+        status: 'TENANT' // Kiracı durumunu açıkça belirt
         // Backend doesn't expect lease dates in this endpoint
       };
       

@@ -29,9 +29,15 @@ export default function FinancialSummarySection({
   onAddPayment
 }: FinancialSummaryProps) {
   const formatCurrency = (amount: number, currency: string = 'IQD') => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '0 ' + currency;
+    }
     const isNegative = amount < 0;
     const absAmount = Math.abs(amount);
-    return (isNegative ? '-' : '') + new Intl.NumberFormat('tr-TR').format(absAmount) + ' ' + currency;
+    return (isNegative ? '-' : '') + new Intl.NumberFormat('tr-TR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(absAmount) + ' ' + currency;
   };
 
   const formatDate = (dateString: string) => {
@@ -53,6 +59,11 @@ export default function FinancialSummarySection({
   };
 
   const getBalanceStatus = (balance: number, status?: string) => {
+    // Null/undefined kontrolü ekle
+    if (balance === null || balance === undefined || isNaN(balance)) {
+      return { color: 'secondary' as const, icon: CheckCircle, label: 'Bilinmiyor' };
+    }
+    
     if (status === 'debt' || balance < 0) {
       return { color: 'red' as const, icon: AlertTriangle, label: 'Borç' };
     } else if (balance > 0) {
