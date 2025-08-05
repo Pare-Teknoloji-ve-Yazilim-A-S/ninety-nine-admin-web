@@ -11,6 +11,7 @@ export interface UnitDetail {
   createdDate: string;
   lastUpdated: string;
   tenantId?: string; // Tenant ID from properties table
+  ownerId?: string; // Owner ID from properties table
   basicInfo: BasicInfo;
   ownerInfo: OwnerInfo;
   tenantInfo?: TenantInfo;

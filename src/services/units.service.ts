@@ -103,6 +103,7 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
     async getPropertyById(id: string): Promise<ApiResponse<Property>> {
         // Fetch property details from /admin/properties/{id}
         const response = await apiClient.get(`/admin/properties/${id}`);
+        
         return response; // Return the full API response as required
     }
 

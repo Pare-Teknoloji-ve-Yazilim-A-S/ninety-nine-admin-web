@@ -41,11 +41,19 @@ import {
   UserX
 } from "lucide-react";
 import Modal from "@/app/components/ui/Modal";
-import { UpdateBasicInfoDto } from "@/services/types/unit-detail.types";
+import { UpdateBasicInfoDto, UpdateOwnerInfoDto, UpdateTenantInfoDto } from "@/services/types/unit-detail.types";
 
 export default function UnitDetailPage() {
   const params = useParams();
   const unitId = params.id as string;
+  
+  // DEBUG: Log params and unitId
+  console.log('📄 UnitDetailPage - params:', params);
+  console.log('📄 UnitDetailPage - params.id:', params.id);
+  console.log('📄 UnitDetailPage - unitId:', unitId);
+  console.log('📄 UnitDetailPage - typeof unitId:', typeof unitId);
+  console.log('📄 UnitDetailPage - unitId length:', unitId?.length);
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'residents' | 'financial' | 'consumption' | 'maintenance' | 'visitors' | 'documents'>('residents');
   const toast = useToast();
@@ -173,6 +181,221 @@ export default function UnitDetailPage() {
       toast.success('Konut bilgileri başarıyla güncellendi!');
     } catch (error: any) {
       console.error('Error updating basic info:', error);
+      toast.error(error.message || 'Güncelleme sırasında bir hata oluştu');
+      throw error; // Re-throw to handle in component
+    }
+  };
+
+  // Handle owner info update
+  const handleUpdateOwnerInfo = async (data: UpdateOwnerInfoDto) => {
+    if (!unitId || !unit?.ownerInfo) return;
+
+    try {
+      console.log('Updating owner info:', data);
+      
+      // Import the admin resident service
+      const { adminResidentService, unitsService } = await import('@/services');
+      
+      // Prepare the update data for the resident
+      const updateData: any = {};
+      
+      if (data.fullName) {
+        const nameParts = data.fullName.split(' ');
+        if (nameParts.length > 0) {
+          updateData.firstName = nameParts[0];
+          if (nameParts.length > 1) {
+            updateData.lastName = nameParts.slice(1).join(' ');
+          }
+        }
+      }
+      
+      // Format phone number - remove validation, just clean the format
+      if (data.phone) {
+        // Remove any non-digit characters except +
+        let cleanPhone = data.phone.replace(/[^\d+]/g, '');
+        // If it doesn't start with +, add +964 prefix for Iraqi numbers
+        if (!cleanPhone.startsWith('+')) {
+          if (cleanPhone.startsWith('0')) {
+            cleanPhone = '+964' + cleanPhone.substring(1);
+          } else if (cleanPhone.length === 10) {
+            cleanPhone = '+964' + cleanPhone;
+          } else {
+            cleanPhone = '+964' + cleanPhone;
+          }
+        }
+        updateData.phone = cleanPhone;
+      }
+      
+      // Email - send as is without validation
+      if (data.email) {
+        updateData.email = data.email;
+      }
+      if (data.nationalId) updateData.identityNumber = data.nationalId;
+      
+      console.log('Resident update payload:', updateData);
+      
+      // First, get the current property data to extract the owner ID
+      try {
+        const propertyResponse = await unitsService.getPropertyById(unitId);
+        const propertyData = propertyResponse.data;
+        
+        // Check if owner exists in the property data
+        if (!propertyData || !propertyData.owner || !propertyData.owner.id) {
+          console.error('Property owner ID not found');
+          toast.error('Malik bilgileri güncellenemedi: Malik kimliği bulunamadı');
+          return;
+        }
+        
+        // Extract the owner ID from the owner object in API response
+        const ownerId = propertyData.owner.id;
+        console.log('Using owner ID from API:', ownerId);
+        
+        // Prepare property update data with formatted phone
+        const propertyUpdateData: any = {
+          ownerName: data.fullName,
+          ownerPhone: updateData.phone || data.phone, // Use formatted phone if available
+          ownerEmail: updateData.email || data.email, // Use email as is
+          ownerIdentityNumber: data.nationalId,
+          ownerId: ownerId // Use the owner ID from API
+        };
+        
+        // Update the property owner information
+        await unitsService.updateUnit(unitId, propertyUpdateData);
+        console.log('Property owner info updated successfully with API owner ID');
+        
+        // Refresh unit data after successful update
+        await refetch();
+        
+        toast.success('Malik bilgileri başarıyla güncellendi!');
+        return;
+      } catch (propertyError) {
+        console.error('Error updating property owner info:', propertyError);
+        // Continue with the resident update as fallback
+      }
+      
+      // Fallback: Try to update the resident record if property update fails
+      try {
+        // Get the current property data to extract the owner ID
+        const propertyResponse = await unitsService.getPropertyById(unitId);
+        const propertyData = propertyResponse.data;
+        
+        // Check if owner exists in the property data
+        if (!propertyData || !propertyData.owner || !propertyData.owner.id) {
+          console.error('Property owner ID not found for fallback');
+          toast.error('Malik bilgileri güncellenemedi: Malik kimliği bulunamadı');
+          return;
+        }
+        
+        // Extract the owner ID from the owner object in API response
+        const ownerId = propertyData.owner.id;
+        console.log('Using owner ID from API for resident update:', ownerId);
+        
+        // If we have update data, update the resident with the API owner ID
+        if (Object.keys(updateData).length > 0) {
+          await adminResidentService.updateResident(ownerId, updateData);
+          console.log('Owner info updated successfully with API owner ID');
+          
+          // Refresh unit data after successful update
+          await refetch();
+          
+          toast.success('Malik bilgileri başarıyla güncellendi!');
+        } else {
+          console.warn('Could not update owner info: no changes to make');
+          toast.error('Malik bilgileri güncellenemedi: Değişiklik yok');
+        }
+      } catch (residentError) {
+        console.error('Error updating resident with API owner ID:', residentError);
+        toast.error('Malik bilgileri güncellenemedi: API hatası');
+      }
+    } catch (error: any) {
+      console.error('Error updating owner info:', error);
+      toast.error(error.message || 'Güncelleme sırasında bir hata oluştu');
+      throw error; // Re-throw to handle in component
+    }
+  };
+
+  // Handle tenant info update
+  const handleUpdateTenantInfo = async (data: UpdateTenantInfoDto) => {
+    if (!unitId || !unit?.tenantInfo) return;
+
+    try {
+      console.log('Updating tenant info:', data);
+      
+      // Import the admin resident service
+      const { adminResidentService, unitsService } = await import('@/services');
+      
+      // Prepare the update data for the resident
+      const updateData: any = {};
+      
+      if (data.tenantName) {
+        const nameParts = data.tenantName.split(' ');
+        if (nameParts.length > 0) {
+          updateData.firstName = nameParts[0];
+          if (nameParts.length > 1) {
+            updateData.lastName = nameParts.slice(1).join(' ');
+          }
+        }
+      }
+      
+      // Format phone number - remove validation, just clean the format
+      if (data.tenantPhone) {
+        // Remove any non-digit characters except +
+        let cleanPhone = data.tenantPhone.replace(/[^\d+]/g, '');
+        // If it doesn't start with +, add +964 prefix for Iraqi numbers
+        if (!cleanPhone.startsWith('+')) {
+          if (cleanPhone.startsWith('0')) {
+            cleanPhone = '+964' + cleanPhone.substring(1);
+          } else if (cleanPhone.length === 10) {
+            cleanPhone = '+964' + cleanPhone;
+          } else {
+            cleanPhone = '+964' + cleanPhone;
+          }
+        }
+        updateData.phone = cleanPhone;
+      }
+      
+      // Email - send as is without validation
+      if (data.tenantEmail) {
+        updateData.email = data.tenantEmail;
+      }
+      
+      console.log('Tenant update payload:', updateData);
+      
+      // Get the current property data to extract the tenant ID
+      try {
+        const propertyResponse = await unitsService.getPropertyById(unitId);
+        const propertyData = propertyResponse.data;
+        
+        // Check if tenant exists in the property data
+        if (!propertyData || !propertyData.tenant || !propertyData.tenant.id) {
+          console.error('Property tenant ID not found');
+          toast.error('Kiracı bilgileri güncellenemedi: Kiracı kimliği bulunamadı');
+          return;
+        }
+        
+        // Extract the tenant ID from the tenant object in API response
+        const tenantId = propertyData.tenant.id;
+        console.log('Using tenant ID from API:', tenantId);
+        
+        // Update the resident with the API tenant ID
+        if (Object.keys(updateData).length > 0) {
+          await adminResidentService.updateResident(tenantId, updateData);
+          console.log('Tenant info updated successfully with API tenant ID');
+          
+          // Refresh unit data after successful update
+          await refetch();
+          
+          toast.success('Kiracı bilgileri başarıyla güncellendi!');
+        } else {
+          console.warn('Could not update tenant info: no changes to make');
+          toast.error('Kiracı bilgileri güncellenemedi: Değişiklik yok');
+        }
+      } catch (error) {
+        console.error('Error updating tenant with API tenant ID:', error);
+        toast.error('Kiracı bilgileri güncellenemedi: API hatası');
+      }
+    } catch (error: any) {
+      console.error('Error updating tenant info:', error);
       toast.error(error.message || 'Güncelleme sırasında bir hata oluştu');
       throw error; // Re-throw to handle in component
     }
@@ -615,14 +838,17 @@ export default function UnitDetailPage() {
                 {unit?.ownerInfo && (
                   <OwnerInfoSection
                     ownerInfo={unit.ownerInfo}
+                    onUpdate={handleUpdateOwnerInfo}
                     loading={loading}
                     canEdit={unit.permissions.canEdit}
+                    residentId={unit.ownerId}
                   />
                 )}
 
                 {/* Tenant Information */}
                 <TenantInfoSection
                   tenantInfo={unit?.tenantInfo}
+                  onUpdate={handleUpdateTenantInfo}
                   loading={loading || removingTenant}
                   canEdit={unit?.permissions.canEdit}
                   onRemove={handleRemoveTenantRequest}

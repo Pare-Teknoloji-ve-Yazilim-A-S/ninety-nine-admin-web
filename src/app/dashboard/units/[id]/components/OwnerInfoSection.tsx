@@ -9,7 +9,6 @@ import DatePicker from '@/app/components/ui/DatePicker';
 import { OwnerInfo, UpdateOwnerInfoDto } from '@/services/types/unit-detail.types';
 import { User, Phone, Mail, Edit, Save, X, IdCard, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
-import { residentService } from '@/services/resident.service';
 import { adminResidentService } from '@/services/admin-resident.service';
 
 interface OwnerInfoSectionProps {
@@ -21,14 +20,7 @@ interface OwnerInfoSectionProps {
   residentId?: string; // Malik için sakin ID'si
 }
 
-interface Resident {
-  id: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  phone?: string;
-  email?: string;
-}
+
 
 export default function OwnerInfoSection({ 
   ownerInfo, 
@@ -39,44 +31,39 @@ export default function OwnerInfoSection({
   residentId
 }: OwnerInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showAddNewResident, setShowAddNewResident] = useState(false);
+
   const [formData, setFormData] = useState({
-    fullName: ownerInfo.data.fullName.value,
+    firstName: '',
+    lastName: '',
     phone: ownerInfo.data.phone.value,
     email: ownerInfo.data.email.value,
     nationalId: ownerInfo.data.nationalId.value,
     ownershipType: ownerInfo.data.ownershipType.value
   });
-  const [newResidentData, setNewResidentData] = useState({
-    identityNumber: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    gender: '',
-    birthDate: '',
-    birthPlace: '',
-    bloodType: ''
-  });
-  const [selectedResident, setSelectedResident] = useState('');
-  const [residents, setResidents] = useState<Resident[]>([]);
-  const [loadingResidents, setLoadingResidents] = useState(false);
+
+
   const [saving, setSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const toast = useToast();
 
   const handleEdit = () => {
     setShowEditModal(true);
-    setShowAddNewResident(false); // Yeni sakin ekleme formunu kapat
+    
+    // Mevcut fullName değerini ad ve soyad olarak ayırma
+    const fullName = ownerInfo.data.fullName.value;
+    const nameParts = fullName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
     setFormData({
-      fullName: ownerInfo.data.fullName.value,
+      firstName: firstName,
+      lastName: lastName,
       phone: ownerInfo.data.phone.value,
       email: ownerInfo.data.email.value,
       nationalId: ownerInfo.data.nationalId.value,
       ownershipType: ownerInfo.data.ownershipType.value
     });
     setValidationErrors({}); // Validation hatalarını temizle
-    loadResidents();
   };
 
   // Form field değişikliklerini handle et ve validation yap
@@ -143,26 +130,7 @@ export default function OwnerInfoSection({
     setValidationErrors(newErrors);
   };
 
-  const loadResidents = async () => {
-    setLoadingResidents(true);
-    try {
-      const response = await residentService.getAllResidents({ limit: 1000 });
-      const residentsList = response.data.map((resident: any) => ({
-        id: resident.id,
-        firstName: resident.firstName,
-        lastName: resident.lastName,
-        fullName: `${resident.firstName} ${resident.lastName}`,
-        phone: resident.phone,
-        email: resident.email
-      }));
-      setResidents(residentsList);
-    } catch (error) {
-      console.error('Failed to load residents:', error);
-      toast.error('Sakinler yüklenirken hata oluştu');
-    } finally {
-      setLoadingResidents(false);
-    }
-  };
+
 
   // Kullanıcıyı email ile bulma
   const findResidentByEmail = async (email: string): Promise<string | undefined> => {
@@ -177,7 +145,8 @@ export default function OwnerInfoSection({
       if (response.ok) {
         const userData = await response.json();
         if (userData.data && userData.data.length > 0) {
-          return userData.data[0].id;
+          const foundId = userData.data[0].id;
+          return foundId;
         }
       }
       return undefined;
@@ -235,21 +204,13 @@ export default function OwnerInfoSection({
         return;
       }
 
-      // Form validasyonu
-      const formattedPhone = formatPhoneNumber(formData.phone);
-      
-      if (formData.phone && !validatePhoneNumber(formattedPhone)) {
-        toast.error('Telefon numarası international formatında olmalıdır (örn: +905551234567)');
-        setSaving(false);
-        return;
-      }
-
+      // TC Kimlik validasyonu sadece
       if (formData.nationalId && !validateTcKimlik(formData.nationalId)) {
         toast.error('TC Kimlik No 11 haneli olmalı ve 0 ile başlayamaz');
         setSaving(false);
         return;
       }
-
+      
       let targetResidentId = residentId;
 
       // Eğer residentId yoksa email ile kullanıcıyı bul
@@ -272,15 +233,12 @@ export default function OwnerInfoSection({
       const updateData: any = {};
       
       // Ad Soyad - sadece dolu ve değiştirilmiş ise
-      if (formData.fullName && formData.fullName.trim()) {
-        const currentFullName = ownerInfo.data.fullName.value;
-        if (formData.fullName.trim() !== currentFullName) {
-          const nameParts = formData.fullName.trim().split(' ');
-          updateData.firstName = nameParts[0];
-          if (nameParts.length > 1) {
-            updateData.lastName = nameParts.slice(1).join(' ');
-          }
-        }
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      const currentFullName = ownerInfo.data.fullName.value;
+      
+      if (fullName && fullName !== currentFullName) {
+        updateData.firstName = formData.firstName;
+        updateData.lastName = formData.lastName;
       }
       
       // Telefon - sadece dolu ve değiştirilmiş ise, formatlanmış halini gönder
@@ -315,7 +273,7 @@ export default function OwnerInfoSection({
         return;
       }
 
-      console.log('Updating resident:', { targetResidentId, updateData });
+
 
       // API çağrısını yap
       await adminResidentService.updateResident(targetResidentId, updateData);
@@ -326,8 +284,9 @@ export default function OwnerInfoSection({
 
       // Eğer onUpdate prop'u varsa onu da çağır (sayfa yenileme için)
       if (onUpdate) {
+        const fullName = `${formData.firstName} ${formData.lastName}`.trim();
         await onUpdate({
-          fullName: formData.fullName,
+          fullName: fullName,
           phone: formattedPhone,
           email: formData.email,
           nationalId: formData.nationalId,
@@ -360,106 +319,11 @@ export default function OwnerInfoSection({
     }
   };
 
-  const handleResidentSelect = (residentId: string) => {
-    if (!residentId) return;
-    
-    const selectedResidentData = residents.find(r => r.id === residentId);
-    if (selectedResidentData) {
-      setFormData({
-        fullName: selectedResidentData.fullName,
-        phone: selectedResidentData.phone || '',
-        email: selectedResidentData.email || '',
-        nationalId: formData.nationalId,
-        ownershipType: formData.ownershipType
-      });
-      setSelectedResident(residentId);
-    }
-  };
 
-  const handleAddNewResident = () => {
-    setShowAddNewResident(true);
-  };
 
-  const handleNewResidentInputChange = (field: string, value: string) => {
-    setNewResidentData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
-  const handleCreateNewResident = async () => {
-    if (!newResidentData.firstName || !newResidentData.lastName || !newResidentData.email || !newResidentData.phone) {
-      toast.error('Lütfen tüm zorunlu alanları doldurun');
-      return;
-    }
 
-    setSaving(true);
-    try {
-      // Debug log to check what's being sent
-      const payload = {
-        tcKimlikNo: newResidentData.identityNumber,
-        firstName: newResidentData.firstName,
-        lastName: newResidentData.lastName,
-        email: newResidentData.email,
-        phone: newResidentData.phone,
-        ...(newResidentData.gender && newResidentData.gender !== '' && { gender: newResidentData.gender }),
-        ...(newResidentData.birthDate && { dateOfBirth: newResidentData.birthDate }),
-        ...(newResidentData.birthPlace && { placeOfBirth: newResidentData.birthPlace }),
-        ...(newResidentData.bloodType && { bloodType: newResidentData.bloodType })
-      };
-      console.log('OwnerInfoSection - API Payload:', payload);
-      
-      // Call the new residents API endpoint
-      const createResidentResponse = await fetch('/api/proxy/admin/residents', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
 
-      if (!createResidentResponse.ok) {
-        const errorData = await createResidentResponse.json();
-        const errorMessage = errorData.message || 'Kullanıcı oluşturulamadı';
-        console.error('Resident creation failed:', errorData);
-        toast.error(`Yeni sakin oluşturulamadı: ${errorMessage}`);
-        throw new Error(errorMessage);
-      }
-
-      const residentData = await createResidentResponse.json();
-      console.log('Resident created successfully:', residentData);
-
-      // Update form data with the new resident info
-      setFormData({
-        fullName: `${newResidentData.firstName} ${newResidentData.lastName}`,
-        phone: newResidentData.phone,
-        email: '',
-        nationalId: '',
-        ownershipType: 'owner'
-      });
-      
-      setShowAddNewResident(false);
-      setNewResidentData({
-        identityNumber: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        gender: '',
-        birthDate: '',
-        birthPlace: '',
-        bloodType: ''
-      });
-      
-      toast.success(`Yeni sakin "${newResidentData.firstName} ${newResidentData.lastName}" başarıyla oluşturuldu`);
-    } catch (error: any) {
-      console.error('Error creating resident:', error);
-      toast.error(error.message || 'Sakin eklenirken hata oluştu');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const getInitials = (name: string) => {
     const parts = name.split(' ');
@@ -614,17 +478,30 @@ export default function OwnerInfoSection({
         size="lg"
       >
         <div className="space-y-6 max-h-[80vh] overflow-y-auto">
-          <div>
-            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-              {ownerInfo.data.fullName.label}
-              {ownerInfo.data.fullName.required && <span className="text-primary-red ml-1">*</span>}
-            </label>
-            <Input
-              value={formData.fullName}
-              onChange={(e: any) => handleFieldChange('fullName', e.target.value)}
-              placeholder="Ad Soyad"
-              disabled={saving}
-            />
+          {/* Name and Surname */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                Ad *
+              </label>
+              <Input
+                value={formData.firstName}
+                onChange={(e: any) => handleFieldChange('firstName', e.target.value)}
+                placeholder="Ad"
+                disabled={saving}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                Soyad *
+              </label>
+              <Input
+                value={formData.lastName}
+                onChange={(e: any) => handleFieldChange('lastName', e.target.value)}
+                placeholder="Soyad"
+                disabled={saving}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -715,206 +592,14 @@ export default function OwnerInfoSection({
                 saving || 
                 Object.keys(validationErrors).length > 0 ||
                 (!residentId && (!formData.email || !formData.email.trim())) ||
-                (!formData.fullName.trim() && !formData.phone.trim() && !formData.email.trim() && !formData.nationalId.trim())
+                (!formData.firstName.trim() && !formData.lastName.trim() && !formData.phone.trim() && !formData.email.trim() && !formData.nationalId.trim())
               }
             >
               Kaydet
             </Button>
           </div>
 
-          {/* Sakin Seçimi - Divider altında */}
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-            <div>
-              <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                Sakin Seçin
-              </label>
-              <Select
-                value={selectedResident}
-                onChange={(e: any) => handleResidentSelect(e.target.value)}
-                options={[
-                  { value: '', label: 'Sakin seçiniz' },
-                  ...residents.map(resident => ({
-                    value: resident.id,
-                    label: `${resident.fullName}${resident.phone ? ` (${resident.phone})` : ''}`
-                  }))
-                ]}
-                disabled={loadingResidents || saving}
-              />
-            </div>
 
-            {/* Yeni Sakin Ekle Butonu */}
-            <div className="mt-4">
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={UserPlus}
-                onClick={handleAddNewResident}
-                disabled={saving}
-                className="w-full"
-              >
-                Yeni Sakin Ekle
-              </Button>
-            </div>
-
-            {/* Yeni Sakin Ekleme Formu */}
-            {showAddNewResident && (
-              <div className="mt-6 space-y-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-                {/* Ulusal kimlik numarası - En üstte tek başına */}
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Ulusal kimlik numarası / Pasaport numarası *
-                  </label>
-                  <Input
-                    placeholder="12345678901 veya AA1234567"
-                    value={newResidentData.identityNumber}
-                    onChange={(e: any) => handleNewResidentInputChange('identityNumber', e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-
-                {/* Name and Surname */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                      Ad *
-                    </label>
-                    <Input
-                      placeholder="Ad"
-                      value={newResidentData.firstName}
-                      onChange={(e: any) => handleNewResidentInputChange('firstName', e.target.value)}
-                      disabled={saving}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                      Soyad *
-                    </label>
-                    <Input
-                      placeholder="Soyad"
-                      value={newResidentData.lastName}
-                      onChange={(e: any) => handleNewResidentInputChange('lastName', e.target.value)}
-                      disabled={saving}
-                    />
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    E-posta *
-                  </label>
-                  <Input
-                    type="email"
-                    placeholder="ornek@email.com"
-                    value={newResidentData.email}
-                    onChange={(e: any) => handleNewResidentInputChange('email', e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Telefon *
-                  </label>
-                  <Input
-                    type="tel"
-                    placeholder="Telefon numarası"
-                    value={newResidentData.phone}
-                    onChange={(e: any) => handleNewResidentInputChange('phone', e.target.value)}
-                    disabled={saving}
-                  />
-                </div>
-
-                {/* Divider */}
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                        Cinsiyet
-                      </label>
-                      <Select
-                        value={newResidentData.gender}
-                        onChange={(e: any) => handleNewResidentInputChange('gender', e.target.value)}
-                        options={[
-                          { value: '', label: 'Seçmek istemiyorum' },
-                          { value: 'MALE', label: 'Erkek' },
-                          { value: 'FEMALE', label: 'Kadın' },
-                          { value: 'OTHER', label: 'Diğer' }
-                        ]}
-                        disabled={saving}
-                      />
-                    </div>
-                    <div>
-                      <DatePicker
-                        label="Doğum Tarihi"
-                        value={newResidentData.birthDate}
-                        onChange={(e: any) => handleNewResidentInputChange('birthDate', e.target.value)}
-                        maxDate={new Date().toISOString().split('T')[0]}
-                        variant="default"
-                        showIcon={true}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                        Doğum Yeri
-                      </label>
-                      <Input
-                        placeholder="İstanbul, Türkiye"
-                        value={newResidentData.birthPlace}
-                        onChange={(e: any) => handleNewResidentInputChange('birthPlace', e.target.value)}
-                        disabled={saving}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                        Kan Grubu
-                      </label>
-                      <Select
-                        value={newResidentData.bloodType}
-                        onChange={(e: any) => handleNewResidentInputChange('bloodType', e.target.value)}
-                        options={[
-                          { value: '', label: 'Seçiniz' },
-                          { value: 'A+', label: 'A+' },
-                          { value: 'A-', label: 'A-' },
-                          { value: 'B+', label: 'B+' },
-                          { value: 'B-', label: 'B-' },
-                          { value: 'AB+', label: 'AB+' },
-                          { value: 'AB-', label: 'AB-' },
-                          { value: 'O+', label: 'O+' },
-                          { value: 'O-', label: 'O-' }
-                        ]}
-                        disabled={saving}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* New Resident Action Buttons */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => setShowAddNewResident(false)}
-                    disabled={saving}
-                  >
-                    İptal
-                  </Button>
-                  <Button 
-                    variant="primary" 
-                    icon={Save}
-                    onClick={handleCreateNewResident}
-                    isLoading={saving}
-                    disabled={!newResidentData.firstName || !newResidentData.lastName || !newResidentData.email || !newResidentData.phone}
-                  >
-                    Ekle
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </Modal>
     </>

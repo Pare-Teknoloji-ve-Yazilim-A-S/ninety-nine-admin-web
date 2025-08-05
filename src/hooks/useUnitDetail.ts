@@ -30,6 +30,7 @@ const transformPropertyToUnitDetail = (property: any): UnitDetail => {
     createdDate: property.createdAt || new Date().toISOString(),
     lastUpdated: property.updatedAt || new Date().toISOString(),
     tenantId: property.tenantId, // Tenant ID from properties table
+    ownerId: property.owner?.id, // Owner ID from properties table
     basicInfo: {
       title: 'Konut Temel Bilgileri',
       icon: '🏠',
@@ -359,8 +360,12 @@ export function useUnitDetail(unitId: string | undefined): UseUnitDetailResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
+
   const fetchUnit = useCallback(async () => {
-    if (!unitId) return;
+    if (!unitId) {
+      return;
+    }
 
     setLoading(true);
     setError(null);
