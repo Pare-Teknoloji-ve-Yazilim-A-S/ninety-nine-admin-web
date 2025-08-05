@@ -31,7 +31,7 @@ export default function DashboardPage() {
     const { requests: maintenanceRequests, loading: maintenanceLoading, error: maintenanceError, totalCount: maintenanceTotalCount } = useMaintenanceRequests(50);
 
     // Fetch audit logs
-    const { logs: auditLogs, loading: auditLogsLoading, error: auditLogsError, totalCount: auditLogsTotalCount } = useAuditLogs({}, 25);
+    const { logs: auditLogs, loading: auditLogsLoading, error: auditLogsError, totalCount: auditLogsTotalCount } = useAuditLogs({}, 25, true);
 
     // Fetch ticket stats
     const { stats: ticketStats, loading: ticketStatsLoading, error: ticketStatsError } = useTicketStats();
@@ -127,4 +127,4 @@ export default function DashboardPage() {
             </div>
         </ProtectedRoute>
     );
-} 
+}

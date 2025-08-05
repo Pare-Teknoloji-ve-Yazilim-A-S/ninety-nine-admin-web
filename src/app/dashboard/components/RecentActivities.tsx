@@ -20,8 +20,13 @@ const formatTimeAgo = (dateString: string): string => {
     const date = new Date(dateString);
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
+    // Handle negative values (future dates or invalid dates)
+    if (diffInSeconds < 0) {
+        return 'Az önce';
+    }
+
     if (diffInSeconds < 60) {
-        return `${diffInSeconds} saniye önce`;
+        return diffInSeconds <= 0 ? 'Az önce' : `${diffInSeconds} saniye önce`;
     } else if (diffInSeconds < 3600) {
         const minutes = Math.floor(diffInSeconds / 60);
         return `${minutes} dakika önce`;
@@ -273,4 +278,4 @@ export default function RecentActivities({
             )}
         </Card>
     );
-} 
+}

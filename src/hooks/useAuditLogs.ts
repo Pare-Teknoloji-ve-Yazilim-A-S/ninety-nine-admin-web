@@ -9,7 +9,7 @@ interface UseAuditLogsReturn {
   refetch: () => void;
 }
 
-export function useAuditLogs(filter: AuditLogFilter = {}, limit: number = 10): UseAuditLogsReturn {
+export function useAuditLogs(filter: AuditLogFilter = {}, limit: number = 10, enablePolling: boolean = false): UseAuditLogsReturn {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +59,22 @@ export function useAuditLogs(filter: AuditLogFilter = {}, limit: number = 10): U
 
   useEffect(() => {
     fetchLogs();
-  }, [limit]);
+    
+    // Set up polling for real-time updates if enabled
+    let intervalId: NodeJS.Timeout | null = null;
+    
+    if (enablePolling) {
+      intervalId = setInterval(() => {
+        fetchLogs();
+      }, 30000); // Poll every 30 seconds
+    }
+    
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [limit, enablePolling]);
 
   const refetch = () => {
     fetchLogs();
@@ -72,4 +87,4 @@ export function useAuditLogs(filter: AuditLogFilter = {}, limit: number = 10): U
     totalCount,
     refetch
   };
-} 
+}
