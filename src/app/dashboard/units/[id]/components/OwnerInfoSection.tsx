@@ -165,7 +165,7 @@ export default function OwnerInfoSection({
   };
 
   // Kullanıcıyı email ile bulma
-  const findResidentByEmail = async (email: string): Promise<string | null> => {
+  const findResidentByEmail = async (email: string): Promise<string | undefined> => {
     try {
       const response = await fetch(`/api/proxy/admin/users?email=${encodeURIComponent(email)}&limit=1`, {
         headers: {
@@ -180,10 +180,10 @@ export default function OwnerInfoSection({
           return userData.data[0].id;
         }
       }
-      return null;
+      return undefined;
     } catch (error) {
       console.error('Error finding resident by email:', error);
-      return null;
+      return undefined;
     }
   };
 

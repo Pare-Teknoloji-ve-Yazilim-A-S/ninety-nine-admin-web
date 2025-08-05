@@ -617,7 +617,6 @@ export default function UnitDetailPage() {
                     ownerInfo={unit.ownerInfo}
                     loading={loading}
                     canEdit={unit.permissions.canEdit}
-                    residentId={unit.ownerId}
                   />
                 )}
 
@@ -743,4 +742,4 @@ export default function UnitDetailPage() {
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
     </ProtectedRoute>
   );
-} 
+}
