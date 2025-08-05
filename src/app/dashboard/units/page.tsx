@@ -138,10 +138,12 @@ export default function UnitsListPage() {
     }, [filters]);
 
     // FIXED: Proper async/await and dependencies
-    const loadProperties = useCallback(async () => {
+    const loadProperties = useCallback(async (showLoadingIndicator = true) => {
         try {
             console.log('🔄 loadProperties BAŞLADI');
-            setLoading(true);
+            if (showLoadingIndicator) {
+                setLoading(true);
+            }
             setError(null);
 
             // Process filters before API call - NEW
@@ -166,7 +168,9 @@ export default function UnitsListPage() {
             setError('Konutlar yüklenirken bir hata oluştu');
             setProperties([]);
         } finally {
-            setLoading(false);
+            if (showLoadingIndicator) {
+                setLoading(false);
+            }
         }
     }, [currentFilters, processFilters]);
 
@@ -545,7 +549,9 @@ export default function UnitsListPage() {
     // Page change handlers - MEMOIZED
     const handlePageChange = useCallback((page: number) => {
         setFilters(prev => ({ ...prev, page }));
-    }, []);
+        // Sadece veri yenileme, sayfa yenilenmesi yok
+        loadProperties(false);
+    }, [loadProperties]);
 
     const handleRecordsPerPageChange = useCallback((limit: number) => {
         console.log('🔄 Records per page changed:', limit);
@@ -826,7 +832,36 @@ export default function UnitsListPage() {
                                             loading={loading}
                                             error={error}
                                             onSelectionChange={handleSelectionChange}
-                                            bulkActions={[]}
+                                            bulkActions={[
+                                                {
+                                                    id: 'bulk-edit',
+                                                    label: 'Toplu Düzenle',
+                                                    icon: Edit,
+                                                    onClick: (selectedItems: Property[]) => {
+                                                        console.log('Toplu düzenleme:', selectedItems.map(item => item.id));
+                                                        // TODO: Toplu düzenleme modal'ı açılacak
+                                                    }
+                                                },
+                                                {
+                                                    id: 'bulk-export',
+                                                    label: 'Dışa Aktar',
+                                                    icon: Download,
+                                                    onClick: (selectedItems: Property[]) => {
+                                                        console.log('Seçili konutları dışa aktar:', selectedItems.map(item => item.id));
+                                                        // TODO: Seçili konutları Excel/PDF olarak dışa aktar
+                                                    }
+                                                },
+                                                {
+                                                    id: 'bulk-delete',
+                                                    label: 'Toplu Sil',
+                                                    icon: Trash2,
+                                                    variant: 'danger' as const,
+                                                    onClick: (selectedItems: Property[]) => {
+                                                        console.log('Toplu silme:', selectedItems.map(item => item.id));
+                                                        // TODO: Toplu silme onayı ve işlemi
+                                                    }
+                                                }
+                                            ]}
                                             columns={tableColumns}
                                             pagination={{
                                                 currentPage: pagination.page,
@@ -857,7 +892,36 @@ export default function UnitsListPage() {
                                             loading={loading}
                                             error={error}
                                             onSelectionChange={handleGridSelectionChange}
-                                            bulkActions={[]}
+                                            bulkActions={[
+                                                {
+                                                    id: 'bulk-edit',
+                                                    label: 'Toplu Düzenle',
+                                                    icon: Edit,
+                                                    onClick: (selectedItems: Property[]) => {
+                                                        console.log('Toplu düzenleme:', selectedItems.map(item => item.id));
+                                                        // TODO: Toplu düzenleme modal'ı açılacak
+                                                    }
+                                                },
+                                                {
+                                                    id: 'bulk-export',
+                                                    label: 'Dışa Aktar',
+                                                    icon: Download,
+                                                    onClick: (selectedItems: Property[]) => {
+                                                        console.log('Seçili konutları dışa aktar:', selectedItems.map(item => item.id));
+                                                        // TODO: Seçili konutları Excel/PDF olarak dışa aktar
+                                                    }
+                                                },
+                                                {
+                                                    id: 'bulk-delete',
+                                                    label: 'Toplu Sil',
+                                                    icon: Trash2,
+                                                    variant: 'danger' as const,
+                                                    onClick: (selectedItems: Property[]) => {
+                                                        console.log('Toplu silme:', selectedItems.map(item => item.id));
+                                                        // TODO: Toplu silme onayı ve işlemi
+                                                    }
+                                                }
+                                            ]}
                                             onAction={handleUnitAction}
                                             selectedItems={selectedUnits.map(u => u.id)}
                                             pagination={{
@@ -923,4 +987,4 @@ export default function UnitsListPage() {
             </div>
         </ProtectedRoute>
     );
-} 
+}

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ProtectedRoute } from "@/app/components/auth/ProtectedRoute";
 import DashboardHeader from "@/app/dashboard/components/DashboardHeader";
 import Sidebar from "@/app/components/ui/Sidebar";
@@ -9,6 +10,7 @@ import Card from "@/app/components/ui/Card";
 import Button from "@/app/components/ui/Button";
 import Badge from "@/app/components/ui/Badge";
 import Checkbox from "@/app/components/ui/Checkbox";
+import { useToast } from "@/hooks/useToast";
 import {
   ArrowLeft,
   Check,
@@ -84,8 +86,11 @@ interface FormData {
 }
 
 export default function AddAssetPage() {
+  const router = useRouter();
+  const { success, error } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     assetNumber: "",
     assetNumberAuto: true,
@@ -159,8 +164,61 @@ export default function AddAssetPage() {
   // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      setShowSuccess(true);
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare payload for API
+      const payload = {
+        assetNumber: formData.assetNumber,
+        name: formData.assetName,
+        type: formData.assetType,
+        status: formData.status,
+        block: formData.block,
+        floor: formData.floor,
+        unitNumber: formData.unitNumber,
+        mapLocation: formData.mapLocation || null,
+        planLocation: formData.planLocation || null,
+        area: parseFloat(formData.area) || 0,
+        roomCount: formData.assetType === 'RESIDENCE' ? parseInt(formData.roomCount) || 0 : null,
+        assetSizeType: formData.assetSizeType,
+        groupingBlock: formData.groupingBlock,
+        groupingNeighborhood: formData.groupingNeighborhood,
+        specialNotes: formData.specialNotes || null,
+        inventoryList: formData.inventoryList || null,
+        technicalSpecs: formData.technicalSpecs || null
+      };
+
+      const response = await fetch('/api/proxy/admin/properties', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      success(`Konut başarıyla oluşturuldu: ${formData.assetName}`);
+      
+      // Redirect to units list or the created unit's detail page
+      if (result.data?.id) {
+        router.push(`/dashboard/units/${result.data.id}`);
+      } else {
+        router.push('/dashboard/units');
+      }
+      
+    } catch (errorMsg) {
+        console.error('Konut oluşturma hatası:', errorMsg);
+        error(errorMsg instanceof Error ? errorMsg.message : 'Konut oluşturulurken bir hata oluştu');
+      } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -231,8 +289,8 @@ export default function AddAssetPage() {
                 <Link href="/dashboard/units">
                   <Button variant="secondary">İptal</Button>
                 </Link>
-                <Button variant="primary" onClick={handleSubmit}>
-                  Kaydet
+                <Button variant="primary" onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? 'Kaydediliyor...' : 'Kaydet'}
                 </Button>
               </div>
             </div>
@@ -658,8 +716,8 @@ export default function AddAssetPage() {
 
               {/* Submit Button */}
               <div className="flex justify-center">
-                <Button variant="primary" size="lg" type="submit" className="px-12">
-                  Varlığı Kaydet
+                <Button variant="primary" size="lg" type="submit" className="px-12" disabled={isSubmitting}>
+                  {isSubmitting ? 'Kaydediliyor...' : 'Varlığı Kaydet'}
                 </Button>
               </div>
             </form>
@@ -668,4 +726,4 @@ export default function AddAssetPage() {
       </div>
     </ProtectedRoute>
   );
-} 
+}
