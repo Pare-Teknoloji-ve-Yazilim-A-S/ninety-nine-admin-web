@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Resident } from '@/app/components/ui/ResidentRow';
 
 interface UseResidentsFiltersReturn {
@@ -45,7 +45,7 @@ interface UseResidentsFiltersReturn {
 export const useResidentsFilters = (): UseResidentsFiltersReturn => {
     // Search and filters
     const [searchQuery, setSearchQuery] = useState('');
-    const [filters, setFilters] = useState<Record<string, unknown>>({});
+    const [filtersState, setFiltersState] = useState<Record<string, unknown>>({});
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [drawerClosing, setDrawerClosing] = useState(false);
     
@@ -59,6 +59,11 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
     // View and selection
     const [selectedView, setSelectedView] = useState('table');
     const [selectedResidents, setSelectedResidents] = useState<Resident[]>([]);
+
+    // Memoize filters to prevent unnecessary re-renders
+    const filters = useMemo(() => {
+        return filtersState;
+    }, [JSON.stringify(filtersState)]);
 
     // Event handlers
     const handleSearch = useCallback((query: string) => {
@@ -89,6 +94,20 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
     }, []);
 
     const handleFiltersApply = useCallback((appliedFilters: Record<string, unknown>) => {
+        // Check if filters actually changed
+        const currentFiltersString = JSON.stringify(filtersState);
+        const newFiltersString = JSON.stringify(appliedFilters);
+        
+        if (currentFiltersString === newFiltersString) {
+            // Close drawer without calling handleCloseDrawer to avoid circular dependency
+            setDrawerClosing(true);
+            setTimeout(() => {
+                setShowFilterPanel(false);
+                setDrawerClosing(false);
+            }, 300);
+            return;
+        }
+        
         // Map status filter values to uppercase if present
         let mappedFilters = { ...appliedFilters };
         if (mappedFilters.status && Array.isArray(mappedFilters.status)) {
@@ -107,13 +126,19 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
                 mappedFilters.type = typeMap[mappedFilters.type.toLowerCase()] || mappedFilters.type.toLowerCase();
             }
         }
-        setFilters(mappedFilters);
+        setFiltersState(mappedFilters);
         setCurrentPage(1); // Reset to first page when applying filters
-        handleCloseDrawer();
-    }, []);
+        
+        // Close drawer without calling handleCloseDrawer to avoid circular dependency
+        setDrawerClosing(true);
+        setTimeout(() => {
+            setShowFilterPanel(false);
+            setDrawerClosing(false);
+        }, 300);
+    }, [filtersState]);
 
     const handleFiltersReset = useCallback(() => {
-        setFilters({});
+        setFiltersState({});
         setCurrentPage(1); // Reset to first page when resetting filters
     }, []);
 
@@ -144,7 +169,7 @@ export const useResidentsFilters = (): UseResidentsFiltersReturn => {
         
         // Setters
         setSearchQuery,
-        setFilters,
+        setFilters: setFiltersState,
         setShowFilterPanel,
         setCurrentPage,
         setRecordsPerPage,

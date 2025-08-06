@@ -44,6 +44,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const debounceRef = useRef<NodeJS.Timeout>();
+    const onSearchRef = useRef(onSearch);
+
+    // Update ref when onSearch changes
+    useEffect(() => {
+        onSearchRef.current = onSearch;
+    }, [onSearch]);
 
     const isControlled = controlledValue !== undefined;
     const currentValue = isControlled ? controlledValue : internalValue;
@@ -73,8 +79,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
         }
 
         debounceRef.current = setTimeout(() => {
-            if (onSearch) {
-                onSearch(currentValue);
+            if (onSearchRef.current) {
+                onSearchRef.current(currentValue);
             }
         }, debounceMs);
 
@@ -83,7 +89,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 clearTimeout(debounceRef.current);
             }
         };
-    }, [currentValue, onSearch, debounceMs]);
+    }, [currentValue, debounceMs]);
 
     // Handle input change
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,7 +129,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         }
         
         // Immediately trigger search with empty value to clear results
-        onSearch?.(newValue);
+        onSearchRef.current?.(newValue);
         onClear?.();
         inputRef.current?.focus();
     };
@@ -145,8 +151,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
     // Handle keyboard navigation
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (!showSuggestions || suggestions.length === 0) {
-            if (e.key === 'Enter' && onSearch) {
-                onSearch(currentValue);
+            if (e.key === 'Enter' && onSearchRef.current) {
+                onSearchRef.current(currentValue);
             }
             return;
         }
@@ -166,8 +172,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 e.preventDefault();
                 if (focusedSuggestionIndex >= 0) {
                     handleSuggestionClick(suggestions[focusedSuggestionIndex]);
-                } else if (onSearch) {
-                    onSearch(currentValue);
+                } else if (onSearchRef.current) {
+                    onSearchRef.current(currentValue);
                 }
                 break;
             case 'Escape':

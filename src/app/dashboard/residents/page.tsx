@@ -146,7 +146,7 @@ export default function ResidentsPage() {
         recordsPerPage: filtersHook.recordsPerPage,
         searchQuery: filtersHook.searchQuery,
         sortConfig: filtersHook.sortConfig,
-        filters: filtersHook.filters
+        filters: filtersHook.filters // This will be handled by refs in the hook
     });
     const actionsHook = useResidentsActions({
         refreshData: dataHook.refreshData,
@@ -672,7 +672,9 @@ export default function ResidentsPage() {
                                     totalPages: dataHook.totalPages,
                                     totalRecords: dataHook.totalRecords,
                                     recordsPerPage: filtersHook.recordsPerPage,
-                                    onPageChange: filtersHook.handlePageChange,
+                                    onPageChange: (page) => {
+                                        filtersHook.handlePageChange(page);
+                                    },
                                     onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
                                 }}
                                 emptyStateMessage={
@@ -701,7 +703,9 @@ export default function ResidentsPage() {
                                     totalPages: dataHook.totalPages,
                                     totalRecords: dataHook.totalRecords,
                                     recordsPerPage: filtersHook.recordsPerPage,
-                                    onPageChange: filtersHook.handlePageChange,
+                                    onPageChange: (page) => {
+                                        filtersHook.handlePageChange(page);
+                                    },
                                     onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
                                 }}
                                 emptyStateMessage={
