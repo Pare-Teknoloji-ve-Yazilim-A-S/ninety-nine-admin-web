@@ -458,10 +458,6 @@ export default function AnnouncementsPage() {
                                     Yenile
                                 </Button>
                                 <ExportDropdown
-                                    onExportExcel={() => {
-                                        console.log('Export Excel');
-                                        toastFunctions.info('Bilgi', 'Excel export özelliği yakında gelecek');
-                                    }}
                                     onExportCSV={() => {
                                         console.log('Export CSV');
                                         toastFunctions.info('Bilgi', 'CSV export özelliği yakında gelecek');

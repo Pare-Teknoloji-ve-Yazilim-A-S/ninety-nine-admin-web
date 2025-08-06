@@ -565,13 +565,6 @@ export default function ResidentsPage() {
                                     Yenile
                                 </Button>
                                 <ExportDropdown
-                                    onExportExcel={() => exportActionHandlers.handleExportExcel({
-                                        ...filtersHook.filters,
-                                        search: filtersHook.searchQuery,
-                                        orderColumn: !filtersHook.searchQuery ? 'firstName' : filtersHook.sortConfig.key,
-                                        orderBy: filtersHook.sortConfig.direction ? filtersHook.sortConfig.direction.toUpperCase() as 'ASC' | 'DESC' : undefined,
-                                        // page ve limit gönderme
-                                    })}
                                     onExportCSV={() => exportActionHandlers.handleExportCSV({
                                         ...filtersHook.filters,
                                         search: filtersHook.searchQuery,

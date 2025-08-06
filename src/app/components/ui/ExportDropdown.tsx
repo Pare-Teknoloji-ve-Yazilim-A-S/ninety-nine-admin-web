@@ -25,7 +25,6 @@ interface ExportDropdownProps {
 
 const ExportDropdown: React.FC<ExportDropdownProps> = ({
     onExportPDF,
-    onExportExcel,
     onExportCSV,
     onExportJSON,
     disabled = false,
