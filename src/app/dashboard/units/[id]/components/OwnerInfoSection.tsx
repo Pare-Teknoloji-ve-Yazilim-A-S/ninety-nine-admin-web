@@ -6,6 +6,7 @@ import Modal from '@/app/components/ui/Modal';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
 import DatePicker from '@/app/components/ui/DatePicker';
+import AddOwnerModal from './AddOwnerModal';
 import { OwnerInfo, UpdateOwnerInfoDto } from '@/services/types/unit-detail.types';
 import { User, Phone, Mail, Edit, Save, X, IdCard, UserPlus, UserX } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -15,9 +16,12 @@ interface OwnerInfoSectionProps {
   ownerInfo: OwnerInfo;
   onUpdate?: (data: UpdateOwnerInfoDto) => Promise<void>;
   onRemove?: () => Promise<void>;
+  onAddOwner?: () => Promise<void>;
+  onOpenAddOwnerModal?: () => void;
   loading?: boolean;
   canEdit?: boolean;
   residentId?: string; // Malik için sakin ID'si
+  propertyId?: string; // Property ID for owner assignment
 }
 
 
@@ -26,9 +30,12 @@ export default function OwnerInfoSection({
   ownerInfo, 
   onUpdate, 
   onRemove,
+  onAddOwner,
+  onOpenAddOwnerModal,
   loading = false,
   canEdit = true,
-  residentId
+  residentId,
+  propertyId
 }: OwnerInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -47,6 +54,15 @@ export default function OwnerInfoSection({
   const toast = useToast();
 
   const handleEdit = () => {
+    // Eğer malik yoksa, AddOwnerModal'ı aç
+    if (!hasOwnerInfo) {
+      if (onOpenAddOwnerModal) {
+        onOpenAddOwnerModal();
+      }
+      return;
+    }
+    
+    // Malik varsa, edit modal'ını aç
     setShowEditModal(true);
     
     // Mevcut fullName değerini ad ve soyad olarak ayırma

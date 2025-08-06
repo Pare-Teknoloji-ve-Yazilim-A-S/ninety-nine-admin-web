@@ -18,6 +18,7 @@ import TenantInfoSection from "./components/TenantInfoSection";
 import ResidentsSection from "./components/ResidentsSection";
 import FinancialSummarySection from "./components/FinancialSummarySection";
 import AddTenantModal from "./components/AddTenantModal";
+import AddOwnerModal from "./components/AddOwnerModal";
 import {
   Building,
   Home,
@@ -88,6 +89,9 @@ export default function UnitDetailPage() {
   // Add state for tenant addition
   const [showAddTenantModal, setShowAddTenantModal] = useState(false);
   
+  // Add state for owner addition
+  const [showAddOwnerModal, setShowAddOwnerModal] = useState(false);
+  
   const { 
     unit, 
     loading, 
@@ -148,6 +152,11 @@ export default function UnitDetailPage() {
   // Handle tenant addition request (show modal)
   const handleAddTenantRequest = async () => {
     setShowAddTenantModal(true);
+  };
+
+  const handleAddOwnerRequest = async () => {
+    // Owner ekleme modal'ını aç
+    setShowAddOwnerModal(true);
   };
 
   // Handle owner removal request (show modal)
@@ -971,9 +980,12 @@ export default function UnitDetailPage() {
                     ownerInfo={unit.ownerInfo}
                     onUpdate={handleUpdateOwnerInfo}
                     onRemove={handleRemoveOwnerRequest}
+                    onAddOwner={handleAddOwnerRequest}
+                    onOpenAddOwnerModal={() => setShowAddOwnerModal(true)}
                     loading={loading || removingOwner}
                     canEdit={unit.permissions.canEdit}
                     residentId={unit.ownerId}
+                    propertyId={unitId}
                   />
                 )}
 
@@ -1149,6 +1161,17 @@ export default function UnitDetailPage() {
           </Button>
         </div>
       </Modal>
+
+      {/* Add Owner Modal */}
+      <AddOwnerModal
+        isOpen={showAddOwnerModal}
+        onClose={() => setShowAddOwnerModal(false)}
+        onSuccess={() => {
+          setShowAddOwnerModal(false);
+          refetch();
+        }}
+        propertyId={unitId}
+      />
 
       {/* Toast Container */}
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />

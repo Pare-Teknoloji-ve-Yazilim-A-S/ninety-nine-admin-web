@@ -150,17 +150,6 @@ export default function ResidentsSection({
               Mevcut Sakinler ({residents.length})
             </h4>
           </div>
-          {canEdit && (
-            <Button 
-              variant="primary" 
-              size="sm"
-              icon={Plus} 
-              onClick={handleAdd}
-              disabled={loading}
-            >
-              Sakin Ekle
-            </Button>
-          )}
         </div>
 
         {residents.length === 0 ? (
