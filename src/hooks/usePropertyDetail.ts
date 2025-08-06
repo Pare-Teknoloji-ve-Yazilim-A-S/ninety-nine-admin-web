@@ -4,7 +4,7 @@ import { Property } from '@/services/types/property.types';
 import { ApiResponse } from '@/services/core/types'; // ApiResponse tipini import et
 
 export function usePropertyDetail(id: string | undefined) {
-  const [data, setData] = useState<ApiResponse<Property> | null>(null);
+  const [data, setData] = useState<Property | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,7 +14,7 @@ export function usePropertyDetail(id: string | undefined) {
     setError(null);
     unitsService.getPropertyById(id)
       .then((res) => {
-        setData(res); // Artık tüm response'u kaydedebilirsin
+        setData(res);
       })
       .catch((err) => {
         setError('Konut detayı yüklenemedi');

@@ -154,11 +154,11 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
       
       this.logger.info(`Fetched debt status for property ${propertyId}`);
       return {
-        hasDebt: response.hasDebt || false,
-        totalDebt: response.totalDebt || 0,
-        overdueBills: response.overdueBills || 0,
-        pendingBills: response.pendingBills || 0,
-        lastPaymentDate: response.lastPaymentDate
+        hasDebt: response.data?.hasDebt || false,
+        totalDebt: response.data?.totalDebt || 0,
+        overdueBills: response.data?.overdueBills || 0,
+        pendingBills: response.data?.pendingBills || 0,
+        lastPaymentDate: response.data?.lastPaymentDate
       };
     } catch (error) {
       this.logger.error(`Failed to fetch debt status for property ${propertyId}:`, error);
@@ -191,7 +191,7 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
       });
       
       this.logger.info(`Fetched debt status for ${propertyIds.length} properties`);
-      return response || {};
+      return response.data || {};
     } catch (error) {
       this.logger.error(`Failed to fetch debt status for properties:`, error);
       // Fallback: return empty object

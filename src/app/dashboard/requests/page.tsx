@@ -93,9 +93,10 @@ export default function RequestsListPage() {
       
       if (typeof value === 'string') {
         processedValue = value === 'all' ? undefined : value;
-      } else if (value && typeof value === 'object' && value.target) {
+      } else if (value && typeof value === 'object' && 'target' in value && value.target) {
         // This is an event object, extract the value
-        processedValue = value.target.value === 'all' ? undefined : value.target.value;
+        const target = value.target as { value: string };
+        processedValue = target.value === 'all' ? undefined : target.value;
       } else {
         processedValue = undefined;
       }

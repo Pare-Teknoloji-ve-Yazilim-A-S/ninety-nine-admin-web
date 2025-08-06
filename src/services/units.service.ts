@@ -47,8 +47,8 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
         
         const response = await apiClient.get<PaginatedResponse<Property>>(`${this.baseEndpoint}?${queryParams.toString()}`);
         
-        this.logger.info(`Fetched ${response.data?.length || 0} properties`);
-        return response;
+        this.logger.info(`Fetched ${response.data?.data?.length || 0} properties`);
+        return response.data;
     }
 
     /**
@@ -64,7 +64,7 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
         const response = await apiClient.get<Property>(`${this.baseEndpoint}/${id}?${queryParams.toString()}`);
         
         this.logger.info(`Fetched property ${id} details`);
-        return response;
+        return response.data;
     }
 
     /**
@@ -80,7 +80,7 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
             });
             
             this.logger.info(`Fetched debt status for ${propertyIds.length} properties`);
-            return response || {};
+            return response.data || {};
         } catch (error) {
             this.logger.error(`Failed to fetch debt status for properties:`, error);
             // Fallback: return empty object
@@ -96,6 +96,15 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
     async updateUnit(id: string, unitData: Partial<Property>): Promise<ApiResponse<Property>> {
         const response = await apiClient.put(`${this.baseEndpoint}/${id}`, unitData);
         return response;
+    }
+
+    async getUnitById(id: string): Promise<ApiResponse<Property>> {
+        const response = await apiClient.get<Property>(`${this.baseEndpoint}/${id}`);
+        return response;
+    }
+
+    async getAllUnits(filters?: PropertyFilterParams): Promise<PaginatedResponse<Property>> {
+        return this.getAllProperties(filters);
     }
 
     async deleteUnit(id: string): Promise<ApiResponse<void>> {

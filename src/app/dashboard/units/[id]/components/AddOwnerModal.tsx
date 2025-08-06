@@ -27,6 +27,8 @@ interface OwnerFormData {
   gender: 'MALE' | 'FEMALE' | 'OTHER' | '';
   dateOfBirth: string;
   identityNumber: string;
+  ownershipType: string;
+  ownershipDate: string;
 }
 
 interface ExistingUser {
@@ -54,7 +56,9 @@ export default function AddOwnerModal({ isOpen, onClose, onSuccess, propertyId }
     phone: '',
     gender: '',
     dateOfBirth: '',
-    identityNumber: ''
+    identityNumber: '',
+    ownershipType: '',
+    ownershipDate: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const toast = useToast();

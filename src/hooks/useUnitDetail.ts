@@ -374,8 +374,8 @@ export function useUnitDetail(unitId: string | undefined): UseUnitDetailResult {
 
     try {
       const response = await unitsService.getPropertyById(unitId);
-      if (response && response.data) {
-        const transformedUnit = transformPropertyToUnitDetail(response.data);
+      if (response) {
+        const transformedUnit = transformPropertyToUnitDetail(response);
         setUnit(transformedUnit);
       }
     } catch (err) {

@@ -260,6 +260,6 @@ export const ticketService = {
     console.log('🔍 getTicketSummary response:', response);
     console.log('🔍 getTicketSummary response.data:', response.data);
     // API returns direct TicketSummary object, not wrapped in ApiResponse
-    return response;
+    return response.data;
   },
 }; 

@@ -13,7 +13,6 @@ export default function RequestsFiltersBar({
   onSearchChange,
   onSearchSubmit,
   activeFiltersCount,
-  onShowFilters,
   viewMode,
   onViewModeChange,
   filters,
@@ -94,7 +93,7 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.category}
-              onChange={(value) => handleFilterChange('category', value)}
+              onChange={(value: string) => handleFilterChange('category', value)}
               placeholder="Tüm kategoriler"
               options={[
                 { value: '', label: 'Tüm kategoriler' },
@@ -105,7 +104,6 @@ export default function RequestsFiltersBar({
                 { value: 'security', label: 'Güvenlik' },
                 { value: 'other', label: 'Diğer' }
               ]}
-              size="sm"
             />
           </div>
 
@@ -116,7 +114,7 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.priority}
-              onChange={(value) => handleFilterChange('priority', value)}
+              onChange={(value: string) => handleFilterChange('priority', value)}
               placeholder="Tüm öncelikler"
               options={[
                 { value: '', label: 'Tüm öncelikler' },
@@ -125,7 +123,6 @@ export default function RequestsFiltersBar({
                 { value: 'high', label: 'Yüksek' },
                 { value: 'urgent', label: 'Acil' }
               ]}
-              size="sm"
             />
           </div>
 
@@ -136,7 +133,7 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.status}
-              onChange={(value) => handleFilterChange('status', value)}
+              onChange={(value: string) => handleFilterChange('status', value)}
               placeholder="Tüm durumlar"
               options={[
                 { value: '', label: 'Tüm durumlar' },
@@ -146,7 +143,6 @@ export default function RequestsFiltersBar({
                 { value: 'resolved', label: 'Çözüldü' },
                 { value: 'closed', label: 'Kapalı' }
               ]}
-              size="sm"
             />
           </div>
 
@@ -157,16 +153,15 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.assignee}
-              onChange={(value) => handleFilterChange('assignee', value)}
+              onChange={(value: string) => handleFilterChange('assignee', value)}
               placeholder="Tüm teknisyenler"
               options={[
                 { value: '', label: 'Tüm teknisyenler' },
-                { value: 'unassigned', label: 'Atanmamış' },
+                { value: '', label: 'Atanmamış' },
                 { value: 'tech1', label: 'Ahmet Yılmaz' },
                 { value: 'tech2', label: 'Mehmet Demir' },
                 { value: 'tech3', label: 'Ali Kaya' }
               ]}
-              size="sm"
             />
           </div>
         </div>

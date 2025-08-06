@@ -275,7 +275,6 @@ export const getTableColumns = (
             id: 'actions',
             header: '',
             accessor: '',
-            width: '60px',
             render: (_: any, row: ServiceRequest) => (
                 <ActionMenu
                     request={row}

@@ -144,9 +144,9 @@ export default function AddPropertyPage() {
         setFormData(prev => ({
             ...prev,
             [section]: {
-                ...prev[section as keyof PropertyFormData],
+                ...(prev as any)[section],
                 [subsection]: {
-                    ...prev[section as keyof PropertyFormData][subsection as keyof any],
+                    ...(prev as any)[section]?.[subsection],
                     [field]: value
                 }
             }
@@ -158,9 +158,9 @@ export default function AddPropertyPage() {
         setFormData(prev => ({
             ...prev,
             [section]: {
-                ...prev[section as keyof PropertyFormData],
+                ...(prev as any)[section],
                 [subsection]: {
-                    ...prev[section as keyof PropertyFormData][subsection as keyof any],
+                    ...(prev as any)[section]?.[subsection],
                     [field]: value
                 }
             }

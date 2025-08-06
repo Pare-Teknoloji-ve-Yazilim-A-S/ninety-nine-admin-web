@@ -269,7 +269,7 @@ export default function UnitDetailPage() {
       // First, get the current property data to extract the owner ID
       try {
         const propertyResponse = await unitsService.getPropertyById(unitId);
-        const propertyData = propertyResponse.data;
+        const propertyData = propertyResponse;
         
         // Check if owner exists in the property data
         if (!propertyData || !propertyData.owner || !propertyData.owner.id) {
@@ -309,7 +309,7 @@ export default function UnitDetailPage() {
       try {
         // Get the current property data to extract the owner ID
         const propertyResponse = await unitsService.getPropertyById(unitId);
-        const propertyData = propertyResponse.data;
+        const propertyData = propertyResponse;
         
         // Check if owner exists in the property data
         if (!propertyData || !propertyData.owner || !propertyData.owner.id) {
@@ -396,7 +396,7 @@ export default function UnitDetailPage() {
       // Get the current property data to extract the tenant ID
       try {
         const propertyResponse = await unitsService.getPropertyById(unitId);
-        const propertyData = propertyResponse.data;
+        const propertyData = propertyResponse;
         
         // Check if tenant exists in the property data
         if (!propertyData || !propertyData.tenant || !propertyData.tenant.id) {
