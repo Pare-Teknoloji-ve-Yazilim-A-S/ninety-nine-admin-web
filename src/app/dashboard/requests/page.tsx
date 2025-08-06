@@ -12,10 +12,10 @@ import RequestsPageHeader from './components/RequestsPageHeader';
 import RequestsSummaryStats from './components/RequestsSummaryStats';
 import RequestsQuickStats from './components/RequestsQuickStats';
 import RequestsFiltersBar from './components/RequestsFiltersBar';
-import RequestsFilterPanel from './components/RequestsFilterPanel';
-import RequestsTableView from './components/RequestsTableView';
 import RequestsGridView from './components/RequestsGridView';
 import RequestsBulkActionsBar from './components/RequestsBulkActionsBar';
+import DataTable from '@/app/components/ui/DataTable';
+import { getTableColumns } from './components/table-columns';
 
 // Hooks and types
 import { useRequestsList } from './hooks/useRequestsList';
@@ -32,7 +32,6 @@ export default function RequestsListPage() {
   // UI State
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedRequests, setSelectedRequests] = useState<ServiceRequest[]>([]);
   const [searchValue, setSearchValue] = useState('');
 
@@ -54,7 +53,8 @@ export default function RequestsListPage() {
     error,
     refetch,
     updateFilters,
-    resetFilters
+    resetFilters,
+    updatePagination
   } = useRequestsList();
 
   // Breadcrumb configuration
@@ -94,6 +94,14 @@ export default function RequestsListPage() {
     setViewMode(mode);
   };
 
+  const handlePageChange = (page: number) => {
+    updatePagination(page);
+  };
+
+  const handleRecordsPerPageChange = (recordsPerPage: number) => {
+    updatePagination(1, recordsPerPage);
+  };
+
   const handleRequestAction = (action: string, request: ServiceRequest) => {
     switch (action) {
       case 'view':
@@ -109,6 +117,19 @@ export default function RequestsListPage() {
       default:
         console.log('Unknown action:', action);
     }
+  };
+
+  // Action handlers for DataTable
+  const handleViewRequest = (request: ServiceRequest) => {
+    setDetailModal({ open: true, item: request });
+  };
+
+  const handleEditRequest = (request: ServiceRequest) => {
+    console.log('Edit request:', request.id);
+  };
+
+  const handleDeleteRequest = (request: ServiceRequest) => {
+    setConfirmationDialog({ isOpen: true, request });
   };
 
   const handleBulkAction = (actionId: string) => {
@@ -128,7 +149,7 @@ export default function RequestsListPage() {
   };
 
   const getActiveFiltersCount = () => {
-    // This would be calculated based on actual active filters
+    // This is now handled by the RequestsFiltersBar component internally
     return 0;
   };
 
@@ -177,9 +198,10 @@ export default function RequestsListPage() {
               onSearchChange={handleSearchChange}
               onSearchSubmit={handleSearchSubmit}
               activeFiltersCount={getActiveFiltersCount()}
-              onShowFilters={() => setShowFilters(true)}
               viewMode={viewMode}
               onViewModeChange={handleViewModeChange}
+              onApplyFilters={handleApplyFilters}
+              onResetFilters={handleResetFilters}
             />
 
             {/* Bulk Actions Bar */}
@@ -201,15 +223,33 @@ export default function RequestsListPage() {
             ) : (
               <>
                 {viewMode === 'table' ? (
-                  <RequestsTableView
-                    requests={data.requests}
-                    columns={data.tableColumns}
+                  <DataTable
+                    columns={getTableColumns({
+                      handleViewRequest,
+                      handleEditRequest,
+                      handleDeleteRequest
+                    })}
+                    data={data.requests}
                     loading={loading}
-                    selectedRequests={selectedRequests}
-                    onSelectionChange={(e: any) => setSelectedRequests(e.target.value)}
-                    onRequestAction={handleRequestAction}
-                    sortOptions={data.sortOptions}
-                    onSortChange={(sort) => console.log('Sort changed:', sort)}
+                    selectable={true}
+                    onSelectionChange={setSelectedRequests}
+                    pagination={{
+                      currentPage: data.pagination.currentPage,
+                      totalPages: data.pagination.totalPages,
+                      totalRecords: data.pagination.totalItems,
+                      recordsPerPage: data.pagination.itemsPerPage,
+                      onPageChange: handlePageChange,
+                      onRecordsPerPageChange: handleRecordsPerPageChange
+                    }}
+                    sortConfig={{
+                      key: 'createdDate',
+                      direction: 'desc'
+                    }}
+                    onSortChange={(key: string, direction: 'asc' | 'desc') => {
+                      console.log('Sort changed:', key, direction);
+                    }}
+                    emptyStateMessage="Henüz talep bulunmuyor"
+                    className="mt-6"
                   />
                 ) : (
                   <RequestsGridView
@@ -226,29 +266,7 @@ export default function RequestsListPage() {
           </main>
         </div>
 
-        {/* Filter Panel Sidebar */}
-        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-          {/* Backdrop */}
-          <div
-            className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'
-              }`}
-            onClick={() => setShowFilters(false)}
-          />
-          {/* Drawer */}
-          <div
-            className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'
-              }`}
-          >
-            <RequestsFilterPanel
-              filters={data.filters}
-              activeFilters={{}}
-              onApplyFilters={handleApplyFilters}
-              onResetFilters={handleResetFilters}
-              onClose={() => setShowFilters(false)}
-              isOpen={showFilters}
-            />
-          </div>
-        </div>
+
 
         {/* Modals */}
 

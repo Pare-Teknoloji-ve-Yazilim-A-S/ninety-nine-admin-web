@@ -318,9 +318,10 @@ export interface RequestsFiltersBarProps {
   onSearchChange: (value: string) => void;
   onSearchSubmit: (value: string) => void;
   activeFiltersCount: number;
-  onShowFilters: () => void;
   viewMode: 'table' | 'grid';
   onViewModeChange: (mode: 'table' | 'grid') => void;
+  onApplyFilters?: (filters: any) => void;
+  onResetFilters?: () => void;
 }
 
 export interface RequestsFilterPanelProps {

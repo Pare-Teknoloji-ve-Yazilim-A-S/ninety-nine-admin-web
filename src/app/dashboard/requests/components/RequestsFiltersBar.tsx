@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import SearchBar from '@/app/components/ui/SearchBar';
 import ViewToggle from '@/app/components/ui/ViewToggle';
 import Badge from '@/app/components/ui/Badge';
+import Select from '@/app/components/ui/Select';
 import { RequestsFiltersBarProps } from '@/services/types/request-list.types';
-import { Filter, List, Grid3X3, X } from 'lucide-react';
+import { Filter, List, Grid3X3, X, Search } from 'lucide-react';
 
 export default function RequestsFiltersBar({
   searchValue,
@@ -14,14 +15,53 @@ export default function RequestsFiltersBar({
   activeFiltersCount,
   onShowFilters,
   viewMode,
-  onViewModeChange
-}: RequestsFiltersBarProps) {
+  onViewModeChange,
+  filters,
+  onApplyFilters,
+  onResetFilters
+}: RequestsFiltersBarProps & {
+  filters?: any;
+  onApplyFilters?: (filters: any) => void;
+  onResetFilters?: () => void;
+}) {
+  const [localFilters, setLocalFilters] = useState({
+    category: '',
+    priority: '',
+    status: '',
+    assignee: ''
+  });
+
+  const handleFilterChange = (key: string, value: string) => {
+    const newFilters = { ...localFilters, [key]: value };
+    setLocalFilters(newFilters);
+    
+    // Apply filters immediately
+    if (onApplyFilters) {
+      onApplyFilters(newFilters);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setLocalFilters({
+      category: '',
+      priority: '',
+      status: '',
+      assignee: ''
+    });
+    
+    if (onResetFilters) {
+      onResetFilters();
+    }
+  };
+
+  const hasActiveFilters = Object.values(localFilters).some(value => value !== '');
+
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 relative">
       <div className="p-6">
-        <div className="flex flex-col lg:flex-row justify-between gap-4">
-          {/* Left side - Search Bar */}
-          <div className="flex-1 max-w-lg">
+        {/* Search Bar and View Toggle */}
+        <div className="flex items-center gap-64 mb-4">
+          <div className="flex-1 max-w-[70%]">
             <SearchBar
               placeholder="Talep ID, açıklama veya daire numarası ile ara..."
               value={searchValue}
@@ -30,39 +70,9 @@ export default function RequestsFiltersBar({
               debounceMs={500}
             />
           </div>
-
-          {/* Right side - Filters and View Toggle */}
-          <div className="flex items-center gap-3">
-            {/* Active Filters Indicator */}
-            {activeFiltersCount > 0 && (
-              <div className="flex items-center gap-2">
-                <Badge variant="soft" color="primary" className="text-xs">
-                  {activeFiltersCount} filtre aktif
-                </Badge>
-              </div>
-            )}
-
-            {/* Filters Button */}
-            <Button
-              variant={activeFiltersCount > 0 ? "primary" : "secondary"}
-              size="md"
-              icon={Filter}
-              onClick={onShowFilters}
-              className="relative"
-            >
-              Filtreler
-              {activeFiltersCount > 0 && (
-                <Badge 
-                  variant="solid" 
-                  color="gold" 
-                  className="absolute -top-2 -right-2 min-w-[20px] h-5 text-xs px-1"
-                >
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-
-            {/* View Toggle */}
+          
+          {/* View Toggle */}
+          <div className="flex-shrink-0">
             <ViewToggle
               options={[
                 { id: 'table', label: 'Tablo', icon: List },
@@ -75,18 +85,107 @@ export default function RequestsFiltersBar({
           </div>
         </div>
 
-        {/* Active Filters Tags (if any) */}
-        {activeFiltersCount > 0 && (
-          <div className="mt-4 pt-4 border-t border-background-light-secondary dark:border-background-secondary">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm text-text-light-muted dark:text-text-muted">
-                Aktif filtreler:
-              </span>
-              {/* This would be populated by the parent component with actual filter values */}
-              <div className="flex gap-2 flex-wrap">
-                {/* Filter tags would be rendered here */}
-              </div>
-            </div>
+        {/* Inline Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {/* Kategori Filtresi */}
+          <div>
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+              Kategori
+            </label>
+            <Select
+              value={localFilters.category}
+              onChange={(value) => handleFilterChange('category', value)}
+              placeholder="Tüm kategoriler"
+              options={[
+                { value: '', label: 'Tüm kategoriler' },
+                { value: 'plumbing', label: 'Su Tesisatı' },
+                { value: 'electrical', label: 'Elektrik' },
+                { value: 'heating', label: 'Isıtma' },
+                { value: 'cleaning', label: 'Temizlik' },
+                { value: 'security', label: 'Güvenlik' },
+                { value: 'other', label: 'Diğer' }
+              ]}
+              size="sm"
+            />
+          </div>
+
+          {/* Öncelik Filtresi */}
+          <div>
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+              Öncelik
+            </label>
+            <Select
+              value={localFilters.priority}
+              onChange={(value) => handleFilterChange('priority', value)}
+              placeholder="Tüm öncelikler"
+              options={[
+                { value: '', label: 'Tüm öncelikler' },
+                { value: 'low', label: 'Düşük' },
+                { value: 'medium', label: 'Orta' },
+                { value: 'high', label: 'Yüksek' },
+                { value: 'urgent', label: 'Acil' }
+              ]}
+              size="sm"
+            />
+          </div>
+
+          {/* Durum Filtresi */}
+          <div>
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+              Durum
+            </label>
+            <Select
+              value={localFilters.status}
+              onChange={(value) => handleFilterChange('status', value)}
+              placeholder="Tüm durumlar"
+              options={[
+                { value: '', label: 'Tüm durumlar' },
+                { value: 'open', label: 'Açık' },
+                { value: 'in_progress', label: 'İşlemde' },
+                { value: 'waiting', label: 'Bekliyor' },
+                { value: 'resolved', label: 'Çözüldü' },
+                { value: 'closed', label: 'Kapalı' }
+              ]}
+              size="sm"
+            />
+          </div>
+
+          {/* Teknisyen Filtresi */}
+          <div>
+            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+              Teknisyen
+            </label>
+            <Select
+              value={localFilters.assignee}
+              onChange={(value) => handleFilterChange('assignee', value)}
+              placeholder="Tüm teknisyenler"
+              options={[
+                { value: '', label: 'Tüm teknisyenler' },
+                { value: 'unassigned', label: 'Atanmamış' },
+                { value: 'tech1', label: 'Ahmet Yılmaz' },
+                { value: 'tech2', label: 'Mehmet Demir' },
+                { value: 'tech3', label: 'Ali Kaya' }
+              ]}
+              size="sm"
+            />
+          </div>
+        </div>
+
+        {/* Bottom Bar - Active Filters */}
+        {hasActiveFilters && (
+          <div className="flex items-center gap-3 pt-4 border-t border-background-light-secondary dark:border-background-secondary">
+            <Badge variant="soft" color="primary" className="text-xs">
+              {Object.values(localFilters).filter(v => v !== '').length} filtre aktif
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={X}
+              onClick={handleResetFilters}
+              className="text-text-light-muted dark:text-text-muted hover:text-primary-red"
+            >
+              Filtreleri Temizle
+            </Button>
           </div>
         )}
       </div>
