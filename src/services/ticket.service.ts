@@ -78,6 +78,19 @@ export interface TicketFilters {
   status?: string | string[];
 }
 
+export interface TicketSummary {
+  openTickets: number;
+  inProgressTickets: number;
+  waitingTickets: number;
+  resolvedTickets: number;
+  closedTickets: number;
+  cancelledTickets: number;
+  unassignedTickets: number;
+  overdueTickets: number;
+  dueTodayTickets: number;
+  totalTickets: number;
+}
+
 export const ticketService = {
   // Create new ticket
   async createTicket(data: CreateTicketRequest): Promise<Ticket> {
@@ -238,6 +251,12 @@ export const ticketService = {
       currentMonthName: string;
       previousMonthName: string;
     }>('/admin/tickets/monthly-stats');
+    return response.data;
+  },
+
+  // Get ticket summary statistics
+  async getTicketSummary(): Promise<TicketSummary> {
+    const response: ApiResponse<TicketSummary> = await apiClient.get<TicketSummary>('/admin/tickets/summary');
     return response.data;
   },
 }; 

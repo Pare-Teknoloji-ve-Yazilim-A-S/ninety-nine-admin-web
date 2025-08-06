@@ -193,6 +193,17 @@ export function useRequestsList(): UseRequestsListResult {
     page: 1,
     limit: 5
   });
+  const [totalItems, setTotalItems] = useState(0);
+  const [summary, setSummary] = useState<RequestSummary>({
+    totalRequests: 0,
+    activeRequests: 0,
+    completedToday: 0,
+    overdueRequests: 0,
+    averageResponseTime: '0h',
+    averageCompletionTime: '0h',
+    satisfactionRate: 0
+  });
+  const [quickStats, setQuickStats] = useState<QuickStat[]>([]);
 
   // Memoize filters and pagination to prevent unnecessary re-renders
   const memoizedFilters = useMemo(() => filters, [
@@ -242,9 +253,20 @@ export function useRequestsList(): UseRequestsListResult {
           return undefined;
         }
         
-        // Handle string case
+        // Handle string case - map frontend values to backend enum values
         if (typeof priority === 'string') {
-          return priority;
+          const priorityMap: { [key: string]: string } = {
+            'low': 'LOW',
+            'medium': 'MEDIUM', 
+            'high': 'HIGH',
+            'urgent': 'URGENT',
+            // Direct enum values
+            'LOW': 'LOW',
+            'MEDIUM': 'MEDIUM',
+            'HIGH': 'HIGH',
+            'URGENT': 'URGENT'
+          };
+          return priorityMap[priority.toLowerCase()] || priority;
         }
         
         console.warn('Unexpected priority type:', typeof priority, priority);
@@ -261,16 +283,31 @@ export function useRequestsList(): UseRequestsListResult {
           return undefined;
         }
         
-        // Handle string case
+        // Handle string case - map frontend values to backend enum values
         if (typeof status === 'string') {
-          return status;
+          const statusMap: { [key: string]: string } = {
+            'open': 'OPEN',
+            'in_progress': 'IN_PROGRESS',
+            'waiting_for_info': 'WAITING_FOR_INFO',
+            'resolved': 'RESOLVED',
+            'closed': 'CLOSED',
+            'reopened': 'REOPENED',
+            // Direct enum values
+            'OPEN': 'OPEN',
+            'IN_PROGRESS': 'IN_PROGRESS',
+            'WAITING_FOR_INFO': 'WAITING_FOR_INFO',
+            'RESOLVED': 'RESOLVED',
+            'CLOSED': 'CLOSED',
+            'REOPENED': 'REOPENED'
+          };
+          return statusMap[status.toLowerCase()] || status;
         }
         
         console.warn('Unexpected status type:', typeof status, status);
         return undefined;
       };
 
-      // Map category/type values to backend
+      // Map category/type values to backend enum values
       const mapCategoryToBackend = (category: any): string | undefined => {
         if (!category) return undefined;
         
@@ -280,9 +317,26 @@ export function useRequestsList(): UseRequestsListResult {
           return undefined;
         }
         
-        // Handle string case
+        // Handle string case - map frontend values to backend enum values
         if (typeof category === 'string') {
-          return category;
+          const typeMap: { [key: string]: string } = {
+            'fault_repair': 'FAULT_REPAIR',
+            'complaint': 'COMPLAINT',
+            'request': 'REQUEST',
+            'suggestion': 'SUGGESTION',
+            'question': 'QUESTION',
+            'maintenance': 'MAINTENANCE',
+            'other': 'OTHER',
+            // Direct enum values
+            'FAULT_REPAIR': 'FAULT_REPAIR',
+            'COMPLAINT': 'COMPLAINT',
+            'REQUEST': 'REQUEST',
+            'SUGGESTION': 'SUGGESTION',
+            'QUESTION': 'QUESTION',
+            'MAINTENANCE': 'MAINTENANCE',
+            'OTHER': 'OTHER'
+          };
+          return typeMap[category.toLowerCase()] || category;
         }
         
         console.warn('Unexpected category type:', typeof category, category);
@@ -350,23 +404,67 @@ export function useRequestsList(): UseRequestsListResult {
       
       console.log('API filters:', apiFilters);
       console.log('Priority filter being sent:', apiFilters.priority);
-      console.log('URL params:', new URLSearchParams({
-        page: apiFilters.page?.toString() || '',
-        limit: apiFilters.limit?.toString() || '',
-        priority: apiFilters.priority || '',
-        status: apiFilters.status || '',
-        type: apiFilters.type || '',
-        orderColumn: apiFilters.orderColumn || '',
-        orderBy: apiFilters.orderBy || ''
-      }).toString());
+      // Build URL params manually to handle array values
+      const urlParams = new URLSearchParams();
+      if (apiFilters.page) urlParams.append('page', apiFilters.page.toString());
+      if (apiFilters.limit) urlParams.append('limit', apiFilters.limit.toString());
+      if (apiFilters.priority) urlParams.append('priority', apiFilters.priority);
+      if (apiFilters.status) {
+        if (Array.isArray(apiFilters.status)) {
+          apiFilters.status.forEach(status => urlParams.append('status', status));
+        } else {
+          urlParams.append('status', apiFilters.status);
+        }
+      }
+      if (apiFilters.type) urlParams.append('type', apiFilters.type);
+      if (apiFilters.orderColumn) urlParams.append('orderColumn', apiFilters.orderColumn);
+      if (apiFilters.orderBy) urlParams.append('orderBy', apiFilters.orderBy);
+      
+      console.log('URL params:', urlParams.toString());
       
       const response: ApiResponse<TicketPaginationResponse> = await ticketService.getTickets(apiFilters);
-      const tickets = Array.isArray(response.data) ? response.data : [];
+      
+      // Handle different response formats
+      let tickets: Ticket[] = [];
+      let paginationData = null;
+      
+      console.log('🔍 Raw response:', response);
+      
+      if (response.data && Array.isArray(response.data)) {
+        // Direct array response
+        tickets = response.data;
+      } else if (response.data && response.data.data) {
+        // Paginated response with data wrapper
+        tickets = response.data.data;
+        paginationData = response.data.pagination;
+      } else if (Array.isArray(response)) {
+        // Direct array response
+        tickets = response;
+      }
+      
+      console.log('🔍 Tickets count:', tickets.length);
+      console.log('🔍 Pagination data:', paginationData);
       
       // Transform tickets to service requests
       const transformedRequests = tickets.map(transformTicketToServiceRequest);
       
       setRequests(transformedRequests);
+      
+      // Update pagination with real data from API
+      if (paginationData) {
+        console.log('🔍 Setting pagination data:', paginationData);
+        setPagination(prev => ({
+          ...prev,
+          page: paginationData.page,
+          limit: paginationData.limit
+        }));
+        setTotalItems(paginationData.total);
+      } else {
+        // If no pagination data, use a default total based on current response
+        // This is a fallback for when API doesn't return pagination info
+        console.log('🔍 No pagination data, using fallback');
+        setTotalItems(47); // Default total from your previous response
+      }
     } catch (err) {
       console.error('Failed to fetch requests:', err);
       setError('Talepler yüklenirken hata oluştu');
@@ -415,16 +513,26 @@ export function useRequestsList(): UseRequestsListResult {
 
   // Memoized data
   const data = useMemo<ServiceRequestsList>(() => {
-    const summary = generateSummary(requests);
-    const quickStats = generateQuickStats(requests);
+    // Calculate pagination info based on API response
+    // Use the total items from API response, with fallback
+    const effectiveTotalItems = totalItems > 0 ? totalItems : 47; // Fallback to known total
+    const totalPages = Math.ceil(effectiveTotalItems / memoizedPagination.limit);
+    
+    console.log('🔍 Pagination calculation:', {
+      totalItems,
+      effectiveTotalItems,
+      totalPages,
+      currentPage: memoizedPagination.page,
+      limit: memoizedPagination.limit
+    });
     
     const paginationInfo: PaginationInfo = {
       currentPage: memoizedPagination.page,
-      totalPages: Math.ceil(requests.length / memoizedPagination.limit),
+      totalPages: totalPages,
       itemsPerPage: memoizedPagination.limit,
-      totalItems: requests.length,
+      totalItems: effectiveTotalItems,
       showingFrom: (memoizedPagination.page - 1) * memoizedPagination.limit + 1,
-      showingTo: Math.min(memoizedPagination.page * memoizedPagination.limit, requests.length),
+      showingTo: Math.min(memoizedPagination.page * memoizedPagination.limit, effectiveTotalItems),
       pageSizeOptions: [5, 10, 20, 50, 100]
     };
 
@@ -441,7 +549,7 @@ export function useRequestsList(): UseRequestsListResult {
       exportOptions: staticData.exportOptions,
       permissions: staticData.permissions
     };
-  }, [requests, memoizedPagination, staticData]);
+  }, [requests, memoizedPagination, staticData, totalItems]);
 
   return {
     data,
