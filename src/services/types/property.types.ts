@@ -15,7 +15,8 @@ export interface Property extends BaseEntity {
     description?: string;
     owner?: PropertyUser;
     tenant?: PropertyUser;
-    bills?: PropertyBill[];
+    bills?: PropertyBill[]; // Optional - can be excluded for performance
+    debtStatus?: PropertyDebtStatus; // New field for debt summary
 }
 
 // API-99CLUB User Schema (for owner/tenant)
@@ -36,6 +37,16 @@ export interface PropertyBill {
     status: 'PENDING' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
     billType: 'MAINTENANCE' | 'WATER' | 'ELECTRICITY' | 'GAS' | 'INTERNET' | 'CLEANING' | 'SECURITY' | 'OTHER';
     description?: string;
+}
+
+// New: Property Debt Status Schema (for performance optimization)
+export interface PropertyDebtStatus {
+    hasDebt: boolean;
+    totalDebt: number;
+    overdueBills: number;
+    pendingBills: number;
+    lastPaymentDate?: string;
+    currency?: string;
 }
 
 // DTOs (Data Transfer Objects) - API-99CLUB Compatible

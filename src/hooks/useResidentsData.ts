@@ -40,7 +40,7 @@ export const useResidentsData = ({
     const [totalRecords, setTotalRecords] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [stats, setStats] = useState<ResidentStatsResponse | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [apiError, setApiError] = useState<string | null>(null);
     const [lastUpdated, setLastUpdated] = useState(new Date());
 

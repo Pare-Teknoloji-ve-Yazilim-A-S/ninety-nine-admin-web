@@ -19,6 +19,7 @@ export interface GenericListViewProps<T> {
     recordsPerPage: number;
     onPageChange: (page: number) => void;
     onRecordsPerPageChange: (records: number) => void;
+    preventScroll?: boolean; // Add preventScroll prop
   };
   emptyStateMessage?: string;
   ActionMenuComponent?: React.ComponentType<{ row: T }>;
@@ -43,17 +44,6 @@ function GenericListView<T>({
   showPagination = true,
   loadingRowCount = 6,
 }: GenericListViewProps<T>) {
-  // Loading state
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: loadingRowCount }).map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
-
   // Error state
   if (error) {
     return (
@@ -65,7 +55,7 @@ function GenericListView<T>({
     );
   }
 
-  // Empty state
+  // Empty state - only show when not loading and no data
   if (!loading && data.length === 0) {
     return (
       <EmptyState

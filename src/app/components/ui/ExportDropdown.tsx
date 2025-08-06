@@ -15,7 +15,6 @@ interface ExportOption {
 
 interface ExportDropdownProps {
     onExportPDF?: () => void;
-    onExportExcel: () => void;
     onExportCSV: () => void;
     onExportJSON?: () => void;
     disabled?: boolean;
@@ -54,19 +53,6 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
                 }
             }]
             : []),
-        {
-            id: 'excel',
-            label: 'Excel İndir',
-            icon: FileSpreadsheet,
-            description: 'Sakin listesini Excel formatında indir',
-            format: 'excel' as const,
-            onClick: async () => {
-                setLoadingOption('excel');
-                await onExportExcel();
-                setLoadingOption(null);
-                setIsOpen(false);
-            }
-        },
         {
             id: 'csv',
             label: 'CSV İndir',

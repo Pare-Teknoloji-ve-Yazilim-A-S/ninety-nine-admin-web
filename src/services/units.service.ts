@@ -4,7 +4,8 @@ import {
     PropertyFilterParams, 
     PropertyStatistics, 
     QuickStats, 
-    PropertyActivity 
+    PropertyActivity,
+    PropertyDebtStatus
 } from './types/property.types';
 import { ApiResponse, PaginatedResponse } from './core/types';
 import { apiConfig } from './config/api.config';
@@ -17,39 +18,74 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
         super('UnitsService');
     }
 
-    async getAllUnits(filters: PropertyFilterParams = {}): Promise<PaginatedResponse<Property>> {
-        try {
-            const params = this.buildFilterParams(filters);
-            const queryParams = this.buildQueryParams(params);
-            const response = await apiClient.get(`${this.baseEndpoint}${queryParams}`);
-            const data = response.data.data || response.data;
-            const pagination = response.pagination || {
-                total: data.length || 0,
-                page: filters.page || 1,
-                limit: filters.limit || 20,
-                totalPages: Math.ceil((data.length || 0) / (filters.limit || 20))
-            };
-            return {
-                data,
-                pagination: {
-                    page: pagination.page,
-                    limit: pagination.limit,
-                    total: pagination.total,
-                    totalPages: pagination.totalPages
-                },
-                total: pagination.total,
-                page: pagination.page,
-                limit: pagination.limit,
-                totalPages: pagination.totalPages
-            };
-        } catch (error) {
-            throw error;
-        }
+    /**
+     * Tüm mülkleri getir (bills hariç - performans için)
+     * GET /admin/properties?includeBills=false
+     */
+    async getAllProperties(params?: PropertyFilterParams & { includeBills?: boolean }): Promise<PaginatedResponse<Property>> {
+        this.logger.info('Fetching all properties', params);
+        
+        const queryParams = new URLSearchParams();
+        
+        // Add filter params
+        if (params?.page) queryParams.append('page', params.page.toString());
+        if (params?.limit) queryParams.append('limit', params.limit.toString());
+        if (params?.orderColumn) queryParams.append('orderColumn', params.orderColumn);
+        if (params?.orderBy) queryParams.append('orderBy', params.orderBy);
+        if (params?.type) queryParams.append('type', params.type);
+        if (params?.status) queryParams.append('status', params.status);
+        if (params?.blockNumber) queryParams.append('blockNumber', params.blockNumber);
+        if (params?.floor) queryParams.append('floor', params.floor.toString());
+        if (params?.area) queryParams.append('area', params.area.toString());
+        if (params?.rooms) queryParams.append('rooms', params.rooms);
+        if (params?.search) queryParams.append('search', params.search);
+        if (params?.debtStatus) queryParams.append('debtStatus', params.debtStatus);
+        
+        // Performance optimization: exclude bills by default
+        const includeBills = params?.includeBills ?? false;
+        queryParams.append('includeBills', includeBills.toString());
+        
+        const response = await apiClient.get<PaginatedResponse<Property>>(`${this.baseEndpoint}?${queryParams.toString()}`);
+        
+        this.logger.info(`Fetched ${response.data?.length || 0} properties`);
+        return response;
     }
 
-    async getUnitById(id: string): Promise<ApiResponse<Property>> {
-        const response = await apiClient.get(`${this.baseEndpoint}/${id}`);
+    /**
+     * Belirli bir mülkün detaylarını getir (bills dahil)
+     * GET /admin/properties/{id}?includeBills=true
+     */
+    async getPropertyById(id: string, includeBills: boolean = true): Promise<Property> {
+        this.logger.info(`Fetching property details: ${id}`);
+        
+        const queryParams = new URLSearchParams();
+        queryParams.append('includeBills', includeBills.toString());
+        
+        const response = await apiClient.get<Property>(`${this.baseEndpoint}/${id}?${queryParams.toString()}`);
+        
+        this.logger.info(`Fetched property ${id} details`);
         return response;
+    }
+
+    /**
+     * Mülklerin borç durumunu toplu olarak getir
+     * POST /admin/properties/debt-status
+     */
+    async getPropertiesDebtStatus(propertyIds: string[]): Promise<Record<string, PropertyDebtStatus>> {
+        this.logger.info(`Fetching debt status for ${propertyIds.length} properties`);
+        
+        try {
+            const response = await apiClient.post<Record<string, PropertyDebtStatus>>(`${this.baseEndpoint}/debt-status`, {
+                propertyIds
+            });
+            
+            this.logger.info(`Fetched debt status for ${propertyIds.length} properties`);
+            return response || {};
+        } catch (error) {
+            this.logger.error(`Failed to fetch debt status for properties:`, error);
+            // Fallback: return empty object
+            return {};
+        }
     }
 
     async createUnit(unitData: Partial<Property>): Promise<ApiResponse<Property>> {
@@ -98,13 +134,6 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
             data: updateData
         });
         return response;
-    }
-
-    async getPropertyById(id: string): Promise<ApiResponse<Property>> {
-        // Fetch property details from /admin/properties/{id}
-        const response = await apiClient.get(`/admin/properties/${id}`);
-        
-        return response; // Return the full API response as required
     }
 
     private buildFilterParams(filters: PropertyFilterParams): Record<string, any> {

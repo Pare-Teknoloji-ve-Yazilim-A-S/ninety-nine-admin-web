@@ -133,38 +133,29 @@ export default function UnitsListPage() {
 
     // Memoize current filters to prevent unnecessary re-renders
     const currentFilters = useMemo(() => {
-        console.log('🔄 Filters memoization updated:', filters);
         return filters;
     }, [filters]);
 
     // FIXED: Proper async/await and dependencies
-    const loadProperties = useCallback(async (showLoadingIndicator = true) => {
+    const loadProperties = useCallback(async (showLoadingIndicator: boolean = true) => {
         try {
-            console.log('🔄 loadProperties BAŞLADI');
             if (showLoadingIndicator) {
                 setLoading(true);
             }
             setError(null);
 
-            // Process filters before API call - NEW
             const processedFilters = processFilters(currentFilters);
-            console.log('🚀 Loading properties with processed filters:', processedFilters);
 
-            console.log('📞 API çağrısı yapılıyor...');
-            const response = await unitsService.getAllUnits(processedFilters);
-            console.log('✅ API Response BAŞARILI:', response);
-            console.log('📊 API Response - Pagination:', response.pagination);
-            console.log('📊 API Response - Data count:', response.data.length);
+            const response = await unitsService.getAllProperties({
+                ...processedFilters,
+                includeBills: false // Exclude bills for better performance
+            });
             
-            console.log('💾 setProperties çağrılıyor...');
             setProperties(response.data);
             
-            console.log('💾 setPagination çağrılıyor...', response.pagination);
             setPagination(response.pagination);
             
-            console.log('✅ loadProperties TAMAMLANDI');
         } catch (err: any) {
-            console.error('❌ Failed to load properties:', err);
             setError('Konutlar yüklenirken bir hata oluştu');
             setProperties([]);
         } finally {
@@ -176,7 +167,6 @@ export default function UnitsListPage() {
 
     // FIXED: Proper dependency management
     useEffect(() => {
-        console.log('⚡ useEffect triggered - loadProperties dependency changed');
         loadProperties();
     }, [loadProperties]);
 
@@ -318,8 +308,29 @@ export default function UnitsListPage() {
         {
             key: 'debt',
             header: 'Borç',
-            render: (_value: any, unit: Property) => (
-                unit?.bills && unit.bills.length > 0 ? (
+            render: (_value: any, unit: Property) => {
+                // Use debtStatus if available, otherwise fallback to bills check
+                if (unit.debtStatus) {
+                    return unit.debtStatus.hasDebt ? (
+                        <div className="flex items-center gap-2">
+                            <span className="text-primary-red font-medium">
+                                {unit.debtStatus.totalDebt.toLocaleString('tr-TR')} ₺
+                            </span>
+                            {unit.debtStatus.overdueBills > 0 && (
+                                <Badge variant="soft" color="red" className="text-xs">
+                                    {unit.debtStatus.overdueBills} Gecikmiş
+                                </Badge>
+                            )}
+                        </div>
+                    ) : (
+                        <span className="text-semantic-success-500">
+                            Temiz
+                        </span>
+                    );
+                }
+                
+                // Fallback to bills check (for backward compatibility)
+                return unit?.bills && unit.bills.length > 0 ? (
                     <span className="text-primary-red font-medium">
                         Var
                     </span>
@@ -327,13 +338,18 @@ export default function UnitsListPage() {
                     <span className="text-semantic-success-500">
                         Temiz
                     </span>
-                )
-            ),
+                );
+            },
         },
         {
             key: 'lastPayment',
             header: 'Son Ödeme',
-            render: (_value: any, _unit: Property) => '--',
+            render: (_value: any, unit: Property) => {
+                if (unit.debtStatus?.lastPaymentDate) {
+                    return new Date(unit.debtStatus.lastPaymentDate).toLocaleDateString('tr-TR');
+                }
+                return '--';
+            },
         },
     ], [statusConfig]);
 
@@ -519,7 +535,6 @@ export default function UnitsListPage() {
     }, []);
 
     const handleSearchSubmit = useCallback((value: string) => {
-        console.log(`🔍 Search submitted: "${value}"`);
         setSearchInput(value);
 
         // Batch state updates to prevent multiple re-renders
@@ -549,12 +564,10 @@ export default function UnitsListPage() {
     // Page change handlers - MEMOIZED
     const handlePageChange = useCallback((page: number) => {
         setFilters(prev => ({ ...prev, page }));
-        // Sadece veri yenileme, sayfa yenilenmesi yok
-        loadProperties(false);
-    }, [loadProperties]);
+        // Remove loadProperties call - useEffect will handle it automatically
+    }, [filters.page]);
 
     const handleRecordsPerPageChange = useCallback((limit: number) => {
-        console.log('🔄 Records per page changed:', limit);
         setFilters(prev => ({ ...prev, limit, page: 1 }));
     }, []);
 
@@ -820,13 +833,6 @@ export default function UnitsListPage() {
                             <div className="lg:col-span-1">
                                 {viewMode === 'table' && (
                                     <>
-                                        {console.log('🔍 TABLE VIEW - Pagination props:', {
-                                            currentPage: pagination.page,
-                                            totalPages: pagination.totalPages,
-                                            totalRecords: pagination.total,
-                                            recordsPerPage: pagination.limit || 10,
-                                            pagination: pagination
-                                        })}
                                         <GenericListView
                                             data={properties}
                                             loading={loading}
@@ -870,6 +876,7 @@ export default function UnitsListPage() {
                                                 recordsPerPage: pagination.limit || 10,
                                                 onPageChange: handlePageChange,
                                                 onRecordsPerPageChange: handleRecordsPerPageChange,
+                                                preventScroll: true, // Prevent auto-scroll to top
                                             }}
                                             emptyStateMessage="Henüz konut kaydı bulunmuyor."
                                             selectable={true}
@@ -880,13 +887,6 @@ export default function UnitsListPage() {
                                 )}
                                 {viewMode === 'grid' && (
                                     <>
-                                        {console.log('🔍 GRID VIEW - Pagination props:', {
-                                            currentPage: pagination.page,
-                                            totalPages: pagination.totalPages,
-                                            totalRecords: pagination.total,
-                                            recordsPerPage: pagination.limit || 10,
-                                            pagination: pagination
-                                        })}
                                         <GenericGridView
                                             data={properties}
                                             loading={loading}
@@ -931,6 +931,7 @@ export default function UnitsListPage() {
                                                 recordsPerPage: pagination.limit || 10,
                                                 onPageChange: handlePageChange,
                                                 onRecordsPerPageChange: handleRecordsPerPageChange,
+                                                preventScroll: true, // Prevent auto-scroll to top
                                             }}
                                             emptyStateMessage="Henüz konut kaydı bulunmuyor."
                                             ui={gridUI}

@@ -137,6 +137,69 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
   }
 
   /**
+   * Belirli bir mülkün borç durumunu getirir (sadece özet bilgi)
+   * GET /admin/billing/property/{propertyId}/debt-status
+   */
+  async getPropertyDebtStatus(propertyId: string): Promise<{
+    hasDebt: boolean;
+    totalDebt: number;
+    overdueBills: number;
+    pendingBills: number;
+    lastPaymentDate?: string;
+  }> {
+    this.logger.info(`Fetching debt status for property: ${propertyId}`);
+    
+    try {
+      const response = await apiClient.get<any>(`${this.baseEndpoint}/property/${propertyId}/debt-status`);
+      
+      this.logger.info(`Fetched debt status for property ${propertyId}`);
+      return {
+        hasDebt: response.hasDebt || false,
+        totalDebt: response.totalDebt || 0,
+        overdueBills: response.overdueBills || 0,
+        pendingBills: response.pendingBills || 0,
+        lastPaymentDate: response.lastPaymentDate
+      };
+    } catch (error) {
+      this.logger.error(`Failed to fetch debt status for property ${propertyId}:`, error);
+      // Fallback: return default values
+      return {
+        hasDebt: false,
+        totalDebt: 0,
+        overdueBills: 0,
+        pendingBills: 0
+      };
+    }
+  }
+
+  /**
+   * Birden fazla mülkün borç durumunu toplu olarak getirir
+   * POST /admin/billing/properties/debt-status
+   */
+  async getPropertiesDebtStatus(propertyIds: string[]): Promise<Record<string, {
+    hasDebt: boolean;
+    totalDebt: number;
+    overdueBills: number;
+    pendingBills: number;
+    lastPaymentDate?: string;
+  }>> {
+    this.logger.info(`Fetching debt status for ${propertyIds.length} properties`);
+    
+    try {
+      const response = await apiClient.post<any>(`${this.baseEndpoint}/properties/debt-status`, {
+        propertyIds
+      });
+      
+      this.logger.info(`Fetched debt status for ${propertyIds.length} properties`);
+      return response || {};
+    } catch (error) {
+      this.logger.error(`Failed to fetch debt status for properties:`, error);
+      // Fallback: return empty object
+      return {};
+    }
+  }
+
+  /**
    * Bekleyen faturaları getirir
    * GET /admin/billing/pending
    */

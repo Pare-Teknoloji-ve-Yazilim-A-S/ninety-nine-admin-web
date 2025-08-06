@@ -676,6 +676,7 @@ export default function ResidentsPage() {
                                         filtersHook.handlePageChange(page);
                                     },
                                     onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
+                                    preventScroll: true, // Prevent auto-scroll to top
                                 }}
                                 emptyStateMessage={
                                     filtersHook.searchQuery ?
@@ -707,6 +708,7 @@ export default function ResidentsPage() {
                                         filtersHook.handlePageChange(page);
                                     },
                                     onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
+                                    preventScroll: true, // Prevent auto-scroll to top
                                 }}
                                 emptyStateMessage={
                                     filtersHook.searchQuery ?

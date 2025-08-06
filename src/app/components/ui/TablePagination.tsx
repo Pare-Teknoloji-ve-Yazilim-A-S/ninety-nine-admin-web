@@ -20,6 +20,7 @@ interface TablePaginationProps {
     itemName?: string;
     itemNamePlural?: string;
     showRecordInfo?: boolean;
+    preventScroll?: boolean; // New prop to prevent auto-scroll
 }
 
 const TablePagination: React.FC<TablePaginationProps> = ({
@@ -39,6 +40,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
     itemName = 'kayıt',
     itemNamePlural = 'kayıt',
     showRecordInfo = true,
+    preventScroll = false, // Default to false for backward compatibility
 }) => {
     const sizeClasses = {
         sm: 'h-8 px-2 text-xs',
@@ -79,25 +81,30 @@ const TablePagination: React.FC<TablePaginationProps> = ({
 
     const visiblePages = getVisiblePages();
 
-    console.log('🔍 TablePagination Debug:', {
-        currentPage,
-        totalPages,
-        totalRecords,
-        recordsPerPage,
-        visiblePages,
-        isFirstPage,
-        isLastPage
-    });
-
     const getItemName = (count: number) => {
         return count === 1 ? itemName : itemNamePlural;
+    };
+
+    // Wrapper function to handle page changes with scroll prevention
+    const handlePageChange = (page: number) => {
+        if (preventScroll) {
+            // Prevent scroll to top by using scrollIntoView with smooth behavior
+            const currentScrollPosition = window.scrollY;
+            onPageChange(page);
+            // Restore scroll position after a brief delay
+            setTimeout(() => {
+                window.scrollTo(0, currentScrollPosition);
+            }, 0);
+        } else {
+            onPageChange(page);
+        }
     };
 
     const handleRecordsPerPageChange = (newRecordsPerPage: number) => {
         if (onRecordsPerPageChange) {
             onRecordsPerPageChange(newRecordsPerPage);
             // Reset to first page when changing records per page
-            onPageChange(1);
+            handlePageChange(1);
         }
     };
 
@@ -159,7 +166,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                         variant="ghost"
                         size="sm"
                         icon={ChevronsLeft}
-                        onClick={() => onPageChange(1)}
+                        onClick={() => handlePageChange(1)}
                         className="h-8 w-8 p-0"
                         title="İlk sayfa"
                     />
@@ -171,7 +178,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                         variant="ghost"
                         size="sm"
                         icon={ChevronLeft}
-                        onClick={() => onPageChange(currentPage - 1)}
+                        onClick={() => handlePageChange(currentPage - 1)}
                         className="h-8 w-8 p-0"
                         title="Önceki sayfa"
                     />
@@ -183,7 +190,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                         key={page}
                         variant={page === currentPage ? 'primary' : 'ghost'}
                         size="sm"
-                        onClick={() => onPageChange(page)}
+                        onClick={() => handlePageChange(page)}
                         className={cn(
                             'h-8 w-8 p-0 font-medium',
                             page === currentPage && 'bg-primary-gold text-primary-dark-gray'
@@ -199,7 +206,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                         variant="ghost"
                         size="sm"
                         icon={ChevronRight}
-                        onClick={() => onPageChange(currentPage + 1)}
+                        onClick={() => handlePageChange(currentPage + 1)}
                         className="h-8 w-8 p-0"
                         title="Sonraki sayfa"
                     />
@@ -211,7 +218,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                         variant="ghost"
                         size="sm"
                         icon={ChevronsRight}
-                        onClick={() => onPageChange(totalPages)}
+                        onClick={() => handlePageChange(totalPages)}
                         className="h-8 w-8 p-0"
                         title="Son sayfa"
                     />

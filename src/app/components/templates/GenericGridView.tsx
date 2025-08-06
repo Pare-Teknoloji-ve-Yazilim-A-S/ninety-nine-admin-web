@@ -36,6 +36,7 @@ export interface GenericGridViewProps<T> {
     recordsPerPage: number;
     onPageChange: (page: number) => void;
     onRecordsPerPageChange: (recordsPerPage: number) => void;
+    preventScroll?: boolean; // Add preventScroll prop
   };
   emptyStateMessage?: string;
   ui: GenericGridViewUI;
@@ -92,25 +93,6 @@ function GenericGridView<T>({
     onClick: () => action.onClick(data.filter(item => selectedItems.includes(getItemId(item))))
   }));
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {showSelectAll && selectable && (
-          <div className="flex items-center mb-2">
-            <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded mr-2 animate-pulse" />
-            <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-          </div>
-        )}
-        <div className={`grid ${gridCols} gap-6`}>
-          {Array.from({ length: loadingCardCount }).map((_, i) => (
-            <ui.Skeleton key={i} className="h-56 rounded-2xl" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   // Error state
   if (error) {
     return (
@@ -122,7 +104,7 @@ function GenericGridView<T>({
     );
   }
 
-  // Empty state
+  // Empty state - only show when not loading and no data
   if (!loading && data.length === 0) {
     return (
       <ui.EmptyState
@@ -167,8 +149,15 @@ function GenericGridView<T>({
 
       {/* Grid Layout */}
       <div className={`grid ${gridCols} gap-6`}>
-        {data.map((item) => 
-          renderCard(item, selectedItems, handleSelect, ui, ActionMenu)
+        {loading ? (
+          // Show skeleton cards when loading
+          Array.from({ length: loadingCardCount }).map((_, i) => (
+            <ui.Skeleton key={`skeleton-${i}`} className="h-56 rounded-2xl" />
+          ))
+        ) : (
+          data.map((item) => 
+            renderCard(item, selectedItems, handleSelect, ui, ActionMenu)
+          )
         )}
       </div>
 

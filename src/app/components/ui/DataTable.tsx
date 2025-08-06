@@ -313,89 +313,125 @@ const DataTable: React.FC<DataTableProps> = ({
     );
 
     // Render table body
-    const renderTableBody = () => (
-        <tbody>
-            {loading ? (
-                renderLoadingRow()
-            ) : data.length === 0 ? (
-                renderEmptyRow()
-            ) : (
-                data.map((row, rowIndex) => (
-                    <React.Fragment key={row.id || rowIndex}>
-                        <tr
-                            className={cn(
-                                'border-b border-gray-200 dark:border-gray-700 hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors',
-                                rowClassName?.(row),
-                                (onRowClick || onRowDoubleClick) && 'cursor-pointer'
-                            )}
-                            onClick={(e) => onRowClick?.(row)}
-                            onDoubleClick={(e) => onRowDoubleClick?.(row)}
-                        >
+    const renderTableBody = () => {
+        // Determine skeleton row count based on pagination or data length
+        const skeletonRowCount = pagination?.recordsPerPage || data.length || 10;
+        
+        return (
+            <tbody>
+                {loading ? (
+                    // Show skeleton rows when loading - use dynamic count
+                    Array.from({ length: skeletonRowCount }).map((_, index) => (
+                        <tr key={`skeleton-${index}`} className="border-b border-gray-200 dark:border-gray-700 h-16">
                             {selectable && (
-                                <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
-                                    <Checkbox
-                                        checked={selectedRows.some(selected => selected.id === row.id)}
-                                        onChange={() => handleSelectRow(row)}
-                                        checkboxSize={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'}
-                                    />
+                                <td className={paddingClasses[size]}>
+                                    <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                                 </td>
                             )}
                             {expandable && (
-                                <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleExpandRow(row)}
-                                        className="p-1"
-                                    >
-                                        {isRowExpanded(row) ? (
-                                            <ChevronDown size={16} />
-                                        ) : (
-                                            <ChevronRight size={16} />
-                                        )}
-                                    </Button>
+                                <td className={paddingClasses[size]}>
+                                    <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                                 </td>
                             )}
-                            {columns.map((column, columnIndex) => {
-                                const value = getCellValue(row, column);
-                                return (
-                                    <td
-                                        key={column.id || `cell-${columnIndex}`}
-                                        className={cn(
-                                            'text-text-on-light dark:text-text-on-dark',
-                                            paddingClasses[size],
-                                            sizeClasses[size],
-                                            column.className
-                                        )}
-                                        style={{
-                                            textAlign: column.align || 'left'
-                                        }}
-                                    >
-                                        {column.render ? column.render(value, row) : value}
-                                    </td>
-                                );
-                            })}
-                            {/* Actions column */}
+                            {columns.map((column, columnIndex) => (
+                                <td
+                                    key={column.id || `skeleton-cell-${columnIndex}`}
+                                    className={cn(
+                                        paddingClasses[size],
+                                        sizeClasses[size],
+                                        column.className
+                                    )}
+                                >
+                                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                                </td>
+                            ))}
                             {(rowActions.length > 0 || ActionMenuComponent) && (
                                 <td className={paddingClasses[size]}>
-                                    {renderRowActions(row)}
+                                    <div className="w-8 h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                                 </td>
                             )}
                         </tr>
-                        {expandable && isRowExpanded(row) && expandedContent && (
-                            <tr>
-                                <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + ((rowActions.length > 0 || ActionMenuComponent) ? 1 : 0)}>
-                                    <div className="bg-background-light-soft dark:bg-background-soft p-4 border-t border-gray-200 dark:border-gray-700">
-                                        {expandedContent(row)}
-                                    </div>
-                                </td>
+                    ))
+                ) : data.length === 0 ? (
+                    renderEmptyRow()
+                ) : (
+                    data.map((row, rowIndex) => (
+                        <React.Fragment key={row.id || rowIndex}>
+                            <tr
+                                className={cn(
+                                    'border-b border-gray-200 dark:border-gray-700 hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors h-16',
+                                    rowClassName?.(row),
+                                    (onRowClick || onRowDoubleClick) && 'cursor-pointer'
+                                )}
+                                onClick={(e) => onRowClick?.(row)}
+                                onDoubleClick={(e) => onRowDoubleClick?.(row)}
+                            >
+                                {selectable && (
+                                    <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
+                                        <Checkbox
+                                            checked={selectedRows.some(selected => selected.id === row.id)}
+                                            onChange={() => handleSelectRow(row)}
+                                            checkboxSize={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'}
+                                        />
+                                    </td>
+                                )}
+                                {expandable && (
+                                    <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleExpandRow(row)}
+                                            className="p-1"
+                                        >
+                                            {isRowExpanded(row) ? (
+                                                <ChevronDown size={16} />
+                                            ) : (
+                                                <ChevronRight size={16} />
+                                            )}
+                                        </Button>
+                                    </td>
+                                )}
+                                {columns.map((column, columnIndex) => {
+                                    const value = getCellValue(row, column);
+                                    return (
+                                        <td
+                                            key={column.id || `cell-${columnIndex}`}
+                                            className={cn(
+                                                'text-text-on-light dark:text-text-on-dark',
+                                                paddingClasses[size],
+                                                sizeClasses[size],
+                                                column.className
+                                            )}
+                                            style={{
+                                                textAlign: column.align || 'left'
+                                            }}
+                                        >
+                                            {column.render ? column.render(value, row) : value}
+                                        </td>
+                                    );
+                                })}
+                                {/* Actions column */}
+                                {(rowActions.length > 0 || ActionMenuComponent) && (
+                                    <td className={paddingClasses[size]}>
+                                        {renderRowActions(row)}
+                                    </td>
+                                )}
                             </tr>
-                        )}
-                    </React.Fragment>
-                ))
-            )}
-        </tbody>
-    );
+                            {expandable && isRowExpanded(row) && expandedContent && (
+                                <tr>
+                                    <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + ((rowActions.length > 0 || ActionMenuComponent) ? 1 : 0)}>
+                                        <div className="bg-background-light-soft dark:bg-background-soft p-4 border-t border-gray-200 dark:border-gray-700">
+                                            {expandedContent(row)}
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </React.Fragment>
+                    ))
+                )}
+            </tbody>
+        );
+    };
 
     const tableContent = (
         <div className={cn(
