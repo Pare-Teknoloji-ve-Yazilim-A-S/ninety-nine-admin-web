@@ -256,7 +256,10 @@ export const ticketService = {
 
   // Get ticket summary statistics
   async getTicketSummary(): Promise<TicketSummary> {
-    const response: ApiResponse<TicketSummary> = await apiClient.get<TicketSummary>('/admin/tickets/summary');
-    return response.data;
+    const response = await apiClient.get<TicketSummary>('/admin/tickets/summary');
+    console.log('🔍 getTicketSummary response:', response);
+    console.log('🔍 getTicketSummary response.data:', response.data);
+    // API returns direct TicketSummary object, not wrapped in ApiResponse
+    return response;
   },
 }; 

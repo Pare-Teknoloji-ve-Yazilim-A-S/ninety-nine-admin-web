@@ -422,24 +422,36 @@ export function useRequestsList(): UseRequestsListResult {
       
       console.log('URL params:', urlParams.toString());
       
-      const response: ApiResponse<TicketPaginationResponse> = await ticketService.getTickets(apiFilters);
+      // Fetch tickets first
+      console.log('🔍 Starting API calls...');
+      const ticketsResponse = await ticketService.getTickets(apiFilters);
+      console.log('🔍 Raw tickets response:', ticketsResponse);
       
-      // Handle different response formats
+      // Fetch summary separately with error handling
+      let summaryResponse = null;
+      try {
+        console.log('🔍 Fetching summary...');
+        summaryResponse = await ticketService.getTicketSummary();
+        console.log('🔍 Raw summary response:', summaryResponse);
+      } catch (summaryError) {
+        console.error('🔍 Summary API error:', summaryError);
+        summaryResponse = null;
+      }
+      
+      // Handle tickets response
       let tickets: Ticket[] = [];
       let paginationData = null;
       
-      console.log('🔍 Raw response:', response);
-      
-      if (response.data && Array.isArray(response.data)) {
+      if (ticketsResponse.data && Array.isArray(ticketsResponse.data)) {
         // Direct array response
-        tickets = response.data;
-      } else if (response.data && response.data.data) {
+        tickets = ticketsResponse.data;
+      } else if (ticketsResponse.data && ticketsResponse.data.data) {
         // Paginated response with data wrapper
-        tickets = response.data.data;
-        paginationData = response.data.pagination;
-      } else if (Array.isArray(response)) {
+        tickets = ticketsResponse.data.data;
+        paginationData = ticketsResponse.data.pagination;
+      } else if (Array.isArray(ticketsResponse)) {
         // Direct array response
-        tickets = response;
+        tickets = ticketsResponse;
       }
       
       console.log('🔍 Tickets count:', tickets.length);
@@ -461,9 +473,70 @@ export function useRequestsList(): UseRequestsListResult {
         setTotalItems(paginationData.total);
       } else {
         // If no pagination data, use a default total based on current response
-        // This is a fallback for when API doesn't return pagination info
         console.log('🔍 No pagination data, using fallback');
         setTotalItems(47); // Default total from your previous response
+      }
+      
+      // Update summary and quick stats from API
+      console.log('🔍 Processing summary response:', summaryResponse);
+      
+      if (summaryResponse) {
+        console.log('🔍 Setting summary data:', summaryResponse);
+        
+        // Generate summary from API data
+        const apiSummary: RequestSummary = {
+          totalRequests: summaryResponse.totalTickets,
+          activeRequests: summaryResponse.openTickets + summaryResponse.inProgressTickets + summaryResponse.waitingTickets,
+          completedToday: summaryResponse.resolvedTickets + summaryResponse.closedTickets,
+          overdueRequests: summaryResponse.overdueTickets,
+          averageResponseTime: '2h', // This would come from API if available
+          averageCompletionTime: '24h', // This would come from API if available
+          satisfactionRate: 85 // This would come from API if available
+        };
+        
+        // Generate quick stats from API data
+        const apiQuickStats: QuickStat[] = [
+          {
+            label: 'Yeni Talepler',
+            value: summaryResponse.openTickets,
+            change: '+15%',
+            trend: 'up',
+            color: '#3b82f6',
+            icon: '📝'
+          },
+          {
+            label: 'İşlemde',
+            value: summaryResponse.inProgressTickets,
+            change: '+8%',
+            trend: 'up',
+            color: '#8b5cf6',
+            icon: '⚙️'
+          },
+          {
+            label: 'Tamamlanan',
+            value: summaryResponse.resolvedTickets + summaryResponse.closedTickets,
+            change: '+23%',
+            trend: 'up',
+            color: '#10b981',
+            icon: '✅'
+          },
+          {
+            label: 'Gecikmiş',
+            value: summaryResponse.overdueTickets,
+            change: '-12%',
+            trend: 'down',
+            color: '#ef4444',
+            icon: '⏰'
+          }
+        ];
+        
+        console.log('🔍 Generated apiSummary:', apiSummary);
+        console.log('🔍 Generated apiQuickStats:', apiQuickStats);
+        
+        setSummary(apiSummary);
+        setQuickStats(apiQuickStats);
+      } else {
+        console.log('🔍 No summary response');
       }
     } catch (err) {
       console.error('Failed to fetch requests:', err);
@@ -526,6 +599,9 @@ export function useRequestsList(): UseRequestsListResult {
       limit: memoizedPagination.limit
     });
     
+    console.log('🔍 Summary data:', summary);
+    console.log('🔍 Quick stats data:', quickStats);
+    
     const paginationInfo: PaginationInfo = {
       currentPage: memoizedPagination.page,
       totalPages: totalPages,
@@ -549,7 +625,7 @@ export function useRequestsList(): UseRequestsListResult {
       exportOptions: staticData.exportOptions,
       permissions: staticData.permissions
     };
-  }, [requests, memoizedPagination, staticData, totalItems]);
+  }, [requests, memoizedPagination, staticData, totalItems, summary, quickStats]);
 
   return {
     data,
