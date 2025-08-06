@@ -220,8 +220,26 @@ export default function UnitsListPage() {
 
     const handleQuickAction = useCallback((action: string) => {
         console.log('Quick action:', action);
-        // Handle quick actions here
-    }, []);
+        switch (action) {
+            case 'add-unit':
+                router.push('/dashboard/units/add');
+                break;
+            case 'bulk-assign':
+                // TODO: Implement bulk assign functionality
+                console.log('Bulk assign action');
+                break;
+            case 'debt-analysis':
+                // TODO: Implement debt analysis functionality
+                console.log('Debt analysis action');
+                break;
+            case 'occupancy-report':
+                // TODO: Implement occupancy report functionality
+                console.log('Occupancy report action');
+                break;
+            default:
+                console.log('Unknown quick action:', action);
+        }
+    }, [router]);
 
     // Status configuration - MEMOIZED
     const statusConfig = useMemo(() => ({
