@@ -58,6 +58,7 @@ export interface DataTableProps {
         recordsPerPage: number;
         onPageChange: (page: number) => void;
         onRecordsPerPageChange?: (recordsPerPage: number) => void;
+        recordsPerPageOptions?: number[];
     };
     sortConfig?: {
         key: string;
@@ -71,7 +72,6 @@ export interface DataTableProps {
     rowClassName?: (row: any) => string;
     expandedContent?: (row: any) => React.ReactNode;
     stickyHeader?: boolean;
-    maxHeight?: string;
     ActionMenuComponent?: React.ComponentType<{ row: any }>;
 }
 
@@ -96,7 +96,6 @@ const DataTable: React.FC<DataTableProps> = ({
     rowClassName,
     expandedContent,
     stickyHeader = false,
-    maxHeight,
     ActionMenuComponent,
 }) => {
     const [selectedRows, setSelectedRows] = useState<any[]>([]);
@@ -434,11 +433,7 @@ const DataTable: React.FC<DataTableProps> = ({
     };
 
     const tableContent = (
-        <div className={cn(
-            'overflow-x-auto',
-            maxHeight && 'overflow-y-auto',
-            maxHeight && `max-h-[${maxHeight}]`
-        )}>
+        <div className="w-full">
             <table className="w-full">
                 {renderTableHeader()}
                 {renderTableBody()}
@@ -461,13 +456,17 @@ const DataTable: React.FC<DataTableProps> = ({
             )}
 
             {/* Table */}
-            <Card className={cn(variantClasses[variant], 'overflow-hidden')}>
+            <Card className={cn(variantClasses[variant])}>
                 {tableContent}
             </Card>
 
             {/* Pagination */}
             {pagination && (
-                <TablePagination {...pagination} />
+                <TablePagination 
+                    {...pagination} 
+                    recordsPerPageOptions={pagination.recordsPerPageOptions}
+                    preventScroll={true}
+                />
             )}
         </div>
     );

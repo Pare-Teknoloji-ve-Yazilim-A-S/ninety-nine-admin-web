@@ -82,7 +82,31 @@ export default function RequestsListPage() {
   };
 
   const handleApplyFilters = (filters: any) => {
-    updateFilters(filters);
+    console.log('=== HANDLE APPLY FILTERS ===');
+    console.log('Raw filters received:', filters);
+    
+    // Process filters to ensure they are strings
+    const processedFilters: any = {};
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      let processedValue: string | undefined;
+      
+      if (typeof value === 'string') {
+        processedValue = value === 'all' ? undefined : value;
+      } else if (value && typeof value === 'object' && value.target) {
+        // This is an event object, extract the value
+        processedValue = value.target.value === 'all' ? undefined : value.target.value;
+      } else {
+        processedValue = undefined;
+      }
+      
+      if (processedValue !== undefined && processedValue !== null && processedValue !== '') {
+        processedFilters[key] = processedValue;
+      }
+    });
+    
+    console.log('Processed filters to update:', processedFilters);
+    updateFilters(processedFilters);
   };
 
   const handleResetFilters = () => {
@@ -95,10 +119,12 @@ export default function RequestsListPage() {
   };
 
   const handlePageChange = (page: number) => {
+    console.log('handlePageChange called with page:', page);
     updatePagination(page);
   };
 
   const handleRecordsPerPageChange = (recordsPerPage: number) => {
+    console.log('handleRecordsPerPageChange called with recordsPerPage:', recordsPerPage);
     updatePagination(1, recordsPerPage);
   };
 
@@ -239,7 +265,8 @@ export default function RequestsListPage() {
                       totalRecords: data.pagination.totalItems,
                       recordsPerPage: data.pagination.itemsPerPage,
                       onPageChange: handlePageChange,
-                      onRecordsPerPageChange: handleRecordsPerPageChange
+                      onRecordsPerPageChange: handleRecordsPerPageChange,
+                      recordsPerPageOptions: data.pagination.pageSizeOptions
                     }}
                     sortConfig={{
                       key: 'createdDate',

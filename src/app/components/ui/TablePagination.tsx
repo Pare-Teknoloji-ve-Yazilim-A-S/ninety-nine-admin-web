@@ -42,6 +42,14 @@ const TablePagination: React.FC<TablePaginationProps> = ({
     showRecordInfo = true,
     preventScroll = false, // Default to false for backward compatibility
 }) => {
+    console.log('TablePagination props:', {
+        currentPage,
+        totalPages,
+        totalRecords,
+        recordsPerPage,
+        showRecordsPerPage,
+        recordsPerPageOptions
+    });
     const sizeClasses = {
         sm: 'h-8 px-2 text-xs',
         md: 'h-10 px-3 text-sm',
@@ -87,6 +95,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
 
     // Wrapper function to handle page changes with scroll prevention
     const handlePageChange = (page: number) => {
+        console.log('TablePagination handlePageChange called with page:', page);
         if (preventScroll) {
             // Prevent scroll to top by using scrollIntoView with smooth behavior
             const currentScrollPosition = window.scrollY;
@@ -101,6 +110,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
     };
 
     const handleRecordsPerPageChange = (newRecordsPerPage: number) => {
+        console.log('TablePagination handleRecordsPerPageChange called with:', newRecordsPerPage);
         if (onRecordsPerPageChange) {
             onRecordsPerPageChange(newRecordsPerPage);
             // Reset to first page when changing records per page

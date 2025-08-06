@@ -191,7 +191,7 @@ export function useRequestsList(): UseRequestsListResult {
   const [filters, setFilters] = useState<RequestsListFilters>({});
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 20
+    limit: 5
   });
 
   // Memoize filters and pagination to prevent unnecessary re-renders
@@ -232,16 +232,133 @@ export function useRequestsList(): UseRequestsListResult {
     setError(null);
 
     try {
+      // Map priority values to backend enum values
+      const mapPriorityToBackend = (priority: any): string | undefined => {
+        if (!priority) return undefined;
+        
+        // Handle object case
+        if (typeof priority === 'object') {
+          console.warn('Priority is object:', priority);
+          return undefined;
+        }
+        
+        // Handle string case
+        if (typeof priority === 'string') {
+          return priority;
+        }
+        
+        console.warn('Unexpected priority type:', typeof priority, priority);
+        return undefined;
+      };
+
+      // Map status values to backend enum values
+      const mapStatusToBackend = (status: any): string | undefined => {
+        if (!status) return undefined;
+        
+        // Handle object case
+        if (typeof status === 'object') {
+          console.warn('Status is object:', status);
+          return undefined;
+        }
+        
+        // Handle string case
+        if (typeof status === 'string') {
+          return status;
+        }
+        
+        console.warn('Unexpected status type:', typeof status, status);
+        return undefined;
+      };
+
+      // Map category/type values to backend
+      const mapCategoryToBackend = (category: any): string | undefined => {
+        if (!category) return undefined;
+        
+        // Handle object case
+        if (typeof category === 'object') {
+          console.warn('Category is object:', category);
+          return undefined;
+        }
+        
+        // Handle string case
+        if (typeof category === 'string') {
+          return category;
+        }
+        
+        console.warn('Unexpected category type:', typeof category, category);
+        return undefined;
+      };
+
+      // Map assignee values to backend
+      const mapAssigneeToBackend = (assignee: any): string | undefined => {
+        if (!assignee) return undefined;
+        
+        // Handle object case
+        if (typeof assignee === 'object') {
+          console.warn('Assignee is object:', assignee);
+          return undefined;
+        }
+        
+        // Handle string case
+        if (typeof assignee === 'string') {
+          return assignee;
+        }
+        
+        console.warn('Unexpected assignee type:', typeof assignee, assignee);
+        return undefined;
+      };
+
+      // Map building values to backend
+      const mapBuildingToBackend = (building: any): string | undefined => {
+        if (!building) return undefined;
+        
+        // Handle object case
+        if (typeof building === 'object') {
+          console.warn('Building is object:', building);
+          return undefined;
+        }
+        
+        // Handle string case
+        if (typeof building === 'string') {
+          return building;
+        }
+        
+        console.warn('Unexpected building type:', typeof building, building);
+        return undefined;
+      };
+
+      // Debug: Log the actual filter values
+      console.log('Current filters:', currentFilters);
+      console.log('Priority value:', currentFilters.priority, 'Type:', typeof currentFilters.priority);
+      console.log('Status value:', currentFilters.status, 'Type:', typeof currentFilters.status);
+      console.log('Category value:', currentFilters.category, 'Type:', typeof currentFilters.category);
+      console.log('Assignee value:', currentFilters.assignee, 'Type:', typeof currentFilters.assignee);
+      console.log('Building value:', currentFilters.building, 'Type:', typeof currentFilters.building);
+
       const apiFilters: TicketFilters = {
         search: currentFilters.search,
-        status: currentFilters.status,
-        priority: currentFilters.priority,
-        type: currentFilters.category,
+        status: mapStatusToBackend(currentFilters.status),
+        priority: mapPriorityToBackend(currentFilters.priority),
+        type: mapCategoryToBackend(currentFilters.category),
+        assigneeId: mapAssigneeToBackend(currentFilters.assignee),
+        propertyId: mapBuildingToBackend(currentFilters.building),
         page: currentPagination.page,
         limit: currentPagination.limit,
         orderColumn: 'createdAt',
         orderBy: 'DESC'
       };
+      
+      console.log('API filters:', apiFilters);
+      console.log('Priority filter being sent:', apiFilters.priority);
+      console.log('URL params:', new URLSearchParams({
+        page: apiFilters.page?.toString() || '',
+        limit: apiFilters.limit?.toString() || '',
+        priority: apiFilters.priority || '',
+        status: apiFilters.status || '',
+        type: apiFilters.type || '',
+        orderColumn: apiFilters.orderColumn || '',
+        orderBy: apiFilters.orderBy || ''
+      }).toString());
       
       const response: ApiResponse<TicketPaginationResponse> = await ticketService.getTickets(apiFilters);
       const tickets = Array.isArray(response.data) ? response.data : [];
@@ -260,6 +377,7 @@ export function useRequestsList(): UseRequestsListResult {
 
   // Update filters
   const updateFilters = useCallback((newFilters: Partial<RequestsListFilters>) => {
+    console.log('updateFilters called with:', newFilters);
     setFilters(prev => ({ ...prev, ...newFilters }));
     // Reset to first page when filters change
     setPagination(prev => ({ ...prev, page: 1 }));
@@ -268,7 +386,7 @@ export function useRequestsList(): UseRequestsListResult {
   // Reset filters
   const resetFilters = useCallback(() => {
     setFilters({});
-    setPagination({ page: 1, limit: 20 });
+    setPagination({ page: 1, limit: 5 });
   }, []);
 
   // Update sort
@@ -307,7 +425,7 @@ export function useRequestsList(): UseRequestsListResult {
       totalItems: requests.length,
       showingFrom: (memoizedPagination.page - 1) * memoizedPagination.limit + 1,
       showingTo: Math.min(memoizedPagination.page * memoizedPagination.limit, requests.length),
-      pageSizeOptions: [10, 20, 50, 100]
+      pageSizeOptions: [5, 10, 20, 50, 100]
     };
 
     return {
