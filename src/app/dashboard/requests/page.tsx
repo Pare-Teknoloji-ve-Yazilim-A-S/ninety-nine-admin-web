@@ -50,6 +50,7 @@ export default function RequestsListPage() {
   const {
     data,
     loading,
+    tableLoading,
     error,
     refetch,
     updateFilters,
@@ -257,7 +258,7 @@ export default function RequestsListPage() {
                       handleDeleteRequest
                     })}
                     data={data.requests}
-                    loading={loading}
+                    loading={tableLoading}
                     selectable={true}
                     onSelectionChange={setSelectedRequests}
                     pagination={{
@@ -282,7 +283,7 @@ export default function RequestsListPage() {
                 ) : (
                   <RequestsGridView
                     requests={data.requests}
-                    loading={loading}
+                    loading={tableLoading}
                     selectedRequests={selectedRequests}
                     onSelectionChange={(e: any) => setSelectedRequests(e.target.value)}
                     onRequestAction={handleRequestAction}

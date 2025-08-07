@@ -246,6 +246,7 @@ export interface RequestsListResponse {
 export interface UseRequestsListResult {
   data: ServiceRequestsList;
   loading: boolean;
+  tableLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
   updateFilters: (filters: Partial<RequestsListFilters>) => void;

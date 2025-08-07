@@ -187,6 +187,7 @@ export function useRequestsList(): UseRequestsListResult {
   // State
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<RequestsListFilters>({});
   const [pagination, setPagination] = useState({
@@ -237,9 +238,14 @@ export function useRequestsList(): UseRequestsListResult {
   // Fetch requests from API - with proper params to avoid re-renders
   const fetchRequestsWithFilters = useCallback(async (
     currentFilters: RequestsListFilters,
-    currentPagination: { page: number; limit: number }
+    currentPagination: { page: number; limit: number },
+    isPageChange: boolean = false
   ) => {
-    setLoading(true);
+    if (isPageChange) {
+      setTableLoading(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -542,7 +548,11 @@ export function useRequestsList(): UseRequestsListResult {
       console.error('Failed to fetch requests:', err);
       setError('Talepler yüklenirken hata oluştu');
     } finally {
-      setLoading(false);
+      if (isPageChange) {
+        setTableLoading(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -568,21 +578,26 @@ export function useRequestsList(): UseRequestsListResult {
 
   // Update pagination
   const updatePagination = useCallback((page: number, limit?: number) => {
-    setPagination(prev => ({
-      page,
-      limit: limit || prev.limit
-    }));
-  }, []);
+    const isPageChange = page !== pagination.page;
+    const newPagination = { page, limit: limit || pagination.limit };
+    
+    setPagination(newPagination);
+    
+    // If it's a page change, trigger fetch with page change flag
+    if (isPageChange) {
+      fetchRequestsWithFilters(memoizedFilters, newPagination, true);
+    }
+  }, [pagination.page, pagination.limit, fetchRequestsWithFilters, memoizedFilters]);
 
   // Refetch data
   const refetch = useCallback(() => {
     return fetchRequestsWithFilters(memoizedFilters, memoizedPagination);
   }, [fetchRequestsWithFilters, memoizedFilters, memoizedPagination]);
 
-  // Fetch data when filters or pagination changes
+  // Fetch data when filters change (but not pagination)
   useEffect(() => {
     fetchRequestsWithFilters(memoizedFilters, memoizedPagination);
-  }, [fetchRequestsWithFilters, memoizedFilters, memoizedPagination]);
+  }, [fetchRequestsWithFilters, memoizedFilters]);
 
   // Memoized data
   const data = useMemo<ServiceRequestsList>(() => {
@@ -630,6 +645,7 @@ export function useRequestsList(): UseRequestsListResult {
   return {
     data,
     loading,
+    tableLoading,
     error,
     refetch,
     updateFilters,

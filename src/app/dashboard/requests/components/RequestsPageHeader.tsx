@@ -71,7 +71,7 @@ export default function RequestsPageHeader({
           icon={RefreshCw} 
           onClick={onRefresh}
           disabled={loading}
-          className={loading ? 'animate-spin' : ''}
+          isLoading={loading}
         >
           Yenile
         </Button>
