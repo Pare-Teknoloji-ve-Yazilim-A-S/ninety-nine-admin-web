@@ -33,7 +33,9 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
     return (
       <div
         ref={(node) => {
-          contentRef.current = node
+          if (contentRef && 'current' in contentRef) {
+            (contentRef as any).current = node
+          }
           if (typeof ref === 'function') {
             ref(node)
           } else if (ref) {

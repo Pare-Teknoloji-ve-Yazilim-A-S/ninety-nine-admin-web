@@ -20,7 +20,7 @@ export default function RequestsFilterPanel({
     // Handle empty value - convert to undefined
     const stringValue = value === '' ? undefined : value;
     
-    console.log(`Filter change - ${key}:`, value, 'Processed value:', stringValue);
+    console.log(`Filter change - ${String(key)}:`, value, 'Processed value:', stringValue);
 
     setLocalFilters(prev => {
       const newFilters = {
@@ -37,11 +37,11 @@ export default function RequestsFilterPanel({
     console.log('localFilters state:', localFilters);
     
     // Process each filter value - remove undefined, null, and empty values
-    const processedFilters: any = {};
+    const processedFilters: RequestsListFilters = {};
     
     Object.entries(localFilters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        processedFilters[key] = value;
+        processedFilters[key as keyof RequestsListFilters] = value;
       }
     });
     
@@ -100,7 +100,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.status || ''}
-              onChange={(e: any) => {
+              onChange={(e: { target: { value: string } }) => {
                 console.log('Status select change event:', e);
                 handleFilterChange('status', e.target.value);
               }}
@@ -123,7 +123,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.priority || ''}
-              onChange={(e: any) => {
+              onChange={(e: { target: { value: string } }) => {
                 console.log('Priority select change event:', e);
                 handleFilterChange('priority', e.target.value);
               }}
@@ -146,7 +146,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.category || ''}
-              onChange={(e: any) => {
+              onChange={(e: { target: { value: string } }) => {
                 console.log('Category select change event:', e);
                 handleFilterChange('category', e.target.value);
               }}
@@ -169,7 +169,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.assignee || ''}
-              onChange={(e: any) => {
+              onChange={(e: { target: { value: string } }) => {
                 console.log('Assignee select change event:', e);
                 handleFilterChange('assignee', e.target.value);
               }}
@@ -194,7 +194,7 @@ export default function RequestsFilterPanel({
             </label>
             <Select
               value={localFilters.building || ''}
-              onChange={(e: any) => {
+              onChange={(e: { target: { value: string } }) => {
                 console.log('Building select change event:', e);
                 handleFilterChange('building', e.target.value);
               }}
@@ -247,7 +247,7 @@ export default function RequestsFilterPanel({
                 <Input
                   type="date"
                   value={localFilters.startDate || ''}
-                  onChange={(e: any) => handleFilterChange('startDate', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange('startDate', e.target.value)}
                 />
               </div>
               <div>
@@ -257,7 +257,7 @@ export default function RequestsFilterPanel({
                 <Input
                   type="date"
                   value={localFilters.endDate || ''}
-                  onChange={(e: any) => handleFilterChange('endDate', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange('endDate', e.target.value)}
                 />
               </div>
             </div>

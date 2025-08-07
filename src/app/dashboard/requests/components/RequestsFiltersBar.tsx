@@ -93,7 +93,7 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.category}
-              onChange={(value: string) => handleFilterChange('category', value)}
+              onChange={(e: any) => handleFilterChange('category', e.target.value)}
               placeholder="Tüm kategoriler"
               options={[
                 { value: '', label: 'Tüm kategoriler' },
@@ -114,7 +114,7 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.priority}
-              onChange={(value: string) => handleFilterChange('priority', value)}
+              onChange={(e: any) => handleFilterChange('priority', e.target.value)}
               placeholder="Tüm öncelikler"
               options={[
                 { value: '', label: 'Tüm öncelikler' },
@@ -133,7 +133,7 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.status}
-              onChange={(value: string) => handleFilterChange('status', value)}
+              onChange={(e: any) => handleFilterChange('status', e.target.value)}
               placeholder="Tüm durumlar"
               options={[
                 { value: '', label: 'Tüm durumlar' },
@@ -153,7 +153,7 @@ export default function RequestsFiltersBar({
             </label>
             <Select
               value={localFilters.assignee}
-              onChange={(value: string) => handleFilterChange('assignee', value)}
+              onChange={(e: any) => handleFilterChange('assignee', e.target.value)}
               placeholder="Tüm teknisyenler"
               options={[
                 { value: '', label: 'Tüm teknisyenler' },

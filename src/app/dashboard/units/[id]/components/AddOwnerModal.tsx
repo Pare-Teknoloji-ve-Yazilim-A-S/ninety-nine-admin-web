@@ -3,6 +3,7 @@ import Modal from '@/app/components/ui/Modal';
 import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
+import Label from '@/app/components/ui/Label';
 
 import { UserPlus, User, Phone, Mail, ChevronDown, Search, Info } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -492,18 +493,22 @@ export default function AddOwnerModal({ isOpen, onClose, onSuccess, propertyId }
                 error={errors.dateOfBirth}
                 required
               />
-              <Select
-                label="Cinsiyet"
-                value={formData.gender}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, gender: e.target.value as 'MALE' | 'FEMALE' | 'OTHER' | '' })}
-                options={[
-                  { value: '', label: 'Seçiniz' },
-                  { value: 'MALE', label: 'Erkek' },
-                  { value: 'FEMALE', label: 'Kadın' },
-                  { value: 'OTHER', label: 'Diğer' }
-                ]}
-                required
-              />
+              <div>
+                <Label htmlFor="gender" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                  Cinsiyet *
+                </Label>
+                <Select
+                  value={formData.gender}
+                  onChange={(e: any) => setFormData({ ...formData, gender: e.target.value as 'MALE' | 'FEMALE' | 'OTHER' | '' })}
+                  options={[
+                    { value: '', label: 'Seçiniz' },
+                    { value: 'MALE', label: 'Erkek' },
+                    { value: 'FEMALE', label: 'Kadın' },
+                    { value: 'OTHER', label: 'Diğer' }
+                  ]}
+                  required
+                />
+              </div>
             </div>
           </div>
         )}

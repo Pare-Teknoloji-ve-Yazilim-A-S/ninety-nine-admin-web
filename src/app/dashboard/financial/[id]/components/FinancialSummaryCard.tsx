@@ -37,9 +37,9 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
     const payments = transaction.relatedTransactions;
     const totalPaid = payments
       .filter(p => p.status === 'COMPLETED')
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount), 0);
     
-    const billAmount = transaction.data.amount;
+    const billAmount = Number(transaction.data.amount);
     const remainingAmount = billAmount - totalPaid;
     const paymentProgress = billAmount > 0 ? (totalPaid / billAmount) * 100 : 0;
 
@@ -104,7 +104,7 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
               </span>
             </div>
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {formatCurrency(transaction.data.amount)} IQD
+              {formatCurrency(Number(transaction.data.amount))} IQD
             </div>
           </div>
 

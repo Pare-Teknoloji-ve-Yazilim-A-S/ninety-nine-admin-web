@@ -42,13 +42,6 @@ const Table = forwardRef<HTMLTableElement, TableProps>(
 
 Table.displayName = 'Table'
 
-// Export compound components
-Table.Body = TableBody
-Table.Cell = TableCell
-Table.Head = TableHead
-Table.Header = TableHeader
-Table.Row = TableRow
-
 export default Table
 export type { TableProps }
 export { TableBody, TableCell, TableHead, TableHeader, TableRow }

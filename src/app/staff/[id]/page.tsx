@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
+import Separator from '@/app/components/ui/Separator'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { StaffForm } from '@/components/staff'
@@ -42,7 +42,7 @@ function StaffDetailPage () {
       setLoading(true)
       setError(null)
       const staffData = await staffService.getById(staffId)
-      setStaff(staffData)
+      setStaff(staffData.data)
     } catch (err) {
       setError('Personel bilgileri yüklenirken hata oluştu')
       console.error('Error loading staff:', err)
@@ -162,10 +162,10 @@ function StaffDetailPage () {
             <CardTitle>{staff.firstName} {staff.lastName}</CardTitle>
             <CardDescription>{staff.position?.title}</CardDescription>
             <div className="flex justify-center space-x-2 mt-4">
-              <Badge variant={statusConfig.color}>
+              <Badge variant={statusConfig.variant}>
                 {statusConfig.label}
               </Badge>
-              <Badge variant={employmentTypeConfig.color}>
+              <Badge variant={employmentTypeConfig.variant}>
                 {employmentTypeConfig.label}
               </Badge>
             </div>
@@ -187,12 +187,7 @@ function StaffDetailPage () {
                 <span className="text-sm">{staff.address}</span>
               </div>
             )}
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">
-                İşe Başlama: {new Date(staff.hireDate).toLocaleDateString('tr-TR')}
-              </span>
-            </div>
+
             {staff.salary && (
               <div className="flex items-center space-x-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -227,18 +222,8 @@ function StaffDetailPage () {
                   <p className="text-sm">{staff.nationalId}</p>
                 </div>
               )}
-              {staff.gender && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Cinsiyet</label>
-                  <p className="text-sm">{staff.gender}</p>
-                </div>
-              )}
-              {staff.maritalStatus && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Medeni Durum</label>
-                  <p className="text-sm">{staff.maritalStatus}</p>
-                </div>
-              )}
+
+
             </CardContent>
           </Card>
 
@@ -273,10 +258,7 @@ function StaffDetailPage () {
                 <label className="text-sm font-medium text-muted-foreground">Durum</label>
                 <p className="text-sm">{statusConfig.label}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">İşe Başlama Tarihi</label>
-                <p className="text-sm">{new Date(staff.hireDate).toLocaleDateString('tr-TR')}</p>
-              </div>
+
             </CardContent>
           </Card>
 
@@ -331,9 +313,12 @@ function StaffDetailPage () {
           </DialogHeader>
           <StaffForm
             staff={staff}
+            departments={[]}
+            positions={[]}
+            managers={[]}
             onSubmit={handleUpdateStaff}
             onCancel={() => setIsEditFormOpen(false)}
-            loading={actionsLoading}
+            isLoading={actionsLoading}
           />
         </DialogContent>
       </Dialog>

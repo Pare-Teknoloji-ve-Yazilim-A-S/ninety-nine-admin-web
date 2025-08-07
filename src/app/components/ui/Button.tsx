@@ -1,5 +1,16 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react'
 import { LucideIcon } from 'lucide-react'
+
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
+    size?: 'sm' | 'md' | 'lg' | 'xl'
+    icon?: LucideIcon
+    iconPosition?: 'left' | 'right'
+    isLoading?: boolean
+    fullWidth?: boolean
+    children?: React.ReactNode
+    className?: string
+}
  
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ({

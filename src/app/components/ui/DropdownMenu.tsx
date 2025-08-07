@@ -76,18 +76,17 @@ const DropdownMenuTrigger: React.FC<DropdownMenuTriggerProps> = ({
   children, 
   className 
 }) => {
-  const { setIsOpen, triggerRef } = React.useContext(DropdownMenuContext)
+  const { isOpen, setIsOpen, triggerRef } = React.useContext(DropdownMenuContext)
 
   const handleClick = () => {
-    setIsOpen(prev => !prev)
+    setIsOpen(!isOpen)
   }
 
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children, {
-      ref: triggerRef,
       onClick: handleClick,
       className: cn(children.props.className, className)
-    })
+    } as any)
   }
 
   return (

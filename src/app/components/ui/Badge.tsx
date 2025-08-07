@@ -38,6 +38,17 @@ const Badge: React.FC<BadgeProps> = ({
             danger: 'bg-primary-red/20 text-primary-red',
             info: 'bg-primary-blue/20 text-primary-blue',
         },
+        secondary: {
+            primary: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            gold: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            red: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            secondary: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            accent: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            success: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            warning: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            danger: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+            info: 'bg-background-secondary/50 text-text-primary border border-primary-dark-gray/20',
+        },
         outline: {
             primary: 'border border-background-primary text-text-primary bg-transparent',
             gold: 'border border-primary-gold text-text-accent bg-transparent',

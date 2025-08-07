@@ -162,7 +162,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
           <div className="text-center">
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-              {formatCurrency(transaction.data.amount)} IQD
+              {formatCurrency(Number(transaction.data.amount))} IQD
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
               {isBillTransaction(transaction) ? 'Fatura Tutarı' : 'Ödeme Tutarı'}
@@ -251,7 +251,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
           {/* Right Column */}
           <div className="space-y-4">
             {/* Property Info */}
-            {isBillTransaction(transaction) && transaction.data.propertyId && (
+            {isBillTransaction(transaction) && transaction.data.property && (
               <div className="flex items-center gap-3">
                 <Building className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <div>
@@ -259,28 +259,13 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                     Mülk
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {/* Property info would come from API - showing ID for now */}
-                    Mülk ID: {transaction.data.propertyId}
+                    {transaction.data.property.name || `Mülk ID: ${transaction.data.property.id}`}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Assigned To */}
-            {isBillTransaction(transaction) && transaction.data.assignedToId && (
-              <div className="flex items-center gap-3">
-                <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <div>
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    Atanan Kişi
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {/* User info would come from API - showing ID for now */}
-                    Kullanıcı ID: {transaction.data.assignedToId}
-                  </div>
-                </div>
-              </div>
-            )}
+
 
             {/* Receipt Number for Payments */}
             {isPaymentTransaction(transaction) && transaction.data.receiptNumber && (

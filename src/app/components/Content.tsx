@@ -1,7 +1,8 @@
 "use client";
 
 import { Users, ShoppingCart, DollarSign, CheckCircle, Truck, Clock, TrendingUp, ArrowUpRight, Activity } from 'lucide-react'
-import { Card, Badge, ProgressBar, Table } from './ui'
+import { Card, Badge, ProgressBar } from './ui'
+import Table, { TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/Table'
 
 export default function Content() {
     // Dashboard verileri
@@ -178,26 +179,26 @@ export default function Content() {
                             </div>
                             <div className="p-6">
                                 <Table>
-                                    <Table.Head>
-                                        <Table.Row>
+                                    <TableHead>
+                                        <TableRow>
                                             {orderColumns.map((column) => (
-                                                <Table.Header key={column.key} className="font-medium">
+                                                <TableHeader key={column.key} className="font-medium">
                                                     {column.label}
-                                                </Table.Header>
+                                                </TableHeader>
                                             ))}
-                                        </Table.Row>
-                                    </Table.Head>
-                                    <Table.Body>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
                                         {recentOrders.map((order, index) => (
-                                            <Table.Row key={index}>
+                                            <TableRow key={index}>
                                                 {orderColumns.map((column) => (
-                                                    <Table.Cell key={column.key}>
+                                                    <TableCell key={column.key}>
                                                         {column.render ? column.render(order[column.key as keyof typeof order] as string) : order[column.key as keyof typeof order]}
-                                                    </Table.Cell>
+                                                    </TableCell>
                                                 ))}
-                                            </Table.Row>
+                                            </TableRow>
                                         ))}
-                                    </Table.Body>
+                                    </TableBody>
                                 </Table>
                             </div>
                         </Card>

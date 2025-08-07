@@ -9,6 +9,7 @@ import Select from '@/app/components/ui/Select';
 import Checkbox from '@/app/components/ui/Checkbox';
 import DatePicker from '@/app/components/ui/DatePicker';
 import FileUpload from '@/app/components/ui/FileUpload';
+import Label from '@/app/components/ui/Label';
 import { Save, X, Calendar, Image as ImageIcon, AlertTriangle, Pin } from 'lucide-react';
 import {
     AnnouncementType,
@@ -194,8 +195,10 @@ export default function AnnouncementForm({
                         {/* Type and Status */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
+                                <Label htmlFor="type" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                    Duyuru Tipi *
+                                </Label>
                                 <Select
-                                    label="Duyuru Tipi"
                                     value={formData.type}
                                     onChange={(e: any) => handleInputChange('type', e.target.value)}
                                     options={typeOptions}
@@ -203,8 +206,10 @@ export default function AnnouncementForm({
                                 />
                             </div>
                             <div>
+                                <Label htmlFor="status" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                    Durum *
+                                </Label>
                                 <Select
-                                    label="Durum"
                                     value={formData.status}
                                     onChange={(e: any) => handleInputChange('status', e.target.value)}
                                     options={statusOptions}

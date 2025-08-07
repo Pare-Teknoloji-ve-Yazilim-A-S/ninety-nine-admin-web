@@ -259,12 +259,11 @@ export function DepartmentCard({
         {/* Manager */}
         {manager && (
           <div className="flex items-center space-x-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={manager.avatar} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                {getInitials(`${manager.firstName} ${manager.lastName}`)}
-              </AvatarFallback>
-            </Avatar>
+            <Avatar
+              src={manager.avatar}
+              fallback={getInitials(`${manager.firstName} ${manager.lastName}`)}
+              size="sm"
+            />
             <div className="flex-1">
               <div className="text-sm font-medium">
                 {manager.firstName} {manager.lastName}

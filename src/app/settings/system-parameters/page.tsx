@@ -22,6 +22,7 @@ import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
+import Label from '@/app/components/ui/Label';
 
 // Breadcrumb Items
 const BREADCRUMB_ITEMS = [
@@ -99,20 +100,28 @@ function GeneralTab() {
             label="Site Sloganı"
             placeholder="Akıllı Apartman Yönetimi"
           />
-          <Select
-            label="Varsayılan Dil"
-            options={[
-              { value: 'tr', label: 'Türkçe' },
-              { value: 'en', label: 'English' }
-            ]}
-          />
-          <Select
-            label="Zaman Dilimi"
-            options={[
-              { value: 'Europe/Istanbul', label: 'İstanbul (UTC+3)' },
-              { value: 'Europe/London', label: 'Londra (UTC+0)' }
-            ]}
-          />
+          <div>
+            <Label htmlFor="language" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+              Varsayılan Dil
+            </Label>
+            <Select
+              options={[
+                { value: 'tr', label: 'Türkçe' },
+                { value: 'en', label: 'English' }
+              ]}
+            />
+          </div>
+          <div>
+            <Label htmlFor="timezone" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+              Zaman Dilimi
+            </Label>
+            <Select
+              options={[
+                { value: 'Europe/Istanbul', label: 'İstanbul (UTC+3)' },
+                { value: 'Europe/London', label: 'Londra (UTC+0)' }
+              ]}
+            />
+          </div>
         </div>
       </Card>
 
@@ -132,14 +141,18 @@ function GeneralTab() {
             type="color"
             defaultValue="#AC8D6A"
           />
-          <Select
-            label="Varsayılan Tema"
-            options={[
-              { value: 'light', label: 'Açık Tema' },
-              { value: 'dark', label: 'Koyu Tema' },
-              { value: 'auto', label: 'Sistem Tercihine Göre' }
-            ]}
-          />
+          <div>
+            <Label htmlFor="theme" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+              Varsayılan Tema
+            </Label>
+            <Select
+              options={[
+                { value: 'light', label: 'Açık Tema' },
+                { value: 'dark', label: 'Koyu Tema' },
+                { value: 'auto', label: 'Sistem Tercihine Göre' }
+              ]}
+            />
+          </div>
         </div>
       </Card>
     </div>
@@ -268,14 +281,18 @@ function NotificationTab() {
               label="Hatırlatma Günleri"
               placeholder="7,3,1"
             />
-            <Select
-              label="E-posta Şablonu"
-              options={[
-                { value: 'professional', label: 'Profesyonel' },
-                { value: 'friendly', label: 'Samimi' },
-                { value: 'formal', label: 'Resmi' }
-              ]}
-            />
+            <div>
+              <Label htmlFor="emailTemplate" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                E-posta Şablonu
+              </Label>
+              <Select
+                options={[
+                  { value: 'professional', label: 'Profesyonel' },
+                  { value: 'friendly', label: 'Samimi' },
+                  { value: 'formal', label: 'Resmi' }
+                ]}
+              />
+            </div>
           </div>
         </div>
       </Card>
@@ -395,14 +412,18 @@ function ReportingTab() {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Select
-            label="Varsayılan Rapor Formatı"
-            options={[
-              { value: 'pdf', label: 'PDF' },
-              { value: 'excel', label: 'Excel' },
-              { value: 'csv', label: 'CSV' }
-            ]}
-          />
+          <div>
+            <Label htmlFor="reportFormat" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+              Varsayılan Rapor Formatı
+            </Label>
+            <Select
+              options={[
+                { value: 'pdf', label: 'PDF' },
+                { value: 'excel', label: 'Excel' },
+                { value: 'csv', label: 'CSV' }
+              ]}
+            />
+          </div>
           <Input
             label="Data Saklama Süresi"
             type="number"

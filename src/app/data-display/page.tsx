@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Table, Pagination, DataList, EmptyState, ProgressBar, Badge, Chip, Button, Card } from '@/app/components/ui';
+import { Pagination, DataList, EmptyState, ProgressBar, Badge, Chip, Button, Card } from '@/app/components/ui';
+import Table, { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/app/components/ui/Table';
 import { UserIcon, TrashIcon, EditIcon } from 'lucide-react';
 
 const DataDisplayDemo = () => {
@@ -115,12 +116,58 @@ const DataDisplayDemo = () => {
                         <p className="text-text-secondary">Verileri tablo formatında gösterir</p>
                     </div>
                     <div className="p-6">
-                        <Table
-                            columns={tableColumns}
-                            data={tableData}
-                            hoverable
-                            striped
-                        />
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    {tableColumns.map((column) => (
+                                        <TableHeader key={column.key} className="font-medium">
+                                            {column.label}
+                                        </TableHeader>
+                                    ))}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {tableData.map((row, index) => (
+                                    <TableRow key={index}>
+                                        {tableColumns.map((column) => (
+                                            <TableCell key={column.key}>
+                                                {column.key === 'actions' 
+                                                    ? (
+                                                        <div className="flex space-x-2">
+                                                            <Button size="sm" variant="ghost">
+                                                                <EditIcon className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button size="sm" variant="ghost" color="red">
+                                                                <TrashIcon className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    )
+                                                    : column.key === 'status'
+                                                        ? (
+                                                            <Badge
+                                                                color={row.status === 'Aktif' ? 'gold' : 'red'}
+                                                                size="sm"
+                                                                variant="soft"
+                                                            >
+                                                                {row.status}
+                                                            </Badge>
+                                                        )
+                                                        : column.key === 'progress'
+                                                            ? (
+                                                                <ProgressBar
+                                                                    value={row.progress}
+                                                                    size="sm"
+                                                                    color="gold"
+                                                                    showPercentage
+                                                                />
+                                                            )
+                                                            : row[column.key as keyof typeof row]}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                 </Card>
 

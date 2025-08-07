@@ -103,7 +103,9 @@ const PopoverTrigger = React.forwardRef<HTMLButtonElement, PopoverTriggerProps>(
       return React.cloneElement(children, {
         ...children.props,
         ref: (node: HTMLElement) => {
-          triggerRef.current = node
+          if (triggerRef && 'current' in triggerRef) {
+            (triggerRef as any).current = node
+          }
           if (typeof ref === 'function') ref(node as any)
           else if (ref) ref.current = node as any
         },
@@ -116,7 +118,9 @@ const PopoverTrigger = React.forwardRef<HTMLButtonElement, PopoverTriggerProps>(
     return (
       <button
         ref={(node) => {
-          triggerRef.current = node
+          if (triggerRef && 'current' in triggerRef) {
+            (triggerRef as any).current = node
+          }
           if (typeof ref === 'function') ref(node)
           else if (ref) ref.current = node
         }}
@@ -163,7 +167,9 @@ const PopoverContent = React.forwardRef<HTMLDivElement, PopoverContentProps>(
     return (
       <div
         ref={(node) => {
-          contentRef.current = node
+          if (contentRef && 'current' in contentRef) {
+            (contentRef as any).current = node
+          }
           if (typeof ref === 'function') ref(node)
           else if (ref) ref.current = node
         }}

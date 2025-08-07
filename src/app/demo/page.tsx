@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Input, Select, Checkbox, RadioButton, TextArea, DatePicker, FileUpload } from '../components/ui'
+import Label from '../components/ui/Label'
 import { Mail, Lock, User } from 'lucide-react'
 
 export default function Demo() {
@@ -131,15 +132,17 @@ export default function Demo() {
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <Select
-                                        label="Ülke"
-                                        placeholder="Ülkenizi seçin"
-                                        options={countries}
-                                        value={formData.country}
-                                        onChange={(e: any) => setFormData({ ...formData, country: e.target.value })}
-                                        isRequired
-                                        className="bg-background-secondary border-primary-gold/30 text-text-primary"
-                                    />
+                                    <div>
+                                        <Label htmlFor="country" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                            Ülke *
+                                        </Label>
+                                        <Select
+                                            placeholder="Ülkenizi seçin"
+                                            options={countries}
+                                            value={formData.country}
+                                            onChange={(e: any) => setFormData({ ...formData, country: e.target.value })}
+                                        />
+                                    </div>
 
                                     <div className="space-y-4">
                                         <RadioButton

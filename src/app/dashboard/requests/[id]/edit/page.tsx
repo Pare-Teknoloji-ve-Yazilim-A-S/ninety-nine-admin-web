@@ -13,6 +13,7 @@ import Select from '@/app/components/ui/Select';
 import TextArea from '@/app/components/ui/TextArea';
 import Button from '@/app/components/ui/Button';
 import Skeleton from '@/app/components/ui/Skeleton';
+import Label from '@/app/components/ui/Label';
 import { ticketService, Ticket, UpdateTicketRequest } from '@/services/ticket.service';
 import propertyService from '@/services/property.service';
 import { Property } from '@/services/types/property.types';
@@ -333,61 +334,81 @@ export default function EditTicketPage() {
 
                                     {/* Categories and Priority */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <Select
-                                            label="Talep Tipi"
-                                            options={ticketTypes}
-                                            placeholder="Tip seçin"
-                                            {...register('type', {
-                                                required: 'Talep tipi seçmelisiniz'
-                                            })}
-                                            error={errors.type?.message}
-                                        />
+                                        <div>
+                                            <Label htmlFor="type" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                Talep Tipi *
+                                            </Label>
+                                            <Select
+                                                options={ticketTypes}
+                                                placeholder="Tip seçin"
+                                                {...register('type', {
+                                                    required: 'Talep tipi seçmelisiniz'
+                                                })}
+                                                error={errors.type?.message}
+                                            />
+                                        </div>
 
-                                        <Select
-                                            label="Öncelik"
-                                            options={priorities}
-                                            placeholder="Öncelik seçin"
-                                            {...register('priority', {
-                                                required: 'Öncelik seçmelisiniz'
-                                            })}
-                                            error={errors.priority?.message}
-                                        />
+                                        <div>
+                                            <Label htmlFor="priority" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                Öncelik *
+                                            </Label>
+                                            <Select
+                                                options={priorities}
+                                                placeholder="Öncelik seçin"
+                                                {...register('priority', {
+                                                    required: 'Öncelik seçmelisiniz'
+                                                })}
+                                                error={errors.priority?.message}
+                                            />
+                                        </div>
 
-                                        <Select
-                                            label="Kategori"
-                                            options={categories}
-                                            placeholder="Kategori seçin"
-                                            {...register('category', {
-                                                required: 'Kategori seçmelisiniz'
-                                            })}
-                                            error={errors.category?.message}
-                                        />
+                                        <div>
+                                            <Label htmlFor="category" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                Kategori *
+                                            </Label>
+                                            <Select
+                                                options={categories}
+                                                placeholder="Kategori seçin"
+                                                {...register('category', {
+                                                    required: 'Kategori seçmelisiniz'
+                                                })}
+                                                error={errors.category?.message}
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Property and Status */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <Select
-                                            label="Emlak"
-                                            options={properties.map(p => ({
-                                                value: String(p.id),
-                                                label: `${p.name || p.propertyNumber}${p.blockNumber ? ` - Blok ${p.blockNumber}` : ''}${p.floor ? ` - Kat ${p.floor}` : ''}`
-                                            }))}
-                                            placeholder="Emlak seçin"
-                                            {...register('propertyId', {
-                                                required: 'Emlak seçmelisiniz'
-                                            })}
-                                            error={errors.propertyId?.message}
-                                        />
+                                        <div>
+                                            <Label htmlFor="propertyId" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                Emlak *
+                                            </Label>
+                                            <Select
+                                                options={properties.map(p => ({
+                                                    value: String(p.id),
+                                                    label: `${p.name || p.propertyNumber}${p.blockNumber ? ` - Blok ${p.blockNumber}` : ''}${p.floor ? ` - Kat ${p.floor}` : ''}`
+                                                }))}
+                                                placeholder="Emlak seçin"
+                                                {...register('propertyId', {
+                                                    required: 'Emlak seçmelisiniz'
+                                                })}
+                                                error={errors.propertyId?.message}
+                                            />
+                                        </div>
 
-                                        <Select
-                                            label="Durum"
-                                            options={statuses}
-                                            placeholder="Durum seçin"
-                                            {...register('status', {
-                                                required: 'Durum seçmelisiniz'
-                                            })}
-                                            error={errors.status?.message}
-                                        />
+                                        <div>
+                                            <Label htmlFor="status" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                                Durum *
+                                            </Label>
+                                            <Select
+                                                options={statuses}
+                                                placeholder="Durum seçin"
+                                                {...register('status', {
+                                                    required: 'Durum seçmelisiniz'
+                                                })}
+                                                error={errors.status?.message}
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Ticket Info */}

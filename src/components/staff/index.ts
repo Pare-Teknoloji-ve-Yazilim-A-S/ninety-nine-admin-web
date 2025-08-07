@@ -10,10 +10,10 @@ export { default as PositionCard } from './PositionCard'
 // Re-export types for convenience
 export type {
   Staff,
-  StaffCreateDto,
-  StaffUpdateDto,
+  CreateStaffDto,
+  UpdateStaffDto,
   StaffFilterParams,
-  StaffListDto,
+  StaffListResponse,
   StaffStats as StaffStatsType,
   StaffStatus,
   EmploymentType,
@@ -23,10 +23,10 @@ export type {
 export type {
   Department,
   Position,
-  DepartmentCreateDto,
-  DepartmentUpdateDto,
-  PositionCreateDto,
-  PositionUpdateDto
+  CreateDepartmentDto,
+  UpdateDepartmentDto,
+  CreatePositionDto,
+  UpdatePositionDto
 } from '@/services/types/department.types'
 
 export type {

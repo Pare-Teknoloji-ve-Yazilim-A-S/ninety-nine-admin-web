@@ -10,6 +10,7 @@ import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import Select from '@/app/components/ui/Select';
 import TextArea from '@/app/components/ui/TextArea';
+import Label from '@/app/components/ui/Label';
 import { unitsService, Property } from '@/services';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
 import { ArrowLeft, Save, RotateCcw } from 'lucide-react';
@@ -257,10 +258,12 @@ export default function EditUnitPage() {
 
                                     {/* Type */}
                                     <div>
+                                        <Label htmlFor="type" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                            Konut Tipi *
+                                        </Label>
                                         <Select
-                                            label="Konut Tipi"
                                             value={formData.type || ''}
-                                            onChange={(value: any) => handleInputChange('type', value)}
+                                            onChange={(e: any) => handleInputChange('type', e.target.value)}
                                             error={errors.type}
                                             options={[
                                                 { value: '', label: 'Tip Seçiniz' },
@@ -275,10 +278,12 @@ export default function EditUnitPage() {
 
                                     {/* Status */}
                                     <div>
+                                        <Label htmlFor="status" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                                            Durum *
+                                        </Label>
                                         <Select
-                                            label="Durum"
                                             value={formData.status || ''}
-                                            onChange={(value: any) => handleInputChange('status', value)}
+                                            onChange={(e: any) => handleInputChange('status', e.target.value)}
                                             error={errors.status}
                                             options={[
                                                 { value: '', label: 'Durum Seçiniz' },

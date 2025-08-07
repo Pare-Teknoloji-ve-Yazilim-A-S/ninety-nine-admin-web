@@ -67,20 +67,18 @@ export function PositionCard({
     return isActive ? 'Aktif' : 'Pasif'
   }
 
-  const getLevelColor = (level: string) => {
-    switch (level.toLowerCase()) {
-      case 'junior':
+  const getLevelColor = (level: number) => {
+    switch (level) {
+      case 1:
         return 'bg-blue-100 text-blue-800'
-      case 'mid':
-      case 'middle':
+      case 2:
         return 'bg-yellow-100 text-yellow-800'
-      case 'senior':
+      case 3:
         return 'bg-green-100 text-green-800'
-      case 'lead':
-      case 'manager':
+      case 4:
+      case 5:
         return 'bg-purple-100 text-purple-800'
-      case 'director':
-      case 'executive':
+      case 6:
         return 'bg-red-100 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'
@@ -279,15 +277,15 @@ export function PositionCard({
         </div>
 
         {/* Salary Range */}
-        {(position.salaryMin || position.salaryMax) && (
+        {(position.minSalary || position.maxSalary) && (
           <div className="flex items-center space-x-2 text-sm">
             <DollarSign className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium">
-              {position.salaryMin && position.salaryMax
-                ? `${formatSalary(position.salaryMin)} - ${formatSalary(position.salaryMax)}`
-                : position.salaryMin
-                ? `${formatSalary(position.salaryMin)}+`
-                : formatSalary(position.salaryMax)
+              {position.minSalary && position.maxSalary
+                ? `${formatSalary(position.minSalary)} - ${formatSalary(position.maxSalary)}`
+                : position.minSalary
+                ? `${formatSalary(position.minSalary)}+`
+                : formatSalary(position.maxSalary)
               }
             </span>
           </div>
