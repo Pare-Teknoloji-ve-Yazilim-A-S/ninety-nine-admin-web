@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 
 interface BadgeProps {
     children: React.ReactNode;
-    variant?: 'default' | 'outline' | 'solid' | 'soft' | 'success' | 'warning' | 'danger' | 'info';
+    variant?: 'default' | 'outline' | 'solid' | 'soft' | 'success' | 'warning' | 'danger' | 'info' | 'secondary';
     color?: 'primary' | 'gold' | 'red' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
     size?: 'sm' | 'md' | 'lg';
     rounded?: boolean;
@@ -140,6 +140,8 @@ const Badge: React.FC<BadgeProps> = ({
                 return 'bg-primary-red/10 text-primary-red border border-primary-red/20';
             case 'info':
                 return 'bg-primary-blue/10 text-primary-blue border border-primary-blue/20';
+            case 'secondary':
+                return 'bg-primary-blue/10 text-primary-blue border border-primary-yellow/20';
             default:
                 return null;
         }

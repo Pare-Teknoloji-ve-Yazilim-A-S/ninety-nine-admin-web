@@ -1,92 +1,134 @@
-import { forwardRef, SelectHTMLAttributes } from 'react'
-import { ChevronDown } from 'lucide-react'
+'use client'
+import React, { useState } from 'react'
+import { SelectContext, useSelect } from './SelectContext'
+import SelectContent from './SelectContent'
+import SelectItem from './SelectItem'
+import SelectTrigger from './SelectTrigger'
+import SelectValue from './SelectValue'
 
 interface SelectOption {
-    value: string
-    label: string
-    disabled?: boolean
+  value: string
+  label: string
 }
 
-interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
-    label?: string
-    error?: string
-    helperText?: string
-    placeholder?: string
-    options?: SelectOption[] // Optional yapıyoruz
-    isRequired?: boolean
-    onChange?: any
+interface SelectProps {
+  value?: string
+  defaultValue?: string
+  onValueChange?: (value: string) => void
+  onChange?: (e: { target: { value: string } }) => void
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  disabled?: boolean
+  name?: string
+  required?: boolean
+  children?: React.ReactNode
+  options?: SelectOption[]
+  placeholder?: string
+  error?: string
 }
 
-const Select = forwardRef<HTMLSelectElement, SelectProps>(
-    ({
-        label,
-        error,
-        helperText,
-        placeholder = 'Seçiniz...',
-        options = [], // Default değer ekliyoruz
-        isRequired = false,
-        className = '',
-        onChange,
-        ...props
-    }, ref) => {
-        const baseClasses = 'w-full px-3 py-2 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-primary-gold/50 appearance-none bg-background-secondary text-text-primary'
+const Select = ({
+  value,
+  defaultValue,
+  onValueChange,
+  onChange,
+  open,
+  defaultOpen = false,
+  onOpenChange,
+  disabled = false,
+  name,
+  required,
+  children,
+  options,
+  placeholder = 'Seçiniz...',
+  error
+}: SelectProps) => {
+  const [internalValue, setInternalValue] = useState(defaultValue || '')
+  const [internalOpen, setInternalOpen] = useState(defaultOpen)
 
-        const normalClasses = 'border-primary-gold/30 hover:border-primary-gold/50 focus:border-primary-gold'
-        const errorClasses = error ? 'border-primary-red focus:ring-primary-red/50 focus:border-primary-red' : ''
+  const currentValue = value !== undefined ? value : internalValue
+  const currentOpen = open !== undefined ? open : internalOpen
 
-        return (
-            <div className="space-y-1">
-                {label && (
-                    <label className="block text-sm font-medium text-text-primary font-inter">
-                        {label}
-                        {isRequired && <span className="text-primary-red ml-1">*</span>}
-                    </label>
-                )}
-
-                <div className="relative">
-                    <select
-                        ref={ref}
-                        className={`
-              ${baseClasses}
-              ${error ? errorClasses : normalClasses}
-              ${className}
-            `}
-                        onChange={onChange}
-                        {...props}
-                    >
-                        {placeholder && (
-                            <option value="" disabled className="text-text-secondary">
-                                {placeholder}
-                            </option>
-                        )}
-                        {/* Güvenli map kontrolü ekliyoruz */}
-                        {options && options.length > 0 && options.map((option) => (
-                            <option
-                                key={option.value}
-                                value={option.value}
-                                disabled={option.disabled}
-                                className="bg-background-secondary text-text-primary"
-                            >
-                                {option.label}
-                            </option>
-                        ))}
-                    </select>
-
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary w-5 h-5 pointer-events-none" />
-                </div>
-
-                {error && (
-                    <p className="text-sm text-primary-red font-inter">{error}</p>
-                )}
-
-                {helperText && !error && (
-                    <p className="text-sm text-text-secondary font-inter">{helperText}</p>
-                )}
-            </div>
-        )
+  const handleValueChange = (newValue: string) => {
+    if (value === undefined) {
+      setInternalValue(newValue)
     }
-)
+    onValueChange?.(newValue)
+    onChange?.({ target: { value: newValue } })
+    handleOpenChange(false)
+  }
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (disabled) return
+    
+    if (open === undefined) {
+      setInternalOpen(newOpen)
+    }
+    onOpenChange?.(newOpen)
+  }
+
+  // If options are provided, render a simple select with options
+  if (options) {
+    return (
+      <div className="relative">
+        <select
+          value={currentValue}
+          onChange={(e) => handleValueChange(e.target.value)}
+          disabled={disabled}
+          name={name}
+          required={required}
+          className={`
+            w-full px-3 py-2 border rounded-lg text-sm
+            bg-background-light-card dark:bg-background-card
+            text-text-on-light dark:text-text-on-dark
+            border-background-light-secondary dark:border-background-secondary
+            focus:border-primary-gold focus:ring-2 focus:ring-primary-gold/20
+            disabled:opacity-50 disabled:cursor-not-allowed
+            ${error ? 'border-primary-red' : ''}
+          `}
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        {error && (
+          <p className="mt-1 text-sm text-primary-red">{error}</p>
+        )}
+      </div>
+    )
+  }
+
+  // Original compound component behavior
+  return (
+    <SelectContext.Provider
+      value={{
+        value: currentValue,
+        onValueChange: handleValueChange,
+        open: currentOpen,
+        onOpenChange: handleOpenChange
+      }}
+    >
+      <div className="relative">
+        {children}
+        {name && (
+          <input
+            type="hidden"
+            name={name}
+            value={currentValue}
+            required={required}
+          />
+        )}
+      </div>
+    </SelectContext.Provider>
+  )
+}
 
 Select.displayName = 'Select'
 
-export default Select 
+// Export compound components
+export default Select
+export { SelectContent, SelectItem, SelectTrigger, SelectValue, useSelect }
+export type { SelectProps }

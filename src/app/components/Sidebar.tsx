@@ -22,7 +22,10 @@ import {
     CheckCircle,
     PieChart,
     Building2,
-    UserCog
+    UserCog,
+    UserCheck,
+    Briefcase,
+    Users2
 } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
@@ -69,6 +72,17 @@ export default function Sidebar() {
                 { label: 'Sakin Listesi', href: '/sakinler', icon: List },
                 { label: 'Yeni Sakin Ekle', href: '/sakinler/yeni', icon: UserPlus },
                 { label: 'Onay Bekleyenler', href: '/sakinler/onay-bekleyenler', icon: Clock }
+            ]
+        },
+        {
+            icon: UserCheck,
+            label: 'Personel',
+            hasSubmenu: true,
+            submenu: [
+                { label: 'Personel Listesi', href: '/staff', icon: Users2 },
+                { label: 'Departmanlar', href: '/staff?tab=departments', icon: Building2 },
+                { label: 'Pozisyonlar', href: '/staff?tab=positions', icon: Briefcase },
+                { label: 'Raporlar', href: '/staff?tab=reports', icon: BarChart3 }
             ]
         },
         {
@@ -258,4 +272,4 @@ export default function Sidebar() {
             </div>
         </div>
     );
-} 
+}

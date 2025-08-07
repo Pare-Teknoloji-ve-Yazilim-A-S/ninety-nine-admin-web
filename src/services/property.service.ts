@@ -258,6 +258,27 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
         }
     }
 
+    /**
+     * Remove owner from property
+     * DELETE /admin/properties/remove-owner
+     */
+    async removeOwner(propertyId: string, userId: string): Promise<ApiResponse<void>> {
+        try {
+            this.logger.info(`Removing owner from property: ${propertyId}, userId: ${userId}`);
+
+            // Send parameters as query parameters instead of request body
+            const url = `${apiConfig.endpoints.properties.admin.removeOwner}?propertyId=${propertyId}&userId=${userId}`;
+            
+            const response = await apiClient.delete<void>(url);
+
+            this.logger.info('Owner removed successfully');
+            return response;
+        } catch (error) {
+            this.logger.error(`Failed to remove owner from property: ${propertyId}`, error);
+            throw error;
+        }
+    }
+
     // === STATISTICS & ANALYTICS (Future Endpoints) === //
 
     /**
@@ -649,30 +670,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             throw error;
         }
     }
-
-    /**
-     * Remove owner from property
-     * DELETE /admin/properties/remove-owner
-     */
-    async removeOwner(propertyId: string, userId: string): Promise<ApiResponse<void>> {
-        try {
-            this.logger.info('Removing owner from property', { propertyId, userId });
-            
-            // Construct URL with query parameters
-            const url = `${apiConfig.endpoints.properties.admin.removeOwner}?propertyId=${encodeURIComponent(propertyId)}&userId=${encodeURIComponent(userId)}`;
-            
-            this.logger.info('Remove owner URL:', url);
-            
-            const response = await apiClient.delete<void>(url);
-            
-            this.logger.info('Owner removed successfully');
-            return response;
-        } catch (error) {
-            this.logger.error('Failed to remove owner from property', error);
-            throw error;
-        }
-    }
 }
 
 export default new PropertyService();
-export { PropertyService }; 
+export { PropertyService };

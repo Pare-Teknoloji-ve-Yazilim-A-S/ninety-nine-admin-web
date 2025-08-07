@@ -1,15 +1,6 @@
 import { forwardRef, ButtonHTMLAttributes } from 'react'
 import { LucideIcon } from 'lucide-react'
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
-    size?: 'sm' | 'md' | 'lg' | 'xl'
-    icon?: LucideIcon
-    iconPosition?: 'left' | 'right'
-    isLoading?: boolean
-    fullWidth?: boolean
-}
-
+ 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ({
         variant = 'primary',
@@ -36,7 +27,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             primary: 'bg-gradient-gold text-primary-dark-gray hover:opacity-90 focus:ring-primary-gold/50 shadow-md hover:shadow-lg',
             secondary: 'bg-background-card border border-primary-gold/30 text-text-primary hover:bg-background-secondary hover:border-primary-gold/50 focus:ring-primary-gold/50',
             danger: 'bg-primary-red text-text-primary hover:bg-primary-red/90 focus:ring-primary-red/50 shadow-md hover:shadow-lg',
-            ghost: 'text-text-accent hover:bg-primary-gold/10 hover:text-primary-gold focus:ring-primary-gold/50'
+            ghost: 'text-text-accent hover:bg-primary-gold/10 hover:text-primary-gold focus:ring-primary-gold/50',
+            outline: 'border border-primary-gold text-text-primary hover:bg-primary-gold/10 hover:text-primary-gold focus:ring-primary-gold/50'
         }
 
         const iconSizes = {

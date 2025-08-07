@@ -8,7 +8,7 @@ interface ModalProps extends HTMLAttributes<HTMLDivElement> {
     title?: string
     subtitle?: string
     icon?: LucideIcon
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'full' 
     variant?: 'default' | 'glass' | 'dark'
     closable?: boolean
     closeOnOverlayClick?: boolean

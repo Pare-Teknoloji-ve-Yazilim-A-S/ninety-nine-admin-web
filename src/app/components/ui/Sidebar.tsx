@@ -39,7 +39,9 @@ import {
     Shield,
     Cog,
     LogOut,
-    MoreVertical
+    MoreVertical,
+    Briefcase,
+    Users2
 } from 'lucide-react';
 
 interface MenuItemProps {
@@ -72,6 +74,11 @@ const menuItems: MenuItemProps[] = [
         title: 'Sakin Yönetimi',
         icon: User,
         href: '/dashboard/residents'
+    },
+    {
+        title: 'Personel Yönetimi',
+        icon: UserCheck,
+        href: '/staff'
     },
     {
         title: 'Hizmet/Talep Yönetimi',
@@ -350,4 +357,4 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </aside>
         </>
     );
-} 
+}

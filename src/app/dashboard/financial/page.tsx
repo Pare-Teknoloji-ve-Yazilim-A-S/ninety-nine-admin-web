@@ -46,6 +46,7 @@ import Avatar from '@/app/components/ui/Avatar';
 import Portal from '@/app/components/ui/Portal';
 import { useRouter } from 'next/navigation';
 import { useFinancialList } from './hooks/useFinancialList';
+import billingService from '@/services/billing.service';
 
 export default function FinancialListPage() {
     // UI State
@@ -121,14 +122,14 @@ export default function FinancialListPage() {
     // Table columns configuration
     const tableColumns = useMemo(() => [
         {
-            key: 'transactionId',
-            header: 'İşlem ID',
+            key: 'title',
+            header: 'Title',
             render: (_value: any, transaction: any) => (
                 <button
                     onClick={() => handleTransactionAction('view', transaction)}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                 >
-                    {transaction.transactionId}
+                    {transaction.title}
                 </button>
             ),
         },
@@ -141,7 +142,7 @@ export default function FinancialListPage() {
                         {transaction.apartment.number}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {transaction.apartment.floor}. Kat
+                        {transaction.apartment.floor ? `${transaction.apartment.floor}. Kat` : ''}
                     </div>
                 </div>
             ),
@@ -340,7 +341,7 @@ export default function FinancialListPage() {
                         />
                         <div>
                             <h4 className="font-semibold text-gray-900 dark:text-white">
-                                {transaction.transactionId}
+                                {transaction.title}
                             </h4>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                                 {new Date(transaction.transactionDate).toLocaleDateString('tr-TR')}
@@ -507,6 +508,31 @@ export default function FinancialListPage() {
                                 </p>
                             </div>
                             <div className="flex gap-3">
+                                <Button 
+                                    variant="secondary" 
+                                    size="md" 
+                                    icon={Activity}
+                                    onClick={async () => {
+                                        console.log('🧪 Manual API Test Triggered');
+                                        
+                                                                    // Test with only page and limit parameters
+                            const testParams = {
+                                page: 1,
+                                limit: 10
+                            };
+                                        
+                                        console.log('📋 Testing with parameters:', testParams);
+                                        
+                                        try {
+                                            const response = await billingService.getAllBills(testParams);
+                                            console.log('✅ Manual API Test Success:', response);
+                                        } catch (error) {
+                                            console.error('❌ Manual API Test Failed:', error);
+                                        }
+                                    }}
+                                >
+                                    API Test
+                                </Button>
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={refetch}>
                                     Yenile
                                 </Button>

@@ -238,6 +238,7 @@ export interface MaintenanceDetails {
 export interface FinancialTransaction {
   id: string;
   transactionId: string;
+  title: string;
   apartment: TransactionApartment;
   resident: TransactionResident;
   transactionType: TransactionType;

@@ -98,14 +98,39 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
    * Tüm faturaları getir
    * GET /admin/billing
    */
-  async getAllBills(): Promise<ResponseBillDto[]> {
-    this.logger.info('Fetching all bills');
+  async getAllBills(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    propertyId?: string;
+    orderColumn?: string;
+    orderBy?: 'ASC' | 'DESC';
+  }): Promise<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> {
+    this.logger.info('Fetching all bills', params);
     
-    const response = await apiClient.get<ResponseBillDto[]>(this.baseEndpoint);
-    const bills = Array.isArray(response) ? response : [];
+    console.log('🔍 BillingService: Making request to', this.baseEndpoint);
+    console.log('📋 Query Parameters:', params);
+    console.log('📡 Full URL will be:', `/api/proxy${this.baseEndpoint}${params ? '?' + new URLSearchParams(params as any).toString() : ''}`);
     
-    this.logger.info(`Fetched ${bills.length} bills`);
-    return bills;
+    try {
+      const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(this.baseEndpoint, {
+        params
+      });
+      
+      console.log('✅ BillingService: API call successful');
+      console.log('📊 Response type:', typeof response);
+      console.log('📏 Bills count:', response.data?.length || 0);
+      console.log('📋 First bill (if exists):', response.data?.[0]);
+      console.log('📄 Pagination info:', response.pagination);
+      
+      this.logger.info(`Fetched ${response.data?.length || 0} bills`);
+      return response;
+    } catch (error) {
+      console.error('❌ BillingService: API call failed:', error);
+      this.logger.error('Failed to fetch bills:', error);
+      throw error;
+    }
   }
 
   /**

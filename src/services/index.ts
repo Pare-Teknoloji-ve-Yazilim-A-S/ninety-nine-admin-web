@@ -19,6 +19,9 @@ export * from './utils/logger';
 export * from './types/auth.types';
 export * from './types/family-member.types';
 export * from './types/announcement.types';
+export * from './types/staff.types';
+export * from './types/department.types';
+export * from './types/ui.types';
 
 
 // Services
@@ -35,6 +38,7 @@ export { default as billingService } from './billing.service';
 export { default as paymentService } from './payment.service';
 export { default as announcementService } from './announcement.service';
 export { default as qrCodeService } from './qr-code.service';
+export { default as staffService } from './staff.service';
 
 // Re-export commonly used types for convenience
 export type {
@@ -108,6 +112,84 @@ export type {
     AnnouncementDisplayData,
     AnnouncementSortConfig,
 } from './types/announcement.types';
+export type {
+    // Staff types
+    Staff,
+    StaffCreateDto,
+    StaffUpdateDto,
+    StaffFilterParams,
+    StaffListDto,
+    StaffStats,
+    StaffStatus,
+    EmploymentType,
+    EmergencyContact,
+    StaffProfileDto,
+    StaffAssignmentDto,
+    StaffBulkActionDto,
+    StaffAuditLogDto,
+    StaffExportDto,
+    StaffImportDto,
+    StaffHierarchyDto,
+    StaffPerformanceDto,
+    StaffLeaveDto
+} from './types/staff.types';
+export type {
+    // Department types
+    Department,
+    Position,
+    DepartmentCreateDto,
+    DepartmentUpdateDto,
+    DepartmentFilterParams,
+    DepartmentListDto,
+    PositionCreateDto,
+    PositionUpdateDto,
+    PositionFilterParams,
+    PositionListDto,
+    DepartmentTransferDto,
+    DepartmentBulkActionDto,
+    PositionBulkActionDto,
+    DepartmentAuditLogDto,
+    PositionAuditLogDto,
+    DepartmentExportDto,
+    PositionExportDto,
+    DepartmentImportDto,
+    PositionImportDto
+} from './types/department.types';
+export type {
+    // UI types
+    TableColumn,
+    TableConfig,
+    TableAction,
+    StaffListConfig,
+    StaffCardProps,
+    FilterOption,
+    FilterGroup,
+    StaffFiltersConfig,
+    QuickFilter,
+    SavedFilter,
+    FormField,
+    FormSection,
+    StaffFormConfig,
+    ModalConfig,
+    ConfirmDialogConfig,
+    BulkAction,
+    BulkActionsConfig,
+    StatusConfig,
+    BreadcrumbItem,
+    NavigationItem,
+    LoadingState as UILoadingState,
+    ErrorState,
+    EmptyState,
+    PaginationConfig,
+    SearchConfig,
+    SortConfig,
+    ExportConfig,
+    ImportConfig,
+    ThemeConfig,
+    ResponsiveConfig,
+    AnimationConfig,
+    A11yConfig
+} from './types/ui.types';
 
 
 
@@ -140,4 +222,4 @@ export const configureServices = (config: {
 }) => {
     // Bu method gelecekte global service configuration için kullanılabilir
     console.info('Services configured with:', config);
-}; 
+};

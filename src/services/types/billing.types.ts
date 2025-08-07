@@ -23,11 +23,27 @@ export interface CreateBillDto {
   assignedToId: string;
 }
 
-export interface ResponseBillDto extends CreateBillDto {
+export interface ResponseBillDto {
   id: string;
+  title: string;
+  amount: string; // API returns amount as string
+  dueDate: string;
+  description: string;
+  billType: BillType;
+  status: BillStatus;
+  penaltyStartDate?: string;
+  isPenaltyApplied: boolean;
+  documentNumber: string;
+  paidAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  deletedAt?: string;
+  deletedAt?: string | null;
+  property?: {
+    id: string;
+    name: string;
+    propertyNumber: string;
+    floor?: number | null;
+  };
 }
 
 export interface UpdateBillDto extends Partial<CreateBillDto> {}

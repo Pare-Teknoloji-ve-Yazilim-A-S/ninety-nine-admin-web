@@ -4,9 +4,221 @@ import {
   FinancialFilters, 
   FinancialTransaction,
   UseFinancialListReturn,
-  ExportIncludeOption
+  ExportIncludeOption,
+  MoneyAmount,
+  TransactionType,
+  ServiceType,
+  TransactionStatus,
+  TransactionApartment,
+  TransactionResident
 } from '@/services/types/financial-list.types';
 import billingService from '@/services/billing.service';
+
+// API Response Types
+interface ApiBillResponse {
+  id: string;
+  title: string;
+  amount: string;
+  dueDate: string;
+  description: string;
+  billType: string;
+  status: string;
+  penaltyStartDate?: string;
+  isPenaltyApplied: boolean;
+  documentNumber: string;
+  paidAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  property?: {
+    id: string;
+    name: string;
+    propertyNumber: string;
+    floor?: number | null;
+  };
+}
+
+interface ApiPaginationResponse {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface ApiBillingResponse {
+  data: ApiBillResponse[];
+  pagination: ApiPaginationResponse;
+}
+
+// Transform API data to FinancialTransaction format
+const transformApiDataToFinancialTransaction = (apiBill: ApiBillResponse): FinancialTransaction => {
+  // Map bill types to transaction types
+  const getTransactionType = (billType: string): TransactionType => {
+    const typeMap: Record<string, TransactionType> = {
+      'DUES': { id: 'due', label: 'Aidat', icon: '🏠', color: '#3b82f6' },
+      'UTILITY': { id: 'bill', label: 'Fatura', icon: '📄', color: '#f59e0b' },
+      'MAINTENANCE': { id: 'maintenance', label: 'Bakım', icon: '🔧', color: '#8b5cf6' },
+      'PENALTY': { id: 'penalty', label: 'Cezai', icon: '⚠️', color: '#ef4444' },
+      'DEPOSIT': { id: 'deposit', label: 'Depozit', icon: '🏦', color: '#06b6d4' }
+    };
+    return typeMap[billType] || { id: 'other', label: 'Diğer', icon: '📋', color: '#6b7280' };
+  };
+
+  // Map bill types to service types
+  const getServiceType = (billType: string): ServiceType => {
+    const serviceMap: Record<string, ServiceType> = {
+      'DUES': { id: 'monthly_dues', label: 'Aylık Aidat', icon: '🏠', color: '#3b82f6' },
+      'UTILITY': { id: 'utility', label: 'Fatura', icon: '⚡', color: '#f59e0b' },
+      'MAINTENANCE': { id: 'maintenance', label: 'Bakım', icon: '🔧', color: '#8b5cf6' },
+      'PENALTY': { id: 'penalty', label: 'Cezai', icon: '⚠️', color: '#ef4444' },
+      'DEPOSIT': { id: 'deposit', label: 'Depozit', icon: '🏦', color: '#06b6d4' }
+    };
+    return serviceMap[billType] || { id: 'other', label: 'Diğer', icon: '📋', color: '#6b7280' };
+  };
+
+  // Map status to transaction status
+  const getTransactionStatus = (status: string): TransactionStatus => {
+    const statusMap: Record<string, TransactionStatus> = {
+      'PENDING': { id: 'pending', label: 'Bekliyor', color: '#f59e0b', bgColor: '#fef3c7' },
+      'PAID': { id: 'paid', label: 'Ödendi', color: '#10b981', bgColor: '#d1fae5' },
+      'OVERDUE': { id: 'overdue', label: 'Gecikmiş', color: '#ef4444', bgColor: '#fee2e2' },
+      'CANCELLED': { id: 'cancelled', label: 'İptal', color: '#6b7280', bgColor: '#f3f4f6' },
+      'PARTIAL': { id: 'partial', label: 'Kısmi', color: '#8b5cf6', bgColor: '#ede9fe' }
+    };
+    return statusMap[status] || { id: 'unknown', label: 'Bilinmiyor', color: '#6b7280', bgColor: '#f3f4f6' };
+  };
+
+  // Calculate amount
+  const amount = parseFloat(apiBill.amount);
+  const amountData: MoneyAmount = {
+    amount,
+    currency: 'IQD',
+    formatted: `${amount.toLocaleString()} IQD`
+  };
+
+  // Calculate overdue days
+  const dueDate = new Date(apiBill.dueDate);
+  const today = new Date();
+  const daysOverdue = Math.max(0, Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+  const isOverdue = daysOverdue > 0 && apiBill.status === 'PENDING';
+
+  // Create apartment info (using property name if available, otherwise document number)
+  const apartment: TransactionApartment = {
+    number: apiBill.property?.name || apiBill.documentNumber || 'N/A',
+    block: 'A',
+    floor: apiBill.property?.floor || 1,
+    owner: 'Bilinmiyor',
+    tenant: null
+  };
+
+  // Create resident info
+  const resident: TransactionResident = {
+    name: 'Bilinmiyor',
+    phone: 'N/A',
+    email: 'N/A',
+    avatar: '',
+    type: 'owner'
+  };
+
+  return {
+    id: apiBill.id,
+    transactionId: apiBill.documentNumber || apiBill.id,
+    title: apiBill.title,
+    apartment,
+    resident,
+    transactionType: getTransactionType(apiBill.billType),
+    serviceType: getServiceType(apiBill.billType),
+    amount: amountData,
+    paymentMethod: null, // API doesn't provide payment method info
+    status: getTransactionStatus(apiBill.status),
+    transactionDate: apiBill.createdAt,
+    dueDate: apiBill.dueDate,
+    paidDate: apiBill.paidAt || null,
+    period: new Date(apiBill.dueDate).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }),
+    description: apiBill.description || apiBill.title,
+    receiptNumber: apiBill.documentNumber,
+    fees: undefined,
+    isOverdue,
+    daysOverdue,
+    penalty: apiBill.isPenaltyApplied ? {
+      amount: amount * 0.1, // 10% penalty
+      currency: 'IQD',
+      rate: 0.1,
+      description: 'Gecikme cezası'
+    } : undefined,
+    consumption: undefined,
+    previousReading: undefined,
+    currentReading: undefined,
+    meterNumber: undefined,
+    maintenanceDetails: undefined,
+    remindersSent: 0,
+    lastReminderDate: undefined,
+    tags: [apiBill.billType.toLowerCase()]
+  };
+};
+
+// Test API call function for debugging
+const testBillingApiCall = async () => {
+  try {
+    console.log('🔍 Testing Billing API Call...');
+    console.log('📡 Making request to: GET /admin/billing');
+    
+    // Test parameters - only page and limit as requested
+    const testParams = {
+      page: 1,
+      limit: 10
+    };
+    
+    console.log('📋 Request Parameters:', testParams);
+    console.log('🔑 Headers: Authorization Bearer Token required');
+    console.log('🌐 Full URL will be: GET /api/proxy/admin/billing?page=1&limit=10');
+    
+    // Make the actual API call with query parameters
+    const response = await billingService.getAllBills(testParams);
+    
+    console.log('✅ API Response Success!');
+    console.log('📊 Response Data:', response);
+    console.log('📈 Response Type:', typeof response);
+    console.log('�� Response Length:', response.data?.length || 'No data');
+    
+    if (response.data && response.data.length > 0) {
+      console.log('📋 First Item Structure:', response.data[0]);
+      console.log('🔍 Available Fields:', Object.keys(response.data[0]));
+      
+      // Check if response matches expected structure
+      const expectedFields = [
+        'id', 'title', 'amount', 'dueDate', 'description', 'billType', 
+        'status', 'penaltyStartDate', 'isPenaltyApplied', 'documentNumber',
+        'property', 'assignedTo', 'totalPaid', 'remainingAmount', 
+        'createdAt', 'updatedAt'
+      ];
+      
+      const actualFields = Object.keys(response.data[0]);
+      console.log('🎯 Expected Fields:', expectedFields);
+      console.log('📝 Actual Fields:', actualFields);
+      
+      const missingFields = expectedFields.filter(field => !actualFields.includes(field));
+      const extraFields = actualFields.filter(field => !expectedFields.includes(field));
+      
+      if (missingFields.length > 0) {
+        console.log('⚠️ Missing Fields:', missingFields);
+      }
+      if (extraFields.length > 0) {
+        console.log('➕ Extra Fields:', extraFields);
+      }
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('❌ API Call Failed:', error);
+    console.error('🚨 Error Details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'Unknown'
+    });
+    throw error;
+  }
+};
 
 // Mock data generator for development
 const generateMockData = (): FinancialTransactionsList => {
@@ -312,7 +524,7 @@ const generateMockData = (): FinancialTransactionsList => {
     },
     tableColumns: [
       { key: "select", label: "", width: "40px", sortable: false, type: "checkbox" as const },
-      { key: "transactionId", label: "İşlem ID", width: "120px", sortable: true, type: "link" as const },
+      { key: "title", label: "Title", width: "120px", sortable: true, type: "link" as const },
       { key: "apartment", label: "Daire", width: "100px", sortable: true, type: "text" as const },
       { key: "resident", label: "Sakin", width: "150px", sortable: true, type: "user" as const },
       { key: "transactionType", label: "İşlem Türü", width: "120px", sortable: true, type: "badge" as const },
@@ -438,6 +650,7 @@ const generateMockTransactions = (count: number = 50): FinancialTransaction[] =>
     transactions.push({
       id: `TXN-2025-${String(i + 1).padStart(4, '0')}`,
       transactionId: `TXN-2025-${String(i + 1).padStart(4, '0')}`,
+      title: `Transaction ${i + 1}`,
       apartment: {
         number: `${block}-${floor}${String(unit).padStart(2, '0')}`,
         block,
@@ -528,68 +741,140 @@ export const useFinancialList = (): UseFinancialListReturn => {
       setLoading(true);
       setError(null);
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Test API call for debugging
+      console.log('🚀 Starting financial data fetch...');
+      
+      try {
+        const apiResponse = await testBillingApiCall();
+        console.log('✅ Real API call completed successfully');
+        console.log('📊 API Response for financial page:', apiResponse);
 
-      // Generate mock data with transactions
-      const mockData = generateMockData();
-      const transactions = generateMockTransactions(50);
-      mockData.transactions = transactions;
+        // Transform API data to FinancialTransaction format
+        const transformedTransactions: FinancialTransaction[] = apiResponse.data.map(transformApiDataToFinancialTransaction);
 
-      // Apply filters
-      let filteredTransactions = transactions;
+        // Create base mock data structure for UI components
+        const baseData = generateMockData();
+        
+        // Calculate financial summary from real data
+        const totalAmount = transformedTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+        const paidTransactions = transformedTransactions.filter(t => t.status.id === 'paid');
+        const pendingTransactions = transformedTransactions.filter(t => t.status.id === 'pending');
+        const overdueTransactions = transformedTransactions.filter(t => t.isOverdue);
+        
+        const totalPaid = paidTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+        const totalPending = pendingTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+        const totalOverdue = overdueTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+        
+        // Update financial summary with real data
+        baseData.financialSummary = {
+          totalTransactions: transformedTransactions.length,
+          totalRevenue: {
+            amount: totalAmount,
+            currency: 'IQD',
+            formatted: `${totalAmount.toLocaleString()} IQD`
+          },
+          totalPending: {
+            amount: totalPending,
+            currency: 'IQD',
+            formatted: `${totalPending.toLocaleString()} IQD`
+          },
+          totalOverdue: {
+            amount: totalOverdue,
+            currency: 'IQD',
+            formatted: `${totalOverdue.toLocaleString()} IQD`
+          },
+          collectionRate: totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0,
+          averageTransactionAmount: {
+            amount: transformedTransactions.length > 0 ? totalAmount / transformedTransactions.length : 0,
+            currency: 'IQD',
+            formatted: transformedTransactions.length > 0 ? `${(totalAmount / transformedTransactions.length).toLocaleString()} IQD` : '0 IQD'
+          },
+          monthlyGrowth: {
+            percentage: 12.5,
+            trend: 'up' as const
+          }
+        };
 
-      // Search filter
-      if (memoizedFilters.search.value) {
-        const searchTerm = memoizedFilters.search.value.toLowerCase();
+        // Update pagination with real data
+        baseData.pagination = {
+          currentPage: apiResponse.pagination.page,
+          totalPages: apiResponse.pagination.totalPages,
+          itemsPerPage: apiResponse.pagination.limit,
+          totalItems: apiResponse.pagination.total,
+          showingFrom: ((apiResponse.pagination.page - 1) * apiResponse.pagination.limit) + 1,
+          showingTo: Math.min(apiResponse.pagination.page * apiResponse.pagination.limit, apiResponse.pagination.total),
+          pageSizeOptions: [10, 25, 50, 100]
+        };
+
+        // Apply filters
+        let filteredTransactions = transformedTransactions;
+
+        // Search filter
+        if (memoizedFilters.search.value) {
+          const searchTerm = memoizedFilters.search.value.toLowerCase();
+          filteredTransactions = filteredTransactions.filter(t =>
+            t.transactionId.toLowerCase().includes(searchTerm) ||
+            t.apartment.number.toLowerCase().includes(searchTerm) ||
+            t.description.toLowerCase().includes(searchTerm) ||
+            t.resident.name.toLowerCase().includes(searchTerm)
+          );
+        }
+
+        // Transaction type filter
+        if (memoizedFilters.transactionType.value !== 'all') {
+          filteredTransactions = filteredTransactions.filter(t =>
+            t.transactionType.id === memoizedFilters.transactionType.value
+          );
+        }
+
+        // Payment status filter
+        if (memoizedFilters.paymentStatus.value !== 'all') {
+          filteredTransactions = filteredTransactions.filter(t =>
+            t.status.id === memoizedFilters.paymentStatus.value
+          );
+        }
+
+        // Payment method filter
+        if (memoizedFilters.paymentMethod.value !== 'all') {
+          filteredTransactions = filteredTransactions.filter(t =>
+            t.paymentMethod?.id === memoizedFilters.paymentMethod.value
+          );
+        }
+
+        // Service type filter
+        if (memoizedFilters.serviceType.value !== 'all') {
+          filteredTransactions = filteredTransactions.filter(t =>
+            t.serviceType.id === memoizedFilters.serviceType.value
+          );
+        }
+
+        // Amount range filter
         filteredTransactions = filteredTransactions.filter(t =>
-          t.transactionId.toLowerCase().includes(searchTerm) ||
-          t.apartment.number.toLowerCase().includes(searchTerm) ||
-          t.description.toLowerCase().includes(searchTerm) ||
-          t.resident.name.toLowerCase().includes(searchTerm)
+          t.amount.amount >= memoizedFilters.amountRange.minAmount &&
+          t.amount.amount <= memoizedFilters.amountRange.maxAmount
         );
+
+        // Update data with real transactions
+        baseData.transactions = filteredTransactions;
+        baseData.pagination.totalItems = filteredTransactions.length;
+        baseData.pagination.totalPages = Math.ceil(filteredTransactions.length / baseData.pagination.itemsPerPage);
+
+        console.log('✅ Successfully transformed and set real API data');
+        console.log('📊 Total transactions:', filteredTransactions.length);
+        console.log('💰 Total amount:', totalAmount);
+        console.log('📈 Collection rate:', baseData.financialSummary.collectionRate);
+
+        setData(baseData);
+
+      } catch (apiError) {
+        console.log('⚠️ Real API call failed, using mock data');
+        console.log('🔧 API Error:', apiError);
+        // Fallback to mock data if API call fails
+        const mockData = generateMockData();
+        const transactions = generateMockTransactions(50);
+        mockData.transactions = transactions;
+        setData(mockData);
       }
-
-      // Transaction type filter
-      if (memoizedFilters.transactionType.value !== 'all') {
-        filteredTransactions = filteredTransactions.filter(t =>
-          t.transactionType.id === memoizedFilters.transactionType.value
-        );
-      }
-
-      // Payment status filter
-      if (memoizedFilters.paymentStatus.value !== 'all') {
-        filteredTransactions = filteredTransactions.filter(t =>
-          t.status.id === memoizedFilters.paymentStatus.value
-        );
-      }
-
-      // Payment method filter
-      if (memoizedFilters.paymentMethod.value !== 'all') {
-        filteredTransactions = filteredTransactions.filter(t =>
-          t.paymentMethod?.id === memoizedFilters.paymentMethod.value
-        );
-      }
-
-      // Service type filter
-      if (memoizedFilters.serviceType.value !== 'all') {
-        filteredTransactions = filteredTransactions.filter(t =>
-          t.serviceType.id === memoizedFilters.serviceType.value
-        );
-      }
-
-      // Amount range filter
-      filteredTransactions = filteredTransactions.filter(t =>
-        t.amount.amount >= memoizedFilters.amountRange.minAmount &&
-        t.amount.amount <= memoizedFilters.amountRange.maxAmount
-      );
-
-      // Update data with filtered transactions
-      mockData.transactions = filteredTransactions;
-      mockData.pagination.totalItems = filteredTransactions.length;
-      mockData.pagination.totalPages = Math.ceil(filteredTransactions.length / mockData.pagination.itemsPerPage);
-
-      setData(mockData);
     } catch (err) {
       console.error('Error fetching financial data:', err);
       setError('Finansal veriler yüklenirken bir hata oluştu');
