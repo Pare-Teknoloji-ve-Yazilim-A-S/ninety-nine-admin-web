@@ -84,7 +84,7 @@ export { default as ProfileDropdown, ProfileDropdownPatterns } from './ProfileDr
 
 // Export components
 export { default as ExportDropdown } from './ExportDropdown'
-export { default as DocumentViewer } from './DocumentViewer'
+export { DocumentViewer } from './DocumentViewer'
 export { default as Label } from './Label'
 export { default as Separator } from './Separator'
 export { default as Collapsible, CollapsibleTrigger, CollapsibleContent } from './Collapsible'

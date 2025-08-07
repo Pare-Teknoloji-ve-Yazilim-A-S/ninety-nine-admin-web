@@ -177,12 +177,28 @@ export default function Content() {
                                 <p className="text-text-secondary font-inter">En son alınan siparişlerin listesi</p>
                             </div>
                             <div className="p-6">
-                                <Table
-                                    columns={orderColumns}
-                                    data={recentOrders}
-                                    hoverable
-                                    striped
-                                />
+                                <Table>
+                                    <Table.Head>
+                                        <Table.Row>
+                                            {orderColumns.map((column) => (
+                                                <Table.Header key={column.key} className="font-medium">
+                                                    {column.label}
+                                                </Table.Header>
+                                            ))}
+                                        </Table.Row>
+                                    </Table.Head>
+                                    <Table.Body>
+                                        {recentOrders.map((order, index) => (
+                                            <Table.Row key={index}>
+                                                {orderColumns.map((column) => (
+                                                    <Table.Cell key={column.key}>
+                                                        {column.render ? column.render(order[column.key as keyof typeof order] as string) : order[column.key as keyof typeof order]}
+                                                    </Table.Cell>
+                                                ))}
+                                            </Table.Row>
+                                        ))}
+                                    </Table.Body>
+                                </Table>
                             </div>
                         </Card>
                     </div>
