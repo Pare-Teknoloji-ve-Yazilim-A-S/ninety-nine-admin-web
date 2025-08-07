@@ -495,6 +495,7 @@ export function useStaffActions(options: UseStaffActionsOptions = {}): UseStaffA
     isBulkOperating,
     isExporting,
     isImporting,
+    loading: isCreating || isUpdating || isDeleting || isAssigning || isBulkOperating || isExporting || isImporting,
     
     // CRUD Operations
     createStaff,

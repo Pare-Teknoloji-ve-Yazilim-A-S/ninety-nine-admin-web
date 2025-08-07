@@ -136,14 +136,14 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
   const departmentOptions: FilterOption<string>[] = useMemo(() => 
     departments.map(dept => ({
       label: dept.name,
-      value: dept.id
+      value: String(dept.id)
     }))
   , [departments])
 
   const positionOptions: FilterOption<string>[] = useMemo(() => 
     positions.map(pos => ({
       label: pos.title,
-      value: pos.id
+      value: String(pos.id)
     }))
   , [positions])
 
@@ -224,14 +224,14 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
       label: 'Yeni İşe Alınanlar',
       icon: '🆕',
       filters: {
-        hireDateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        startDateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       }
     },
     {
       key: 'managers',
       label: 'Yöneticiler',
       icon: '👔',
-      filters: { hasDirectReports: true }
+      filters: { isManager: true }
     }
   ], [])
 
@@ -299,14 +299,14 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
   const setDateRange = useCallback((startDate: string | null, endDate: string | null) => {
     const newFilters = { ...filters }
     if (startDate) {
-      newFilters.createdAtFrom = startDate
+      newFilters.startDateFrom = startDate
     } else {
-      delete newFilters.createdAtFrom
+      delete newFilters.startDateFrom
     }
     if (endDate) {
-      newFilters.createdAtTo = endDate
+      newFilters.startDateTo = endDate
     } else {
-      delete newFilters.createdAtTo
+      delete newFilters.startDateTo
     }
     
     setFiltersState(newFilters)
@@ -319,14 +319,14 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
   const setHireDateRange = useCallback((startDate: string | null, endDate: string | null) => {
     const newFilters = { ...filters }
     if (startDate) {
-      newFilters.hireDateFrom = startDate
+      newFilters.startDateFrom = startDate
     } else {
-      delete newFilters.hireDateFrom
+      delete newFilters.startDateFrom
     }
     if (endDate) {
-      newFilters.hireDateTo = endDate
+      newFilters.startDateTo = endDate
     } else {
-      delete newFilters.hireDateTo
+      delete newFilters.startDateTo
     }
     
     setFiltersState(newFilters)
@@ -401,9 +401,9 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
       summaryParts.push(`İstihdam Türü: ${typeLabels.join(', ')}`)
     }
     
-    if (filters.hireDateFrom || filters.hireDateTo) {
-      const from = filters.hireDateFrom ? new Date(filters.hireDateFrom).toLocaleDateString('tr-TR') : ''
-      const to = filters.hireDateTo ? new Date(filters.hireDateTo).toLocaleDateString('tr-TR') : ''
+    if (filters.startDateFrom || filters.startDateTo) {
+      const from = filters.startDateFrom ? new Date(filters.startDateFrom).toLocaleDateString('tr-TR') : ''
+      const to = filters.startDateTo ? new Date(filters.startDateTo).toLocaleDateString('tr-TR') : ''
       summaryParts.push(`İşe Başlama: ${from} - ${to}`)
     }
     

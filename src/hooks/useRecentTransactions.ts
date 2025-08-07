@@ -52,7 +52,7 @@ export function useRecentTransactions(limit: number = 5): UseRecentTransactionsR
       });
       
       // Add bills
-      bills.slice(0, Math.ceil(limit / 2)).forEach((bill: any) => {
+      bills.data.slice(0, Math.ceil(limit / 2)).forEach((bill: any) => {
         combinedTransactions.push({
           id: bill.id,
           date: bill.createdAt || bill.dueDate,

@@ -103,29 +103,54 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     limit?: number;
     search?: string;
     status?: string;
+    type?: string;
     propertyId?: string;
+    residentId?: string;
+    startDate?: string;
+    endDate?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    sortBy?: string;
+    sortOrder?: string;
     orderColumn?: string;
     orderBy?: 'ASC' | 'DESC';
   }): Promise<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> {
     this.logger.info('Fetching all bills', params);
     
-    console.log('🔍 BillingService: Making request to', this.baseEndpoint);
+    const queryParams = new URLSearchParams();
+    
+    // Add filter params
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.propertyId) queryParams.append('propertyId', params.propertyId);
+    if (params?.residentId) queryParams.append('residentId', params.residentId);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.minAmount) queryParams.append('minAmount', params.minAmount.toString());
+    if (params?.maxAmount) queryParams.append('maxAmount', params.maxAmount.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+    
+    const queryString = queryParams.toString();
+    const url = `${this.baseEndpoint}${queryString ? `?${queryString}` : ''}`;
+    
+    console.log('🔍 BillingService: Making request to', url);
     console.log('📋 Query Parameters:', params);
-    console.log('📡 Full URL will be:', `/api/proxy${this.baseEndpoint}${params ? '?' + new URLSearchParams(params as any).toString() : ''}`);
     
     try {
-      const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(this.baseEndpoint, {
-        params
-      });
+      const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url);
       
       console.log('✅ BillingService: API call successful');
       console.log('📊 Response type:', typeof response);
-      console.log('📏 Bills count:', response.data?.length || 0);
-      console.log('📋 First bill (if exists):', response.data?.[0]);
-      console.log('📄 Pagination info:', response.pagination);
+      console.log('📏 Bills count:', response.data.data?.length || 0);
+      console.log('📋 First bill (if exists):', response.data.data?.[0]);
+      console.log('📄 Pagination info:', response.data.pagination);
       
-      this.logger.info(`Fetched ${response.data?.length || 0} bills`);
-      return response;
+      this.logger.info(`Fetched ${response.data.data?.length || 0} bills`);
+      return response.data;
     } catch (error) {
       console.error('❌ BillingService: API call failed:', error);
       this.logger.error('Failed to fetch bills:', error);

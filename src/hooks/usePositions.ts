@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Position,
-  PositionCreateDto,
-  PositionUpdateDto,
+  CreatePositionDto,
+  UpdatePositionDto,
   PositionFilterParams,
 } from '@/services/types/department.types'
 import { ApiResponse, PaginatedResponse } from '@/services/core/types'
@@ -42,14 +42,14 @@ interface UsePositionsReturn {
   
   // Actions
   loadPositions: (page?: number, filters?: PositionFilterParams) => Promise<void>
-  createPosition: (data: PositionCreateDto) => Promise<Position | null>
-  updatePosition: (id: string, data: PositionUpdateDto) => Promise<Position | null>
+  createPosition: (data: CreatePositionDto) => Promise<Position | null>
+  updatePosition: (id: string, data: UpdatePositionDto) => Promise<Position | null>
   deletePosition: (id: string) => Promise<boolean>
   getPosition: (id: string) => Promise<Position | null>
   
   // Bulk operations
   bulkDelete: (ids: string[]) => Promise<boolean>
-  bulkUpdate: (updates: Array<{ id: string; data: Partial<PositionUpdateDto> }>) => Promise<boolean>
+  bulkUpdate: (updates: Array<{ id: string; data: Partial<UpdatePositionDto> }>) => Promise<boolean>
   
   // Pagination
   goToPage: (page: number) => void
@@ -78,7 +78,7 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
     enableRealtime = false
   } = options
 
-  const { success, error: toastError } = useToast()
+  const { toast } = useToast()
 
   // State
   const [positions, setPositions] = useState<Position[]>([])
@@ -117,19 +117,23 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
         setTotalCount(response.data.total)
         setCurrentPage(page)
       } else {
-        throw new Error(response.error || 'Pozisyonlar yüklenemedi')
+        throw new Error(response.message || 'Pozisyonlar yüklenemedi')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toastError(errorMessage, 'Hata')
+      toast({
+          title: 'Hata',
+          description: errorMessage,
+          variant: 'destructive'
+        })
     } finally {
       setIsLoading(false)
     }
-  }, [currentPage, filters, pageSize, toastError])
+  }, [currentPage, filters, pageSize])
 
   // Create position
-  const createPosition = useCallback(async (data: PositionCreateDto): Promise<Position | null> => {
+  const createPosition = useCallback(async (data: CreatePositionDto): Promise<Position | null> => {
     try {
       setIsCreating(true)
       setError(null)
@@ -141,26 +145,33 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
         setPositions(prev => [response.data!, ...prev])
         setTotalCount(prev => prev + 1)
 
-        success('Pozisyon başarıyla oluşturuldu', 'Başarılı')
+        toast({
+          title: 'Başarılı',
+          description: 'Pozisyon başarıyla oluşturuldu'
+        })
 
         return response.data
       } else {
-        throw new Error(response.error || 'Pozisyon oluşturulamadı')
+        throw new Error(response.message || 'Pozisyon oluşturulamadı')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toastError(errorMessage, 'Hata')
+      toast({
+          title: 'Hata',
+          description: errorMessage,
+          variant: 'destructive'
+        })
       return null
     } finally {
       setIsCreating(false)
     }
-  }, [toastError])
+  }, [])
 
   // Update position
   const updatePosition = useCallback(async (
     id: string,
-    data: PositionUpdateDto
+    data: UpdatePositionDto
   ): Promise<Position | null> => {
     try {
       setIsUpdating(true)
@@ -174,21 +185,28 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
           prev.map(pos => pos.id === id ? response.data! : pos)
         )
 
-        success('Pozisyon başarıyla güncellendi', 'Başarılı')
+        toast({
+          title: 'Başarılı',
+          description: 'Pozisyon başarıyla güncellendi'
+        })
 
         return response.data
       } else {
-        throw new Error(response.error || 'Pozisyon güncellenemedi')
+        throw new Error(response.message || 'Pozisyon güncellenemedi')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toastError(errorMessage, 'Hata')
+      toast({
+        title: 'Hata',
+        description: errorMessage,
+        variant: 'destructive'
+      })
       return null
     } finally {
       setIsUpdating(false)
     }
-  }, [toastError])
+  }, [])
 
   // Delete position
   const deletePosition = useCallback(async (id: string): Promise<boolean> => {
@@ -203,21 +221,28 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
         setPositions(prev => prev.filter(pos => pos.id !== id))
         setTotalCount(prev => prev - 1)
 
-        success('Pozisyon başarıyla silindi', 'Başarılı')
+        toast({
+          title: 'Başarılı',
+          description: 'Pozisyon başarıyla silindi'
+        })
 
         return true
       } else {
-        throw new Error(response.error || 'Pozisyon silinemedi')
+        throw new Error(response.message || 'Pozisyon silinemedi')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toastError(errorMessage, 'Hata')
+      toast({
+        title: 'Hata',
+        description: errorMessage,
+        variant: 'destructive'
+      })
       return false
     } finally {
       setIsDeleting(false)
     }
-  }, [toastError])
+  }, [])
 
   // Get single position
   const getPosition = useCallback(async (id: string): Promise<Position | null> => {
@@ -229,7 +254,7 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
       if (response.success && response.data) {
         return response.data
       } else {
-        throw new Error(response.error || 'Pozisyon bulunamadı')
+        throw new Error(response.message || 'Pozisyon bulunamadı')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
@@ -244,37 +269,44 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
       setIsDeleting(true)
       setError(null)
 
-      const response = await staffService.bulkDeletePositions(ids)
+      const response = await staffService.bulkDelete(ids)
 
       if (response.success) {
         // Remove from local state
-        setPositions(prev => prev.filter(pos => !ids.includes(pos.id)))
+        setPositions(prev => prev.filter(pos => !ids.includes(pos.id.toString())))
         setTotalCount(prev => prev - ids.length)
 
-        success(`${ids.length} pozisyon başarıyla silindi`, 'Başarılı')
+        toast({
+          title: 'Başarılı',
+          description: `${ids.length} pozisyon başarıyla silindi`
+        })
 
         return true
       } else {
-        throw new Error(response.error || 'Pozisyonlar silinemedi')
+        throw new Error(response.message || 'Pozisyonlar silinemedi')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toastError(errorMessage, 'Hata')
+      toast({
+        title: 'Hata',
+        description: errorMessage,
+        variant: 'destructive'
+      })
       return false
     } finally {
       setIsDeleting(false)
     }
-  }, [toastError])
+  }, [])
 
   const bulkUpdate = useCallback(async (
-    updates: Array<{ id: string; data: Partial<PositionUpdateDto> }>
+    updates: Array<{ id: string; data: Partial<UpdatePositionDto> }>
   ): Promise<boolean> => {
     try {
       setIsUpdating(true)
       setError(null)
 
-      const response = await staffService.bulkUpdatePositions(updates)
+      const response = await staffService.bulkUpdate(updates)
 
       if (response.success) {
         // Update local state
@@ -285,21 +317,28 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
           })
         )
 
-        success(`${updates.length} pozisyon başarıyla güncellendi`, 'Başarılı')
+        toast({
+          title: 'Başarılı',
+          description: `${updates.length} pozisyon başarıyla güncellendi`
+        })
 
         return true
       } else {
-        throw new Error(response.error || 'Pozisyonlar güncellenemedi')
+        throw new Error(response.message || 'Pozisyonlar güncellenemedi')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toastError(errorMessage, 'Hata')
+      toast({
+        title: 'Hata',
+        description: errorMessage,
+        variant: 'destructive'
+      })
       return false
     } finally {
       setIsUpdating(false)
     }
-  }, [toastError])
+  }, [])
 
   // Pagination
   const goToPage = useCallback((page: number) => {
@@ -355,32 +394,32 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
 
   const getPositionHierarchy = useCallback((): Position[] => {
     // Build hierarchy tree based on reporting relationships
-    const rootPositions = positions.filter(pos => !pos.reportsTo)
+    const rootPositions = positions.filter(pos => !pos.reportsToPositionId)
     const buildHierarchy = (managerId: string | null): Position[] => {
       return positions
-        .filter(pos => pos.reportsTo === managerId)
+        .filter(pos => pos.reportsToPositionId === managerId)
         .map(pos => ({
           ...pos,
-          subordinates: buildHierarchy(pos.id)
+          subordinates: buildHierarchy(pos.id.toString())
         }))
     }
     
     return rootPositions.map(pos => ({
       ...pos,
-      subordinates: buildHierarchy(pos.id)
+      subordinates: buildHierarchy(pos.id.toString())
     }))
   }, [positions])
 
   const getSubordinatePositions = useCallback((positionId: string): Position[] => {
-    return positions.filter(pos => pos.reportsTo === positionId)
+    return positions.filter(pos => pos.reportsToPositionId === positionId)
   }, [positions])
 
   const getSuperiorPositions = useCallback((positionId: string): Position[] => {
     const superiors: Position[] = []
     let currentPos = positions.find(pos => pos.id === positionId)
     
-    while (currentPos && currentPos.reportsTo) {
-      const superior = positions.find(pos => pos.id === currentPos!.reportsTo)
+    while (currentPos && currentPos.reportsToPositionId) {
+      const superior = positions.find(pos => pos.id === currentPos!.reportsToPositionId)
       if (superior) {
         superiors.unshift(superior)
         currentPos = superior
@@ -432,6 +471,7 @@ export function usePositions(options: UsePositionsOptions = {}): UsePositionsRet
     isCreating,
     isUpdating,
     isDeleting,
+    loading: isLoading,
     
     // Error states
     error,

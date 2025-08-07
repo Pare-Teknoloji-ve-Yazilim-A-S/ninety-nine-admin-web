@@ -10,7 +10,7 @@ import {
 } from '@/services/types/department.types'
 import { ApiResponse, PaginatedResponse } from '@/services/core/types'
 import { staffService } from '@/services/staff.service'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/useToast'
 
 interface UseDepartmentsOptions {
   autoLoad?: boolean
@@ -49,8 +49,8 @@ interface UseDepartmentsReturn {
   getDepartment: (id: string) => Promise<Department | null>
   
   // Bulk operations
-  bulkDelete: (ids: string[]) => Promise<boolean>
-  bulkUpdate: (updates: Array<{ id: string; data: Partial<UpdateDepartmentDto> }>) => Promise<boolean>
+  bulkDelete: (ids: (string | number)[]) => Promise<boolean>
+  bulkUpdate: (updates: Array<{ id: string | number; data: Partial<UpdateDepartmentDto> }>) => Promise<boolean>
   
   // Pagination
   goToPage: (page: number) => void
@@ -77,7 +77,7 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
     enableRealtime = false
   } = options
 
-  const toast = useToast()
+  const { error: toastError, success: toastSuccess } = useToast()
 
   // State
   const [departments, setDepartments] = useState<Department[]>([])
@@ -119,11 +119,11 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toast.error(errorMessage, 'Hata')
+      toastError(errorMessage, 'Hata')
     } finally {
       setIsLoading(false)
     }
-  }, [currentPage, filters, pageSize, toast])
+  }, [currentPage, filters, pageSize, toastError])
 
   // Create department
   const createDepartment = useCallback(async (data: CreateDepartmentDto): Promise<Department | null> => {
@@ -137,7 +137,7 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
         setDepartments(prev => [...prev, response.data])
         setTotalCount(prev => prev + 1)
 
-        toast.success('Departman başarıyla oluşturuldu', 'Başarılı')
+        toastSuccess('Departman başarıyla oluşturuldu', 'Başarılı')
 
         return response.data
       } else {
@@ -146,12 +146,12 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toast.error(errorMessage, 'Hata')
+      toastError(errorMessage, 'Hata')
       return null
     } finally {
       setIsCreating(false)
     }
-  }, [toast])
+  }, [toastError, toastSuccess])
 
   // Update department
   const updateDepartment = useCallback(async (
@@ -169,7 +169,7 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
           prev.map(dept => dept.id === id ? response.data : dept)
         )
 
-        toast.success('Departman başarıyla güncellendi', 'Başarılı')
+        toastSuccess('Departman başarıyla güncellendi', 'Başarılı')
 
         return response.data
       } else {
@@ -178,12 +178,12 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toast.error(errorMessage, 'Hata')
+      toastError(errorMessage, 'Hata')
       return null
     } finally {
       setIsUpdating(false)
     }
-  }, [toast])
+  }, [toastError, toastSuccess])
 
   // Delete department
   const deleteDepartment = useCallback(async (id: string): Promise<boolean> => {
@@ -197,7 +197,7 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
         setDepartments(prev => prev.filter(dept => dept.id !== id))
         setTotalCount(prev => prev - 1)
 
-        toast.success('Departman başarıyla silindi', 'Başarılı')
+        toastSuccess('Departman başarıyla silindi', 'Başarılı')
 
         return true
       } else {
@@ -206,12 +206,12 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toast.error(errorMessage, 'Hata')
-      return false
+      toastError(errorMessage, 'Hata')
+        return false
     } finally {
       setIsDeleting(false)
     }
-  }, [toast])
+  }, [toastError, toastSuccess])
 
   // Get single department
   const getDepartment = useCallback(async (id: string): Promise<Department | null> => {
@@ -233,42 +233,42 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
   }, [])
 
   // Bulk operations
-  const bulkDelete = useCallback(async (ids: string[]): Promise<boolean> => {
+  const bulkDelete = useCallback(async (ids: (string | number)[]): Promise<boolean> => {
     try {
       setIsDeleting(true)
       setError(null)
 
-      const response = await staffService.bulkDeleteDepartments(ids)
+      const response = await staffService.bulkDelete(ids)
 
       if (response.success) {
         // Remove from local state
-        setDepartments(prev => prev.filter(dept => !ids.includes(dept.id)))
+        setDepartments(prev => prev.filter(dept => !ids.includes(dept.id.toString())))
         setTotalCount(prev => prev - ids.length)
 
-        toast.success(`${ids.length} departman başarıyla silindi`, 'Başarılı')
+        toastSuccess(`${ids.length} departman başarıyla silindi`, 'Başarılı')
 
         return true
       } else {
-        throw new Error(response.error || 'Departmanlar silinemedi')
+        throw new Error(response.message || 'Departmanlar silinemedi')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toast.error(errorMessage, 'Hata')
+      toastError(errorMessage, 'Hata')
       return false
     } finally {
       setIsDeleting(false)
     }
-  }, [toast])
+  }, [toastError])
 
   const bulkUpdate = useCallback(async (
-    updates: Array<{ id: string; data: Partial<UpdateDepartmentDto> }>
+    updates: Array<{ id: string | number; data: Partial<UpdateDepartmentDto> }>
   ): Promise<boolean> => {
     try {
       setIsUpdating(true)
       setError(null)
 
-      const response = await staffService.bulkUpdateDepartments(updates)
+      const response = await staffService.bulkUpdate(updates)
 
       if (response.success) {
         // Update local state
@@ -279,21 +279,21 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
           })
         )
 
-        toast.success(`${updates.length} departman başarıyla güncellendi`, 'Başarılı')
+        toastSuccess(`${updates.length} departman başarıyla güncellendi`, 'Başarılı')
 
         return true
       } else {
-        throw new Error(response.error || 'Departmanlar güncellenemedi')
+        throw new Error(response.message || 'Departmanlar güncellenemedi')
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Bilinmeyen hata'
       setError(errorMessage)
-      toast.error(errorMessage, 'Hata')
+      toastError(errorMessage, 'Hata')
       return false
     } finally {
       setIsUpdating(false)
     }
-  }, [toast])
+  }, [toastError])
 
   // Pagination
   const goToPage = useCallback((page: number) => {
@@ -344,32 +344,32 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
 
   const getDepartmentHierarchy = useCallback((): Department[] => {
     // Build hierarchy tree
-    const rootDepartments = departments.filter(dept => !dept.parentId)
+    const rootDepartments = departments.filter(dept => !dept.parentDepartmentId)
     const buildHierarchy = (parentId: string | null): Department[] => {
       return departments
-        .filter(dept => dept.parentId === parentId)
+        .filter(dept => dept.parentDepartmentId === parentId)
         .map(dept => ({
           ...dept,
-          children: buildHierarchy(dept.id)
+          children: buildHierarchy(dept.id.toString())
         }))
     }
     
     return rootDepartments.map(dept => ({
       ...dept,
-      children: buildHierarchy(dept.id)
+      children: buildHierarchy(dept.id.toString())
     }))
   }, [departments])
 
   const getChildDepartments = useCallback((parentId: string): Department[] => {
-    return departments.filter(dept => dept.parentId === parentId)
+    return departments.filter(dept => dept.parentDepartmentId === parentId)
   }, [departments])
 
   const getParentDepartments = useCallback((departmentId: string): Department[] => {
     const parents: Department[] = []
     let currentDept = departments.find(dept => dept.id === departmentId)
     
-    while (currentDept && currentDept.parentId) {
-      const parent = departments.find(dept => dept.id === currentDept!.parentId)
+    while (currentDept && currentDept.parentDepartmentId) {
+      const parent = departments.find(dept => dept.id === currentDept!.parentDepartmentId)
       if (parent) {
         parents.unshift(parent)
         currentDept = parent
@@ -411,6 +411,7 @@ export function useDepartments(options: UseDepartmentsOptions = {}): UseDepartme
     isCreating,
     isUpdating,
     isDeleting,
+    loading: isLoading || isCreating || isUpdating || isDeleting,
     
     // Error states
     error,

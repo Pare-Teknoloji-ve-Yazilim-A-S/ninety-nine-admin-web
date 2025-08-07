@@ -89,7 +89,8 @@ export function useStaff(options: UseStaffOptions = {}): UseStaffReturn {
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
   const [stats, setStats] = useState<StaffStatsResponse | null>(null)
   const [loading, setLoading] = useState<LoadingState>({
-    isLoading: false
+    isLoading: false,
+    error: null
   })
   const [isCreating, setIsCreating] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -135,7 +136,7 @@ export function useStaff(options: UseStaffOptions = {}): UseStaffReturn {
   // Fetch staff list
   const fetchStaff = useCallback(async (params?: StaffFilterParams) => {
     try {
-      setLoading({ isLoading: true })
+      setLoading({ isLoading: true, error: null })
       setError(null)
 
       const currentFilters = params || filters
@@ -158,14 +159,14 @@ export function useStaff(options: UseStaffOptions = {}): UseStaffReturn {
     } catch (err: any) {
       handleError(err, 'Personel listesi yüklenirken hata oluştu')
     } finally {
-      setLoading({ isLoading: false })
+      setLoading({ isLoading: false, error: null })
     }
   }, [filters, pagination.page, pagination.limit, handleError, handleSuccess])
 
   // Fetch staff by ID
   const fetchStaffById = useCallback(async (id: string | number): Promise<Staff | null> => {
     try {
-      setLoading({ isLoading: true })
+      setLoading({ isLoading: true, error: null })
       setError(null)
 
       const response = await staffService.getStaffById(id)
@@ -178,7 +179,7 @@ export function useStaff(options: UseStaffOptions = {}): UseStaffReturn {
       handleError(err, 'Personel bilgileri yüklenirken hata oluştu')
       return null
     } finally {
-      setLoading({ isLoading: false })
+      setLoading({ isLoading: false, error: null })
     }
   }, [handleError])
 
@@ -235,7 +236,7 @@ export function useStaff(options: UseStaffOptions = {}): UseStaffReturn {
   // Search
   const searchStaff = useCallback(async (query: string) => {
     try {
-      setLoading({ isLoading: true })
+      setLoading({ isLoading: true, error: null })
       setError(null)
 
       const response = await staffService.searchStaff(query, filters)
@@ -252,7 +253,7 @@ export function useStaff(options: UseStaffOptions = {}): UseStaffReturn {
     } catch (err: any) {
       handleError(err, 'Arama sırasında hata oluştu')
     } finally {
-      setLoading({ isLoading: false })
+      setLoading({ isLoading: false, error: null })
     }
   }, [filters, handleError])
 
@@ -262,7 +263,7 @@ export function useStaff(options: UseStaffOptions = {}): UseStaffReturn {
   }, [staff])
 
   const getStaffByDepartment = useCallback((departmentId: string): Staff[] => {
-    return staff.filter(s => s.departmentId === departmentId)
+    return staff.filter(s => s.department.id === departmentId)
   }, [staff])
 
   const getTotalStaffCount = useCallback((): number => {

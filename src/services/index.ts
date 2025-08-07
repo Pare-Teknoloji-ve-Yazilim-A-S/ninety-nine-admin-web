@@ -115,21 +115,21 @@ export type {
 export type {
     // Staff types
     Staff,
-    StaffCreateDto,
-    StaffUpdateDto,
+    CreateStaffDto,
+    UpdateStaffDto,
     StaffFilterParams,
-    StaffListDto,
+    StaffListResponse,
     StaffStats,
     StaffStatus,
     EmploymentType,
     EmergencyContact,
     StaffProfileDto,
     StaffAssignmentDto,
-    StaffBulkActionDto,
-    StaffAuditLogDto,
+    BulkStaffOperationDto,
+    StaffAuditLogResponse,
     StaffExportDto,
     StaffImportDto,
-    StaffHierarchyDto,
+    StaffHierarchyResponse,
     StaffPerformanceDto,
     StaffLeaveDto
 } from './types/staff.types';
@@ -137,23 +137,21 @@ export type {
     // Department types
     Department,
     Position,
-    DepartmentCreateDto,
-    DepartmentUpdateDto,
+    CreateDepartmentDto,
+    UpdateDepartmentDto,
     DepartmentFilterParams,
-    DepartmentListDto,
-    PositionCreateDto,
-    PositionUpdateDto,
+    DepartmentListResponse,
+    CreatePositionDto,
+    UpdatePositionDto,
     PositionFilterParams,
-    PositionListDto,
+    PositionListResponse,
     DepartmentTransferDto,
-    DepartmentBulkActionDto,
-    PositionBulkActionDto,
-    DepartmentAuditLogDto,
-    PositionAuditLogDto,
-    DepartmentExportDto,
-    PositionExportDto,
-    DepartmentImportDto,
-    PositionImportDto
+    BulkDepartmentActionDto,
+    BulkPositionActionDto,
+    DepartmentAuditLog,
+    PositionAuditLog,
+    DepartmentExportParams,
+    PositionExportParams
 } from './types/department.types';
 export type {
     // UI types

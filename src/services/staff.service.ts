@@ -50,13 +50,40 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Fetching all staff', params)
 
-      const response = await apiClient.get<StaffListResponse>(
-        this.baseEndpoint,
-        { params }
-      )
+      const queryParams = new URLSearchParams()
+      if (params) {
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              value.forEach(v => queryParams.append(key, String(v)))
+            } else {
+              queryParams.append(key, String(value))
+            }
+          }
+        })
+      }
+      
+      const queryString = queryParams.toString()
+      const url = `${this.baseEndpoint}${queryString ? `?${queryString}` : ''}`
+      
+      const response = await apiClient.get<StaffListResponse>(url)
 
       this.logger.info('Staff list fetched successfully')
-      return response
+      return {
+        data: response.data.data,
+        total: response.data.total,
+        page: response.data.page,
+        limit: response.data.limit,
+        totalPages: response.data.totalPages,
+        pagination: {
+          total: response.data.total,
+          page: response.data.page,
+          limit: response.data.limit,
+          totalPages: response.data.totalPages
+        },
+        success: response.success,
+        message: response.message
+      }
     } catch (error) {
       this.logger.error('Failed to fetch staff list', error)
       throw error
@@ -296,13 +323,42 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Searching staff', { query, filters })
 
-      const response = await apiClient.get<StaffListResponse>(
-        `${this.baseEndpoint}/search`,
-        { params: { q: query, ...filters } }
-      )
+      const queryParams = new URLSearchParams()
+      queryParams.append('q', query)
+      
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              value.forEach(v => queryParams.append(key, String(v)))
+            } else {
+              queryParams.append(key, String(value))
+            }
+          }
+        })
+      }
+      
+      const queryString = queryParams.toString()
+      const url = `${this.baseEndpoint}/search${queryString ? `?${queryString}` : ''}`
+      
+      const response = await apiClient.get<StaffListResponse>(url)
 
       this.logger.info('Staff search completed')
-      return response
+      return {
+        data: response.data.data,
+        total: response.data.total,
+        page: response.data.page,
+        limit: response.data.limit,
+        totalPages: response.data.totalPages,
+        pagination: {
+          total: response.data.total,
+          page: response.data.page,
+          limit: response.data.limit,
+          totalPages: response.data.totalPages
+        },
+        success: response.success,
+        message: response.message
+      }
     } catch (error) {
       this.logger.error('Failed to search staff', error)
       throw error
@@ -313,13 +369,40 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Filtering staff', filters)
 
-      const response = await apiClient.get<StaffListResponse>(
-        `${this.baseEndpoint}/filter`,
-        { params: filters }
-      )
+      const queryParams = new URLSearchParams()
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              value.forEach(v => queryParams.append(key, String(v)))
+            } else {
+              queryParams.append(key, String(value))
+            }
+          }
+        })
+      }
+      
+      const queryString = queryParams.toString()
+      const url = `${this.baseEndpoint}/filter${queryString ? `?${queryString}` : ''}`
+      
+      const response = await apiClient.get<StaffListResponse>(url)
 
       this.logger.info('Staff filtering completed')
-      return response
+      return {
+        data: response.data.data,
+        total: response.data.total,
+        page: response.data.page,
+        limit: response.data.limit,
+        totalPages: response.data.totalPages,
+        pagination: {
+          total: response.data.total,
+          page: response.data.page,
+          limit: response.data.limit,
+          totalPages: response.data.totalPages
+        },
+        success: response.success,
+        message: response.message
+      }
     } catch (error) {
       this.logger.error('Failed to filter staff', error)
       throw error
@@ -380,10 +463,15 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Fetching staff hierarchy', { departmentId })
 
-      const response = await apiClient.get<StaffHierarchyResponse>(
-        `${this.baseEndpoint}/hierarchy`,
-        { params: departmentId ? { departmentId } : {} }
-      )
+      const queryParams = new URLSearchParams()
+      if (departmentId) {
+        queryParams.append('departmentId', String(departmentId))
+      }
+      
+      const queryString = queryParams.toString()
+      const url = `${this.baseEndpoint}/hierarchy${queryString ? `?${queryString}` : ''}`
+      
+      const response = await apiClient.get<StaffHierarchyResponse>(url)
 
       this.logger.info('Staff hierarchy fetched successfully')
       return response
@@ -500,13 +588,22 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Exporting staff data', params)
 
-      const response = await apiClient.get(
-        `${this.baseEndpoint}/export`,
-        {
-          params,
-          responseType: 'blob'
-        }
-      )
+      const queryParams = new URLSearchParams()
+      if (params?.format) queryParams.append('format', params.format)
+      if (params?.filters) {
+        Object.entries(params.filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            queryParams.append(key, String(value))
+          }
+        })
+      }
+      
+      const queryString = queryParams.toString()
+      const url = `${this.baseEndpoint}/export${queryString ? `?${queryString}` : ''}`
+      
+      // Note: responseType 'blob' is not supported in current RequestConfig
+      // This will need to be handled differently or the RequestConfig type needs to be extended
+      const response = await apiClient.get(url)
 
       this.logger.info('Staff data exported successfully')
       return response.data
@@ -526,23 +623,17 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
       const formData = new FormData()
       formData.append('file', file)
 
+      // Note: headers and onUploadProgress are not supported in current RequestConfig
+      // This will need to be handled differently or the RequestConfig type needs to be extended
       const response = await apiClient.post<{ success: number; errors: any[] }>(
         `${this.baseEndpoint}/import`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          onUploadProgress: (progressEvent) => {
-            if (onProgress && progressEvent.total) {
-              const progress = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              )
-              onProgress(progress)
-            }
-          }
-        }
+        formData
       )
+      
+      // Progress tracking would need to be implemented differently
+      if (onProgress) {
+        onProgress(100) // Simplified progress indication
+      }
 
       this.logger.info('Staff data imported successfully')
       return response
@@ -557,13 +648,27 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Fetching all departments', params)
 
-      const response = await apiClient.get<DepartmentListResponse>(
-        '/api/departments',
-        { params }
-      )
+      const queryParams = new URLSearchParams()
+      if (params?.search) queryParams.append('search', params.search)
+      if (params?.page) queryParams.append('page', String(params.page))
+      if (params?.limit) queryParams.append('limit', String(params.limit))
+      
+      const queryString = queryParams.toString()
+      const url = `/api/departments${queryString ? `?${queryString}` : ''}`
+      
+      const response = await apiClient.get<DepartmentListResponse>(url)
 
       this.logger.info('Departments fetched successfully')
-      return response
+      return {
+        data: response.data.departments,
+        total: response.data.pagination.total,
+        page: response.data.pagination.page,
+        limit: response.data.pagination.limit,
+        totalPages: response.data.pagination.totalPages,
+        pagination: response.data.pagination,
+        success: response.success,
+        message: response.message
+      }
     } catch (error) {
       this.logger.error('Failed to fetch departments', error)
       throw error
@@ -648,13 +753,28 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Fetching all positions', params)
 
-      const response = await apiClient.get<PositionListResponse>(
-        '/api/positions',
-        { params }
-      )
+      const queryParams = new URLSearchParams()
+      if (params?.search) queryParams.append('search', params.search)
+      if (params?.page) queryParams.append('page', String(params.page))
+      if (params?.limit) queryParams.append('limit', String(params.limit))
+      if (params?.departmentId) queryParams.append('departmentId', String(params.departmentId))
+      
+      const queryString = queryParams.toString()
+      const url = `/api/positions${queryString ? `?${queryString}` : ''}`
+      
+      const response = await apiClient.get<PositionListResponse>(url)
 
       this.logger.info('Positions fetched successfully')
-      return response
+      return {
+        data: response.data.positions,
+        total: response.data.pagination.total,
+        page: response.data.pagination.page,
+        limit: response.data.pagination.limit,
+        totalPages: response.data.pagination.totalPages,
+        pagination: response.data.pagination,
+        success: response.success,
+        message: response.message
+      }
     } catch (error) {
       this.logger.error('Failed to fetch positions', error)
       throw error
