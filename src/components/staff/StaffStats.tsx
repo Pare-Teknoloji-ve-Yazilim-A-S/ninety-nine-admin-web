@@ -4,7 +4,7 @@ import React from 'react'
 import Card from '@/app/components/ui/Card'
 import  Badge  from '@/app/components/ui/Badge'
 import Progress from '@/app/components/ui/Progress'
-import { Separator } from '@/app/components/ui/Separator'
+import Separator from '@/app/components/ui/Separator'
 import {
   StaffStats as StaffStatsType,
   StaffStatus,
@@ -246,7 +246,7 @@ export function StaffStats({
                         </div>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {new Date(hire.hireDate).toLocaleDateString('tr-TR')}
+                        {new Date(hire.startDate).toLocaleDateString('tr-TR')}
                       </div>
                     </div>
                   ))}

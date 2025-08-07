@@ -117,7 +117,7 @@ export function StaffList({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onSelectionChange?.(staff.map(s => s.id))
+      onSelectionChange?.(staff.map(s => s.id.toString()))
     } else {
       onSelectionChange?.([])
     }
@@ -271,7 +271,7 @@ export function StaffList({
               <Input
                 placeholder="Personel ara..."
                 value={localSearchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -380,7 +380,7 @@ export function StaffList({
                   <TableHead className="w-12">
                     <Checkbox
                       checked={isAllSelected}
-                      onCheckedChange={handleSelectAll}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
                       aria-label="Tümünü seç"
                       ref={(ref) => {
                         if (ref) ref.indeterminate = isIndeterminate
@@ -401,14 +401,14 @@ export function StaffList({
                 {staff.map((staffMember) => {
                   const statusConfig = STAFF_STATUS_CONFIG[staffMember.status]
                   const employmentConfig = EMPLOYMENT_TYPE_CONFIG[staffMember.employmentType]
-                  const isSelected = selectedStaff.includes(staffMember.id)
+                  const isSelected = selectedStaff.includes(staffMember.id.toString())
                   
                   return (
                     <TableRow key={staffMember.id} className={isSelected ? 'bg-muted/50' : ''}>
                       <TableCell>
                         <Checkbox
                           checked={isSelected}
-                          onCheckedChange={(checked) => handleSelectStaff(staffMember.id, checked as boolean)}
+                          onChange={(e) => handleSelectStaff(staffMember.id.toString(), e.target.checked)}
                           aria-label={`${staffMember.firstName} ${staffMember.lastName} seç`}
                         />
                       </TableCell>
@@ -448,7 +448,7 @@ export function StaffList({
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {staffMember.hireDate ? formatDate(staffMember.hireDate) : '-'}
+                        {staffMember.startDate ? formatDate(staffMember.startDate) : '-'}
                       </TableCell>
                       <TableCell>
                         {staffMember.salary ? formatSalary(staffMember.salary) : '-'}

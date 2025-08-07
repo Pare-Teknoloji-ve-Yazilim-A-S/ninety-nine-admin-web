@@ -39,8 +39,8 @@ import { cn } from '@/lib/utils'
 
 // Form validation schema
 const staffFormSchema = z.object({
-  firstName: z.string().min(2, 'Ad en az 2 karakter olmalıdır'),
-  lastName: z.string().min(2, 'Soyad en az 2 karakter olmalıdır'),
+  firstName: z.string().min(1, 'Ad gereklidir'),
+  lastName: z.string().min(1, 'Soyad gereklidir'),
   email: z.string().email('Geçerli bir e-posta adresi giriniz'),
   phone: z.string().optional(),
   address: z.string().optional(),
@@ -51,7 +51,7 @@ const staffFormSchema = z.object({
   managerId: z.string().optional(),
   status: z.nativeEnum(StaffStatus),
   employmentType: z.nativeEnum(EmploymentType),
-  hireDate: z.string().min(1, 'İşe başlama tarihi gereklidir'),
+  startDate: z.string().min(1, 'İşe başlama tarihi gereklidir'),
   salary: z.number().min(0, 'Maaş 0\'dan büyük olmalıdır').optional(),
   notes: z.string().optional(),
   // Emergency contact
@@ -105,7 +105,7 @@ export function StaffForm({
       managerId: staff?.manager?.id?.toString() || '',
       status: staff?.status || StaffStatus.ACTIVE,
       employmentType: staff?.employmentType || EmploymentType.FULL_TIME,
-      hireDate: staff?.startDate || '',
+      startDate: staff?.startDate || '',
       salary: staff?.salary || undefined,
       notes: staff?.notes || '',
       emergencyContactName: staff?.emergencyContact?.name || '',
@@ -175,7 +175,7 @@ export function StaffForm({
         managerId: data.managerId || undefined,
         status: data.status,
         employmentType: data.employmentType,
-        startDate: data.hireDate,
+        startDate: data.startDate,
         salary: data.salary,
         notes: data.notes,
         emergencyContact: {
@@ -511,7 +511,7 @@ export function StaffForm({
                 
                 <FormField
                   control={form.control}
-                  name="hireDate"
+                  name="startDate"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>İşe Başlama Tarihi *</FormLabel>

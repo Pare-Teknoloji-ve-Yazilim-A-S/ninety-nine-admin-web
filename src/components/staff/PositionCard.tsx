@@ -318,30 +318,30 @@ export function PositionCard({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-primary">
-              {position.maxHeadcount || '∞'}
+              {position.maxStaffCount || '∞'}
             </div>
             <div className="text-xs text-muted-foreground">Maksimum Kapasite</div>
           </div>
         </div>
 
         {/* Capacity Indicator */}
-        {position.maxHeadcount && (
+        {position.maxStaffCount && (
           <div className="space-y-1">
             <div className="flex justify-between text-xs">
               <span>Kapasite Kullanımı</span>
-              <span>{Math.round((staffCount / position.maxHeadcount) * 100)}%</span>
+              <span>{Math.round((staffCount / position.maxStaffCount) * 100)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className={cn(
                   "h-2 rounded-full transition-all",
-                  staffCount / position.maxHeadcount > 0.9 
+                  staffCount / position.maxStaffCount > 0.9 
                     ? "bg-red-500" 
-                    : staffCount / position.maxHeadcount > 0.7 
+                    : staffCount / position.maxStaffCount > 0.7 
                     ? "bg-yellow-500" 
                     : "bg-green-500"
                 )}
-                style={{ width: `${Math.min((staffCount / position.maxHeadcount) * 100, 100)}%` }}
+                style={{ width: `${Math.min((staffCount / position.maxStaffCount) * 100, 100)}%` }}
               />
             </div>
           </div>

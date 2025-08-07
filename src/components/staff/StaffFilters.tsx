@@ -5,7 +5,7 @@ import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Label from '@/app/components/ui/Label'
-import Select from '@/app/components/ui/Select'
+import Select, { SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/Select'
 import Badge from '@/app/components/ui/Badge'
 import Separator from '@/app/components/ui/Separator'
 import Collapsible, { CollapsibleTrigger, CollapsibleContent } from '@/app/components/ui/Collapsible'
@@ -105,8 +105,8 @@ export function StaffFilters({
   // Handle date range
   const handleDateRangeChange = (range: { from: Date | undefined; to: Date | undefined }) => {
     setDateRange(range)
-    updateFilter('hireDateFrom', range.from?.toISOString().split('T')[0])
-    updateFilter('hireDateTo', range.to?.toISOString().split('T')[0])
+    updateFilter('startDateFrom', range.from?.toISOString().split('T')[0])
+    updateFilter('startDateTo', range.to?.toISOString().split('T')[0])
   }
 
   // Save current filters
@@ -133,10 +133,10 @@ export function StaffFilters({
     if (filters.search) count++
     if (filters.status?.length) count++
     if (filters.employmentType?.length) count++
-    if (filters.departmentIds?.length) count++
-    if (filters.positionIds?.length) count++
-    if (filters.managerIds?.length) count++
-    if (filters.hireDateFrom || filters.hireDateTo) count++
+    if (filters.departmentId?.length) count++
+    if (filters.positionId?.length) count++
+    if (filters.managerId) count++
+    if (filters.startDateFrom || filters.startDateTo) count++
     if (filters.salaryMin || filters.salaryMax) count++
     return count
   }
@@ -189,7 +189,7 @@ export function StaffFilters({
           <Input
             placeholder="Personel ara..."
             value={filters.search || ''}
-            onChange={(e) => updateFilter('search', e.target.value || undefined)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter('search', e.target.value || undefined)}
             className="pl-10"
           />
         </div>
@@ -201,13 +201,13 @@ export function StaffFilters({
             <div className="flex flex-wrap gap-2">
               {quickFilters.map((quickFilter) => (
                 <Button
-                  key={quickFilter.id}
+                  key={quickFilter.key}
                   variant="outline"
                   size="sm"
-                  onClick={() => onQuickFilterApply(quickFilter.id)}
+                  onClick={() => onQuickFilterApply(quickFilter.key)}
                   className="h-8"
                 >
-                  {quickFilter.name}
+                  {quickFilter.label}
                   <Badge variant="secondary" className="ml-2">
                     {quickFilter.count}
                   </Badge>
@@ -230,20 +230,14 @@ export function StaffFilters({
                     <Checkbox
                       id={`status-${status}`}
                       checked={(filters.status || []).includes(status as StaffStatus)}
-                      onCheckedChange={(checked) => 
-                        handleArrayFilter('status', status, checked as boolean)
+                      onChange={(e) =>
+                        handleArrayFilter('status', status, e.target.checked)
                       }
                     />
                     <Label 
                       htmlFor={`status-${status}`}
-                      className="text-sm flex items-center"
+                      className="text-sm"
                     >
-                      <div 
-                        className={cn(
-                          "w-2 h-2 rounded-full mr-2",
-                          config.color
-                        )}
-                      />
                       {config.label}
                     </Label>
                   </div>
@@ -260,8 +254,8 @@ export function StaffFilters({
                     <Checkbox
                       id={`employment-${type}`}
                       checked={(filters.employmentType || []).includes(type as EmploymentType)}
-                      onCheckedChange={(checked) => 
-                        handleArrayFilter('employmentType', type, checked as boolean)
+                      onChange={(e) => 
+                        handleArrayFilter('employmentType', type, e.target.checked)
                       }
                     />
                     <Label 
@@ -271,7 +265,7 @@ export function StaffFilters({
                       <div 
                         className={cn(
                           "w-2 h-2 rounded-full mr-2",
-                          config.color
+                          "bg-primary-gold"
                         )}
                       />
                       {config.label}
@@ -285,9 +279,9 @@ export function StaffFilters({
             <div className="space-y-2">
               <Label className="text-sm font-medium">Departman</Label>
               <Select
-                value={(filters.departmentIds || [])[0] || ''}
+                value={(filters.departmentId || [])[0] || ''}
                 onValueChange={(value) => 
-                  updateFilter('departmentIds', value ? [value] : undefined)
+                  updateFilter('departmentId', value ? [value] : undefined)
                 }
               >
                 <SelectTrigger>
@@ -308,9 +302,9 @@ export function StaffFilters({
             <div className="space-y-2">
               <Label className="text-sm font-medium">Pozisyon</Label>
               <Select
-                value={(filters.positionIds || [])[0] || ''}
+                value={(filters.positionId || [])[0] || ''}
                 onValueChange={(value) => 
-                  updateFilter('positionIds', value ? [value] : undefined)
+                  updateFilter('positionId', value ? [value] : undefined)
                 }
               >
                 <SelectTrigger>
@@ -356,13 +350,9 @@ export function StaffFilters({
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={dateRange.from}
-                    selected={dateRange}
-                    onSelect={(range) => handleDateRangeChange(range || { from: undefined, to: undefined })}
-                    numberOfMonths={2}
-                    locale={tr}
+                    value={dateRange.from}
+                    onChange={(date) => handleDateRangeChange({ from: date, to: dateRange.to })}
+                    className="rounded-md border"
                   />
                 </PopoverContent>
               </Popover>
@@ -376,7 +366,7 @@ export function StaffFilters({
                   type="number"
                   placeholder="Min"
                   value={filters.salaryMin || ''}
-                  onChange={(e) => 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     updateFilter('salaryMin', e.target.value ? parseFloat(e.target.value) : undefined)
                   }
                 />
@@ -384,7 +374,7 @@ export function StaffFilters({
                   type="number"
                   placeholder="Max"
                   value={filters.salaryMax || ''}
-                  onChange={(e) => 
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     updateFilter('salaryMax', e.target.value ? parseFloat(e.target.value) : undefined)
                   }
                 />
@@ -443,9 +433,9 @@ export function StaffFilters({
                       <Label htmlFor="filter-name">Filtre Adı</Label>
                       <Input
                         id="filter-name"
-                        placeholder="Filtre adı giriniz"
+                        placeholder="Filtre adı..."
                         value={saveFilterName}
-                        onChange={(e) => setSaveFilterName(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSaveFilterName(e.target.value)}
                       />
                       <div className="flex justify-end space-x-2">
                         <Button
@@ -472,8 +462,8 @@ export function StaffFilters({
                   Dışa Aktar
                 </Button>
 
-                <Button variant="outline" size="sm" asChild>
-                  <label>
+                <Button variant="outline" size="sm">
+                  <label className="cursor-pointer">
                     <Upload className="h-4 w-4 mr-1" />
                     İçe Aktar
                     <input

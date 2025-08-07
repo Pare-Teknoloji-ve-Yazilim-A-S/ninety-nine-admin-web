@@ -215,10 +215,10 @@ export function StaffCard({
               <Badge variant="outline" className="text-xs">
                 {employmentConfig.label}
               </Badge>
-              {staff.hireDate && (
+              {staff.startDate && (
                 <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
-                  <span>İşe başlama: {formatDate(staff.hireDate)}</span>
+                  <span>İşe başlama: {formatDate(staff.startDate)}</span>
                 </div>
               )}
             </div>

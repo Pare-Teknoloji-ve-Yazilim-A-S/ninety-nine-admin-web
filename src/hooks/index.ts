@@ -8,18 +8,44 @@ export { default as usePositions } from './usePositions'
 // Re-export types for convenience
 export type {
   Staff,
-  StaffCreateDto,
-  StaffUpdateDto,
+  CreateStaffDto,
+  UpdateStaffDto,
   StaffFilterParams,
-  StaffListDto,
-  StaffStats
+  StaffListResponse,
+  StaffDetailResponse,
+  StaffStatsResponse,
+  StaffProfileDto,
+  StaffAssignmentDto,
+  BulkStaffOperationDto,
+  StaffExportDto,
+  StaffImportDto,
+  StaffPerformanceDto,
+  StaffLeaveDto,
+  StaffStatus,
+  EmploymentType
 } from '@/services/types/staff.types'
 
 export type {
   Department,
   Position,
-  DepartmentCreateDto,
-  DepartmentUpdateDto,
-  PositionCreateDto,
-  PositionUpdateDto
+  CreateDepartmentDto,
+  UpdateDepartmentDto,
+  CreatePositionDto,
+  UpdatePositionDto,
+  DepartmentFilterParams,
+  PositionFilterParams,
+  DepartmentListResponse,
+  PositionListResponse,
+  DepartmentHierarchy,
+  OrganizationChart,
+  DepartmentStats,
+  PositionStats,
+  BulkDepartmentActionDto,
+  BulkPositionActionDto,
+  DepartmentTransferDto,
+  PositionTransferDto,
+  DepartmentAuditLog,
+  PositionAuditLog,
+  DepartmentValidationRules,
+  PositionValidationRules
 } from '@/services/types/department.types'
