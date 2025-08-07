@@ -125,6 +125,7 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     if (params?.search) queryParams.append('search', params.search);
     if (params?.status) queryParams.append('status', params.status);
     if (params?.type) queryParams.append('type', params.type);
+    if ((params as any)?.billType) queryParams.append('billType', String((params as any).billType));
     if (params?.propertyId) queryParams.append('propertyId', params.propertyId);
     if (params?.residentId) queryParams.append('residentId', params.residentId);
     if (params?.startDate) queryParams.append('startDate', params.startDate);
@@ -133,6 +134,8 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     if (params?.maxAmount) queryParams.append('maxAmount', params.maxAmount.toString());
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+    if ((params as any)?.orderColumn) queryParams.append('orderColumn', String((params as any).orderColumn));
+    if ((params as any)?.orderBy) queryParams.append('orderBy', String((params as any).orderBy));
     
     const queryString = queryParams.toString();
     const url = `${this.baseEndpoint}${queryString ? `?${queryString}` : ''}`;

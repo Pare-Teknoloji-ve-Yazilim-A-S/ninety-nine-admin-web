@@ -726,6 +726,10 @@ export const useFinancialList = (): UseFinancialListReturn => {
     return mock.filters;
   });
 
+  // Sorting state mapped to API params
+  const [orderColumn, setOrderColumn] = useState<string>('createdAt');
+  const [orderBy, setOrderBy] = useState<'ASC' | 'DESC'>('DESC');
+
   // Memoize filters to prevent infinite re-renders
   const memoizedFilters = useMemo(() => filters, [
     filters.search.value,
@@ -747,7 +751,16 @@ export const useFinancialList = (): UseFinancialListReturn => {
       setError(null);
 
       // Always call real API with default paging
-      const apiResponse = await billingService.getAllBills({ page, limit });
+      const apiResponse = await billingService.getAllBills({
+        page,
+        limit,
+        search: filters.search.value || undefined,
+        status: filters.paymentStatus.value !== 'all' ? filters.paymentStatus.value : undefined,
+        billType: filters.transactionType.value !== 'all' ? filters.transactionType.value.toUpperCase() : undefined,
+        // propertyId can be added when UI provides it
+        orderColumn,
+        orderBy,
+      } as any);
 
       // Normalize API response shapes defensively
       const rawItemsCandidate: any = (apiResponse as any);
@@ -833,7 +846,7 @@ export const useFinancialList = (): UseFinancialListReturn => {
     } finally {
       setLoading(false);
     }
-  }, [memoizedFilters, page, limit]);
+  }, [memoizedFilters, page, limit, orderColumn, orderBy]);
 
   // Initial data fetch
   useEffect(() => {

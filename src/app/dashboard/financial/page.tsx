@@ -421,21 +421,27 @@ export default function FinancialListPage() {
             id: 'transactionType',
             label: 'İşlem Türü',
             type: 'select' as const,
-            options: data?.filters.transactionType.options.map(option => ({
-                id: option.value,
-                label: option.label,
-                value: option.value
-            })) || [],
+            options: [
+                { id: 'all', label: 'Tümü', value: 'all' },
+                { id: 'DUES', label: 'Aidat', value: 'DUES' },
+                { id: 'UTILITY', label: 'Fatura', value: 'UTILITY' },
+                { id: 'MAINTENANCE', label: 'Bakım', value: 'MAINTENANCE' },
+                { id: 'PENALTY', label: 'Ceza', value: 'PENALTY' },
+                { id: 'OTHER', label: 'Diğer', value: 'OTHER' },
+            ],
         },
         {
             id: 'paymentStatus',
-            label: 'Ödeme Durumu',
+            label: 'Durum',
             type: 'select' as const,
-            options: data?.filters.paymentStatus.options.map(option => ({
-                id: option.value,
-                label: option.label,
-                value: option.value
-            })) || [],
+            options: [
+                { id: 'all', label: 'Tümü', value: 'all' },
+                { id: 'PENDING', label: 'Bekliyor', value: 'PENDING' },
+                { id: 'PARTIALLY_PAID', label: 'Kısmi Ödendi', value: 'PARTIALLY_PAID' },
+                { id: 'PAID', label: 'Ödendi', value: 'PAID' },
+                { id: 'OVERDUE', label: 'Gecikmiş', value: 'OVERDUE' },
+                { id: 'CANCELLED', label: 'İptal', value: 'CANCELLED' },
+            ],
         },
         {
             id: 'paymentMethod',
@@ -546,60 +552,7 @@ export default function FinancialListPage() {
                             </div>
                         </div>
 
-                        {/* Search and Filters */}
-                        <Card className="mb-6">
-                            <div className="p-6">
-                                <div className="flex flex-col lg:flex-row gap-4">
-                                    <div className="flex-1">
-                                        <SearchBar
-                                            placeholder="İşlem ID, daire numarası veya açıklama ile ara..."
-                                            value={searchInput}
-                                            onChange={handleSearchInputChange}
-                                            onSearch={handleSearchSubmit}
-                                            debounceMs={500}
-                                        />
-                                    </div>
-                                    <div className="flex gap-2 items-center">
-                                        <Button
-                                            variant={showFilters ? "primary" : "secondary"}
-                                            size="md"
-                                            icon={Filter}
-                                            onClick={() => setShowFilters(true)}
-                                        >
-                                            Filtreler
-                                        </Button>
-                                        <ViewToggle
-                                            options={[
-                                                { id: 'table', label: 'Tablo', icon: List },
-                                                { id: 'grid', label: 'Kart', icon: Grid3X3 }
-                                            ]}
-                                            activeView={viewMode}
-                                            onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
-                                            size="sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* Filter Sidebar */}
-                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-                            <div
-                                className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'}`}
-                                onClick={() => setShowFilters(false)}
-                            />
-                            <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
-                                <FilterPanel
-                                    filterGroups={filterGroups}
-                                    onApplyFilters={handleApplyFilters}
-                                    onResetFilters={handleResetFilters}
-                                    onClose={() => setShowFilters(false)}
-                                    variant="sidebar"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Quick Stats Cards */}
+                        {/* Quick Stats Cards - moved to top */}
                         <div className="mb-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                                 <StatsCard
@@ -652,6 +605,74 @@ export default function FinancialListPage() {
                                 />
                             </div>
                         </div>
+
+                        {/* Search and Filters - moved just above the table */}
+                        <Card className="mb-6">
+                            <div className="p-6">
+                                <div className="flex flex-col lg:flex-row gap-4">
+                                    <div className="flex-1">
+                                        <SearchBar
+                                            placeholder="Başlık, açıklama veya belge no ile ara..."
+                                            value={searchInput}
+                                            onChange={(v) => {
+                                                setSearchInput(v);
+                                            }}
+                                            onSearch={(v) => {
+                                                updateFilter('search', v);
+                                            }}
+                                            debounceMs={500}
+                                        />
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <Button 
+                                            variant={showFilters ? "primary" : "secondary"}
+                                            size="md"
+                                            icon={Filter}
+                                            onClick={() => setShowFilters(true)}
+                                        >
+                                            Filtreler
+                                        </Button>
+                                        <ViewToggle
+                                            options={[
+                                                { id: 'table', label: 'Tablo', icon: List },
+                                                { id: 'grid', label: 'Kart', icon: Grid3X3 }
+                                            ]}
+                                            activeView={viewMode}
+                                            onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
+                                            size="sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+
+                        {/* Filter Sidebar */}
+                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                            <div
+                                className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'}`}
+                                onClick={() => setShowFilters(false)}
+                            />
+                            <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-white dark:bg-gray-800 shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
+                                <FilterPanel
+                                    filterGroups={filterGroups}
+                                    onApplyFilters={(newFilters) => {
+                                        // Map UI filters to API-driven filters
+                                        if (newFilters?.paymentStatus) {
+                                            updateFilter('paymentStatus', newFilters.paymentStatus);
+                                        }
+                                        handleApplyFilters(newFilters);
+                                    }}
+                                    onResetFilters={() => {
+                                        handleResetFilters();
+                                        updateFilter('paymentStatus', 'all');
+                                    }}
+                                    onClose={() => setShowFilters(false)}
+                                    variant="sidebar"
+                                />
+                            </div>
+                        </div>
+
+                        
 
                         {/* Data Display */}
                         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
