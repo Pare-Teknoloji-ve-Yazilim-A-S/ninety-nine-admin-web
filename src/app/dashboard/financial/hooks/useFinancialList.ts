@@ -102,20 +102,22 @@ const transformApiDataToFinancialTransaction = (apiBill: ApiBillResponse): Finan
   const daysOverdue = Math.max(0, Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
   const isOverdue = daysOverdue > 0 && apiBill.status === 'PENDING';
 
-  // Create apartment info (using property name if available, otherwise document number)
+  // Create apartment info: use property.name in the table as requested
   const apartment: TransactionApartment = {
-    number: apiBill.property?.name || apiBill.documentNumber || 'N/A',
-    block: 'A',
-    floor: apiBill.property?.floor || 1,
+    number: apiBill.property?.name || 'N/A',
+    block: (apiBill.property as any)?.blockNumber?.toString?.() || '',
+    floor: 0,
     owner: 'Bilinmiyor',
     tenant: null
   };
 
-  // Create resident info
+  // Create resident info using assignedTo firstName + lastName
+  const assignedTo = (apiBill as any).assignedTo as { firstName?: string; lastName?: string; phone?: string; email?: string } | undefined;
+  const assignedFullName = [assignedTo?.firstName, assignedTo?.lastName].filter(Boolean).join(' ').trim();
   const resident: TransactionResident = {
-    name: 'Bilinmiyor',
-    phone: 'N/A',
-    email: 'N/A',
+    name: assignedFullName || '',
+    phone: assignedTo?.phone || '',
+    email: assignedTo?.email || '',
     avatar: '',
     type: 'owner'
   };
@@ -714,6 +716,9 @@ export const useFinancialList = (): UseFinancialListReturn => {
   const [error, setError] = useState<string | null>(null);
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  // Server pagination state
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
 
   // Initialize filters from mock data
   const [filters, setFilters] = useState<FinancialFilters>(() => {
@@ -741,147 +746,94 @@ export const useFinancialList = (): UseFinancialListReturn => {
       setLoading(true);
       setError(null);
 
-      // Test API call for debugging
-      console.log('🚀 Starting financial data fetch...');
-      
-      try {
-        const apiResponse = await testBillingApiCall();
-        console.log('✅ Real API call completed successfully');
-        console.log('📊 API Response for financial page:', apiResponse);
+      // Always call real API with default paging
+      const apiResponse = await billingService.getAllBills({ page, limit });
 
-        // Transform API data to FinancialTransaction format
-        const transformedTransactions: FinancialTransaction[] = apiResponse.data.map(transformApiDataToFinancialTransaction);
+      // Normalize API response shapes defensively
+      const rawItemsCandidate: any = (apiResponse as any);
+      const itemsArray: any[] = Array.isArray(rawItemsCandidate?.data)
+        ? rawItemsCandidate.data
+        : Array.isArray(rawItemsCandidate?.results?.results)
+          ? rawItemsCandidate.results.results
+          : Array.isArray(rawItemsCandidate?.results)
+            ? rawItemsCandidate.results
+            : [];
 
-        // Create base mock data structure for UI components
-        const baseData = generateMockData();
-        
-        // Calculate financial summary from real data
-        const totalAmount = transformedTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
-        const paidTransactions = transformedTransactions.filter(t => t.status.id === 'paid');
-        const pendingTransactions = transformedTransactions.filter(t => t.status.id === 'pending');
-        const overdueTransactions = transformedTransactions.filter(t => t.isOverdue);
-        
-        const totalPaid = paidTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
-        const totalPending = pendingTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
-        const totalOverdue = overdueTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
-        
-        // Update financial summary with real data
-        baseData.financialSummary = {
-          totalTransactions: transformedTransactions.length,
-          totalRevenue: {
-            amount: totalAmount,
-            currency: 'IQD',
-            formatted: `${totalAmount.toLocaleString()} IQD`
-          },
-          totalPending: {
-            amount: totalPending,
-            currency: 'IQD',
-            formatted: `${totalPending.toLocaleString()} IQD`
-          },
-          totalOverdue: {
-            amount: totalOverdue,
-            currency: 'IQD',
-            formatted: `${totalOverdue.toLocaleString()} IQD`
-          },
-          collectionRate: totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0,
-          averageTransactionAmount: {
-            amount: transformedTransactions.length > 0 ? totalAmount / transformedTransactions.length : 0,
-            currency: 'IQD',
-            formatted: transformedTransactions.length > 0 ? `${(totalAmount / transformedTransactions.length).toLocaleString()} IQD` : '0 IQD'
-          },
-          monthlyGrowth: {
-            percentage: 12.5,
-            trend: 'up' as const
-          }
-        };
+      // Transform API data to FinancialTransaction format
+      const transformedTransactions: FinancialTransaction[] = itemsArray.map(transformApiDataToFinancialTransaction);
 
-        // Update pagination with real data
-        baseData.pagination = {
-          currentPage: apiResponse.pagination.page,
-          totalPages: apiResponse.pagination.totalPages,
-          itemsPerPage: apiResponse.pagination.limit,
-          totalItems: apiResponse.pagination.total,
-          showingFrom: ((apiResponse.pagination.page - 1) * apiResponse.pagination.limit) + 1,
-          showingTo: Math.min(apiResponse.pagination.page * apiResponse.pagination.limit, apiResponse.pagination.total),
-          pageSizeOptions: [10, 25, 50, 100]
-        };
+      // Create base data structure for UI components
+      const baseData = generateMockData();
 
-        // Apply filters
-        let filteredTransactions = transformedTransactions;
+      // Calculate financial summary from real data
+      const totalAmount = transformedTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+      const paidTransactions = transformedTransactions.filter(t => t.status.id === 'paid');
+      const pendingTransactions = transformedTransactions.filter(t => t.status.id === 'pending');
+      const overdueTransactions = transformedTransactions.filter(t => t.isOverdue);
 
-        // Search filter
-        if (memoizedFilters.search.value) {
-          const searchTerm = memoizedFilters.search.value.toLowerCase();
-          filteredTransactions = filteredTransactions.filter(t =>
-            t.transactionId.toLowerCase().includes(searchTerm) ||
-            t.apartment.number.toLowerCase().includes(searchTerm) ||
-            t.description.toLowerCase().includes(searchTerm) ||
-            t.resident.name.toLowerCase().includes(searchTerm)
-          );
+      const totalPaid = paidTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+      const totalPending = pendingTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+      const totalOverdue = overdueTransactions.reduce((sum, t) => sum + t.amount.amount, 0);
+
+      // Update financial summary with real data
+      baseData.financialSummary = {
+        totalTransactions: transformedTransactions.length,
+        totalRevenue: {
+          amount: totalAmount,
+          currency: 'IQD',
+          formatted: `${totalAmount.toLocaleString()} IQD`
+        },
+        totalPending: {
+          amount: totalPending,
+          currency: 'IQD',
+          formatted: `${totalPending.toLocaleString()} IQD`
+        },
+        totalOverdue: {
+          amount: totalOverdue,
+          currency: 'IQD',
+          formatted: `${totalOverdue.toLocaleString()} IQD`
+        },
+        collectionRate: totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0,
+        averageTransactionAmount: {
+          amount: transformedTransactions.length > 0 ? totalAmount / transformedTransactions.length : 0,
+          currency: 'IQD',
+          formatted: transformedTransactions.length > 0 ? `${(totalAmount / transformedTransactions.length).toLocaleString()} IQD` : '0 IQD'
+        },
+        monthlyGrowth: {
+          percentage: 12.5,
+          trend: 'up' as const
         }
+      };
 
-        // Transaction type filter
-        if (memoizedFilters.transactionType.value !== 'all') {
-          filteredTransactions = filteredTransactions.filter(t =>
-            t.transactionType.id === memoizedFilters.transactionType.value
-          );
-        }
+      // Update pagination with real data
+      const apiPagination = (apiResponse as any)?.pagination;
+      const currentPage = Number(apiPagination?.page) || 1;
+      const pageSize = Number(apiPagination?.limit) || (transformedTransactions.length || 10);
+      const total = Number(apiPagination?.total) || transformedTransactions.length;
+      const totalPages = Number(apiPagination?.totalPages) || Math.max(1, Math.ceil(total / pageSize));
 
-        // Payment status filter
-        if (memoizedFilters.paymentStatus.value !== 'all') {
-          filteredTransactions = filteredTransactions.filter(t =>
-            t.status.id === memoizedFilters.paymentStatus.value
-          );
-        }
+      baseData.pagination = {
+        currentPage,
+        totalPages,
+        itemsPerPage: pageSize,
+        totalItems: total,
+        showingFrom: ((currentPage - 1) * pageSize) + 1,
+        showingTo: Math.min(currentPage * pageSize, total),
+        pageSizeOptions: [10, 25, 50, 100]
+      };
 
-        // Payment method filter
-        if (memoizedFilters.paymentMethod.value !== 'all') {
-          filteredTransactions = filteredTransactions.filter(t =>
-            t.paymentMethod?.id === memoizedFilters.paymentMethod.value
-          );
-        }
+      // Update data with real transactions (server paginated)
+      baseData.transactions = transformedTransactions;
 
-        // Service type filter
-        if (memoizedFilters.serviceType.value !== 'all') {
-          filteredTransactions = filteredTransactions.filter(t =>
-            t.serviceType.id === memoizedFilters.serviceType.value
-          );
-        }
-
-        // Amount range filter
-        filteredTransactions = filteredTransactions.filter(t =>
-          t.amount.amount >= memoizedFilters.amountRange.minAmount &&
-          t.amount.amount <= memoizedFilters.amountRange.maxAmount
-        );
-
-        // Update data with real transactions
-        baseData.transactions = filteredTransactions;
-        baseData.pagination.totalItems = filteredTransactions.length;
-        baseData.pagination.totalPages = Math.ceil(filteredTransactions.length / baseData.pagination.itemsPerPage);
-
-        console.log('✅ Successfully transformed and set real API data');
-        console.log('📊 Total transactions:', filteredTransactions.length);
-        console.log('💰 Total amount:', totalAmount);
-        console.log('📈 Collection rate:', baseData.financialSummary.collectionRate);
-
-        setData(baseData);
-
-      } catch (apiError) {
-        console.log('⚠️ Real API call failed, using mock data');
-        console.log('🔧 API Error:', apiError);
-        // Fallback to mock data if API call fails
-        const mockData = generateMockData();
-        const transactions = generateMockTransactions(50);
-        mockData.transactions = transactions;
-        setData(mockData);
-      }
+      setData(baseData);
     } catch (err) {
       console.error('Error fetching financial data:', err);
       setError('Finansal veriler yüklenirken bir hata oluştu');
+      setData(null);
     } finally {
       setLoading(false);
     }
-  }, [memoizedFilters]);
+  }, [memoizedFilters, page, limit]);
 
   // Initial data fetch
   useEffect(() => {
@@ -967,6 +919,10 @@ export const useFinancialList = (): UseFinancialListReturn => {
     setSelectedTransactions,
     handleBulkAction,
     handleExport,
-    refetch: fetchFinancialData
+    refetch: fetchFinancialData,
+    page,
+    limit,
+    setPage,
+    setLimit
   };
 };

@@ -433,4 +433,9 @@ export interface UseFinancialListReturn {
   handleBulkAction: (actionId: string) => Promise<void>;
   handleExport: (format: string, options: ExportIncludeOption[]) => Promise<void>;
   refetch: () => Promise<void>;
+  // Pagination controls
+  page: number;
+  limit: number;
+  setPage: (page: number) => void;
+  setLimit: (limit: number) => void;
 }

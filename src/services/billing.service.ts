@@ -141,16 +141,18 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     console.log('📋 Query Parameters:', params);
     
     try {
-      const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url);
-      
+      const responseBody = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url);
+
       console.log('✅ BillingService: API call successful');
-      console.log('📊 Response type:', typeof response);
-      console.log('📏 Bills count:', response.data.data?.length || 0);
-      console.log('📋 First bill (if exists):', response.data.data?.[0]);
-      console.log('📄 Pagination info:', response.data.pagination);
-      
-      this.logger.info(`Fetched ${response.data.data?.length || 0} bills`);
-      return response.data;
+      console.log('📏 Bills count:', Array.isArray(responseBody?.data) ? responseBody.data.length : 0);
+      console.log('📋 First bill (if exists):', Array.isArray(responseBody?.data) ? responseBody.data[0] : undefined);
+      console.log('📄 Pagination info:', responseBody?.pagination);
+
+      this.logger.info(`Fetched ${Array.isArray(responseBody?.data) ? responseBody.data.length : 0} bills`);
+      return {
+        data: responseBody.data || [],
+        pagination: responseBody.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 },
+      };
     } catch (error) {
       console.error('❌ BillingService: API call failed:', error);
       this.logger.error('Failed to fetch bills:', error);

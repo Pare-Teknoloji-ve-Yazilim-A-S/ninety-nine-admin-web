@@ -76,11 +76,6 @@ const menuItems: MenuItemProps[] = [
         href: '/dashboard/residents'
     },
     {
-        title: 'Personel Yönetimi',
-        icon: UserCheck,
-        href: '/staff'
-    },
-    {
         title: 'Hizmet/Talep Yönetimi',
         icon: Wrench,
         href: '/dashboard/requests'
@@ -89,6 +84,11 @@ const menuItems: MenuItemProps[] = [
         title: 'Finansal İşlemler',
         icon: DollarSign,
         href: '/dashboard/financial'
+    },
+    {
+        title: 'Personel Yönetimi',
+        icon: UserCheck,
+        href: '/staff'
     },
     {
         title: 'Duyurular',

@@ -67,7 +67,11 @@ export default function FinancialListPage() {
         updateFilter,
         resetFilters,
         handleBulkAction,
-        refetch
+        refetch,
+        page,
+        limit,
+        setPage,
+        setLimit,
     } = useFinancialList();
 
     // Breadcrumb items
@@ -137,13 +141,8 @@ export default function FinancialListPage() {
             key: 'apartment',
             header: 'Daire',
             render: (_value: any, transaction: any) => (
-                <div>
-                    <div className="font-medium text-gray-900 dark:text-white">
-                        {transaction.apartment.number}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {transaction.apartment.floor ? `${transaction.apartment.floor}. Kat` : ''}
-                    </div>
+                <div className="font-medium text-gray-900 dark:text-white">
+                    {transaction.apartment.number}
                 </div>
             ),
         },
@@ -666,12 +665,13 @@ export default function FinancialListPage() {
                                         bulkActions={[]}
                                         columns={tableColumns}
                                         pagination={{
-                                            currentPage: data?.pagination.currentPage || 1,
+                                            currentPage: data?.pagination.currentPage || page,
                                             totalPages: data?.pagination.totalPages || 1,
                                             totalRecords: data?.pagination.totalItems || 0,
-                                            recordsPerPage: data?.pagination.itemsPerPage || 50,
-                                            onPageChange: () => {},
-                                            onRecordsPerPageChange: () => {},
+                                            recordsPerPage: data?.pagination.itemsPerPage || limit,
+                                            onPageChange: (p: number) => setPage(p),
+                                            onRecordsPerPageChange: (n: number) => setLimit(n),
+                                            recordsPerPageOptions: [5, 10, 25, 50, 100],
                                         }}
                                         emptyStateMessage="Henüz finansal işlem kaydı bulunmuyor."
                                         selectable={true}
