@@ -558,9 +558,6 @@ export default function ResidentViewPage() {
                             </div>
 
                             <div className="flex gap-3">
-                                <Button variant="primary" icon={Plus} onClick={() => setShowCreateTicketModal(true)}>
-                                    Talep Oluştur
-                                </Button>
                                 <Button variant="secondary" icon={Phone}>
                                     Ara
                                 </Button>
