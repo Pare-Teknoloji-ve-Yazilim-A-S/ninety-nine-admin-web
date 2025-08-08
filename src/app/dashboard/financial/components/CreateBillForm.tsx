@@ -10,7 +10,8 @@ import {
   Hash,
   AlertCircle,
   Search,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
@@ -39,6 +40,8 @@ interface PropertyOption {
   value: string;
   label: string;
   propertyNumber: string;
+  // optional raw for owner/tenant info if available
+  __raw?: any;
 }
 
 interface UserOption {
@@ -53,6 +56,16 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   onCancel,
   loading: externalLoading = false
 }) => {
+  // Generates a unique, human-friendly document number like: INV-20250808-7GQ4K9
+  const generateDocumentNumber = (): string => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = pad(now.getMonth() + 1);
+    const d = pad(now.getDate());
+    const rand = Array.from({ length: 6 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
+    return `INV-${y}${m}${d}-${rand}`;
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [users, setUsers] = useState<UserOption[]>([]);
@@ -88,6 +101,16 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   });
 
   const watchedBillType = watch('billType');
+  const watchedPropertyId = watch('propertyId');
+
+  // Generate/clear document number when property selection changes
+  useEffect(() => {
+    if (watchedPropertyId && watchedPropertyId !== '') {
+      setValue('documentNumber', generateDocumentNumber(), { shouldValidate: false });
+    } else {
+      setValue('documentNumber', '', { shouldValidate: false });
+    }
+  }, [watchedPropertyId, setValue]);
 
   // Fetch properties from admin/properties with search (server-side pagination)
   useEffect(() => {
@@ -96,9 +119,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
       try {
         if (!propertyDropdownOpen) return;
         setLoadingProperties(true);
+        const requestedLimit = 100;
         const res = await unitsService.getAllProperties({
           page: 1,
-          limit: 100,
+          limit: requestedLimit,
           orderColumn: 'name',
           orderBy: 'ASC',
           search: propertySearchQuery || undefined,
@@ -109,15 +133,19 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           id: property.id,
           value: property.id,
           label: `${property.propertyNumber} - ${property.name}`,
-          propertyNumber: property.propertyNumber
+          propertyNumber: property.propertyNumber,
+          __raw: property,
         }));
         if (!active) return;
         setProperties(mapped);
         setFilteredProperties(mapped);
         const current = res?.pagination?.page ?? 1;
-        const totalPages = res?.pagination?.totalPages ?? 1;
+        const totalPages = res?.pagination?.totalPages;
         setPage(current);
-        setHasMore(current < totalPages);
+        // hasMore if server says there are more pages OR if we exactly filled the page (fallback)
+        const serverHasMore = typeof totalPages === 'number' ? current < totalPages : false;
+        const filledPage = list.length === requestedLimit;
+        setHasMore(serverHasMore || filledPage);
       } catch (error) {
         if (!active) return;
         console.error('Error fetching properties:', error);
@@ -164,13 +192,14 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         status: 'PENDING',
         propertyId: data.propertyId,
         assignedToId: undefined,
-        documentNumber: data.documentNumber || undefined
+        // ensure a doc number exists; generate one if missing
+        documentNumber: data.documentNumber && data.documentNumber.trim() !== '' ? data.documentNumber : generateDocumentNumber()
       };
 
       const response = await billingService.createBill(billData);
-      
-      if (response.data) {
-        onSuccess(response.data);
+      const created = (response as any)?.data?.data ?? (response as any)?.data ?? response;
+      if (created) {
+        onSuccess(created);
         reset();
       }
     } catch (error: any) {
@@ -256,59 +285,6 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           )}
         </div>
 
-        {/* Title */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Fatura Başlığı *
-          </label>
-          <Input
-            {...register('title', { 
-              required: 'Fatura başlığı gereklidir',
-              minLength: { value: 3, message: 'En az 3 karakter olmalıdır' }
-            })}
-            placeholder="Örnek: Ocak 2024 Aidat"
-            icon={FileText}
-            error={errors.title?.message}
-            disabled={isLoading}
-          />
-        </div>
-
-        {/* Amount and Due Date Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tutar (IQD) *
-            </label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              {...register('amount', { 
-                required: 'Tutar gereklidir',
-                min: { value: 0.01, message: 'Tutar 0\'dan büyük olmalıdır' }
-              })}
-              placeholder="0.00"
-              icon={DollarSign}
-              error={errors.amount?.message}
-              disabled={isLoading}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Vade Tarihi *
-            </label>
-            <Input
-              type="date"
-              {...register('dueDate', { required: 'Vade tarihi gereklidir' })}
-              icon={Calendar}
-              error={errors.dueDate?.message}
-              disabled={isLoading}
-              min={new Date().toISOString().split('T')[0]}
-            />
-          </div>
-        </div>
-
         {/* Property Selection - Expanded with search and dropdown (like AddOwnerModal) */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -329,14 +305,27 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
               <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted transition-transform ${propertyDropdownOpen ? 'rotate-180' : ''}`} />
             </div>
 
-            {/* Selected Property Display */}
+            {/* Selected Property Display with remove */}
             {watch('propertyId') && !propertyDropdownOpen && (
               <div className="mt-2 p-2 bg-primary-gold/10 border border-primary-gold/30 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Building className="h-4 w-4 text-primary-gold" />
-                  <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                    {properties.find(p => p.id === watch('propertyId'))?.label}
-                  </span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-primary-gold" />
+                    <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
+                      {properties.find(p => p.id === watch('propertyId'))?.label}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue('propertyId', '', { shouldValidate: true });
+                      setPropertyDropdownOpen(false);
+                    }}
+                    className="inline-flex items-center px-2 py-1 text-xs rounded-md border border-primary-gold/40 text-primary-gold hover:bg-primary-gold/10"
+                    title="Seçimi kaldır"
+                  >
+                    <X className="h-3 w-3 mr-1" /> Kaldır
+                  </button>
                 </div>
               </div>
             )}
@@ -352,9 +341,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                     setIsLoadingMore(true);
                     const next = page + 1;
                     try {
+                      const requestedLimit = 100;
                       const res = await unitsService.getAllProperties({
                         page: next,
-                        limit: 100,
+                        limit: requestedLimit,
                         orderColumn: 'name',
                         orderBy: 'ASC',
                         search: propertySearchQuery || undefined,
@@ -366,12 +356,15 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                         value: property.id,
                         label: `${property.propertyNumber} - ${property.name}`,
                         propertyNumber: property.propertyNumber,
+                        __raw: property,
                       }));
                       setProperties(prev => [...prev, ...mapped]);
                       setFilteredProperties(prev => [...prev, ...mapped]);
-                      const totalPages = res?.pagination?.totalPages ?? next;
+                      const totalPages = res?.pagination?.totalPages;
                       setPage(next);
-                      setHasMore(next < totalPages);
+                      const serverHasMore = typeof totalPages === 'number' ? next < totalPages : false;
+                      const filledPage = list.length === requestedLimit;
+                      setHasMore(serverHasMore || filledPage);
                     } catch (err) {
                       setHasMore(false);
                     } finally {
@@ -387,12 +380,23 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                 ) : (
                   <>
                     <div className="p-2 text-xs font-medium text-text-light-muted dark:text-text-muted border-b border-gray-200 dark:border-gray-700">{filteredProperties.length} mülk bulundu</div>
-                    {filteredProperties.map((p) => (
+            {filteredProperties.map((p) => (
                       <button
                         key={p.id}
                         type="button"
                         onClick={() => {
-                          setValue('propertyId', p.id, { shouldValidate: true });
+                  setValue('propertyId', p.id, { shouldValidate: true });
+                  // Prefer tenant, otherwise owner, for assignedToId
+                  const selected = (properties || []).find(x => x.id === p.id) as any;
+                  const selectedFull: any = (selected as any)?.__raw || selected;
+                  const tenantId = (selectedFull?.tenant && selectedFull.tenant.id) || undefined;
+                  const ownerId = (selectedFull?.owner && selectedFull.owner.id) || undefined;
+                  const resolvedAssignedId = tenantId || ownerId || undefined;
+                  if (resolvedAssignedId) {
+                    setValue('assignedToId', resolvedAssignedId as any, { shouldValidate: false });
+                  } else {
+                    setValue('assignedToId', undefined as any, { shouldValidate: false });
+                  }
                           setPropertyDropdownOpen(false);
                           setPropertySearchQuery('');
                         }}
@@ -426,6 +430,61 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
             </p>
           )}
         </div>
+
+        {/* Title */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Fatura Başlığı *
+          </label>
+          <Input
+            {...register('title', { 
+              required: 'Fatura başlığı gereklidir',
+              minLength: { value: 3, message: 'En az 3 karakter olmalıdır' }
+            })}
+            placeholder="Örnek: Ocak 2024 Aidat"
+            icon={FileText}
+            error={errors.title?.message}
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Amount and Due Date Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Vade Tarihi *
+            </label>
+            <Input
+              type="date"
+              {...register('dueDate', { required: 'Vade tarihi gereklidir' })}
+              icon={Calendar}
+              error={errors.dueDate?.message}
+              disabled={isLoading}
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Tutar (IQD) *
+            </label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              {...register('amount', { 
+                required: 'Tutar gereklidir',
+                min: { value: 0.01, message: 'Tutar 0\'dan büyük olmalıdır' }
+              })}
+              placeholder="0.00"
+              icon={DollarSign}
+              error={errors.amount?.message}
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+
+        
 
         {/* Atanacak Kişi alanı kaldırıldı */}
 
