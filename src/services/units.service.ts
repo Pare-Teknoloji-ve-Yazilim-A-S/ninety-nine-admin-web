@@ -45,10 +45,30 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
         const includeBills = params?.includeBills ?? false;
         queryParams.append('includeBills', includeBills.toString());
         
-        const response = await apiClient.get<PaginatedResponse<Property>>(`${this.baseEndpoint}?${queryParams.toString()}`);
-        
-        this.logger.info(`Fetched ${response.data?.data?.length || 0} properties`);
-        return response.data;
+        const response = await apiClient.get<any>(`${this.baseEndpoint}?${queryParams.toString()}`);
+
+        const body = response?.data ?? response;
+        // Normalize various response shapes: { data: [...] }, { data: { data: [...], pagination } }, or [...]
+        const items: Property[] = Array.isArray(body)
+            ? body
+            : Array.isArray(body?.data)
+                ? body.data
+                : Array.isArray(body?.data?.data)
+                    ? body.data.data
+                    : [];
+
+        const fallbackLimit = (items.length || 10);
+        const effectivePage = (params?.page ?? 1);
+        const effectiveLimit = (params?.limit ?? fallbackLimit);
+        const pagination = body?.pagination || body?.data?.pagination || {
+            total: items.length,
+            page: effectivePage,
+            limit: effectiveLimit,
+            totalPages: Math.max(1, Math.ceil((items.length || 0) / effectiveLimit))
+        };
+
+        this.logger.info(`Fetched ${items.length} properties`);
+        return { data: items, pagination } as PaginatedResponse<Property>;
     }
 
     /**

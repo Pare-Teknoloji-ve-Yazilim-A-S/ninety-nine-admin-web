@@ -20,7 +20,7 @@ export interface CreateBillDto {
   isPenaltyApplied?: boolean;
   documentNumber?: string;
   propertyId: string;
-  assignedToId: string;
+  assignedToId?: string;
 }
 
 export interface ResponseBillDto {

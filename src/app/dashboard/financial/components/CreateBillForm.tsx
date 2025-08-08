@@ -1,21 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Calendar,
   FileText,
   DollarSign,
   Building,
-  User,
   Hash,
-  AlertCircle
+  AlertCircle,
+  Search,
+  ChevronDown
 } from 'lucide-react';
 import Button from '@/app/components/ui/Button';
 import Card from '@/app/components/ui/Card';
 import Input from '@/app/components/ui/Input';
 import TextArea from '@/app/components/ui/TextArea';
-import Select from '@/app/components/ui/Select';
+// import Select from '@/app/components/ui/Select';
 // import DatePicker from '@/app/components/ui/DatePicker';
 import { 
   BillFormData, 
@@ -24,8 +25,8 @@ import {
   CreateBillDto 
 } from '@/services/types/billing.types';
 import { billingService } from '@/services';
-import { propertyService } from '@/services';
-import { userService } from '@/services';
+import { unitsService } from '@/services';
+// import { userService } from '@/services';
 
 interface CreateBillFormProps {
   onSuccess: (bill: any) => void;
@@ -56,7 +57,14 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingProperties, setLoadingProperties] = useState(true);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
+  const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const [propertySearchQuery, setPropertySearchQuery] = useState('');
+  const [filteredProperties, setFilteredProperties] = useState<PropertyOption[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const {
     register,
@@ -74,56 +82,72 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
       description: '',
       billType: 'DUES',
       propertyId: '',
-      assignedToId: '',
+      assignedToId: undefined as any,
       documentNumber: ''
     }
   });
 
   const watchedBillType = watch('billType');
 
-  // Fetch properties and users on component mount
+  // Fetch properties from admin/properties with search (server-side pagination)
   useEffect(() => {
-    const fetchData = async () => {
+    let active = true;
+    const fetchWithSearch = async () => {
       try {
-        // Fetch properties
+        if (!propertyDropdownOpen) return;
         setLoadingProperties(true);
-        const propertiesResponse = await propertyService.getAll();
-        const propertiesData = Array.isArray(propertiesResponse.data) 
-          ? propertiesResponse.data 
-          : propertiesResponse.data?.data || [];
-        
-        const propertyOptions: PropertyOption[] = propertiesData.map((property: any) => ({
+        const res = await unitsService.getAllProperties({
+          page: 1,
+          limit: 100,
+          orderColumn: 'name',
+          orderBy: 'ASC',
+          search: propertySearchQuery || undefined,
+          includeBills: false,
+        } as any);
+        const list = res?.data || [];
+        const mapped: PropertyOption[] = list.map((property: any) => ({
           id: property.id,
           value: property.id,
           label: `${property.propertyNumber} - ${property.name}`,
           propertyNumber: property.propertyNumber
         }));
-        setProperties(propertyOptions);
-
-        // Fetch users
-        setLoadingUsers(true);
-        const usersResponse = await userService.getAll();
-        const usersData = Array.isArray(usersResponse.data) 
-          ? usersResponse.data 
-          : usersResponse.data?.data || [];
-        
-        const userOptions: UserOption[] = usersData.map((user: any) => ({
-          id: user.id,
-          value: user.id,
-          label: `${user.firstName} ${user.lastName}`,
-          email: user.email
-        }));
-        setUsers(userOptions);
-
+        if (!active) return;
+        setProperties(mapped);
+        setFilteredProperties(mapped);
+        const current = res?.pagination?.page ?? 1;
+        const totalPages = res?.pagination?.totalPages ?? 1;
+        setPage(current);
+        setHasMore(current < totalPages);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if (!active) return;
+        console.error('Error fetching properties:', error);
+        setProperties([]);
+        setFilteredProperties([]);
+        setHasMore(false);
       } finally {
-        setLoadingProperties(false);
-        setLoadingUsers(false);
+        if (active) setLoadingProperties(false);
       }
     };
+    fetchWithSearch();
+    return () => { active = false; };
+  }, [propertySearchQuery, propertyDropdownOpen]);
 
-    fetchData();
+  // Minimal client-side filter fallback (when API returns full list)
+  useEffect(() => {
+    if (!propertySearchQuery.trim()) {
+      setFilteredProperties(properties);
+    }
+  }, [properties]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (propertyDropdownRef.current && !propertyDropdownRef.current.contains(e.target as Node)) {
+        setPropertyDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
   const onSubmit = async (data: BillFormData) => {
@@ -135,11 +159,11 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         title: data.title,
         amount: Number(data.amount),
         dueDate: new Date(data.dueDate).toISOString(),
-        description: data.description,
+        description: undefined,
         billType: data.billType,
         status: 'PENDING',
         propertyId: data.propertyId,
-        assignedToId: data.assignedToId,
+        assignedToId: undefined,
         documentNumber: data.documentNumber || undefined
       };
 
@@ -285,38 +309,125 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           </div>
         </div>
 
-        {/* Property and Assigned User Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Mülk *
-            </label>
-            <Select
-              {...register('propertyId', { required: 'Mülk seçiniz' })}
-              error={errors.propertyId?.message}
-              disabled={isLoading}
-              options={[
-                { value: '', label: loadingProperties ? 'Yükleniyor...' : 'Mülk seçin' },
-                ...properties
-              ]}
-            />
-          </div>
+        {/* Property Selection - Expanded with search and dropdown (like AddOwnerModal) */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Mülk *
+          </label>
+          <div ref={propertyDropdownRef} className="relative">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted dark:text-text-muted" />
+              <input
+                type="text"
+                placeholder={loadingProperties ? 'Yükleniyor...' : 'Mülk ara...'}
+                value={propertySearchQuery}
+                onChange={(e) => setPropertySearchQuery(e.target.value)}
+                onFocus={() => setPropertyDropdownOpen(true)}
+                disabled={loadingProperties || isLoading}
+                className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-primary-gold/30 hover:border-primary-gold/50 focus:border-primary-gold focus:outline-none focus:ring-2 focus:ring-primary-gold/50 bg-background-secondary text-text-primary transition-colors"
+              />
+              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted transition-transform ${propertyDropdownOpen ? 'rotate-180' : ''}`} />
+            </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Atanacak Kişi *
-            </label>
-            <Select
-              {...register('assignedToId', { required: 'Kişi seçiniz' })}
-              error={errors.assignedToId?.message}
-              disabled={isLoading}
-              options={[
-                { value: '', label: loadingUsers ? 'Yükleniyor...' : 'Kişi seçin' },
-                ...users
-              ]}
-            />
+            {/* Selected Property Display */}
+            {watch('propertyId') && !propertyDropdownOpen && (
+              <div className="mt-2 p-2 bg-primary-gold/10 border border-primary-gold/30 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Building className="h-4 w-4 text-primary-gold" />
+                  <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
+                    {properties.find(p => p.id === watch('propertyId'))?.label}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Dropdown List */}
+            {propertyDropdownOpen && (
+              <div
+                className="absolute z-[9999] w-full mt-1 bg-background-secondary border border-primary-gold/30 rounded-lg shadow-lg max-h-64 overflow-auto"
+                onScroll={async (e) => {
+                  const el = e.currentTarget;
+                  const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+                  if (nearBottom && hasMore && !isLoadingMore && !loadingProperties) {
+                    setIsLoadingMore(true);
+                    const next = page + 1;
+                    try {
+                      const res = await unitsService.getAllProperties({
+                        page: next,
+                        limit: 100,
+                        orderColumn: 'name',
+                        orderBy: 'ASC',
+                        search: propertySearchQuery || undefined,
+                        includeBills: false,
+                      } as any);
+                      const list = res?.data || [];
+                      const mapped: PropertyOption[] = list.map((property: any) => ({
+                        id: property.id,
+                        value: property.id,
+                        label: `${property.propertyNumber} - ${property.name}`,
+                        propertyNumber: property.propertyNumber,
+                      }));
+                      setProperties(prev => [...prev, ...mapped]);
+                      setFilteredProperties(prev => [...prev, ...mapped]);
+                      const totalPages = res?.pagination?.totalPages ?? next;
+                      setPage(next);
+                      setHasMore(next < totalPages);
+                    } catch (err) {
+                      setHasMore(false);
+                    } finally {
+                      setIsLoadingMore(false);
+                    }
+                  }
+                }}
+              >
+                {loadingProperties ? (
+                  <div className="p-3 text-center text-text-light-muted dark:text-text-muted">Yükleniyor...</div>
+                ) : filteredProperties.length === 0 ? (
+                  <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{propertySearchQuery ? 'Aramanızla eşleşen mülk bulunamadı' : 'Mülk bulunamadı'}</div>
+                ) : (
+                  <>
+                    <div className="p-2 text-xs font-medium text-text-light-muted dark:text-text-muted border-b border-gray-200 dark:border-gray-700">{filteredProperties.length} mülk bulundu</div>
+                    {filteredProperties.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          setValue('propertyId', p.id, { shouldValidate: true });
+                          setPropertyDropdownOpen(false);
+                          setPropertySearchQuery('');
+                        }}
+                        className="w-full text-left p-3 hover:bg-primary-gold/10 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-primary-gold/20 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-primary-gold">{p.propertyNumber?.slice(0,2) || 'PR'}</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-text-on-light dark:text-text-on-dark">{p.label}</div>
+                            <div className="text-xs text-text-light-muted dark:text-text-muted">{p.propertyNumber}</div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                    {isLoadingMore && (
+                      <div className="p-3 text-center text-text-light-muted dark:text-text-muted">Daha fazla yükleniyor...</div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
+          {/* Hidden input for validation error display */}
+          <input type="hidden" {...register('propertyId', { required: 'Mülk seçiniz' })} />
+          {errors.propertyId && (
+            <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
+              <AlertCircle className="h-3 w-3" />
+              {errors.propertyId.message}
+            </p>
+          )}
         </div>
+
+        {/* Atanacak Kişi alanı kaldırıldı */}
 
         {/* Document Number */}
         <div className="space-y-2">
@@ -331,19 +442,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           />
         </div>
 
-        {/* Description */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Açıklama
-          </label>
-          <TextArea
-            value={watch('description')}
-            onChange={(e: any) => setValue('description', e.target.value)}
-            placeholder="Fatura hakkında ek bilgiler..."
-            rows={3}
-            disabled={isLoading}
-          />
-        </div>
+        {/* Açıklama alanı kaldırıldı */}
 
         {/* Current Bill Type Info */}
         {watchedBillType && (

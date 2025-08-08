@@ -121,11 +121,13 @@ const DataTable: React.FC<DataTableProps> = ({
 
     // Selection logic
     const isAllSelected = useMemo(() => {
-        return data.length > 0 && selectedRows.length === data.length;
+        const rows = Array.isArray(data) ? data : [];
+        return rows.length > 0 && selectedRows.length === rows.length;
     }, [data, selectedRows]);
 
     const isIndeterminate = useMemo(() => {
-        return selectedRows.length > 0 && selectedRows.length < data.length;
+        const rows = Array.isArray(data) ? data : [];
+        return selectedRows.length > 0 && selectedRows.length < rows.length;
     }, [data, selectedRows]);
 
     const handleSelectAll = () => {

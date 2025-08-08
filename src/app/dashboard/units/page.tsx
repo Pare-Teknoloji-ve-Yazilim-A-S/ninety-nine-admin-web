@@ -178,14 +178,15 @@ export default function UnitsListPage() {
 
     // Statistics calculations from API data - MEMOIZED
     const unitStats = useMemo(() => {
-        const totalUnits = properties.length;
-        const occupiedUnits = properties.filter(p => p.status === 'OCCUPIED').length;
-        const vacantUnits = properties.filter(p => p.status === 'AVAILABLE').length;
-        const maintenanceUnits = properties.filter(p => p.status === 'UNDER_MAINTENANCE').length;
+        const list = Array.isArray(properties) ? properties : [];
+        const totalUnits = list.length;
+        const occupiedUnits = list.filter(p => p.status === 'OCCUPIED').length;
+        const vacantUnits = list.filter(p => p.status === 'AVAILABLE').length;
+        const maintenanceUnits = list.filter(p => p.status === 'UNDER_MAINTENANCE').length;
         const occupancyRate = totalUnits > 0 ? Math.round((occupiedUnits / totalUnits) * 100) : 0;
-        const apartmentUnits = properties.filter(p => p.type === 'RESIDENCE').length;
-        const villaUnits = properties.filter(p => p.type === 'VILLA').length;
-        const commercialUnits = properties.filter(p => p.type === 'COMMERCIAL').length;
+        const apartmentUnits = list.filter(p => p.type === 'RESIDENCE').length;
+        const villaUnits = list.filter(p => p.type === 'VILLA').length;
+        const commercialUnits = list.filter(p => p.type === 'COMMERCIAL').length;
 
         return {
             totalUnits,
@@ -888,10 +889,10 @@ export default function UnitsListPage() {
                                             ]}
                                             columns={tableColumns}
                                             pagination={{
-                                                currentPage: pagination.page,
-                                                totalPages: pagination.totalPages,
-                                                totalRecords: pagination.total,
-                                                recordsPerPage: pagination.limit || 10,
+                                                currentPage: pagination?.page || 1,
+                                                totalPages: pagination?.totalPages || 1,
+                                                totalRecords: pagination?.total || 0,
+                                                recordsPerPage: pagination?.limit || 10,
                                                 onPageChange: handlePageChange,
                                                 onRecordsPerPageChange: handleRecordsPerPageChange,
                                                 preventScroll: true, // Prevent auto-scroll to top
@@ -943,10 +944,10 @@ export default function UnitsListPage() {
                                             onAction={handleUnitAction}
                                             selectedItems={selectedUnits.map(u => u.id)}
                                             pagination={{
-                                                currentPage: pagination.page,
-                                                totalPages: pagination.totalPages,
-                                                totalRecords: pagination.total,
-                                                recordsPerPage: pagination.limit || 10,
+                                                currentPage: pagination?.page || 1,
+                                                totalPages: pagination?.totalPages || 1,
+                                                totalRecords: pagination?.total || 0,
+                                                recordsPerPage: pagination?.limit || 10,
                                                 onPageChange: handlePageChange,
                                                 onRecordsPerPageChange: handleRecordsPerPageChange,
                                                 preventScroll: true, // Prevent auto-scroll to top

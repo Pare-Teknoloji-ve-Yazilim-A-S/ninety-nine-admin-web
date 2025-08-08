@@ -56,7 +56,7 @@ function GenericListView<T>({
   }
 
   // Empty state - only show when not loading and no data
-  if (!loading && data.length === 0) {
+  if (!loading && (!data || data.length === 0)) {
     return (
       <EmptyState
         title="Kayıt Bulunamadı"
