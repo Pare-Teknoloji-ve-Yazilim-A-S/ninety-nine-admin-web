@@ -1,17 +1,51 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Button from '@/app/components/ui/Button';
-import { CreditCard, ArrowLeft, CheckCircle } from 'lucide-react';
+import { CreditCard, ArrowLeft, CheckCircle, Home, User, AlertTriangle, X } from 'lucide-react';
 import CreatePaymentForm from '../../components/CreatePaymentForm';
+import Card from '@/app/components/ui/Card';
+import SearchBar from '@/app/components/ui/SearchBar';
+import billingService from '@/services/billing.service';
+import type { ResponseBillDto } from '@/services/types/billing.types';
+import TablePagination from '@/app/components/ui/TablePagination';
 
 export default function CreatePaymentPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [pendingBills, setPendingBills] = useState<ResponseBillDto[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [billType, setBillType] = useState<string | undefined>(undefined);
+  // Helper to load from backend
+  const loadPending = async (params: { page: number; limit: number; search?: string; billType?: string }) => {
+    setSearchLoading(true);
+    try {
+      const { bills, pagination } = await billingService.getAllPendingBillsPaginated({
+        page: params.page,
+        limit: params.limit,
+        search: params.search,
+        orderColumn: 'createdAt',
+        orderBy: 'DESC',
+        billType: params.billType,
+      });
+      setPendingBills(bills);
+      setTotal(pagination.total);
+      setTotalPages(pagination.totalPages);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+  const [selectedBills, setSelectedBills] = useState<ResponseBillDto[]>([]);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const router = useRouter();
 
   // Breadcrumb items
@@ -40,6 +74,29 @@ export default function CreatePaymentPage() {
     router.back();
   };
 
+  // Initial fetch
+  useEffect(() => {
+    (async () => {
+      setSearchLoading(true);
+      try {
+        const { bills, pagination } = await billingService.getAllPendingBillsPaginated({
+          page,
+          limit,
+          search: undefined,
+          orderColumn: 'createdAt',
+          orderBy: 'DESC',
+          billType,
+        });
+        setPendingBills(bills);
+        setTotal(pagination.total);
+        setTotalPages(pagination.totalPages);
+      } finally {
+        setSearchLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background-primary">
@@ -51,7 +108,7 @@ export default function CreatePaymentPage() {
             breadcrumbItems={breadcrumbItems}
           />
 
-          <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div>
@@ -76,13 +133,195 @@ export default function CreatePaymentPage() {
               </div>
             </div>
 
-            {/* Payment Creation Form */}
-            <div className="space-y-6">
-              <CreatePaymentForm
-                onSuccess={handleSuccess}
-                onCancel={handleCancel}
-                loading={isSubmitting}
+            {/* Kart 1: Ödeme Yapılacak Konut Seçimi */}
+            <Card className="p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ödeme Yapılacak Konut Seçin</h3>
+              </div>
+              <div className="mb-4">
+                <SearchBar
+                  placeholder="Adres, daire numarası veya isim ile ara..."
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onSearch={async (term) => {
+                    setSearchQuery(term);
+                    setPage(1);
+                    await loadPending({ page: 1, limit, search: term || undefined, billType });
+                  }}
+                  debounceMs={400}
+                />
+              </div>
+              <div className="mb-3 flex items-center gap-3">
+                <label className="text-sm text-text-light-secondary dark:text-text-secondary">İşlem Türü:</label>
+                <select
+                  value={billType || 'all'}
+                  onChange={async (e) => {
+                    const v = e.target.value === 'all' ? undefined : e.target.value;
+                    setBillType(v);
+                    setPage(1);
+                    await loadPending({ page: 1, limit, search: searchQuery || undefined, billType: v });
+                  }}
+                  className="border border-gray-200 dark:border-gray-700 rounded bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark text-sm px-3 py-2"
+                >
+                  <option value="all">Tümü</option>
+                  <option value="DUES">Aidat</option>
+                  <option value="UTILITY">Fatura</option>
+                  <option value="MAINTENANCE">Bakım</option>
+                  <option value="PENALTY">Ceza</option>
+                  <option value="OTHER">Diğer</option>
+                </select>
+              </div>
+              {selectedBills.length > 0 && (
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-sm text-text-on-light dark:text-text-on-dark">
+                    {selectedBills.length} kayıt seçili
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setSelectedBills([]); setIsConfirmed(false); }}
+                  >
+                    Tümünü Kaldır
+                  </Button>
+                </div>
+              )}
+              <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-background-light-secondary dark:bg-background-secondary">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-text-light-secondary dark:text-text-secondary">Daire No</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-text-light-secondary dark:text-text-secondary">Ad Soyad</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-text-light-secondary dark:text-text-secondary">Borç Tutarı</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-text-light-secondary dark:text-text-secondary">Durum</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-text-light-secondary dark:text-text-secondary">İşlem Türü</th>
+                      <th className="px-4 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="bg-background-light-card dark:bg-background-card divide-y divide-gray-200 dark:divide-gray-700">
+                    {searchLoading ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-6 text-center">
+                          <div className="inline-flex items-center gap-2 text-text-light-secondary dark:text-text-secondary">
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-gold border-t-transparent" />
+                            Aranıyor...
+                          </div>
+                        </td>
+                      </tr>
+                    ) : pendingBills.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-6 text-center text-text-light-secondary dark:text-text-secondary">
+                          Sonuç bulunamadı
+                        </td>
+                      </tr>
+                      ) : (
+                      pendingBills.map((b) => {
+                        const displayNo = b.property?.propertyNumber || b.property?.name || '-';
+                        const fullName = `${b.assignedTo?.firstName || ''} ${b.assignedTo?.lastName || ''}`.trim() || '-';
+                        const debt = Number(b.amount) || 0;
+                        const hasDebt = true; // pending bills by definition
+                        const typeLabel = b.billType === 'DUES' ? 'Aidat' : b.billType === 'MAINTENANCE' ? 'Bakım' : b.billType === 'UTILITY' ? 'Fatura' : b.billType === 'PENALTY' ? 'Ceza' : 'Diğer';
+                        const isSelected = selectedBills.some(sb => sb.id === b.id);
+                        return (
+                          <tr key={b.id} className="hover:bg-background-light-soft dark:hover:bg-background-soft">
+                            <td className="px-4 py-3 text-text-on-light dark:text-text-on-dark">
+                              <div className="flex items-center gap-2"><Home className="h-4 w-4" /> {displayNo}</div>
+                            </td>
+                            <td className="px-4 py-3 text-text-on-light dark:text-text-on-dark">
+                              <div className="flex items-center gap-2"><User className="h-4 w-4" /> {fullName}</div>
+                            </td>
+                            <td className="px-4 py-3 text-text-on-light dark:text-text-on-dark">{debt.toLocaleString('tr-TR')} IQD</td>
+                            <td className="px-4 py-3">
+                              <span className={`text-sm font-medium ${hasDebt ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                                {hasDebt ? 'Borcu Var' : 'Borç Yok'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-text-on-light dark:text-text-on-dark">{typeLabel}</td>
+                            <td className="px-4 py-3 text-right">
+                              {isSelected ? (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  icon={X}
+                                  onClick={() => {
+                                    setSelectedBills(prev => prev.filter(sb => sb.id !== b.id));
+                                    setIsConfirmed(false);
+                                  }}
+                                >
+                                  Kaldır
+                                </Button>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => setSelectedBills(prev => [...prev, b])}
+                                >
+                                  Seç
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {/* Pagination */}
+              <TablePagination
+                currentPage={page}
+                totalPages={totalPages}
+                totalRecords={total}
+                recordsPerPage={limit}
+                onPageChange={async (p) => {
+                  setPage(p);
+                  await loadPending({ page: p, limit, search: searchQuery || undefined, billType });
+                }}
+                onRecordsPerPageChange={async (n) => {
+                  setLimit(n);
+                  setPage(1);
+                  await loadPending({ page: 1, limit: n, search: searchQuery || undefined, billType });
+                }}
+                recordsPerPageOptions={[10, 25, 50, 100]}
+                preventScroll={true}
               />
+              <div className="flex justify-end mt-4">
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => setIsConfirmed(true)}
+                  disabled={selectedBills.length === 0}
+                >
+                  Onayla ve Devam Et
+                </Button>
+              </div>
+            </Card>
+
+            {/* Payment Creation Form */}
+            <div className="space-y-6 relative">
+              {!isConfirmed && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center">
+                  <div className="bg-background-light-card/70 dark:bg-background-card/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-primary-gold/20 text-sm text-text-light-secondary dark:text-text-secondary flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-primary-gold" />
+                    Lütfen önce üstteki karttan bir konut seçin ve onaylayın
+                  </div>
+                </div>
+              )}
+              <div className={!isConfirmed ? 'pointer-events-none opacity-60 blur-[1px]' : ''}>
+                <CreatePaymentForm
+                  onSuccess={handleSuccess}
+                  onCancel={handleCancel}
+                  loading={isSubmitting}
+                  preselectedBills={selectedBills}
+                  onRemoveBill={(id) => {
+                    setSelectedBills(prev => prev.filter(b => b.id !== id));
+                    if (selectedBills.length - 1 === 0) setIsConfirmed(false);
+                  }}
+                  onClearBills={() => { setSelectedBills([]); setIsConfirmed(false); }}
+                />
+              </div>
             </div>
 
             {/* Help Text */}

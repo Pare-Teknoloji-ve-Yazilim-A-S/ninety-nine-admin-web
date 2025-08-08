@@ -283,6 +283,129 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
   }
 
   /**
+   * Bekleyen faturaları (ilişkilerle birlikte) getirir
+   * GET /admin/billing/pending-bills
+   * Response shape: { data: { bills: ResponseBillDto[] } }
+   */
+  async getAllPendingBills(): Promise<ResponseBillDto[]> {
+    this.logger.info('Fetching all pending bills (with relations)');
+    try {
+      const response = await apiClient.get<{ data: { bills: ResponseBillDto[] } }>(`${this.baseEndpoint}/pending-bills`);
+      const bills = (response as any)?.data?.bills
+        || (response as any)?.data?.data?.bills
+        || (Array.isArray((response as any)?.data) ? (response as any).data : [])
+        || [];
+      this.logger.info(`Fetched ${Array.isArray(bills) ? bills.length : 0} pending bills (with relations)`);
+      return Array.isArray(bills) ? bills : [];
+    } catch (error) {
+      this.logger.error('Failed to fetch all pending bills:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Bekleyen faturaları sayfalı ve arama/sıralama ile getirir
+   * GET /admin/billing/pending-bills?page&limit&search&orderColumn&orderBy&billType&propertyId
+   */
+  async getAllPendingBillsPaginated(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    orderColumn?: string;
+    orderBy?: 'ASC' | 'DESC';
+    billType?: string;
+    propertyId?: string;
+  }): Promise<{ bills: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> {
+    this.logger.info('Fetching pending bills (paginated)', params);
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+    if (params?.search) query.append('search', params.search);
+    if (params?.orderColumn) query.append('orderColumn', params.orderColumn);
+    if (params?.orderBy) query.append('orderBy', params.orderBy);
+    if (params?.billType) query.append('billType', params.billType);
+    if (params?.propertyId) query.append('propertyId', params.propertyId);
+
+    const url = `${this.baseEndpoint}/pending-bills${query.toString() ? `?${query.toString()}` : ''}`;
+    try {
+      const response = await apiClient.get<{ data: { bills: ResponseBillDto[]; pagination?: { total: number; page: number; limit: number; totalPages: number } } }>(url);
+      const root = (response as any)?.data || (response as any) || {};
+      const bills: ResponseBillDto[] = root?.bills || root?.data?.bills || [];
+      const serverPagination = root?.pagination || root?.data?.pagination;
+
+      // If server doesn't provide pagination, slice on client to requested page/limit
+      if (!serverPagination) {
+        const reqPage = params?.page ?? 1;
+        const reqLimit = params?.limit ?? 10;
+        const total = Array.isArray(bills) ? bills.length : 0;
+        const totalPages = Math.max(1, Math.ceil(total / reqLimit));
+        const start = (reqPage - 1) * reqLimit;
+        const sliced = Array.isArray(bills) ? bills.slice(start, start + reqLimit) : [];
+        return {
+          bills: sliced,
+          pagination: { total, page: reqPage, limit: reqLimit, totalPages },
+        };
+      }
+
+      return { bills: Array.isArray(bills) ? bills : [], pagination: serverPagination };
+    } catch (error) {
+      this.logger.error('Failed to fetch pending bills (paginated):', error);
+      return { bills: [], pagination: { total: 0, page: params?.page || 1, limit: params?.limit || 10, totalPages: 1 } };
+    }
+  }
+
+  /**
+   * Bekleyen ödemeler toplamını getirir (içinde bulunulan ay için)
+   * GET /admin/billing/pending-payments
+   */
+  async getPendingPaymentsSummary(): Promise<{ totalPendingAmount: number }> {
+    this.logger.info('Fetching pending payments summary');
+    try {
+      const response = await apiClient.get<{ data: { totalPendingAmount: number } }>(`${this.baseEndpoint}/pending-payments`);
+      const totalPendingAmount = (response as any)?.data?.totalPendingAmount ?? 0;
+      this.logger.info('Pending payments summary fetched', { totalPendingAmount });
+      return { totalPendingAmount };
+    } catch (error) {
+      this.logger.error('Failed to fetch pending payments summary:', error);
+      return { totalPendingAmount: 0 };
+    }
+  }
+
+  /**
+   * Ödenen toplam tutarı getirir (içinde bulunulan ay için)
+   * GET /admin/billing/paid-payments
+   */
+  async getPaidPaymentsSummary(): Promise<{ totalPaidAmount: number }> {
+    this.logger.info('Fetching paid payments summary');
+    try {
+      const response = await apiClient.get<{ data: { totalPaidAmount: number } }>(`${this.baseEndpoint}/paid-payments`);
+      const totalPaidAmount = (response as any)?.data?.totalPaidAmount ?? 0;
+      this.logger.info('Paid payments summary fetched', { totalPaidAmount });
+      return { totalPaidAmount };
+    } catch (error) {
+      this.logger.error('Failed to fetch paid payments summary:', error);
+      return { totalPaidAmount: 0 };
+    }
+  }
+
+  /**
+   * Gecikmiş bekleyen ödemeler toplamını getirir (dueDate < now ve status=PENDING)
+   * GET /admin/billing/overdue-pending-payments
+   */
+  async getOverduePendingPaymentsSummary(): Promise<{ totalOverduePendingAmount: number }> {
+    this.logger.info('Fetching overdue pending payments summary');
+    try {
+      const response = await apiClient.get<{ data: { totalOverduePendingAmount: number } }>(`${this.baseEndpoint}/overdue-pending-payments`);
+      const totalOverduePendingAmount = (response as any)?.data?.totalOverduePendingAmount ?? 0;
+      this.logger.info('Overdue pending payments summary fetched', { totalOverduePendingAmount });
+      return { totalOverduePendingAmount };
+    } catch (error) {
+      this.logger.error('Failed to fetch overdue pending payments summary:', error);
+      return { totalOverduePendingAmount: 0 };
+    }
+  }
+
+  /**
    * Faturayı ödendi olarak işaretle
    * PATCH /admin/billing/{id}/mark-paid
    */
@@ -293,6 +416,28 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     
     this.logger.info(`Bill ${billId} marked as paid`);
     return response;
+  }
+
+  /**
+   * Birden çok faturayı ödenmiş olarak işaretle
+   * PATCH /admin/billing/mark-as-paid
+   */
+  async markBillsAsPaidBulk(params: { billIds: string[]; paidAt: string }): Promise<{ updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> }> {
+    this.logger.info('Marking bills as paid (bulk)', params);
+    try {
+      const response = await apiClient.patch<{ data: { updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> } }>(
+        `${this.baseEndpoint}/mark-as-paid`,
+        params
+      );
+      const root = (response as any)?.data || {};
+      return {
+        updatedCount: root?.updatedCount ?? root?.data?.updatedCount ?? 0,
+        updatedBills: root?.updatedBills ?? root?.data?.updatedBills ?? [],
+      };
+    } catch (error) {
+      this.logger.error('Failed to mark bills as paid (bulk):', error);
+      return { updatedCount: 0, updatedBills: [] };
+    }
   }
 
   /**

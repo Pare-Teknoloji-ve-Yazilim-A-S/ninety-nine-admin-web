@@ -173,6 +173,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* First page */}
                 {showFirstLast && !isFirstPage && (
                     <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         icon={ChevronsLeft}
@@ -185,6 +186,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* Previous page */}
                 {showPrevNext && !isFirstPage && (
                     <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         icon={ChevronLeft}
@@ -197,6 +199,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* Page numbers */}
                 {visiblePages.map((page) => (
                     <Button
+                        type="button"
                         key={page}
                         variant={page === currentPage ? 'primary' : 'ghost'}
                         size="sm"
@@ -213,6 +216,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* Next page */}
                 {showPrevNext && !isLastPage && (
                     <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         icon={ChevronRight}
@@ -225,6 +229,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
                 {/* Last page */}
                 {showFirstLast && !isLastPage && (
                     <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
                         icon={ChevronsRight}

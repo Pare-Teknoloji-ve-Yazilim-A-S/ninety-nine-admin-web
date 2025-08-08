@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -105,6 +105,80 @@ export default function FinancialListPage() {
             averageTransaction: data.financialSummary.averageTransactionAmount.amount
         };
     }, [data]);
+
+    // Loading separation: cards vs table
+    const [tableLoading, setTableLoading] = useState(false);
+    const [cardsLoading, setCardsLoading] = useState(true);
+    const lastFetchKind = useRef<'initial' | 'filters' | 'pagination'>('initial');
+
+    // Track previous params to detect changes
+    const prevPage = useRef(page);
+    const prevLimit = useRef(limit);
+    const filtersHash = `${filters.search.value}|${filters.transactionType.value}|${filters.paymentStatus.value}`;
+    const prevFiltersHash = useRef(filtersHash);
+
+    // Detect pagination changes
+    useEffect(() => {
+        if (prevPage.current !== page || prevLimit.current !== limit) {
+            lastFetchKind.current = 'pagination';
+            setTableLoading(true);
+            prevPage.current = page;
+            prevLimit.current = limit;
+        }
+    }, [page, limit]);
+
+    // Detect filter changes (treat as full refresh)
+    useEffect(() => {
+        if (prevFiltersHash.current !== filtersHash) {
+            lastFetchKind.current = lastFetchKind.current === 'initial' ? 'initial' : 'filters';
+            setTableLoading(true);
+            setCardsLoading(true);
+            prevFiltersHash.current = filtersHash;
+        }
+    }, [filtersHash]);
+
+    // When hook loading completes, end appropriate loading states
+    useEffect(() => {
+        if (!loading) {
+            setTableLoading(false);
+            if (lastFetchKind.current === 'filters' || lastFetchKind.current === 'initial') {
+                setCardsLoading(false);
+            }
+            // After first load completes
+            if (lastFetchKind.current === 'initial') {
+                lastFetchKind.current = 'filters';
+            }
+        }
+    }, [loading]);
+
+    // Fetch pending payments summary for the card
+    const [pendingSummary, setPendingSummary] = useState<number | null>(null);
+    const [paidSummary, setPaidSummary] = useState<number | null>(null);
+    const [overduePendingSummary, setOverduePendingSummary] = useState<number | null>(null);
+    useEffect(() => {
+        let isActive = true;
+        (async () => {
+            try {
+                const res = await billingService.getPendingPaymentsSummary();
+                if (isActive) setPendingSummary(res.totalPendingAmount ?? 0);
+            } catch (e) {
+                if (isActive) setPendingSummary(0);
+            }
+            try {
+                const res2 = await billingService.getPaidPaymentsSummary();
+                if (isActive) setPaidSummary(res2.totalPaidAmount ?? 0);
+            } catch (e) {
+                if (isActive) setPaidSummary(0);
+            }
+            try {
+                const res3 = await billingService.getOverduePendingPaymentsSummary();
+                if (isActive) setOverduePendingSummary(res3.totalOverduePendingAmount ?? 0);
+            } catch (e) {
+                if (isActive) setOverduePendingSummary(0);
+            }
+        })();
+        return () => { isActive = false };
+    }, []);
 
     // Handle actions
     const handleTransactionAction = useCallback((action: string, transaction: any) => {
@@ -504,12 +578,12 @@ export default function FinancialListPage() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-                                    Finansal İşlemler <span className="text-primary-gold">({financialStats.totalTransactions.toLocaleString()} İşlem)</span>
+                                    Finansal İşlemler
                                 </h2>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    Toplam Gelir: {formatCurrency(financialStats.totalRevenue)} IQD | 
-                                    Bekleyen: {formatCurrency(financialStats.totalPending)} IQD | 
-                                    Gecikmiş: {formatCurrency(financialStats.totalOverdue)} IQD
+                                    Toplam Gelir: {formatCurrency((paidSummary ?? financialStats.totalRevenue))} IQD | 
+                                    Bekleyen: {formatCurrency((pendingSummary ?? financialStats.totalPending))} IQD | 
+                                    Gecikmiş: {formatCurrency((overduePendingSummary ?? financialStats.totalOverdue))} IQD
                                 </p>
                             </div>
                             <div className="flex gap-3">
@@ -554,29 +628,29 @@ export default function FinancialListPage() {
 
                         {/* Quick Stats Cards - moved to top */}
                         <div className="mb-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                                 <StatsCard
                                     title="Toplam Gelir"
-                                    value={`${formatCurrency(financialStats.totalRevenue)} IQD`}
+                                    value={`${formatCurrency((paidSummary ?? financialStats.totalRevenue))} IQD`}
                                     icon={DollarSign}
                                     color="success"
-                                    loading={loading}
+                                    loading={cardsLoading || paidSummary === null}
                                     size="md"
                                 />
                                 <StatsCard
                                     title="Bekleyen Ödemeler"
-                                    value={`${formatCurrency(financialStats.totalPending)} IQD`}
+                                    value={`${formatCurrency((pendingSummary ?? financialStats.totalPending))} IQD`}
                                     icon={Receipt}
                                     color="warning"
-                                    loading={loading}
+                                    loading={cardsLoading || pendingSummary === null}
                                     size="md"
                                 />
                                 <StatsCard
                                     title="Gecikmiş Borçlar"
-                                    value={`${formatCurrency(financialStats.totalOverdue)} IQD`}
+                                    value={`${formatCurrency((overduePendingSummary ?? financialStats.totalOverdue))} IQD`}
                                     icon={AlertTriangle}
                                     color="danger"
-                                    loading={loading}
+                                    loading={cardsLoading || overduePendingSummary === null}
                                     size="md"
                                 />
                                 <StatsCard
@@ -584,23 +658,7 @@ export default function FinancialListPage() {
                                     value={`%${financialStats.collectionRate.toFixed(1)}`}
                                     icon={Target}
                                     color="info"
-                                    loading={loading}
-                                    size="md"
-                                />
-                                <StatsCard
-                                    title="Ortalama İşlem"
-                                    value={`${formatCurrency(financialStats.averageTransaction)} IQD`}
-                                    icon={Calculator}
-                                    color="info"
-                                    loading={loading}
-                                    size="md"
-                                />
-                                <StatsCard
-                                    title="Toplam İşlem"
-                                    value={financialStats.totalTransactions.toLocaleString()}
-                                    icon={Activity}
-                                    color="primary"
-                                    loading={loading}
+                                    loading={cardsLoading}
                                     size="md"
                                 />
                             </div>
@@ -690,9 +748,14 @@ export default function FinancialListPage() {
                                             totalPages: data?.pagination.totalPages || 1,
                                             totalRecords: data?.pagination.totalItems || 0,
                                             recordsPerPage: data?.pagination.itemsPerPage || limit,
-                                            onPageChange: (p: number) => setPage(p),
-                                            onRecordsPerPageChange: (n: number) => setLimit(n),
+                                            onPageChange: (p: number) => {
+                                                setPage(p)
+                                            },
+                                            onRecordsPerPageChange: (n: number) => {
+                                                setLimit(n)
+                                            },
                                             recordsPerPageOptions: [5, 10, 25, 50, 100],
+                                            preventScroll: true,
                                         }}
                                         emptyStateMessage="Henüz finansal işlem kaydı bulunmuyor."
                                         selectable={true}
