@@ -58,9 +58,30 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   }, [item]);
 
   if (!currentItem) return null;
-  const statusInfo = statusConfig[currentItem.status as keyof typeof statusConfig] || statusConfig.OPEN;
+  // Normalize status (supports string or object with id)
+  const statusKey = ((): string => {
+    const raw = typeof (currentItem as any).status === 'string'
+      ? (currentItem as any).status
+      : (currentItem as any).status?.id;
+    return (raw || 'OPEN').toString().toUpperCase();
+  })();
+  const statusInfo = statusConfig[statusKey as keyof typeof statusConfig] || statusConfig.OPEN;
   const StatusIcon = statusInfo.icon;
-  const priorityInfo = priorityConfig[currentItem.priority?.toUpperCase?.() || ''] || { label: currentItem.priority, color: 'secondary' };
+  // Normalize priority (supports string or object with id/label)
+  const priorityKey = ((): string => {
+    const raw = typeof (currentItem as any).priority === 'string'
+      ? (currentItem as any).priority
+      : (currentItem as any).priority?.id;
+    return (raw || 'MEDIUM').toString().toUpperCase();
+  })();
+  const priorityLabel = ((): string => {
+    if (typeof (currentItem as any).priority === 'object' && (currentItem as any).priority?.label) {
+      return String((currentItem as any).priority.label);
+    }
+    // Fallback to capitalized key
+    return priorityKey.charAt(0) + priorityKey.slice(1).toLowerCase();
+  })();
+  const priorityInfo = priorityConfig[priorityKey] || { label: priorityLabel, color: 'secondary' };
 
   // Action handlers
   const handleStatusChange = async (action: string, label: string) => {
@@ -150,7 +171,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
             <div className="flex items-center gap-3">
               <StatusIcon className={`h-6 w-6 text-semantic-${statusInfo.color}-500`} />
               <Badge variant="soft" color={statusInfo.color as any}>{statusInfo.label}</Badge>
-              <span className="text-xs text-text-light-secondary dark:text-text-secondary ml-2">Talep No: <span className="font-semibold">{currentItem.ticketNumber}</span></span>
+              <span className="text-xs text-text-light-secondary dark:text-text-secondary ml-2">Talep No: <span className="font-semibold">{(currentItem as any).ticketNumber || (currentItem as any).requestId || (currentItem as any).id}</span></span>
             </div>
             <div className="flex items-center gap-2">
               <Flag className="h-4 w-4 text-primary-gold" />
@@ -176,29 +197,38 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Talep Tipi</div>
               <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                 <Wrench className="h-4 w-4" />
-                <span>{currentItem.type || 'Tip Yok'}</span>
+                <span>{(currentItem as any).type || (currentItem as any).category?.label || (currentItem as any).category || 'Tip Yok'}</span>
               </div>
             </div>
             <div>
               <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Sakin</div>
               <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                 <User className="h-4 w-4" />
-                <span>{currentItem.creator?.firstName || ''} {currentItem.creator?.lastName || ''}</span>
+                <span>{((currentItem as any).creator?.firstName && (currentItem as any).creator?.lastName)
+                  ? `${(currentItem as any).creator.firstName} ${(currentItem as any).creator.lastName}`
+                  : (currentItem as any).apartment?.owner || '--'}</span>
               </div>
               <div className="text-xs text-text-soft">
-                {currentItem.creator?.property?.ownershipType || '--'}
+                {(currentItem as any).creator?.property?.ownershipType || '--'}
               </div>
             </div>
             <div>
               <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Daire</div>
               <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                {currentItem.property?.name || currentItem.property?.propertyNumber || '--'}
+                {(currentItem as any).property?.name 
+                  || (currentItem as any).property?.propertyNumber 
+                  || (currentItem as any).apartment?.number 
+                  || '--'}
               </div>
             </div>
             <div>
               <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Oluşturulma</div>
               <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                {currentItem.createdAt ? new Date(currentItem.createdAt).toLocaleString('tr-TR') : '--'}
+                {(currentItem as any).createdAt
+                  ? new Date((currentItem as any).createdAt).toLocaleString('tr-TR')
+                  : (currentItem as any).createdDate
+                    ? new Date((currentItem as any).createdDate).toLocaleString('tr-TR')
+                    : '--'}
               </div>
             </div>
           </div>
@@ -286,7 +316,11 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
                     <li key={comment.id} className="p-3 rounded-xl bg-background-light-soft dark:bg-background-soft border border-primary-gold/10">
                       <div className="flex items-center gap-2 mb-1">
                         <User className="h-4 w-4 text-primary-gold" />
-                        <span className="font-medium text-text-on-light dark:text-text-on-dark">{comment.author?.name || comment.authorName || 'Kullanıcı'}</span>
+                        <span className="font-medium text-text-on-light dark:text-text-on-dark">
+                          {(comment.user?.firstName || comment.user?.lastName)
+                            ? `${comment.user.firstName || ''} ${comment.user.lastName || ''}`.trim()
+                            : (comment.author?.name || comment.authorName || 'Kullanıcı')}
+                        </span>
                         <span className="text-xs text-text-light-secondary ml-2">{comment.createdAt ? new Date(comment.createdAt).toLocaleString('tr-TR') : ''}</span>
                       </div>
                       <div className="text-sm text-text-light-secondary dark:text-text-secondary whitespace-pre-line">{comment.text || comment.content}</div>

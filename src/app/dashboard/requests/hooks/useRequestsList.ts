@@ -23,12 +23,14 @@ const transformTicketToServiceRequest = (ticket: Ticket): ServiceRequest => {
     title: ticket.title || 'Untitled Request',
     description: ticket.description || '',
     apartment: {
-      number: ticket.property?.propertyNumber || 'N/A',
-      block: ticket.property?.building || 'N/A',
+      // Show property name primarily, fallback to propertyNumber
+      number: ticket.property?.name || ticket.property?.propertyNumber || 'N/A',
+      block: (ticket.property as any)?.building || ticket.property?.blockNumber || 'N/A',
       floor: ticket.property?.floor || 0,
-      owner: ticket.property?.owner || 'N/A',
-      tenant: ticket.property?.tenant || undefined,
-      phone: ticket.creator?.phone || ''
+      // Use creator full name as owner (resident)
+      owner: `${ticket.creator?.firstName || ''} ${ticket.creator?.lastName || ''}`.trim() || 'N/A',
+      tenant: (ticket.property as any)?.tenant || undefined,
+      phone: ticket.creator?.phone || (ticket.property as any)?.phone || ''
     },
     category: {
       id: ticket.type || 'general',

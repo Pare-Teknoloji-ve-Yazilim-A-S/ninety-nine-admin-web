@@ -84,7 +84,18 @@ const transformTicketToRequestDetail = (ticket: Ticket): ServiceRequestDetail =>
       currency: 'IQD'
     },
     customerRating: undefined,
-    tags: [ticket.type, ticket.priority].filter(Boolean),
+    // Ensure tags are always strings for safe rendering
+    // Use human-readable labels instead of raw enum/object values
+    tags: [
+      getCategoryLabel(ticket.type),
+      ((): string => {
+        const priorityId = (typeof ticket.priority === 'string')
+          ? ticket.priority
+          : (ticket as any)?.priority?.id || (ticket as any)?.priority?.label || 'MEDIUM';
+        const info = getPriorityInfo(String(priorityId));
+        return String(info.label);
+      })()
+    ].filter(Boolean),
     isOverdue: ticket.dueDate ? new Date(ticket.dueDate) < new Date() : false,
     isUrgent: ticket.priority === 'HIGH' || ticket.priority === 'URGENT',
     hasImages: (ticket.attachments?.length || 0) > 0,
