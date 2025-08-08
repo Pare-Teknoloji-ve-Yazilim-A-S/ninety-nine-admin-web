@@ -44,6 +44,14 @@ export interface ResponseBillDto {
     propertyNumber: string;
     floor?: number | null;
   };
+  assignedTo?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+    propertyIdentification?: string | null;
+  } | null;
 }
 
 export interface UpdateBillDto extends Partial<CreateBillDto> {}

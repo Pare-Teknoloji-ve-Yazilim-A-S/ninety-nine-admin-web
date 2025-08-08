@@ -587,31 +587,6 @@ export default function FinancialListPage() {
                                 </p>
                             </div>
                             <div className="flex gap-3">
-                                <Button 
-                                    variant="secondary" 
-                                    size="md" 
-                                    icon={Activity}
-                                    onClick={async () => {
-                                        console.log('🧪 Manual API Test Triggered');
-                                        
-                                                                    // Test with only page and limit parameters
-                            const testParams = {
-                                page: 1,
-                                limit: 10
-                            };
-                                        
-                                        console.log('📋 Testing with parameters:', testParams);
-                                        
-                                        try {
-                                            const response = await billingService.getAllBills(testParams);
-                                            console.log('✅ Manual API Test Success:', response);
-                                        } catch (error) {
-                                            console.error('❌ Manual API Test Failed:', error);
-                                        }
-                                    }}
-                                >
-                                    API Test
-                                </Button>
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={refetch}>
                                     Yenile
                                 </Button>
