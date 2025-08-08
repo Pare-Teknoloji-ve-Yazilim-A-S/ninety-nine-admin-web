@@ -19,6 +19,7 @@ export interface GenericListViewProps<T> {
     recordsPerPage: number;
     onPageChange: (page: number) => void;
     onRecordsPerPageChange: (records: number) => void;
+    recordsPerPageOptions?: number[];
     preventScroll?: boolean; // Add preventScroll prop
   };
   emptyStateMessage?: string;

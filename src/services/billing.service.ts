@@ -144,17 +144,33 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     console.log('📋 Query Parameters:', params);
     
     try {
-      const responseBody = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url);
+      const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url);
+
+      // Normalize possible shapes
+      const root: any = (response as any)?.data ?? (response as any) ?? {};
+      const list: ResponseBillDto[] = Array.isArray(root)
+        ? root
+        : Array.isArray(root.data)
+          ? root.data
+          : Array.isArray(root.results)
+            ? root.results
+            : [];
+      const pagination = root.pagination ?? root.data?.pagination ?? {
+        total: 0,
+        page: params?.page || 1,
+        limit: params?.limit || 10,
+        totalPages: 1,
+      };
 
       console.log('✅ BillingService: API call successful');
-      console.log('📏 Bills count:', Array.isArray(responseBody?.data) ? responseBody.data.length : 0);
-      console.log('📋 First bill (if exists):', Array.isArray(responseBody?.data) ? responseBody.data[0] : undefined);
-      console.log('📄 Pagination info:', responseBody?.pagination);
+      console.log('📏 Bills count:', list.length);
+      console.log('📋 First bill (if exists):', list[0]);
+      console.log('📄 Pagination info:', pagination);
 
-      this.logger.info(`Fetched ${Array.isArray(responseBody?.data) ? responseBody.data.length : 0} bills`);
+      this.logger.info(`Fetched ${list.length} bills`);
       return {
-        data: responseBody.data || [],
-        pagination: responseBody.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 },
+        data: list,
+        pagination,
       };
     } catch (error) {
       console.error('❌ BillingService: API call failed:', error);
