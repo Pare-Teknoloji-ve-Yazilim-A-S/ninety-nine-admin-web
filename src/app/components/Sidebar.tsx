@@ -79,10 +79,10 @@ export default function Sidebar() {
             label: 'Personel',
             hasSubmenu: true,
             submenu: [
-                { label: 'Personel Listesi', href: '/staff', icon: Users2 },
-                { label: 'Departmanlar', href: '/staff?tab=departments', icon: Building2 },
-                { label: 'Pozisyonlar', href: '/staff?tab=positions', icon: Briefcase },
-                { label: 'Raporlar', href: '/staff?tab=reports', icon: BarChart3 }
+                { label: 'Personel Listesi', href: '/dashboard/staff', icon: Users2 },
+                { label: 'Departmanlar', href: '/dashboard/staff?tab=departments', icon: Building2 },
+                { label: 'Pozisyonlar', href: '/dashboard/staff?tab=positions', icon: Briefcase },
+                { label: 'Raporlar', href: '/dashboard/staff?tab=reports', icon: BarChart3 }
             ]
         },
         {

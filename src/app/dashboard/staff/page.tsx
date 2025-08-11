@@ -68,7 +68,6 @@ function StaffPage () {
 
   const handleUpdateStaff = async (data: any) => {
     if (!editingStaff) return
-    
     const success = await updateStaff(editingStaff.id, data)
     if (success) {
       setIsStaffFormOpen(false)
@@ -95,7 +94,7 @@ function StaffPage () {
   }
 
   const handleViewStaff = (record: Staff) => {
-    router.push(`/staff/${record.id}`)
+    router.push(`/dashboard/staff/${record.id}`)
   }
 
   const handleActivate = async (record: Staff) => {
@@ -297,3 +296,5 @@ function StaffPage () {
 }
 
 export default StaffPage
+
+

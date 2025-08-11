@@ -14,7 +14,7 @@ function StaffLayout ({ children }: StaffLayoutProps) {
 
   const breadcrumbItems = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Personel Yönetimi', href: '/staff' },
+    { label: 'Personel Yönetimi', href: '/dashboard/staff' },
   ];
 
   return (
@@ -47,3 +47,5 @@ function StaffLayout ({ children }: StaffLayoutProps) {
 }
 
 export default StaffLayout
+
+

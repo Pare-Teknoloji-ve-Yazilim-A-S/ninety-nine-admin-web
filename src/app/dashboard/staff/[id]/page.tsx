@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Edit, Trash2, Mail, Phone, MapPin, Calendar, DollarSign, User, Building2, Briefcase } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Mail, Phone, MapPin, DollarSign, User, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -222,8 +222,6 @@ function StaffDetailPage () {
                   <p className="text-sm">{staff.nationalId}</p>
                 </div>
               )}
-
-
             </CardContent>
           </Card>
 
@@ -258,7 +256,6 @@ function StaffDetailPage () {
                 <label className="text-sm font-medium text-muted-foreground">Durum</label>
                 <p className="text-sm">{statusConfig.label}</p>
               </div>
-
             </CardContent>
           </Card>
 
@@ -349,3 +346,5 @@ function StaffDetailPage () {
 }
 
 export default StaffDetailPage
+
+

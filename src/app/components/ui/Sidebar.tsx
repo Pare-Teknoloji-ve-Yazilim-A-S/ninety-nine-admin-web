@@ -88,7 +88,7 @@ const menuItems: MenuItemProps[] = [
     {
         title: 'Personel Yönetimi',
         icon: UserCheck,
-        href: '/staff'
+        href: '/dashboard/staff'
     },
     {
         title: 'Duyurular',
