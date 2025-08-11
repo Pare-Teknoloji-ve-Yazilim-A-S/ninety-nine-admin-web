@@ -20,7 +20,7 @@ export interface ModulePageViewModel<T = Announcement> {
 }
 
 export function useModulePageViewModel() : ModulePageViewModel {
-  const ui = useModuleUI<'createdAt' | 'title' | 'status'>()
+  const ui = useModuleUI<string>()
   const data = useModuleData({
     page: 1,
     limit: 20,

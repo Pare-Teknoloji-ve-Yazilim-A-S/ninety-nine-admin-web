@@ -18,6 +18,7 @@ import ContentArea from './components/ContentArea'
 import StaffFormModal from './components/StaffFormModal'
 import ImportFileInput from './components/ImportFileInput'
 import { useStaffPageViewModel } from './hooks/useStaffPageViewModel'
+import type { CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.types'
 
 function StaffPage () {
   const { ui, data, refs, actions } = useStaffPageViewModel()
@@ -41,7 +42,9 @@ function StaffPage () {
         departments={data.departments}
         positions={data.positions}
         managers={data.managers}
-        onSubmit={ui.editingStaff ? actions.onUpdate : actions.onCreate}
+        onSubmit={(payload: CreateStaffDto | UpdateStaffDto) => (
+          ui.editingStaff ? actions.onUpdate(payload as UpdateStaffDto) : actions.onCreate(payload as CreateStaffDto)
+        )}
         onClose={actions.closeForm}
         isLoading={data.isLoading}
       />
@@ -79,7 +82,7 @@ function StaffPage () {
         onDelete={actions.onDelete}
         onActivate={actions.onActivate}
         onDeactivate={actions.onDeactivate}
-        onBulkAction={actions.onBulk}
+        onBulkAction={(action, ids) => actions.onBulk(action as any, ids)}
         onExport={actions.onExport}
         onImport={actions.onImportClick}
         onRefresh={actions.refresh}
@@ -91,18 +94,18 @@ function StaffPage () {
       <FilterDrawer
         open={ui.filtersOpen}
         onClose={actions.closeFilters}
-        filters={data.filters}
+        filters={data.filters as any}
         departments={data.departments}
         positions={data.positions}
         quickFilters={data.quickFilters}
         savedFilters={data.savedFilters}
-        onFiltersChange={data.setFilters}
+        onFiltersChange={(f) => actions.setFilters(f as any)}
         onQuickFilterApply={actions.applyQuickFilter}
         onSaveFilter={() => { /* no-op */ }}
         onDeleteSavedFilter={() => { /* no-op */ }}
         onExportFilters={actions.onExport}
         onImportFilters={() => { /* handled via hidden input in component */ }}
-        onReset={() => data.setFilters({})}
+        onReset={() => actions.setFilters({})}
       />
     </div>
   )
