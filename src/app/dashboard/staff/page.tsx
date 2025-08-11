@@ -160,9 +160,9 @@ function StaffPage () {
   const activeRate = totalStaffCount > 0 ? Math.round((activeCount / totalStaffCount) * 100) : 0
 
   const quickFilters: QuickFilter[] = useMemo(() => [
-    { key: 'active', label: 'Aktif', count: activeCount },
-    { key: 'inactive', label: 'Pasif', count: inactiveCount },
-    { key: 'on_leave', label: 'İzinli', count: onLeaveCount },
+    { key: 'active', label: 'Aktif', count: activeCount, filters: { status: [StaffStatus.ACTIVE] } },
+    { key: 'inactive', label: 'Pasif', count: inactiveCount, filters: { status: [StaffStatus.INACTIVE] } },
+    { key: 'on_leave', label: 'İzinli', count: onLeaveCount, filters: { status: [StaffStatus.ON_LEAVE] } },
   ], [activeCount, inactiveCount, onLeaveCount])
 
   const savedFilters: SavedFilter[] = []
