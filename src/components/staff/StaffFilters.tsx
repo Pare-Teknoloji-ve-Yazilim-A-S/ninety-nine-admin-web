@@ -207,10 +207,10 @@ export function StaffFilters({
                   onClick={() => onQuickFilterApply(quickFilter.key)}
                   className="h-8"
                 >
-                  {quickFilter.label}
-                  <Badge variant="secondary" className="ml-2">
-                    {quickFilter.count}
-                  </Badge>
+                  <span>
+                    {quickFilter.label}
+                    <span className="ml-1 text-xs text-text-light-muted dark:text-text-muted">({quickFilter.count})</span>
+                  </span>
                 </Button>
               ))}
             </div>

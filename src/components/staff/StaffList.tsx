@@ -264,7 +264,7 @@ export function StaffList({
         </div>
         
         {/* Search and Filters */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 mt-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -279,7 +279,7 @@ export function StaffList({
           
           <div className="flex items-center space-x-2">
             {/* View Mode Toggle */}
-            <div className="flex items-center border rounded-md">
+            <div className="flex items-center rounded-md">
               <Button
                 variant={viewMode === 'table' ? 'primary' : 'ghost'}
                 size="sm"
