@@ -365,9 +365,7 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
         try {
             this.logger.info(`Uploading national ID document for resident ID: ${id}`);
 
-            const formData = new FormData();
-            formData.append('document', file);
-
+            // Sunucu 'file' alanını bekliyor
             const response = await apiClient.uploadFile<any>(
                 apiConfig.endpoints.residents.admin.uploadNationalId(id),
                 file,
@@ -394,9 +392,7 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
         try {
             this.logger.info(`Uploading ownership document for resident ID: ${id}`);
 
-            const formData = new FormData();
-            formData.append('document', file);
-
+            // Sunucu 'file' alanını bekliyor
             const response = await apiClient.uploadFile<any>(
                 apiConfig.endpoints.residents.admin.uploadOwnershipDocument(id),
                 file,

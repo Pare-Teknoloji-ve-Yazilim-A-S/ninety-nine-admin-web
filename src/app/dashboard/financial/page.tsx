@@ -628,14 +628,7 @@ export default function FinancialListPage() {
                                     loading={cardsLoading || overduePendingSummary === null}
                                     size="md"
                                 />
-                                <StatsCard
-                                    title="Tahsilat Oranı"
-                                    value={`%${financialStats.collectionRate.toFixed(1)}`}
-                                    icon={Target}
-                                    color="info"
-                                    loading={cardsLoading}
-                                    size="md"
-                                />
+                                {/* Tahsilat Oranı kartı kaldırıldı */}
                             </div>
                         </div>
 
@@ -711,7 +704,7 @@ export default function FinancialListPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                             <div className="lg:col-span-1">
                                 {viewMode === 'table' && (
-                                    <GenericListView
+                                        <GenericListView
                                         data={data?.transactions || []}
                                         loading={loading}
                                         error={error}
@@ -719,19 +712,22 @@ export default function FinancialListPage() {
                                         bulkActions={[]}
                                         columns={tableColumns}
                                         pagination={{
-                                            currentPage: data?.pagination.currentPage || page,
-                                            totalPages: data?.pagination.totalPages || 1,
-                                            totalRecords: data?.pagination.totalItems || 0,
-                                            recordsPerPage: data?.pagination.itemsPerPage || limit,
-                                            onPageChange: (p: number) => {
-                                                setPage(p)
-                                            },
-                                            onRecordsPerPageChange: (n: number) => {
-                                                setLimit(n)
-                                            },
-                                            recordsPerPageOptions: [5, 10, 25, 50, 100],
-                                            preventScroll: true,
-                                        }}
+                                                currentPage: data?.pagination.currentPage ?? page,
+                                                totalPages: data?.pagination.totalPages ?? 1,
+                                                totalRecords: data?.pagination.totalItems ?? 0,
+                                                recordsPerPage: data?.pagination.itemsPerPage ?? limit,
+                                                onPageChange: (p: number) => {
+                                                    if (p !== page) setPage(p);
+                                                },
+                                                onRecordsPerPageChange: (n: number) => {
+                                                    if (n !== limit) {
+                                                        setLimit(n);
+                                                        setPage(1);
+                                                    }
+                                                },
+                                                recordsPerPageOptions: [10, 25, 50, 100],
+                                                preventScroll: true,
+                                            }}
                                         emptyStateMessage="Henüz finansal işlem kaydı bulunmuyor."
                                         selectable={true}
                                         showPagination={true}

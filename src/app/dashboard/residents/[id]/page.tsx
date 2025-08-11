@@ -69,7 +69,7 @@ export default function ResidentViewPage() {
     const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
     const [showUploadPopup, setShowUploadPopup] = useState(false);
-    const [uploadDocumentType, setUploadDocumentType] = useState<'national_id' | 'ownership' | null>(null);
+    const [uploadDocumentType, setUploadDocumentType] = useState<'national_id' | 'ownership_document' | null>(null);
     const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0, arrowLeft: 0 });
     const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
     const [showTicketDetailModal, setShowTicketDetailModal] = useState(false);
@@ -640,19 +640,26 @@ export default function ResidentViewPage() {
                                                             )}
                                                             {resident.verificationStatus && resident.verificationStatus.color === 'yellow' && (
                                                                 <div className="flex items-center gap-2">
+                                                                    {(() => {
+                                                                        const docsUploaded = Boolean(nationalIdDoc.url && ownershipDoc.url);
+                                                                        return (
+                                                                            <>
                                                                     <Button
                                                                         variant="primary"
                                                                         size="sm"
                                                                         onClick={() => setShowApprovalModal(true)}
-                                                                        disabled={resident.status.label === 'Beklemede'}
+                                                                                disabled={!docsUploaded || approvalLoading}
                                                                     >
                                                                         Onayla
                                                                     </Button>
-                                                                    {resident.status.label === 'Beklemede' && (
-                                                                        <span className="text-sm text-text-light-muted dark:text-text-muted">
-                                                                            Belgelerin yüklenmesi gerek
-                                                                        </span>
-                                                                    )}
+                                                                            {!docsUploaded && (
+                                                                                <span className="text-sm text-text-light-muted dark:text-text-muted">
+                                                                                    Belgelerin yüklenmesi gerek
+                                                                                </span>
+                                                                            )}
+                                                                            </>
+                                                                        );
+                                                                    })()}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -902,7 +909,7 @@ export default function ResidentViewPage() {
                                                                                     left: rect.left,
                                                                                     arrowLeft: buttonCenter - 8
                                                                                 });
-                                                                                setUploadDocumentType('ownership');
+                                                                                setUploadDocumentType('ownership_document');
                                                                                 setShowUploadPopup(true);
                                                                             }}
                                                                             disabled={ownershipDoc.loading}
@@ -1486,14 +1493,22 @@ export default function ResidentViewPage() {
                                     bg-background-light-secondary dark:bg-background-secondary
                                 ">
                                     <input
-                                        accept="image/jpeg,image/png,image/jpg,application/pdf"
+                                        accept="image/jpeg,image/png,image/jpg,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain"
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                         type="file"
                                         onChange={(e) => {
                                             const file = e.target.files?.[0];
                                             if (file) {
-                                                console.log('Dosya seçildi:', file.name);
-                                                // Burada dosya yükleme işlemi yapılacak
+                                                // Belgeyi yükle
+                                                if (uploadDocumentType === 'national_id') {
+                                                    uploadNationalIdDocument(file)
+                                                        .then(() => toast.success('Kimlik belgesi yüklendi'))
+                                                        .catch((err: any) => toast.error(err?.message || 'Yükleme başarısız'));
+                                                } else if (uploadDocumentType === 'ownership_document') {
+                                                    uploadOwnershipDocument(file)
+                                                        .then(() => toast.success('Mülkiyet belgesi yüklendi'))
+                                                        .catch((err: any) => toast.error(err?.message || 'Yükleme başarısız'));
+                                                }
                                                 setShowUploadPopup(false);
                                                 setUploadDocumentType(null);
                                                 setPopupPosition({ top: 0, left: 0, arrowLeft: 0 });
@@ -1507,7 +1522,7 @@ export default function ResidentViewPage() {
                                             <span className="text-text-light-secondary dark:text-text-secondary"> veya sürükleyin</span>
                                         </div>
                                         <p className="text-xs text-text-light-secondary dark:text-text-secondary">
-                                            JPEG, PNG, PDF • Max 10MB
+                                            JPEG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT • Max 10MB
                                         </p>
                                     </div>
                                 </div>

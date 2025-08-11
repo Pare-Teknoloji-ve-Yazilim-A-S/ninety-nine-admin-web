@@ -76,6 +76,8 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({
                 initialMembershipTier: 'STANDARD'
             });
             setErrors({});
+            // Başarılı kayıttan sonra modal'ı otomatik kapat
+            onClose();
         } catch (error) {
             console.error('Approval submission failed:', error);
         }

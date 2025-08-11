@@ -147,18 +147,20 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
       const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url);
 
       // Normalize possible shapes
-      const root: any = (response as any)?.data ?? (response as any) ?? {};
-      const list: ResponseBillDto[] = Array.isArray(root)
-        ? root
-        : Array.isArray(root.data)
-          ? root.data
+      const root: any = (response as any) ?? {};
+      const list: ResponseBillDto[] = Array.isArray(root.data)
+        ? root.data
+        : Array.isArray(root.results?.results)
+          ? root.results.results
           : Array.isArray(root.results)
             ? root.results
-            : [];
+            : Array.isArray(root)
+              ? (root as any[])
+              : [];
       const pagination = root.pagination ?? root.data?.pagination ?? {
         total: 0,
-        page: params?.page || 1,
-        limit: params?.limit || 10,
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 10,
         totalPages: 1,
       };
 

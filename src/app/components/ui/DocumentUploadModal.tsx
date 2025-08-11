@@ -101,7 +101,15 @@ export default function DocumentUploadModal({
                     </div>
 
                     <FileUpload
-                        acceptedTypes={['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']}
+                        acceptedTypes={[
+                            'image/jpeg', 'image/png', 'image/jpg', 'image/gif',
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'text/plain'
+                        ]}
                         maxSize={10}
                         multiple={false}
                         onFilesChange={handleNationalIdFilesChange}
@@ -109,7 +117,7 @@ export default function DocumentUploadModal({
                         onFileRemove={(index) => {
                             setNationalIdFiles(prev => prev.filter((_, i) => i !== index));
                         }}
-                        helperText="JPEG, PNG veya PDF formatında maksimum 10MB"
+                        helperText="JPEG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT • Max 10MB"
                         showPreview={true}
                     />
 
@@ -149,7 +157,15 @@ export default function DocumentUploadModal({
                     </div>
 
                     <FileUpload
-                        acceptedTypes={['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']}
+                        acceptedTypes={[
+                            'image/jpeg', 'image/png', 'image/jpg', 'image/gif',
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            'text/plain'
+                        ]}
                         maxSize={10}
                         multiple={false}
                         onFilesChange={handleOwnershipFilesChange}
@@ -157,7 +173,7 @@ export default function DocumentUploadModal({
                         onFileRemove={(index) => {
                             setOwnershipFiles(prev => prev.filter((_, i) => i !== index));
                         }}
-                        helperText="JPEG, PNG veya PDF formatında maksimum 10MB"
+                        helperText="JPEG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT • Max 10MB"
                         showPreview={true}
                     />
 

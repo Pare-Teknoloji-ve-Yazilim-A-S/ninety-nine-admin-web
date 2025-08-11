@@ -818,25 +818,37 @@ export const useFinancialList = (): UseFinancialListReturn => {
         }
       };
 
-      // Update pagination with real data
+      // Update pagination with real data (fallback to client-side pagination if API doesn't provide it)
       const apiPagination = (apiResponse as any)?.pagination;
-      const currentPage = Number(apiPagination?.page) || 1;
-      const pageSize = Number(apiPagination?.limit) || (transformedTransactions.length || 10);
-      const total = Number(apiPagination?.total) || transformedTransactions.length;
-      const totalPages = Number(apiPagination?.totalPages) || Math.max(1, Math.ceil(total / pageSize));
+
+      let currentPage = Number(apiPagination?.page) || page || 1;
+      let pageSize = Number(apiPagination?.limit) || limit || 10;
+      let total = Number(apiPagination?.total);
+      let totalPages = Number(apiPagination?.totalPages);
+
+      let pagedTransactions = transformedTransactions;
+      if (!apiPagination || !Number.isFinite(total) || !Number.isFinite(totalPages)) {
+        // Server didn't provide valid pagination; apply client-side pagination
+        total = transformedTransactions.length;
+        pageSize = limit || 10;
+        currentPage = page || 1;
+        totalPages = Math.max(1, Math.ceil(total / pageSize));
+        const start = (currentPage - 1) * pageSize;
+        pagedTransactions = transformedTransactions.slice(start, start + pageSize);
+      }
 
       baseData.pagination = {
         currentPage,
         totalPages,
         itemsPerPage: pageSize,
         totalItems: total,
-        showingFrom: ((currentPage - 1) * pageSize) + 1,
+        showingFrom: total === 0 ? 0 : ((currentPage - 1) * pageSize) + 1,
         showingTo: Math.min(currentPage * pageSize, total),
         pageSizeOptions: [10, 25, 50, 100]
       };
 
-      // Update data with real transactions (server paginated)
-      baseData.transactions = transformedTransactions;
+      // Update data with real transactions (server paginated or client-sliced)
+      baseData.transactions = pagedTransactions;
 
       setData(baseData);
     } catch (err) {

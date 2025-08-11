@@ -52,41 +52,32 @@ async function handleProxyRequest(
     const queryString = searchParams.toString();
     const fullUrl = queryString ? `${targetUrl}?${queryString}` : targetUrl;
 
-    // Headers'ı hazırla
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
+    // Headers'ı kopyala (Content-Type dahil), bazı sunucuya özel headerları çıkar
+    const forwardHeaders = new Headers();
+    request.headers.forEach((value, key) => {
+      // Host ve Content-Length hedef için ayarlanmalı, kopyalamayalım
+      if (key.toLowerCase() === 'host' || key.toLowerCase() === 'content-length') return;
+      forwardHeaders.set(key, value);
+    });
 
-    // Authorization header'ı kopyala
-    const authHeader = request.headers.get('Authorization');
-    if (authHeader) {
-      headers['Authorization'] = authHeader;
-    }
-
-    // X-Request-ID header'ı kopyala
-    const requestIdHeader = request.headers.get('X-Request-ID');
-    if (requestIdHeader) {
-      headers['X-Request-ID'] = requestIdHeader;
-    }
-
-    // Body'yi al (GET ve DELETE dışında)
-    let body: string | undefined;
+    // Body'yi aktar (GET ve DELETE dışında). FormData/stream bozulmasın diye stream'i forward et
+    let requestBody: ReadableStream<Uint8Array> | undefined;
     if (method !== 'GET' && method !== 'DELETE') {
-      try {
-        body = await request.text();
-      } catch (error) {
-        // Body yoksa boş bırak
-        body = undefined;
-      }
+      requestBody = request.body ?? undefined;
     }
 
     // API isteğini yap
-    const response = await fetch(fullUrl, {
+    const fetchOptions: RequestInit & { duplex?: 'half' } = {
       method,
-      headers,
-      body: body && body.length > 0 ? body : undefined,
-    });
+      headers: forwardHeaders,
+      body: requestBody,
+    };
+    // Node.js ortamında ReadableStream forward ediyorsak duplex gerekli olabilir
+    if (requestBody) {
+      fetchOptions.duplex = 'half';
+    }
+
+    const response = await fetch(fullUrl, fetchOptions as RequestInit);
 
     // Response data'yı al
     const responseData = await response.text();
