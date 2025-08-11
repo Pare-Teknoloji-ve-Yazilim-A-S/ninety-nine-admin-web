@@ -356,10 +356,10 @@ export default function AnnouncementsPage() {
                                 <Calendar className="w-3 h-3" />
                                 <span>{new Date(announcement.createdAt).toLocaleDateString('tr-TR')}</span>
                             </div>
-                            {announcement.targetAudience && (
+                            {(announcement as any).targetAudience && (
                                 <div className="flex items-center gap-1">
                                     <Hash className="w-3 h-3" />
-                                    <span>{announcement.targetAudience}</span>
+                                    <span>{(announcement as any).targetAudience}</span>
                                 </div>
                             )}
                         </div>
