@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "displayName": "TypeScript List Pages Configuration",
+  "description": "TypeScript configuration optimized for NestJS list pages development",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "allowJs": true,
+    "checkJs": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/components/*": ["src/components/*"],
+      "@/pages/*": ["src/pages/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/services/*": ["src/services/*"],
+      "@/dto/*": ["src/dto/*"],
+      "@/entities/*": ["src/entities/*"],
+      "@/controllers/*": ["src/controllers/*"],
+      "@/modules/*": ["src/modules/*"]
+    },
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "incremental": true,
+    "removeComments": false,
+    "preserveConstEnums": true
+  },
+  "include": [
+    "src/**/*",
+    "types/**/*",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.spec.ts",
+    "**/*.test.ts"
+  ],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+  "listPagesTypes": {
+    "pagination": {
+      "interface": "PaginationDto",
+      "properties": {
+        "page": "number",
+        "limit": "number",
+        "total": "number",
+        "totalPages": "number"
+      }
+    },
+    "filtering": {
+      "interface": "FilterDto",
+      "baseProperties": {
+        "search": "string | undefined",
+        "sortBy": "string | undefined",
+        "sortOrder": "'ASC' | 'DESC'",
+        "dateFrom": "Date | undefined",
+        "dateTo": "Date | undefined"
+      }
+    },
+    "response": {
+      "interface": "PaginatedResponse<T>",
+      "properties": {
+        "data": "T[]",
+        "pagination": "PaginationDto",
+        "filters": "FilterDto",
+        "meta": "ResponseMeta"
+      }
+    },
+    "hooks": {
+      "interface": "UseListPageReturn<T>",
+      "properties": {
+        "data": "T[] | undefined",
+        "loading": "boolean",
+        "error": "Error | null",
+        "pagination": "PaginationDto",
+        "filters": "FilterDto",
+        "updateFilter": "(key: string, value: any) => void",
+        "updatePagination": "(pagination: Partial<PaginationDto>) => void",
+        "refetch": "() => Promise<void>",
+        "reset": "() => void"
+      }
+    }
+  },
+  "strictTypeChecking": {
+    "listPages": {
+      "enforceGenericTypes": true,
+      "requireExplicitReturnTypes": true,
+      "validateDTOProperties": true,
+      "checkFilterValidation": true,
+      "ensurePaginationTypes": true
+    }
+  },
+  "codeGeneration": {
+    "templates": {
+      "controller": "@Controller with @ApiTags and @ApiOperation decorators",
+      "service": "Injectable service with Repository pattern",
+      "dto": "Class-validator decorators with ApiProperty",
+      "entity": "TypeORM entity with proper relations",
+      "hook": "Custom React hook with TypeScript generics"
+    }
+  }
+}

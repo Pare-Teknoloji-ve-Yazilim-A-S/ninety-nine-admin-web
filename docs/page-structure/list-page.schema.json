@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NinetyNine List Page Schema",
+  "type": "object",
+  "properties": {
+    "main": {
+      "type": "object",
+      "properties": {
+        "container": { "type": "string", "default": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "card": { "type": "boolean" },
+              "type": { "type": "string" },
+              "title": { "type": "string" },
+              "summary": {
+                "type": "object",
+                "properties": {
+                  "metrics": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "component": { "type": "string" },
+                    "variant": { "type": "string" },
+                    "href": { "type": "string" },
+                    "icon": { "type": "string" },
+                    "toggles": { "type": "string" }
+                  },
+                  "required": ["id", "component"]
+                }
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": { "type": "string" },
+                    "icon": { "type": "string" },
+                    "metric": { "type": "string" },
+                    "color": { "type": "string" }
+                  }
+                }
+              },
+              "errorKey": { "type": "string" },
+              "searchBar": {
+                "type": "object",
+                "properties": {
+                  "placeholder": { "type": "string" },
+                  "debounceMs": { "type": "number", "default": 500 },
+                  "stateKey": { "type": "string" },
+                  "onSearch": { "type": "string" }
+                }
+              },
+              "groups": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": { "type": "string" },
+                    "stateKey": { "type": "string" },
+                    "options": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "label": { "type": "string" },
+                          "value": {}
+                        },
+                        "required": ["label"]
+                      }
+                    }
+                  },
+                  "required": ["label", "options"]
+                }
+              },
+              "visibleKey": { "type": "string" },
+              "component": { "type": "string" },
+              "groupsKey": { "type": "string" },
+              "handlers": {
+                "type": "object",
+                "properties": {
+                  "apply": { "type": "string" },
+                  "reset": { "type": "string" },
+                  "close": { "type": "string" }
+                }
+              },
+              "layout": { "type": "string", "enum": ["singleColumn"] },
+              "views": {
+                "type": "object",
+                "properties": {
+                  "table": {
+                    "type": "object",
+                    "properties": {
+                      "when": { "type": "string" },
+                      "component": { "type": "string", "const": "GenericListView" },
+                      "dataKey": { "type": "string" },
+                      "loadingKey": { "type": "string" },
+                      "errorKey": { "type": "string" },
+                      "columnsKey": { "type": "string" },
+                      "selection": {
+                        "type": "object",
+                        "properties": { "onChange": { "type": "string" } }
+                      },
+                      "bulkActions": { "type": "array", "items": { "type": "string" } },
+                      "pagination": {
+                        "type": "object",
+                        "properties": {
+                          "pageKey": { "type": "string" },
+                          "totalPagesKey": { "type": "string" },
+                          "totalRecordsKey": { "type": "string" },
+                          "limitKey": { "type": "string" },
+                          "onPageChange": { "type": "string" },
+                          "onLimitChange": { "type": "string" }
+                        }
+                      },
+                      "actionMenu": { "type": "string" }
+                    }
+                  },
+                  "grid": {
+                    "type": "object",
+                    "properties": {
+                      "when": { "type": "string" },
+                      "component": { "type": "string", "const": "GenericGridView" },
+                      "dataKey": { "type": "string" },
+                      "loadingKey": { "type": "string" },
+                      "errorKey": { "type": "string" },
+                      "selection": {
+                        "type": "object",
+                        "properties": {
+                          "onChange": { "type": "string" },
+                          "selectedKey": { "type": "string" }
+                        }
+                      },
+                      "bulkActions": { "type": "array", "items": { "type": "string" } },
+                      "pagination": {
+                        "type": "object",
+                        "properties": {
+                          "pageKey": { "type": "string" },
+                          "totalPagesKey": { "type": "string" },
+                          "totalRecordsKey": { "type": "string" },
+                          "limitKey": { "type": "string" },
+                          "onPageChange": { "type": "string" },
+                          "onLimitChange": { "type": "string" }
+                        }
+                      },
+                      "uiKey": { "type": "string" },
+                      "actionMenu": { "type": "string" },
+                      "renderCard": { "type": "string" },
+                      "getItemId": { "type": "string" },
+                      "gridCols": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+            "required": ["id"]
+          }
+        }
+      },
+      "required": ["container", "sections"]
+    }
+  },
+  "required": ["main"]
+}
+
+

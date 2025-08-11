@@ -62,6 +62,17 @@ import {
  * - Single Responsibility: Only handles orchestration of the announcements page
  * - Open/Closed: Extensible through configuration and dependency injection
  * - Dependency Inversion: Depends on abstractions (hooks, services) not concrete implementations
+ * 
+ * UI Component Order (Updated according to new rules):
+ * 1. ProtectedRoute
+ * 2. Sidebar
+ * 3. DashboardHeader
+ * 4. Page Header
+ * 5. Stats Cards (moved before Search and Filters)
+ * 6. Search and Filters
+ * 7. Error Messages
+ * 8. Main Content Area
+ * 9. Pagination
  */
 export default function AnnouncementsPage() {
     const router = useRouter();
@@ -302,101 +313,67 @@ export default function AnnouncementsPage() {
                                     <AlertTriangle className="w-4 h-4 text-red-500" />
                                 )}
                             </div>
-                            <p className="text-sm text-text-light-secondary dark:text-text-secondary font-medium line-clamp-3">
+                            <p className="text-sm text-text-light-secondary dark:text-text-secondary line-clamp-2 mb-3">
                                 {announcement.content}
                             </p>
                         </div>
                     </div>
                     {ActionMenu && <ActionMenu row={announcement} />}
                 </div>
-                
-                {/* Status and Type Badges */}
-                <div className="mt-4 flex flex-wrap gap-2 items-center">
-                    <ui.Badge
-                        variant="soft"
-                        color={getAnnouncementStatusColor(announcement.status)}
-                        className="text-xs px-3 py-1 rounded-full font-medium"
-                    >
-                        {getAnnouncementStatusLabel(announcement.status)}
-                    </ui.Badge>
-                    
-                    <ui.Badge
-                        variant="soft"
-                        color={getAnnouncementTypeColor(announcement.type)}
-                        className="text-xs px-3 py-1 rounded-full font-medium"
-                    >
-                        {getAnnouncementTypeLabel(announcement.type)}
-                    </ui.Badge>
 
-                    {isExpired && (
-                        <ui.Badge
-                            variant="soft"
-                            color="red"
-                            className="text-xs px-3 py-1 rounded-full font-medium"
-                        >
-                            Süresi Dolmuş
-                        </ui.Badge>
-                    )}
-
-                    {isExpiringSoon && !isExpired && (
-                        <ui.Badge
-                            variant="soft"
-                            color="gold"
-                            className="text-xs px-3 py-1 rounded-full font-medium"
-                        >
-                            Yakında Bitiyor
-                        </ui.Badge>
-                    )}
-                </div>
-                
-                {/* Date Information */}
-                <div className="mt-4 flex flex-col gap-1 text-sm text-text-light-secondary dark:text-text-secondary">
+                {/* Content */}
+                <div className="space-y-3">
+                    {/* Type and Status Badges */}
                     <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>Oluşturulma: {new Date(announcement.createdAt).toLocaleDateString('tr-TR')}</span>
+                        <ui.Badge 
+                            variant={getAnnouncementTypeColor(announcement.type)}
+                            size="sm"
+                        >
+                            {getAnnouncementTypeLabel(announcement.type)}
+                        </ui.Badge>
+                        <ui.Badge 
+                            variant={getAnnouncementStatusColor(announcement.status)}
+                            size="sm"
+                        >
+                            {getAnnouncementStatusLabel(announcement.status)}
+                        </ui.Badge>
+                        {isExpired && (
+                            <ui.Badge variant="danger" size="sm">
+                                Süresi Dolmuş
+                            </ui.Badge>
+                        )}
+                        {isExpiringSoon && !isExpired && (
+                            <ui.Badge variant="warning" size="sm">
+                                {daysUntilExpiry} gün kaldı
+                            </ui.Badge>
+                        )}
                     </div>
-                    {announcement.publishDate && (
-                        <div className="flex items-center gap-2">
-                            <Send className="w-4 h-4" />
-                            <span>Yayınlanma: {new Date(announcement.publishDate).toLocaleDateString('tr-TR')}</span>
+
+                    {/* Metadata */}
+                    <div className="flex items-center justify-between text-xs text-text-light-secondary dark:text-text-secondary">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>{new Date(announcement.createdAt).toLocaleDateString('tr-TR')}</span>
+                            </div>
+                            {announcement.targetAudience && (
+                                <div className="flex items-center gap-1">
+                                    <Hash className="w-3 h-3" />
+                                    <span>{announcement.targetAudience}</span>
+                                </div>
+                            )}
                         </div>
-                    )}
-                    {announcement.expiryDate && (
-                        <div className="flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4" />
-                            <span>
-                                Bitiş: {new Date(announcement.expiryDate).toLocaleDateString('tr-TR')}
-                                {daysUntilExpiry !== undefined && (
-                                    <span className={`ml-1 ${
-                                        isExpired ? 'text-red-500' : 
-                                        isExpiringSoon ? 'text-yellow-500' : 
-                                        ''
-                                    }`}>
-                                        ({isExpired 
-                                            ? `${Math.abs(daysUntilExpiry)} gün geçti`
-                                            : `${daysUntilExpiry} gün kaldı`
-                                        })
-                                    </span>
-                                )}
-                            </span>
+                        <div className="flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" />
+                            <span>{announcement.viewCount || 0} görüntüleme</span>
                         </div>
-                    )}
-                </div>
-                
-                {/* Creator Information */}
-                <div className="mt-4 flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                    <span>
-                        Oluşturan: {announcement.createdBy 
-                            ? `${announcement.createdBy.firstName} ${announcement.createdBy.lastName}`
-                            : 'Bilinmiyor'
-                        }
-                    </span>
+                    </div>
                 </div>
             </ui.Card>
         );
     };
 
-    // Announcement Action Menu Component
+    // Action menu component
     const AnnouncementActionMenu: React.FC<{ announcement: Announcement; onAction: (action: string, announcement: Announcement) => void }> = ({ announcement, onAction }) => {
         const handleDetailView = (e: React.MouseEvent) => {
             e.stopPropagation();
@@ -423,7 +400,7 @@ export default function AnnouncementsPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-background-primary">
+            <div className="flex h-screen bg-background-light">
                 {/* Sidebar */}
                 <Sidebar
                     isOpen={sidebarOpen}
@@ -431,7 +408,7 @@ export default function AnnouncementsPage() {
                 />
 
                 {/* Main Content Area */}
-                <div className="lg:ml-72">
+                <div className="flex-1 flex flex-col overflow-hidden lg:ml-72">
                     {/* Header */}
                     <DashboardHeader
                         title="Duyuru Listesi"
@@ -439,181 +416,190 @@ export default function AnnouncementsPage() {
                     />
 
                     {/* Main Content */}
-                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        {/* Page Header with Actions */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                            <div>
-                                <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
-                                    Duyurular <span className="text-primary-gold">
-                                        ({dataHook.totalRecords.toLocaleString()} {filtersHook.searchQuery ? 'filtrelenmiş' : 'toplam'})
-                                    </span>
-                                </h2>
-                                <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                    Son güncelleme: {dataHook.lastUpdated.toLocaleTimeString('tr-TR')}
-                                </p>
-                            </div>
+                    <main className="flex-1 overflow-auto">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                            
+                            {/* Sıra 1: Page Header with Actions */}
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                                <div>
+                                    <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
+                                        Duyurular <span className="text-primary-gold">
+                                            ({dataHook.totalRecords.toLocaleString()} {filtersHook.searchQuery ? 'filtrelenmiş' : 'toplam'})
+                                        </span>
+                                    </h1>
+                                    <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                                        Son güncelleme: {dataHook.lastUpdated.toLocaleTimeString('tr-TR')}
+                                    </p>
+                                </div>
 
-                            <div className="flex gap-3">
-                                <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
-                                    Yenile
-                                </Button>
-                                <ExportDropdown
-                                    onExportCSV={() => {
-                                        console.log('Export CSV');
-                                        toastFunctions.info('Bilgi', 'CSV export özelliği yakında gelecek');
-                                    }}
-                                    variant="secondary"
-                                    size="md"
-                                />
-                                <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewAnnouncement}>
-                                    Yeni Duyuru
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Search and Filters */}
-                        <Card className="mb-6">
-                            <div className="p-6">
-                                <div className="flex flex-col lg:flex-row gap-4">
-                                    {/* Search Bar */}
-                                    <div className="flex-1">
-                                        <SearchBar
-                                            placeholder="Başlık, içerik ile ara..."
-                                            value={searchInput}
-                                            onChange={handleSearchInputChange}
-                                            onSearch={handleSearchSubmit}
-                                            showAdvancedFilter={true}
-                                            onAdvancedFilterClick={filtersHook.handleOpenDrawer}
-                                            debounceMs={500}
-                                        />
-                                    </div>
-
-                                    {/* Filter and View Toggle */}
-                                    <div className="flex gap-2 items-center">
-                                        <div className="relative">
-                                            <Button
-                                                variant="secondary"
-                                                size="md"
-                                                icon={Filter}
-                                                onClick={filtersHook.handleOpenDrawer}
-                                            >
-                                                Filtreler
-                                            </Button>
-                                            {Object.keys(filtersHook.filters).length > 0 && (
-                                                <span className="absolute -top-2 -right-2 bg-primary-gold text-primary-dark-gray text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                                                    {Object.keys(filtersHook.filters).length}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <ViewToggle
-                                            options={VIEW_OPTIONS}
-                                            activeView={filtersHook.selectedView}
-                                            onViewChange={(viewId) => filtersHook.handleViewChange(viewId as 'table' | 'grid')}
-                                            size="sm"
-                                        />
-                                    </div>
+                                <div className="flex gap-3">
+                                    <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
+                                        Yenile
+                                    </Button>
+                                    <ExportDropdown
+                                        onExportCSV={() => {
+                                            console.log('Export CSV');
+                                            toastFunctions.info('Bilgi', 'CSV export özelliği yakında gelecek');
+                                        }}
+                                        variant="secondary"
+                                        size="md"
+                                    />
+                                    <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewAnnouncement}>
+                                        Yeni Duyuru
+                                    </Button>
                                 </div>
                             </div>
-                        </Card>
 
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                            {statsData.map((stat) => (
-                                <StatsCard
-                                    key={stat.title}
-                                    title={stat.title}
-                                    value={stat.value}
-                                    color={stat.color as 'primary' | 'gold' | 'danger' | 'success' | 'warning' | 'info'}
-                                    icon={stat.icon}
-                                    size="md"
-                                    loading={stat.loading}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Error Message */}
-                        {dataHook.apiError && (
-                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                <p className="text-red-800 text-sm">{dataHook.apiError}</p>
+                            {/* Sıra 2: Stats Cards (İstatistik Kartları) */}
+                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                                {statsData.map((stat) => (
+                                    <StatsCard
+                                        key={stat.title}
+                                        title={stat.title}
+                                        value={stat.value}
+                                        color={stat.color as 'primary' | 'gold' | 'danger' | 'success' | 'warning' | 'info'}
+                                        icon={stat.icon}
+                                        size="md"
+                                        loading={stat.loading}
+                                    />
+                                ))}
                             </div>
-                        )}
 
-                        {/* Announcements Views */}
-                        {filtersHook.selectedView === 'table' && (
-                            <GenericListView
-                                data={dataHook.announcements}
-                                loading={dataHook.loading}
-                                error={dataHook.apiError}
-                                onSelectionChange={filtersHook.handleSelectionChange}
-                                bulkActions={bulkActions.map(action => ({
-                                    ...action,
-                                    variant: action.variant === 'primary' ? 'default' : action.variant as any,
-                                    onClick: (items: Announcement[]) => action.onClick()
-                                }))}
-                                columns={getTableColumns(tableActionHandlers, AnnouncementActionMenuWrapper)}
-                                sortConfig={filtersHook.sortConfig}
-                                onSortChange={(key, direction) => filtersHook.handleSort({ key: key as keyof Announcement, direction })}
-                                pagination={{
-                                    currentPage: filtersHook.currentPage,
-                                    totalPages: dataHook.totalPages,
-                                    totalRecords: dataHook.totalRecords,
-                                    recordsPerPage: filtersHook.recordsPerPage,
-                                    onPageChange: filtersHook.handlePageChange,
-                                    onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
-                                }}
-                                emptyStateMessage={
-                                    filtersHook.searchQuery ?
-                                        `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
-                                        'Henüz duyuru kaydı bulunmuyor.'
-                                }
-                                ActionMenuComponent={AnnouncementActionMenuWrapper}
-                            />
-                        )}
+                            {/* Sıra 3: Search and Filters (Arama ve Filtreler) */}
+                            <Card className="mb-6">
+                                <div className="p-6">
+                                    <div className="flex flex-col lg:flex-row gap-4">
+                                        {/* Search Bar */}
+                                        <div className="flex-1">
+                                            <SearchBar
+                                                placeholder="Başlık, içerik ile ara..."
+                                                value={searchInput}
+                                                onChange={handleSearchInputChange}
+                                                onSearch={handleSearchSubmit}
+                                                showAdvancedFilter={true}
+                                                onAdvancedFilterClick={filtersHook.handleOpenDrawer}
+                                                debounceMs={500}
+                                            />
+                                        </div>
 
-                        {filtersHook.selectedView === 'grid' && (
-                            <GenericGridView
-                                data={dataHook.announcements}
-                                loading={dataHook.loading}
-                                error={dataHook.apiError}
-                                onSelectionChange={(selectedIds) => {
-                                    const selectedAnnouncements = dataHook.announcements.filter(a => selectedIds.includes(a.id));
-                                    filtersHook.handleSelectionChange(selectedAnnouncements);
-                                }}
-                                bulkActions={bulkActions.map(action => ({
-                                    ...action,
-                                    variant: action.variant === 'primary' ? 'default' : action.variant as any,
-                                    onClick: (items: Announcement[]) => action.onClick()
-                                }))}
-                                onAction={handleAnnouncementAction}
-                                selectedItems={filtersHook.selectedAnnouncements.map(a => a.id)}
-                                pagination={{
-                                    currentPage: filtersHook.currentPage,
-                                    totalPages: dataHook.totalPages,
-                                    totalRecords: dataHook.totalRecords,
-                                    recordsPerPage: filtersHook.recordsPerPage,
-                                    onPageChange: filtersHook.handlePageChange,
-                                    onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
-                                }}
-                                emptyStateMessage={
-                                    filtersHook.searchQuery ?
-                                        `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
-                                        'Henüz duyuru kaydı bulunmuyor.'
-                                }
-                                ui={{
-                                    Card,
-                                    Button,
-                                    Checkbox,
-                                    TablePagination,
-                                    Badge,
-                                    EmptyState,
-                                    Skeleton,
-                                    BulkActionsBar,
-                                }}
-                                ActionMenu={AnnouncementActionMenuWrapper}
-                                renderCard={renderAnnouncementCard}
-                                getItemId={(announcement) => announcement.id}
-                            />
-                        )}
+                                        {/* Filter and View Toggle */}
+                                        <div className="flex gap-2 items-center">
+                                            <div className="relative">
+                                                <Button
+                                                    variant="secondary"
+                                                    size="md"
+                                                    icon={Filter}
+                                                    onClick={filtersHook.handleOpenDrawer}
+                                                >
+                                                    Filtreler
+                                                </Button>
+                                                {Object.keys(filtersHook.filters).length > 0 && (
+                                                    <span className="absolute -top-2 -right-2 bg-primary-gold text-primary-dark-gray text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                                                        {Object.keys(filtersHook.filters).length}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <ViewToggle
+                                                options={VIEW_OPTIONS}
+                                                activeView={filtersHook.selectedView}
+                                                onViewChange={(viewId) => filtersHook.handleViewChange(viewId as 'table' | 'grid')}
+                                                size="sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+
+                            {/* Sıra 4: Error Messages */}
+                            {dataHook.apiError && (
+                                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <p className="text-red-800 text-sm">{dataHook.apiError}</p>
+                                </div>
+                            )}
+
+                            {/* Sıra 5: Main Content Area */}
+                            {filtersHook.selectedView === 'table' && (
+                                <GenericListView
+                                    data={dataHook.announcements}
+                                    loading={dataHook.loading}
+                                    error={dataHook.apiError}
+                                    onSelectionChange={filtersHook.handleSelectionChange}
+                                    bulkActions={bulkActions.map(action => ({
+                                        ...action,
+                                        variant: action.variant === 'primary' ? 'default' : action.variant as any,
+                                        onClick: (items: Announcement[]) => action.onClick()
+                                    }))}
+                                    columns={getTableColumns(tableActionHandlers, AnnouncementActionMenuWrapper)}
+                                    sortConfig={filtersHook.sortConfig}
+                                    onSortChange={(key, direction) => filtersHook.handleSort({ key: key as keyof Announcement, direction })}
+                                    pagination={{
+                                        currentPage: filtersHook.currentPage,
+                                        totalPages: dataHook.totalPages,
+                                        totalRecords: dataHook.totalRecords,
+                                        recordsPerPage: filtersHook.recordsPerPage,
+                                        onPageChange: filtersHook.handlePageChange,
+                                        onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
+                                    }}
+                                    emptyStateMessage={
+                                        filtersHook.searchQuery ?
+                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
+                                            'Henüz duyuru kaydı bulunmuyor.'
+                                    }
+                                    ActionMenuComponent={AnnouncementActionMenuWrapper}
+                                />
+                            )}
+
+                            {filtersHook.selectedView === 'grid' && (
+                                <GenericGridView
+                                    data={dataHook.announcements}
+                                    loading={dataHook.loading}
+                                    error={dataHook.apiError}
+                                    onSelectionChange={(selectedIds) => {
+                                        const selectedAnnouncements = dataHook.announcements.filter(a => selectedIds.includes(a.id));
+                                        filtersHook.handleSelectionChange(selectedAnnouncements);
+                                    }}
+                                    bulkActions={bulkActions.map(action => ({
+                                        ...action,
+                                        variant: action.variant === 'primary' ? 'default' : action.variant as any,
+                                        onClick: (items: Announcement[]) => action.onClick()
+                                    }))}
+                                    onAction={handleAnnouncementAction}
+                                    selectedItems={filtersHook.selectedAnnouncements.map(a => a.id)}
+                                    pagination={{
+                                        currentPage: filtersHook.currentPage,
+                                        totalPages: dataHook.totalPages,
+                                        totalRecords: dataHook.totalRecords,
+                                        recordsPerPage: filtersHook.recordsPerPage,
+                                        onPageChange: filtersHook.handlePageChange,
+                                        onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
+                                    }}
+                                    emptyStateMessage={
+                                        filtersHook.searchQuery ?
+                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
+                                            'Henüz duyuru kaydı bulunmuyor.'
+                                    }
+                                    ui={{
+                                        Card,
+                                        Button,
+                                        Checkbox,
+                                        TablePagination,
+                                        Badge,
+                                        EmptyState,
+                                        Skeleton,
+                                        BulkActionsBar,
+                                    }}
+                                    ActionMenu={AnnouncementActionMenuWrapper}
+                                    renderCard={renderAnnouncementCard}
+                                    getItemId={(announcement) => announcement.id}
+                                    gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                                    selectable={true}
+                                    showBulkActions={true}
+                                    showPagination={true}
+                                    showSelectAll={true}
+                                    loadingCardCount={8}
+                                />
+                            )}
+                        </div>
                     </main>
                 </div>
 
@@ -621,14 +607,16 @@ export default function AnnouncementsPage() {
                 <div className={`fixed inset-0 z-50 ${filtersHook.showFilterPanel ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                     {/* Backdrop */}
                     <div
-                        className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'opacity-50' : 'opacity-0'
-                            }`}
+                        className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${
+                            filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'opacity-50' : 'opacity-0'
+                        }`}
                         onClick={filtersHook.handleCloseDrawer}
                     />
 
                     {/* Drawer */}
-                    <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'translate-x-0' : 'translate-x-full'
-                        }`}>
+                    <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${
+                        filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'translate-x-0' : 'translate-x-full'
+                    }`}>
                         <FilterPanel
                             filterGroups={ANNOUNCEMENT_FILTER_GROUPS}
                             onApplyFilters={filtersHook.handleFiltersApply}

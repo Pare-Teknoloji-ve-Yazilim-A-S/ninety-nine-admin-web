@@ -1,0 +1,158 @@
+{
+  "name": "NinetyNine Admin Web",
+  "description": "NestJS + Next.js Admin Panel for Real Estate Management",
+  "version": "1.0.0",
+  "type": "fullstack",
+  "framework": {
+    "frontend": "Next.js 14",
+    "backend": "NestJS",
+    "database": "PostgreSQL",
+    "orm": "TypeORM"
+  },
+  "settings": {
+    "editor": {
+      "tabSize": 2,
+      "insertSpaces": true,
+      "detectIndentation": false,
+      "trimTrailingWhitespace": true,
+      "insertFinalNewline": true,
+      "formatOnSave": true,
+      "formatOnPaste": true,
+      "codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+        "source.organizeImports": true
+      }
+    },
+    "typescript": {
+      "preferences": {
+        "importModuleSpecifier": "relative",
+        "includePackageJsonAutoImports": "auto"
+      },
+      "suggest": {
+        "autoImports": true,
+        "completeFunctionCalls": true
+      }
+    },
+    "files": {
+      "exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.next": true,
+        "**/coverage": true,
+        "**/.nyc_output": true,
+        "**/build": true
+      },
+      "watcherExclude": {
+        "**/node_modules/**": true,
+        "**/dist/**": true,
+        "**/.next/**": true
+      }
+    },
+    "search": {
+      "exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/.next": true,
+        "**/coverage": true,
+        "**/.git": true
+      }
+    }
+  },
+  "extensions": {
+    "recommended": [
+      "typescript",
+      "eslint",
+      "prettier",
+      "tailwindcss",
+      "nestjs",
+      "nextjs",
+      "react",
+      "stylus"
+    ]
+  },
+  "tasks": {
+    "dev:frontend": {
+      "command": "npm run dev",
+      "description": "Start Next.js development server",
+      "group": "build",
+      "isBackground": true
+    },
+    "dev:backend": {
+      "command": "npm run start:dev",
+      "description": "Start NestJS development server",
+      "group": "build",
+      "isBackground": true
+    },
+    "build": {
+      "command": "npm run build",
+      "description": "Build the application",
+      "group": "build"
+    },
+    "test": {
+      "command": "npm run test",
+      "description": "Run tests",
+      "group": "test"
+    },
+    "lint": {
+      "command": "npm run lint",
+      "description": "Run ESLint",
+      "group": "test"
+    },
+    "format": {
+      "command": "npm run format",
+      "description": "Format code with Prettier",
+      "group": "test"
+    }
+  },
+  "debugConfiguration": {
+    "type": "node",
+    "request": "launch",
+    "name": "Debug NestJS",
+    "program": "${workspaceFolder}/dist/main.js",
+    "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+    "env": {
+      "NODE_ENV": "development"
+    }
+  },
+  "listPages": {
+    "architecture": "Clean Architecture + DDD",
+    "patterns": [
+      "Repository Pattern",
+      "CQRS",
+      "Event-Driven Architecture",
+      "MVVM (Frontend)"
+    ],
+    "features": [
+      "Pagination",
+      "Filtering",
+      "Sorting",
+      "Search",
+      "CRUD Operations",
+      "Bulk Actions",
+      "Export/Import"
+    ],
+    "performance": {
+      "caching": "Redis",
+      "database": "Query optimization with indexes",
+      "frontend": "Virtual scrolling for large datasets"
+    }
+  },
+  "codeGeneration": {
+    "templates": {
+      "listPage": {
+        "backend": [
+          "Controller with pagination",
+          "Service with filtering",
+          "DTO for validation",
+          "Entity with relations"
+        ],
+        "frontend": [
+          "Page component",
+          "Custom hook for data fetching",
+          "Filter components",
+          "List view component"
+        ]
+      }
+    }
+  }
+}

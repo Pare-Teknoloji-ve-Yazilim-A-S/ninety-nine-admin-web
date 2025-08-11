@@ -96,6 +96,11 @@ const menuItems: MenuItemProps[] = [
         href: '/dashboard/announcements'
     },
     {
+        title: 'İlanlar',
+        icon: Megaphone,
+        href: '/dashboard/ilan'
+    },
+    {
         title: 'Ayarlar',
         icon: Settings,
         href: '/dashboard/settings'

@@ -18,7 +18,8 @@ export enum EmploymentType {
   PART_TIME = 'PART_TIME',
   CONTRACT = 'CONTRACT',
   INTERN = 'INTERN',
-  CONSULTANT = 'CONSULTANT'
+  CONSULTANT = 'CONSULTANT',
+  FREELANCE = 'FREELANCE'
 }
 
 // Type aliases for compatibility
@@ -226,7 +227,7 @@ export interface StaffAuditLogResponse {
   id: string
   staffId: string
   action: string
-  changes: Record<string, any>
+  changes: Record<string, unknown>
   performedBy: string
   performedAt: string
   ipAddress?: string

@@ -13,7 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { StaffForm } from '@/components/staff'
 import { useStaffActions } from '@/hooks'
 import { staffService } from '@/services/staff.service'
-import type { Staff } from '@/services/types/staff.types'
+import type { Staff, UpdateStaffDto } from '@/services/types/staff.types'
 import { STAFF_STATUS_CONFIG, EMPLOYMENT_TYPE_CONFIG } from '@/services/types/ui.types'
 
 function StaffDetailPage () {
@@ -51,7 +51,7 @@ function StaffDetailPage () {
     }
   }
 
-  const handleUpdateStaff = async (data: any) => {
+  const handleUpdateStaff = async (data: UpdateStaffDto) => {
     const success = await updateStaff(staffId, data)
     if (success) {
       setIsEditFormOpen(false)

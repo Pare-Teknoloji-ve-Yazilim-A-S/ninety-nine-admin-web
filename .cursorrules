@@ -411,3 +411,67 @@ Always import from existing components before creating new ones.
 ```
 
 Remember: NinetyNine is a premium real estate brand. Every design decision should reflect luxury, warmth, and professionalism. When in doubt, choose the warmer, more premium option.
+
+---
+
+## 📋 Liste Sayfaları Özel Kuralları
+
+### NestJS Backend Liste Sayfaları
+NestJS ile liste sayfaları geliştirirken `.cursor/rules/list-pages-rules.md` dosyasındaki detaylı kuralları takip edin.
+
+**Temel Gereksinimler:**
+- Pagination (sayfalama) desteği
+- Filtering (filtreleme) özellikleri
+- Sorting (sıralama) işlevselliği
+- Search (arama) fonksiyonu
+- CRUD operations (oluşturma, okuma, güncelleme, silme)
+- TypeScript DTO validasyonları
+- Error handling ve logging
+
+**Frontend Liste Sayfaları Pattern:**
+```typescript
+// Hook yapısı
+const {
+  data,
+  loading,
+  error,
+  pagination,
+  filters,
+  updateFilter,
+  updatePagination,
+  refetch
+} = useModuleData();
+
+// Component yapısı
+<PageLayout>
+  <PageHeader />
+  <QuickStats />
+  <SearchAndFilters />
+  <ContentArea>
+    <GenericListView
+      data={data}
+      loading={loading}
+      pagination={pagination}
+      onPageChange={updatePagination}
+    />
+  </ContentArea>
+</PageLayout>
+```
+
+**Backend Controller Pattern:**
+```typescript
+@Get()
+@ApiOperation({ summary: 'Liste sayfası için veri getir' })
+async findAll(
+  @Query() filterDto: FilterDto
+): Promise<PaginatedResponse<Entity>> {
+  return this.service.findAllPaginated(filterDto);
+}
+```
+
+### Mimari Kuralları
+Trae IDE kullanırken `.trae/rules/list-pages-architecture.md` dosyasındaki Clean Architecture ve DDD pattern'lerini uygulayın.
+
+---
+
+**Not**: Bu kurallar NinetyNine Admin Web projesinin mevcut mimarisine uygun olarak hazırlanmıştır. Yeni liste sayfaları oluştururken bu pattern'leri takip edin.

@@ -63,6 +63,8 @@ interface StaffListProps {
   searchQuery?: string
   selectedStaff?: string[]
   viewMode?: ViewMode
+  showSearchBar?: boolean
+  showViewToggle?: boolean
   onSearch?: (query: string) => void
   onPageChange?: (page: number) => void
   onPageSizeChange?: (size: number) => void
@@ -92,6 +94,8 @@ export function StaffList({
   searchQuery = '',
   selectedStaff = [],
   viewMode = 'table',
+  showSearchBar = true,
+  showViewToggle = true,
   onSearch,
   onPageChange,
   onPageSizeChange,
@@ -263,40 +267,43 @@ export function StaffList({
           </div>
         </div>
         
-        {/* Search and Filters */}
+        {/* Search + View Toggle + Bulk Actions */}
         <div className="flex items-center space-x-4 mt-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Personel ara..."
-                value={localSearchQuery}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
-                className="pl-10"
-              />
+          {showSearchBar && (
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Personel ara..."
+                  value={localSearchQuery}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
-          </div>
+          )}
           
           <div className="flex items-center space-x-2">
-            {/* View Mode Toggle */}
-            <div className="flex items-center rounded-md">
-              <Button
-                variant={viewMode === 'table' ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => onViewModeChange?.('table')}
-                className="rounded-r-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => onViewModeChange?.('grid')}
-                className="rounded-l-none"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-            </div>
+            {showViewToggle && (
+              <div className="flex items-center rounded-md">
+                <Button
+                  variant={viewMode === 'table' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => onViewModeChange?.('table')}
+                  className="rounded-r-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => onViewModeChange?.('grid')}
+                  className="rounded-l-none"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
             
             {/* Bulk Actions */}
             {selectedStaff.length > 0 && onBulkAction && (

@@ -64,7 +64,7 @@ export default function UnitsListPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     // 1. Local search input state
     const [searchInput, setSearchInput] = useState("");
-    const [viewMode, setViewMode] = useState<'table' | 'grid' | 'block' | 'map'>('table');
+    const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedUnits, setSelectedUnits] = useState<Property[]>([]);
     const [filters, setFilters] = useState<PropertyFilterParams>({
@@ -751,67 +751,9 @@ export default function UnitsListPage() {
                             </div>
                         </div>
 
-                        {/* Search and Filters */}
-                        <Card className="mb-6">
-                            <div className="p-6">
-                                <div className="flex flex-col lg:flex-row gap-4">
-                                    {/* Search Bar */}
-                                    <div className="flex-1">
-                                        <SearchBar
-                                            placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
-                                            value={searchInput}
-                                            onChange={handleSearchInputChange}
-                                            onSearch={handleSearchSubmit}
-                                            debounceMs={500}
-                                        />
-                                    </div>
-                                    {/* Filter and View Toggle */}
-                                    <div className="flex gap-2 items-center">
-                                        <Button
-                                            variant={showFilters ? "primary" : "secondary"}
-                                            size="md"
-                                            icon={Filter}
-                                            onClick={() => setShowFilters(true)}
-                                        >
-                                            Filtreler
-                                        </Button>
-                                        <ViewToggle
-                                            options={[
-                                                { id: 'table', label: 'Tablo', icon: List },
-                                                { id: 'grid', label: 'Kart', icon: Grid3X3 },
-                                                { id: 'block', label: 'Blok', icon: Building },
-                                                { id: 'map', label: 'Harita', icon: Map }
-                                            ]}
-                                            activeView={viewMode}
-                                            onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
-                                            size="sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
 
-                        {/* Filter Sidebar (Drawer) */}
-                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-                            {/* Backdrop */}
-                            <div
-                                className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'}`}
-                                onClick={() => setShowFilters(false)}
-                            />
-                            {/* Drawer */}
-                            <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
-                                <FilterPanel
-                                    filterGroups={unitFilterGroups}
-                                    onApplyFilters={handleApplyFilters}
-                                    onResetFilters={handleResetFilters}
-                                    onClose={() => setShowFilters(false)}
-                                    variant="sidebar"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Quick Stats Cards */}
-                        {countsError && (
+{/* Quick Stats Cards */}
+{countsError && (
                             <Card className="mb-4">
                                 <div className="p-4 text-primary-red text-center font-medium">
                                     {countsError}
@@ -843,6 +785,159 @@ export default function UnitsListPage() {
                                     color="info"
                                     loading={countsLoading}
                                     size="md"
+                                />
+                            </div>
+                        </div> 
+
+
+                        {/* Search and Filters */}
+                        <Card className="mb-6">
+                            <div className="p-6">
+                                <div className="flex flex-col lg:flex-row gap-4">
+                                    {/* Search Bar */}
+                                    <div className="flex-1">
+                                        <SearchBar
+                                            placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
+                                            value={searchInput}
+                                            onChange={handleSearchInputChange}
+                                            onSearch={handleSearchSubmit}
+                                            debounceMs={500}
+                                        />
+                                    </div>
+                                    {/* Filter and View Toggle */}
+                                    <div className="flex gap-2 items-center">
+                                        <Button
+                                            variant={showFilters ? "primary" : "secondary"}
+                                            size="md"
+                                            icon={Filter}
+                                            onClick={() => setShowFilters(true)}
+                                        >
+                                            Filtreler
+                                        </Button>
+                                        <ViewToggle
+                                            options={[
+                                                { id: 'table', label: 'Tablo', icon: List },
+                                                { id: 'grid', label: 'Kart', icon: Grid3X3 }
+                                            ]}
+                                            activeView={viewMode}
+                                            onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
+                                            size="sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </Card>
+                        
+                        {/* Quick Filters Section - NEW */}
+                        <Card className="mb-6">
+                            <div className="p-4 flex flex-col gap-3">
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary w-16">Durum</span>
+                                    <Button
+                                        variant={!filters.status ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: undefined, page: 1 })));
+                                        }}
+                                    >
+                                        Tümü
+                                    </Button>
+                                    <Button
+                                        variant={filters.status === 'OCCUPIED' ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: 'OCCUPIED' as any, page: 1 })));
+                                        }}
+                                    >
+                                        Dolu
+                                    </Button>
+                                    <Button
+                                        variant={filters.status === 'AVAILABLE' ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: 'AVAILABLE' as any, page: 1 })));
+                                        }}
+                                    >
+                                        Boş
+                                    </Button>
+                                    <Button
+                                        variant={filters.status === 'UNDER_MAINTENANCE' ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: 'UNDER_MAINTENANCE' as any, page: 1 })));
+                                        }}
+                                    >
+                                        Bakımda
+                                    </Button>
+                                    <Button
+                                        variant={filters.status === 'RESERVED' ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: 'RESERVED' as any, page: 1 })));
+                                        }}
+                                    >
+                                        Rezerve
+                                    </Button>
+                                </div>
+                                <div className="flex items-center gap-3 flex-wrap">
+                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary w-16">Tip</span>
+                                    <Button
+                                        variant={!filters.type ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: undefined, page: 1 })));
+                                        }}
+                                    >
+                                        Tümü
+                                    </Button>
+                                    <Button
+                                        variant={filters.type === 'RESIDENCE' ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: 'RESIDENCE' as any, page: 1 })));
+                                        }}
+                                    >
+                                        Daire
+                                    </Button>
+                                    <Button
+                                        variant={filters.type === 'VILLA' ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: 'VILLA' as any, page: 1 })));
+                                        }}
+                                    >
+                                        Villa
+                                    </Button>
+                                    <Button
+                                        variant={filters.type === 'COMMERCIAL' ? 'primary' : 'secondary'}
+                                        size="sm"
+                                        onClick={() => {
+                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: 'COMMERCIAL' as any, page: 1 })));
+                                        }}
+                                    >
+                                        Ticari
+                                    </Button>
+                                </div>
+                            </div>
+                        </Card>
+                                           
+
+
+                        {/* Filter Sidebar (Drawer) */}
+                        <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                            {/* Backdrop */}
+                            <div
+                                className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${showFilters ? 'opacity-50' : 'opacity-0'}`}
+                                onClick={() => setShowFilters(false)}
+                            />
+                            {/* Drawer */}
+                            <div className={`fixed top-0 right-0 h-full w-96 max-w-[90vw] bg-background-light-card dark:bg-background-card shadow-2xl transform transition-transform duration-300 ease-in-out ${showFilters ? 'translate-x-0' : 'translate-x-full'}`}>
+                                <FilterPanel
+                                    filterGroups={unitFilterGroups}
+                                    onApplyFilters={handleApplyFilters}
+                                    onResetFilters={handleResetFilters}
+                                    onClose={() => setShowFilters(false)}
+                                    variant="sidebar"
                                 />
                             </div>
                         </div>
@@ -961,26 +1056,7 @@ export default function UnitsListPage() {
                                         />
                                     </>
                                 )}
-                                {viewMode === 'block' && (
-                                    <Card>
-                                        <div className="p-6 text-center">
-                                            <Building className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
-                                            <p className="text-text-light-secondary dark:text-text-secondary">
-                                                Blok görünümü yakında gelecek
-                                            </p>
-                                        </div>
-                                    </Card>
-                                )}
-                                {viewMode === 'map' && (
-                                    <Card>
-                                        <div className="p-6 text-center">
-                                            <Map className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
-                                            <p className="text-text-light-secondary dark:text-text-secondary">
-                                                Harita görünümü yakında gelecek
-                                            </p>
-                                        </div>
-                                    </Card>
-                                )}
+                                
                             </div>
                         </div>
                     </main>

@@ -1,0 +1,465 @@
+---
+alwaysApply: false
+---
+# NestJS Liste Sayfaları - Cursor AI Kuralları
+
+Bu dosya NestJS projelerinde liste sayfaları geliştirirken Cursor AI'ın takip etmesi gereken özel kuralları içerir.
+
+## 🏗️ Liste Sayfası Mimarisi
+
+### Frontend Yapısı (Next.js)
+```
+module/
+├── page.tsx                 # Ana liste sayfası
+├── components/
+│   ├── ContentArea.tsx      # Ana içerik alanı
+│   ├── QuickStats.tsx       # Hızlı istatistikler
+│   ├── SearchAndFilters.tsx # Arama ve filtreler
+│   └── PageHeader.tsx       # Sayfa başlığı
+├── hooks/
+│   ├── useModuleData.ts     # Veri yönetimi
+│   ├── useModuleUI.ts       # UI state yönetimi
+│   └── useModulePageViewModel.ts # MVVM pattern
+├── types/
+│   └── index.ts             # TypeScript tipleri
+└── utils/
+    └── moduleStats.ts       # İstatistik hesaplamaları
+```
+
+### Backend Yapısı (NestJS)
+```
+module/
+├── module.controller.ts     # REST endpoints
+├── module.service.ts        # Business logic
+├── dto/
+│   ├── create-module.dto.ts
+│   ├── update-module.dto.ts
+│   ├── filter-module.dto.ts # Filtreleme parametreleri
+│   └── paginated-response.dto.ts
+├── entities/
+│   └── module.entity.ts
+└── interfaces/
+    └── module.interface.ts
+```
+
+## 📋 Liste Sayfası Gereksinimleri
+
+### 1. Pagination (Sayfalama)
+```typescript
+// DTO for pagination
+export class PaginationDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number = 20;
+}
+
+// Response interface
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+```
+
+### 2. Filtering (Filtreleme)
+```typescript
+// Filter DTO
+export class FilterModuleDto extends PaginationDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(ModuleStatus)
+  status?: ModuleStatus;
+
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string = 'createdAt';
+
+  @IsOptional()
+  @IsEnum(['ASC', 'DESC'])
+  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+}
+```
+
+### 3. Sorting (Sıralama)
+```typescript
+// Sorting configuration
+export interface SortConfig {
+  field: string;
+  direction: 'ASC' | 'DESC';
+}
+
+// Allowed sort fields
+export const ALLOWED_SORT_FIELDS = [
+  'id',
+  'name',
+  'status',
+  'createdAt',
+  'updatedAt'
+] as const;
+```
+
+## 🎯 Controller Pattern
+
+```typescript
+@Controller('modules')
+export class ModuleController {
+  constructor(private readonly moduleService: ModuleService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Liste sayfası için modülleri getir' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, enum: ModuleStatus })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['ASC', 'DESC'] })
+  async findAll(
+    @Query() filterDto: FilterModuleDto
+  ): Promise<PaginatedResponse<Module>> {
+    return this.moduleService.findAllPaginated(filterDto);
+  }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Liste sayfası istatistikleri' })
+  async getStats(): Promise<ModuleStats> {
+    return this.moduleService.getStats();
+  }
+
+  @Get('quick-stats')
+  @ApiOperation({ summary: 'Hızlı istatistikler' })
+  async getQuickStats(): Promise<QuickStat[]> {
+    return this.moduleService.getQuickStats();
+  }
+}
+```
+
+## 🔧 Service Pattern
+
+```typescript
+@Injectable()
+export class ModuleService {
+  constructor(
+    @InjectRepository(Module)
+    private moduleRepository: Repository<Module>
+  ) {}
+
+  async findAllPaginated(filterDto: FilterModuleDto): Promise<PaginatedResponse<Module>> {
+    const { page, limit, search, status, sortBy, sortOrder, startDate, endDate } = filterDto;
+    
+    const queryBuilder = this.moduleRepository.createQueryBuilder('module');
+    
+    // Search functionality
+    if (search) {
+      queryBuilder.andWhere(
+        '(module.name ILIKE :search OR module.description ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+    
+    // Status filter
+    if (status) {
+      queryBuilder.andWhere('module.status = :status', { status });
+    }
+    
+    // Date range filter
+    if (startDate) {
+      queryBuilder.andWhere('module.createdAt >= :startDate', { startDate });
+    }
+    if (endDate) {
+      queryBuilder.andWhere('module.createdAt <= :endDate', { endDate });
+    }
+    
+    // Sorting
+    if (ALLOWED_SORT_FIELDS.includes(sortBy as any)) {
+      queryBuilder.orderBy(`module.${sortBy}`, sortOrder);
+    }
+    
+    // Pagination
+    const offset = (page - 1) * limit;
+    queryBuilder.skip(offset).take(limit);
+    
+    const [data, total] = await queryBuilder.getManyAndCount();
+    
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1
+      }
+    };
+  }
+
+  async getStats(): Promise<ModuleStats> {
+    const total = await this.moduleRepository.count();
+    const active = await this.moduleRepository.count({ where: { status: ModuleStatus.ACTIVE } });
+    const inactive = await this.moduleRepository.count({ where: { status: ModuleStatus.INACTIVE } });
+    
+    return {
+      total,
+      active,
+      inactive,
+      activePercentage: total > 0 ? Math.round((active / total) * 100) : 0
+    };
+  }
+}
+```
+
+## 🎨 Frontend Hooks Pattern
+
+```typescript
+// Data management hook
+export function useModuleData() {
+  const [data, setData] = useState<Module[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0
+  });
+  
+  const fetchData = useCallback(async (filters: FilterParams) => {
+    setLoading(true);
+    try {
+      const response = await moduleService.getList(filters);
+      setData(response.data);
+      setPagination(response.pagination);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  return {
+    data,
+    loading,
+    error,
+    pagination,
+    fetchData,
+    refetch: () => fetchData({})
+  };
+}
+
+// UI state management hook
+export function useModuleUI() {
+  const [filters, setFilters] = useState<FilterParams>({});
+  const [selectedItems, setSelectedItems] = useState<Module[]>([]);
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    field: 'createdAt',
+    direction: 'DESC'
+  });
+  
+  const updateFilter = useCallback((key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
+  
+  const resetFilters = useCallback(() => {
+    setFilters({});
+  }, []);
+  
+  return {
+    filters,
+    selectedItems,
+    viewMode,
+    sortConfig,
+    updateFilter,
+    resetFilters,
+    setSelectedItems,
+    setViewMode,
+    setSortConfig
+  };
+}
+```
+
+## 📊 İstatistik Hesaplamaları
+
+```typescript
+// utils/moduleStats.ts
+export const calculateModuleStats = (modules: Module[]) => {
+  const total = modules.length;
+  const byStatus = modules.reduce((acc, module) => {
+    acc[module.status] = (acc[module.status] || 0) + 1;
+    return acc;
+  }, {} as Record<ModuleStatus, number>);
+  
+  return {
+    total,
+    byStatus,
+    activePercentage: total > 0 ? Math.round((byStatus.ACTIVE / total) * 100) : 0
+  };
+};
+
+export const generateQuickStats = (modules: Module[]): QuickStat[] => {
+  const stats = calculateModuleStats(modules);
+  
+  return [
+    {
+      label: 'Toplam Modül',
+      value: stats.total,
+      change: '+5%',
+      trend: 'up',
+      color: 'blue',
+      icon: 'Package'
+    },
+    {
+      label: 'Aktif Modüller',
+      value: stats.byStatus.ACTIVE || 0,
+      change: '+12%',
+      trend: 'up',
+      color: 'green',
+      icon: 'CheckCircle'
+    }
+  ];
+};
+```
+
+## 🔍 Arama ve Filtreleme Kuralları
+
+1. **Arama (Search)**:
+   - Minimum 2 karakter
+   - Debounce 300ms
+   - Birden fazla alanda arama (name, description)
+   - Case-insensitive
+
+2. **Filtreler**:
+   - Enum değerleri için dropdown
+   - Tarih aralığı için date picker
+   - Boolean değerler için checkbox
+   - Çoklu seçim için multi-select
+
+3. **Sıralama**:
+   - Sadece izin verilen alanlar
+   - ASC/DESC desteği
+   - Varsayılan: createdAt DESC
+
+## 🎯 Performans Optimizasyonları
+
+1. **Database**:
+   - Index'ler: search alanları, foreign key'ler, sıralama alanları
+   - Query optimization
+   - Connection pooling
+
+2. **Frontend**:
+   - React.memo() kullanımı
+   - useMemo() ve useCallback() hooks
+   - Virtual scrolling (büyük listeler için)
+   - Lazy loading
+
+3. **Caching**:
+   - Redis cache
+   - Query result caching
+   - Static data caching
+
+## 🧪 Test Kuralları
+
+```typescript
+// Controller test
+describe('ModuleController', () => {
+  it('should return paginated modules', async () => {
+    const result = await controller.findAll({
+      page: 1,
+      limit: 10,
+      search: 'test'
+    });
+    
+    expect(result.data).toBeDefined();
+    expect(result.pagination.page).toBe(1);
+    expect(result.pagination.limit).toBe(10);
+  });
+});
+
+// Service test
+describe('ModuleService', () => {
+  it('should filter modules by status', async () => {
+    const result = await service.findAllPaginated({
+      status: ModuleStatus.ACTIVE
+    });
+    
+    expect(result.data.every(m => m.status === ModuleStatus.ACTIVE)).toBe(true);
+  });
+});
+```
+
+## 🔒 Güvenlik Kuralları
+
+1. **Input Validation**:
+   - DTO validation
+   - SQL injection koruması
+   - XSS koruması
+
+2. **Authorization**:
+   - Role-based access
+   - Resource-level permissions
+   - Rate limiting
+
+3. **Data Sanitization**:
+   - Input sanitization
+   - Output encoding
+   - File upload validation
+
+## 📱 Responsive Design
+
+1. **Mobile First**:
+   - Küçük ekranlar için optimize
+   - Touch-friendly interface
+   - Swipe gestures
+
+2. **Adaptive Layout**:
+   - Grid/List view toggle
+   - Collapsible filters
+   - Sticky headers
+
+## 🎨 UI/UX Kuralları
+
+1. **Loading States**:
+   - Skeleton loading
+   - Progress indicators
+   - Error boundaries
+
+2. **Empty States**:
+   - Meaningful messages
+   - Action suggestions
+   - Illustration/icons
+
+3. **Accessibility**:
+   - ARIA labels
+   - Keyboard navigation
+   - Screen reader support
+
+---
+
+**Not**: Bu kurallar NinetyNine Admin Web projesinin mevcut mimarisine uygun olarak hazırlanmıştır. Yeni liste sayfaları oluştururken bu pattern'leri takip edin.

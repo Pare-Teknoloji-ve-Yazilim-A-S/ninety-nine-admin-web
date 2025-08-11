@@ -1,0 +1,290 @@
+{
+  "moduleInfo": {
+    "name": "staff",
+    "displayName": "Personel Yönetimi",
+    "description": "Personel CRUD işlemleri, listeleme, filtreleme, toplu işlemler ve raporlama modülü",
+    "version": "1.0.0"
+  },
+  "directoryStructure": {
+    "basePath": "src/app/dashboard/staff",
+    "structure": {
+      "pages": [
+        { "name": "page.tsx", "path": "./page.tsx", "type": "list" },
+        { "name": "[id]/page.tsx", "path": "./[id]/page.tsx", "type": "detail" },
+        { "name": "layout.tsx", "path": "./layout.tsx", "type": "layout" }
+      ],
+      "components": [
+        { "name": "PageHeader", "purpose": "Sayfa başlığı, breadcrumb ve ana aksiyonlar", "reusable": true },
+        { "name": "QuickStats", "purpose": "Personel istatistikleri ve özet bilgiler", "reusable": true },
+        { "name": "SearchAndFilters", "purpose": "Arama, filtreleme ve sıralama kontrolleri", "reusable": true },
+        { "name": "ContentArea", "purpose": "Ana içerik alanı - tablo/grid görünümü", "reusable": false },
+        { "name": "StaffFormModal", "purpose": "Personel ekleme/düzenleme modal formu", "reusable": false },
+        { "name": "BulkActionsBar", "purpose": "Toplu işlem aksiyonları", "reusable": true },
+        { "name": "ExportImportControls", "purpose": "Veri içe/dışa aktarma kontrolleri", "reusable": true }
+      ],
+      "hooks": [
+        { "name": "useStaffPageViewModel", "responsibility": "Ana view model - tüm hook'ları birleştirir", "dependencies": ["useStaffUI", "useStaffData", "useStaffActions"] },
+        { "name": "useStaffData", "responsibility": "Veri çekme, cache yönetimi ve API çağrıları", "dependencies": ["staff.ts"] },
+        { "name": "useStaffUI", "responsibility": "UI state, modal, loading ve error state yönetimi", "dependencies": [] },
+        { "name": "useStaffActions", "responsibility": "CRUD işlemleri, toplu aksiyonlar ve form işlemleri", "dependencies": ["useStaffData"] }
+      ],
+      "types": [
+        { "name": "StaffFilters", "category": "state" },
+        { "name": "StaffPagination", "category": "state" },
+        { "name": "StaffUIState", "category": "ui" },
+        { "name": "StaffDataState", "category": "state" },
+        { "name": "StaffActions", "category": "action" },
+        { "name": "StaffPageViewModel", "category": "ui" },
+        { "name": "Staff", "category": "entity" },
+        { "name": "CreateStaffDto", "category": "api" },
+        { "name": "UpdateStaffDto", "category": "api" },
+        { "name": "StaffResponse", "category": "api" },
+        { "name": "StaffListResponse", "category": "api" },
+        { "name": "StaffAuditLogResponse", "category": "api" }
+      ],
+      "utils": [
+        { "name": "staffStats", "purpose": "İstatistik hesaplamaları ve veri analizi" }
+      ],
+      "constants": [
+        { "name": "STAFF_BULK_ACTIONS", "type": "enum" },
+        { "name": "STAFF_VIEW_MODES", "type": "enum" },
+        { "name": "STAFF_QUICK_FILTER_KEYS", "type": "enum" },
+        { "name": "STAFF_SORT_OPTIONS", "type": "enum" },
+        { "name": "STAFF_EXPORT_FORMATS", "type": "enum" }
+      ]
+    }
+  },
+  "architecturalPatterns": {
+    "viewModel": {
+      "pattern": "MVVM",
+      "description": "Model-View-ViewModel pattern ile temiz kod mimarisi",
+      "implementation": {
+        "mainHook": "useStaffPageViewModel",
+        "composedHooks": [
+          { "name": "useStaffData", "responsibility": "data" },
+          { "name": "useStaffUI", "responsibility": "ui" },
+          { "name": "useStaffActions", "responsibility": "actions" }
+        ]
+      }
+    },
+    "separation": {
+      "concerns": [
+        { 
+          "layer": "presentation", 
+          "responsibility": "UI components, görsel sunum ve kullanıcı etkileşimi", 
+          "files": ["components/*", "page.tsx", "[id]/page.tsx", "layout.tsx"] 
+        },
+        { 
+          "layer": "business", 
+          "responsibility": "İş mantığı, state yönetimi ve veri işleme", 
+          "files": ["hooks/*", "utils/*"] 
+        },
+        { 
+          "layer": "data", 
+          "responsibility": "Veri tipleri, interface'ler ve API şemaları", 
+          "files": ["types/*"] 
+        },
+        { 
+          "layer": "infrastructure", 
+          "responsibility": "Sabitler, konfigürasyon ve yardımcı fonksiyonlar", 
+          "files": ["constants/*"] 
+        }
+      ]
+    }
+  },
+  "coreFeatures": {
+    "crud": { 
+      "create": true, 
+      "read": true, 
+      "update": true, 
+      "delete": true 
+    },
+    "listing": { 
+      "pagination": true, 
+      "search": true, 
+      "filtering": true, 
+      "sorting": true, 
+      "bulkActions": true 
+    },
+    "dataManagement": { 
+      "import": true, 
+      "export": true, 
+      "validation": true, 
+      "caching": true 
+    },
+    "ui": { 
+      "responsive": true, 
+      "darkMode": true, 
+      "accessibility": true, 
+      "viewModes": ["table", "grid"] 
+    }
+  },
+  "stateManagement": {
+    "pattern": "local",
+    "tools": ["useState", "useReducer"],
+    "stateTypes": [
+      { "name": "StaffUIState", "scope": "page", "persistence": false },
+      { "name": "StaffDataState", "scope": "page", "persistence": true },
+      { "name": "StaffFilters", "scope": "page", "persistence": true },
+      { "name": "StaffPagination", "scope": "page", "persistence": true }
+    ]
+  },
+  "typeDefinitions": {
+    "entities": [
+      {
+        "name": "Staff",
+        "properties": ["id", "firstName", "lastName", "email", "phone", "position", "department", "employmentType", "status", "startDate", "endDate", "salary", "managerId"],
+        "relationships": ["Department", "Position", "Manager"]
+      },
+      {
+        "name": "Department",
+        "properties": ["id", "name", "description", "managerId"],
+        "relationships": ["Staff"]
+      },
+      {
+        "name": "Position",
+        "properties": ["id", "title", "description", "departmentId"],
+        "relationships": ["Department", "Staff"]
+      }
+    ],
+    "dtos": [
+      { "name": "CreateStaffDto", "purpose": "create" },
+      { "name": "UpdateStaffDto", "purpose": "update" },
+      { "name": "StaffResponse", "purpose": "response" },
+      { "name": "StaffListResponse", "purpose": "response" },
+      { "name": "StaffFiltersDto", "purpose": "filter" }
+    ],
+    "enums": [
+      {
+        "name": "EmploymentType",
+        "values": ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERN"]
+      },
+      {
+        "name": "StaffStatus",
+        "values": ["ACTIVE", "INACTIVE", "SUSPENDED", "TERMINATED"]
+      },
+      {
+        "name": "BulkAction",
+        "values": ["ACTIVATE", "DEACTIVATE", "DELETE", "EXPORT"]
+      }
+    ]
+  },
+  "componentArchitecture": {
+    "composition": {
+      "pageComponents": [
+        {
+          "name": "PageHeader",
+          "responsibility": "Sayfa başlığı, breadcrumb ve ana aksiyonlar",
+          "props": ["title", "actions", "breadcrumbs"]
+        },
+        {
+          "name": "QuickStats",
+          "responsibility": "Personel istatistikleri gösterimi",
+          "props": ["stats", "loading"]
+        },
+        {
+          "name": "SearchAndFilters",
+          "responsibility": "Arama ve filtreleme kontrolleri",
+          "props": ["filters", "onFiltersChange", "onSearch"]
+        },
+        {
+          "name": "ContentArea",
+          "responsibility": "Ana içerik alanı - liste görünümü",
+          "props": ["data", "loading", "viewMode", "onItemSelect"]
+        }
+      ],
+      "sharedComponents": [
+        { "name": "DataTable", "reusability": "application" },
+        { "name": "Modal", "reusability": "system" },
+        { "name": "Button", "reusability": "system" },
+        { "name": "Input", "reusability": "system" },
+        { "name": "Select", "reusability": "system" }
+      ]
+    },
+    "patterns": ["compound", "custom-hooks", "context-provider"]
+  },
+  "dataFlow": {
+    "direction": "unidirectional",
+    "layers": [
+      {
+        "name": "UI Components",
+        "responsibility": "Kullanıcı etkileşimi ve görsel sunum",
+        "dependencies": ["ViewModel"]
+      },
+      {
+        "name": "ViewModel (useStaffPageViewModel)",
+        "responsibility": "State koordinasyonu ve iş mantığı",
+        "dependencies": ["Data Layer", "UI Layer", "Actions Layer"]
+      },
+      {
+        "name": "Data Layer (useStaffData)",
+        "responsibility": "API çağrıları ve veri yönetimi",
+        "dependencies": ["API Services"]
+      },
+      {
+        "name": "UI Layer (useStaffUI)",
+        "responsibility": "UI state yönetimi",
+        "dependencies": []
+      },
+      {
+        "name": "Actions Layer (useStaffActions)",
+        "responsibility": "Kullanıcı aksiyonları ve side effects",
+        "dependencies": ["Data Layer"]
+      }
+    ]
+  },
+  "testing": {
+    "strategies": ["unit", "integration", "snapshot"],
+    "tools": ["jest", "react-testing-library"],
+    "coverage": {
+      "target": 80,
+      "critical": ["useStaffPageViewModel", "useStaffActions", "staffStats"]
+    }
+  },
+  "performance": {
+    "optimizations": ["memoization", "lazy-loading", "caching"],
+    "metrics": {
+      "loadTime": 2000,
+      "bundleSize": 150,
+      "renderTime": 100
+    }
+  },
+  "accessibility": {
+    "standards": ["WCAG-2.1-AA"],
+    "features": ["keyboard-navigation", "screen-reader", "focus-management"]
+  },
+  "security": {
+    "measures": ["input-validation", "xss-protection", "authorization"],
+    "dataHandling": {
+      "sanitization": true,
+      "encryption": false,
+      "masking": true
+    }
+  },
+  "implementationNotes": {
+    "keyPatterns": [
+      "MVVM pattern ile temiz kod mimarisi",
+      "Composition over inheritance",
+      "Single responsibility principle",
+      "Dependency injection via custom hooks",
+      "Type-safe error handling",
+      "Optimistic UI updates"
+    ],
+    "bestPractices": [
+      "Her hook tek bir sorumluluğa sahip",
+      "Props drilling yerine composition kullanımı",
+      "Memoization ile performance optimizasyonu",
+      "TypeScript strict mode uyumluluğu",
+      "Consistent naming conventions",
+      "Error boundaries ile hata yönetimi"
+    ],
+    "scalabilityConsiderations": [
+      "Modüler yapı ile kolay genişletme",
+      "Reusable component library",
+      "Shared types ve interfaces",
+      "Consistent API patterns",
+      "Performance monitoring",
+      "Code splitting strategies"
+    ]
+  }
+}

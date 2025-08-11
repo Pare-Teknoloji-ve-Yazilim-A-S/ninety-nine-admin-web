@@ -1,0 +1,474 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Admin Module Template Schema",
+  "description": "Yeniden kullanılabilir admin modül şablonu - Staff modülü temel alınarak oluşturulmuştur",
+  "type": "object",
+  "properties": {
+    "moduleInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Modül adı (örn: staff, residents, units)"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Görüntülenen modül adı (örn: Personel Yönetimi)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Modül açıklaması"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+      },
+      "required": ["name", "displayName", "description", "version"]
+    },
+    "directoryStructure": {
+      "type": "object",
+      "properties": {
+        "basePath": {
+          "type": "string",
+          "description": "Modülün temel dizin yolu",
+          "example": "src/app/dashboard/{moduleName}"
+        },
+        "structure": {
+          "type": "object",
+          "properties": {
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "path": { "type": "string" },
+                  "type": { "enum": ["list", "detail", "create", "edit"] }
+                }
+              }
+            },
+            "components": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "purpose": { "type": "string" },
+                  "reusable": { "type": "boolean" }
+                }
+              }
+            },
+            "hooks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "responsibility": { "type": "string" },
+                  "dependencies": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            },
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "category": { "enum": ["entity", "state", "action", "ui", "api"] }
+                }
+              }
+            },
+            "utils": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "purpose": { "type": "string" }
+                }
+              }
+            },
+            "constants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "type": { "enum": ["enum", "config", "mapping"] }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "architecturalPatterns": {
+      "type": "object",
+      "properties": {
+        "viewModel": {
+          "type": "object",
+          "properties": {
+            "pattern": { "const": "MVVM" },
+            "description": "Model-View-ViewModel pattern kullanılır",
+            "implementation": {
+              "type": "object",
+              "properties": {
+                "mainHook": {
+                  "type": "string",
+                  "pattern": "^use[A-Z][a-zA-Z]*PageViewModel$"
+                },
+                "composedHooks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "responsibility": { "enum": ["data", "ui", "actions"] }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "separation": {
+          "type": "object",
+          "properties": {
+            "concerns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "layer": { "enum": ["presentation", "business", "data", "infrastructure"] },
+                  "responsibility": { "type": "string" },
+                  "files": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "coreFeatures": {
+      "type": "object",
+      "properties": {
+        "crud": {
+          "type": "object",
+          "properties": {
+            "create": { "type": "boolean" },
+            "read": { "type": "boolean" },
+            "update": { "type": "boolean" },
+            "delete": { "type": "boolean" }
+          }
+        },
+        "listing": {
+          "type": "object",
+          "properties": {
+            "pagination": { "type": "boolean" },
+            "search": { "type": "boolean" },
+            "filtering": { "type": "boolean" },
+            "sorting": { "type": "boolean" },
+            "bulkActions": { "type": "boolean" }
+          }
+        },
+        "dataManagement": {
+          "type": "object",
+          "properties": {
+            "import": { "type": "boolean" },
+            "export": { "type": "boolean" },
+            "validation": { "type": "boolean" },
+            "caching": { "type": "boolean" }
+          }
+        },
+        "ui": {
+          "type": "object",
+          "properties": {
+            "responsive": { "type": "boolean" },
+            "darkMode": { "type": "boolean" },
+            "accessibility": { "type": "boolean" },
+            "viewModes": { "type": "array", "items": { "enum": ["table", "grid", "card"] } }
+          }
+        }
+      }
+    },
+    "stateManagement": {
+      "type": "object",
+      "properties": {
+        "pattern": { "enum": ["local", "global", "hybrid"] },
+        "tools": { "type": "array", "items": { "enum": ["useState", "useReducer", "zustand", "context"] } },
+        "stateTypes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "scope": { "enum": ["component", "page", "module", "global"] },
+              "persistence": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "typeDefinitions": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "properties": { "type": "array", "items": { "type": "string" } },
+              "relationships": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "dtos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "purpose": { "enum": ["create", "update", "response", "filter"] }
+            }
+          }
+        },
+        "enums": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "values": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "componentArchitecture": {
+      "type": "object",
+      "properties": {
+        "composition": {
+          "type": "object",
+          "properties": {
+            "pageComponents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "responsibility": { "type": "string" },
+                  "props": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            },
+            "sharedComponents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "reusability": { "enum": ["module", "application", "system"] }
+                }
+              }
+            }
+          }
+        },
+        "patterns": {
+          "type": "array",
+          "items": {
+            "enum": ["compound", "render-props", "higher-order", "custom-hooks", "context-provider"]
+          }
+        }
+      }
+    },
+    "dataFlow": {
+      "type": "object",
+      "properties": {
+        "direction": { "enum": ["unidirectional", "bidirectional"] },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "responsibility": { "type": "string" },
+              "dependencies": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "testing": {
+      "type": "object",
+      "properties": {
+        "strategies": {
+          "type": "array",
+          "items": { "enum": ["unit", "integration", "e2e", "snapshot"] }
+        },
+        "tools": {
+          "type": "array",
+          "items": { "enum": ["jest", "react-testing-library", "cypress", "playwright"] }
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "target": { "type": "number", "minimum": 0, "maximum": 100 },
+            "critical": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "optimizations": {
+          "type": "array",
+          "items": {
+            "enum": ["memoization", "lazy-loading", "virtualization", "code-splitting", "caching"]
+          }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "loadTime": { "type": "number" },
+            "bundleSize": { "type": "number" },
+            "renderTime": { "type": "number" }
+          }
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "properties": {
+        "standards": {
+          "type": "array",
+          "items": { "enum": ["WCAG-2.1-AA", "WCAG-2.1-AAA", "Section-508"] }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "enum": ["keyboard-navigation", "screen-reader", "high-contrast", "focus-management"]
+          }
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "measures": {
+          "type": "array",
+          "items": {
+            "enum": ["input-validation", "xss-protection", "csrf-protection", "authorization"]
+          }
+        },
+        "dataHandling": {
+          "type": "object",
+          "properties": {
+            "sanitization": { "type": "boolean" },
+            "encryption": { "type": "boolean" },
+            "masking": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "moduleInfo",
+    "directoryStructure",
+    "architecturalPatterns",
+    "coreFeatures",
+    "stateManagement",
+    "typeDefinitions",
+    "componentArchitecture",
+    "dataFlow"
+  ],
+  "examples": [
+    {
+      "moduleInfo": {
+        "name": "staff",
+        "displayName": "Personel Yönetimi",
+        "description": "Personel CRUD işlemleri, listeleme, filtreleme ve raporlama",
+        "version": "1.0.0"
+      },
+      "directoryStructure": {
+        "basePath": "src/app/dashboard/staff",
+        "structure": {
+          "pages": [
+            { "name": "page.tsx", "path": "./page.tsx", "type": "list" },
+            { "name": "[id]/page.tsx", "path": "./[id]/page.tsx", "type": "detail" },
+            { "name": "layout.tsx", "path": "./layout.tsx", "type": "layout" }
+          ],
+          "components": [
+            { "name": "PageHeader", "purpose": "Sayfa başlığı ve ana aksiyonlar", "reusable": true },
+            { "name": "QuickStats", "purpose": "Hızlı istatistikler", "reusable": true },
+            { "name": "SearchAndFilters", "purpose": "Arama ve filtreleme", "reusable": true },
+            { "name": "ContentArea", "purpose": "Ana içerik alanı", "reusable": false },
+            { "name": "StaffFormModal", "purpose": "Personel ekleme/düzenleme", "reusable": false }
+          ],
+          "hooks": [
+            { "name": "useStaffPageViewModel", "responsibility": "Ana view model", "dependencies": ["useStaffUI", "useStaffData", "useStaffActions"] },
+            { "name": "useStaffData", "responsibility": "Veri yönetimi", "dependencies": [] },
+            { "name": "useStaffUI", "responsibility": "UI state yönetimi", "dependencies": [] },
+            { "name": "useStaffActions", "responsibility": "Aksiyon yönetimi", "dependencies": [] }
+          ],
+          "types": [
+            { "name": "StaffFilters", "category": "state" },
+            { "name": "StaffPagination", "category": "state" },
+            { "name": "StaffUIState", "category": "ui" },
+            { "name": "StaffDataState", "category": "state" },
+            { "name": "StaffActions", "category": "action" },
+            { "name": "StaffPageViewModel", "category": "ui" }
+          ],
+          "utils": [
+            { "name": "staffStats", "purpose": "İstatistik hesaplamaları" }
+          ],
+          "constants": [
+            { "name": "STAFF_BULK_ACTIONS", "type": "enum" },
+            { "name": "STAFF_VIEW_MODES", "type": "enum" },
+            { "name": "STAFF_QUICK_FILTER_KEYS", "type": "enum" }
+          ]
+        }
+      },
+      "architecturalPatterns": {
+        "viewModel": {
+          "pattern": "MVVM",
+          "description": "Model-View-ViewModel pattern kullanılır",
+          "implementation": {
+            "mainHook": "useStaffPageViewModel",
+            "composedHooks": [
+              { "name": "useStaffData", "responsibility": "data" },
+              { "name": "useStaffUI", "responsibility": "ui" },
+              { "name": "useStaffActions", "responsibility": "actions" }
+            ]
+          }
+        },
+        "separation": {
+          "concerns": [
+            { "layer": "presentation", "responsibility": "UI components ve görsel sunum", "files": ["components/*", "page.tsx"] },
+            { "layer": "business", "responsibility": "İş mantığı ve state yönetimi", "files": ["hooks/*", "utils/*"] },
+            { "layer": "data", "responsibility": "Veri tipleri ve interface'ler", "files": ["types/*"] },
+            { "layer": "infrastructure", "responsibility": "Sabitler ve konfigürasyon", "files": ["constants/*"] }
+          ]
+        }
+      },
+      "coreFeatures": {
+        "crud": { "create": true, "read": true, "update": true, "delete": true },
+        "listing": { "pagination": true, "search": true, "filtering": true, "sorting": true, "bulkActions": true },
+        "dataManagement": { "import": true, "export": true, "validation": true, "caching": false },
+        "ui": { "responsive": true, "darkMode": true, "accessibility": true, "viewModes": ["table", "grid"] }
+      },
+      "stateManagement": {
+        "pattern": "local",
+        "tools": ["useState", "useReducer"],
+        "stateTypes": [
+          { "name": "StaffUIState", "scope": "page", "persistence": false },
+          { "name": "StaffDataState", "scope": "page", "persistence": true },
+          { "name": "StaffFilters", "scope": "page", "persistence": true }
+        ]
+      }
+    }
+  ]
+}
