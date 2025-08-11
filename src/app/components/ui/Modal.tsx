@@ -168,7 +168,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
                 <div
                     ref={modalRef}
                     className={`
-            relative w-full mx-4 rounded-xl shadow-xl transform transition-all duration-300 scale-100
+            relative w-full mx-4 rounded-xl shadow-xl transform transition-all duration-300 scale-100 flex flex-col
             ${sizeClasses[size]}
             ${variantClasses[variant]}
             ${centered ? 'my-8' : ''}
@@ -186,7 +186,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
                     {renderHeader()}
 
                     {/* Body */}
-                    <div className={`${scrollable ? 'overflow-y-auto' : ''} ${!header && !title && !Icon ? 'pt-6' : ''}`}>
+                    <div className={`${scrollable ? 'overflow-y-auto' : ''} ${!header && !title && !Icon ? 'pt-6' : ''} flex-1`}> 
                         {children && (
                             <div className="p-6">
                                 {children}

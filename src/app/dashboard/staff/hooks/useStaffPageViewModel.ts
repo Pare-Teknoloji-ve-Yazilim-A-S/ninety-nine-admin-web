@@ -30,7 +30,8 @@ export function useStaffPageViewModel({ initialData }: UseStaffPageViewModelProp
   const { actions } = useStaffActions({
     onRefresh: dataActions.refresh,
     importInputRef,
-    clearSelected: () => uiActions.setSelected([])
+    clearSelected: () => uiActions.setSelected([]),
+    getEditingId: () => uiState.editingStaff?.id as any
   })
 
   // Combine all actions

@@ -8,10 +8,12 @@ import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Label from '@/app/components/ui/Label'
-import Select, { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui/Select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/app/components/ui'
+import SearchableDropdown, { type SearchableOption } from '@/app/components/ui/SearchableDropdown'
 import Avatar from '@/app/components/ui/Avatar'
 import Separator from '@/app/components/ui/Separator'
 import {
+  Form,
   FormControl,
   FormField,
   FormItem,
@@ -211,7 +213,8 @@ export function StaffForm({
       </div>
 
       <div>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
             {/* Avatar Section */}
             <div className="flex items-center space-x-4">
               <Avatar 
@@ -388,21 +391,15 @@ export function StaffForm({
                   name="departmentId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Departman *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Departman seçiniz" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {departments.map((dept) => (
-                            <SelectItem key={dept.id} value={dept.id.toString()}>
-                              {dept.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableDropdown
+                        label="Departman *"
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={departments.map(d => ({ value: d.id.toString(), label: d.name, description: d.code })) as SearchableOption[]}
+                        placeholder="Departman seçiniz"
+                        searchable={false}
+                        showSelectedSummary={false}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -413,21 +410,15 @@ export function StaffForm({
                   name="positionId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pozisyon *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pozisyon seçiniz" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {filteredPositions.map((pos) => (
-                            <SelectItem key={pos.id} value={pos.id.toString()}>
-                              {pos.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableDropdown
+                        label="Pozisyon *"
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={filteredPositions.map(p => ({ value: p.id.toString(), label: p.title, description: p.department?.name })) as SearchableOption[]}
+                        placeholder="Pozisyon seçiniz"
+                        searchable={false}
+                        showSelectedSummary={false}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -438,22 +429,17 @@ export function StaffForm({
                   name="managerId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Yönetici</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Yönetici seçiniz" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="">Yönetici yok</SelectItem>
-                          {filteredManagers.map((manager) => (
-                            <SelectItem key={manager.id} value={manager.id.toString()}>
-                              {manager.firstName} {manager.lastName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableDropdown
+                        label="Yönetici"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        options={[{ value: '', label: 'Yönetici yok' }, ...filteredManagers.map(m => ({ value: m.id.toString(), label: `${m.firstName} ${m.lastName}`, description: m.position?.title }))] as SearchableOption[]}
+                        placeholder="Yönetici seçiniz"
+                        allowEmpty
+                        emptyLabel="Yönetici yok"
+                        searchable={false}
+                        showSelectedSummary={false}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -464,21 +450,15 @@ export function StaffForm({
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Durum *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Durum seçiniz" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {STAFF_STATUS_CONFIG && Object.entries(STAFF_STATUS_CONFIG).map(([status, config]) => (
-                            <SelectItem key={status} value={status}>
-                              {config.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableDropdown
+                        label="Durum *"
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={Object.entries(STAFF_STATUS_CONFIG || {}).map(([key, cfg]) => ({ value: key, label: cfg.label })) as SearchableOption[]}
+                        placeholder="Durum seçiniz"
+                        searchable={false}
+                        showSelectedSummary={false}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -489,21 +469,15 @@ export function StaffForm({
                   name="employmentType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>İstihdam Türü *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="İstihdam türü seçiniz" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {EMPLOYMENT_TYPE_CONFIG && Object.entries(EMPLOYMENT_TYPE_CONFIG).map(([type, config]) => (
-                            <SelectItem key={type} value={type}>
-                              {config.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SearchableDropdown
+                        label="İstihdam Türü *"
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={Object.entries(EMPLOYMENT_TYPE_CONFIG || {}).map(([key, cfg]) => ({ value: key, label: cfg.label })) as SearchableOption[]}
+                        placeholder="İstihdam türü seçiniz"
+                        searchable={false}
+                        showSelectedSummary={false}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -632,6 +606,7 @@ export function StaffForm({
               </Button>
             </div>
           </form>
+        </Form>
       </div>
     </Card>
   )

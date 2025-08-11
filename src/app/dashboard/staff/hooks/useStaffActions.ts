@@ -5,24 +5,27 @@ import { useRouter } from 'next/navigation'
 import type { Staff, CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.types'
 import type { StaffActions } from '../types'
 import { STAFF_BULK_ACTIONS, EXPORT_FILENAMES, type StaffBulkAction } from '../constants/staff'
+import { staffService } from '@/services/staff.service'
+import { downloadBlobAsFile } from '@/lib/download'
 
 interface UseStaffActionsProps {
   onRefresh: () => Promise<void>
   importInputRef: React.RefObject<HTMLInputElement>
   clearSelected: () => void
+  getEditingId?: () => string | number | undefined
 }
 
 export function useStaffActions({
   onRefresh,
   importInputRef,
-  clearSelected
+  clearSelected,
+  getEditingId
 }: UseStaffActionsProps) {
   const router = useRouter()
 
   const onCreate = useCallback(async (data: CreateStaffDto) => {
     try {
-      // TODO: Implement actual API call
-      // await staffService.createStaff(data)
+      await staffService.createStaff(data)
       await onRefresh()
     } catch (error: unknown) {
       console.error('Failed to create staff:', error)
@@ -32,19 +35,19 @@ export function useStaffActions({
 
   const onUpdate = useCallback(async (data: UpdateStaffDto) => {
     try {
-      // TODO: Implement actual API call
-      // await staffService.updateStaff(data.id, data)
+      const id = getEditingId?.()
+      if (id === undefined) throw new Error('Editing staff id not available')
+      await staffService.updateStaff(id, data)
       await onRefresh()
     } catch (error: unknown) {
       console.error('Failed to update staff:', error)
       throw error
     }
-  }, [onRefresh])
+  }, [onRefresh, getEditingId])
 
   const onDelete = useCallback(async (staff: Staff) => {
     try {
-      // TODO: Implement actual API call
-      // await staffService.deleteStaff(staff.id)
+      await staffService.deleteStaff(staff.id)
       await onRefresh()
     } catch (error: unknown) {
       console.error('Failed to delete staff:', error)
@@ -54,8 +57,7 @@ export function useStaffActions({
 
   const onActivate = useCallback(async (staff: Staff) => {
     try {
-      // TODO: Implement actual API call
-      // await staffService.activateStaff(staff.id)
+      await staffService.activateStaff(staff.id)
       await onRefresh()
     } catch (error: unknown) {
       console.error('Failed to activate staff:', error)
@@ -65,8 +67,7 @@ export function useStaffActions({
 
   const onDeactivate = useCallback(async (staff: Staff) => {
     try {
-      // TODO: Implement actual API call
-      // await staffService.deactivateStaff(staff.id)
+      await staffService.deactivateStaff(staff.id)
       await onRefresh()
     } catch (error: unknown) {
       console.error('Failed to deactivate staff:', error)
@@ -78,16 +79,13 @@ export function useStaffActions({
     try {
       switch (action) {
         case STAFF_BULK_ACTIONS.ACTIVATE:
-          // TODO: Implement bulk activate
-          // await staffService.bulkActivate(ids)
+          await staffService.bulkUpdateStaffStatus({ staffIds: ids, operation: 'update', data: { status: 'ACTIVE' as any } })
           break
         case STAFF_BULK_ACTIONS.DEACTIVATE:
-          // TODO: Implement bulk deactivate
-          // await staffService.bulkDeactivate(ids)
+          await staffService.bulkUpdateStaffStatus({ staffIds: ids, operation: 'update', data: { status: 'INACTIVE' as any } })
           break
         case STAFF_BULK_ACTIONS.DELETE:
-          // TODO: Implement bulk delete
-          // await staffService.bulkDelete(ids)
+          await staffService.bulkDeleteStaff(ids)
           break
         case STAFF_BULK_ACTIONS.EXPORT:
           await onExport()
@@ -106,10 +104,8 @@ export function useStaffActions({
 
   const onExport = useCallback(async () => {
     try {
-      // TODO: Implement actual export
-      // const data = await staffService.exportStaff()
-      // downloadFile(data, EXPORT_FILENAMES.STAFF_LIST)
-      console.log('Exporting staff data...')
+      const blob = await staffService.exportStaff({ format: 'csv' })
+      downloadBlobAsFile(blob, EXPORT_FILENAMES.STAFF_LIST)
     } catch (error: unknown) {
       console.error('Failed to export staff:', error)
       throw error
@@ -125,10 +121,7 @@ export function useStaffActions({
     if (!file) return
 
     try {
-      // TODO: Implement actual import
-      // const formData = new FormData()
-      // formData.append('file', file)
-      // await staffService.importStaff(formData)
+      await staffService.importStaff(file)
       await onRefresh()
       
       // Reset input
