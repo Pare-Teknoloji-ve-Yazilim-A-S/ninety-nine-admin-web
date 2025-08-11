@@ -111,10 +111,10 @@ function StaffPage () {
     if (ids.length === 0) return
     switch (action) {
       case 'activate':
-        await bulkUpdateStaffStatus({ staffIds: ids, status: StaffStatus.ACTIVE })
+        await bulkUpdateStaffStatus({ staffIds: ids, operation: 'update', data: { status: StaffStatus.ACTIVE } })
         break
       case 'deactivate':
-        await bulkUpdateStaffStatus({ staffIds: ids, status: StaffStatus.INACTIVE })
+        await bulkUpdateStaffStatus({ staffIds: ids, operation: 'update', data: { status: StaffStatus.INACTIVE } })
         break
       case 'delete':
         await bulkDeleteStaff(ids)
