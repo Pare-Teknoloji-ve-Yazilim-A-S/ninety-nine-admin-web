@@ -95,11 +95,7 @@ const menuItems: MenuItemProps[] = [
         icon: Megaphone,
         href: '/dashboard/announcements'
     },
-    {
-        title: 'İlanlar',
-        icon: Megaphone,
-        href: '/dashboard/ilan'
-    },
+    // İlanlar menü öğesi kaldırıldı
     {
         title: 'Ayarlar',
         icon: Settings,

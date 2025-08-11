@@ -6,6 +6,8 @@ import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
+import Modal from '@/app/components/ui/Modal';
+import Calendar, { CalendarEventDetail } from '@/app/components/ui/Calendar';
 import Button from '@/app/components/ui/Button';
 import SearchBar from '@/app/components/ui/SearchBar';
 import StatsCard from '@/app/components/ui/StatsCard';
@@ -18,7 +20,7 @@ import { useToast } from '@/hooks/useToast';
 import {
     Filter, Download, Plus, RefreshCw, ChevronRight, Eye, Edit, 
     AlertTriangle, Pin, Archive, Send, Copy, Trash2, 
-    MessageSquare, Calendar, Hash, Settings
+    MessageSquare, Calendar as CalendarIcon, Hash, Settings
 } from 'lucide-react';
 import type { Announcement } from '@/services/types/announcement.types';
 
@@ -78,6 +80,11 @@ export default function AnnouncementsPage() {
     const router = useRouter();
     const { toasts, removeToast } = useToast();
 
+    // Event modal state
+    const [eventModalOpen, setEventModalOpen] = useState(false)
+    const [eventModalDate, setEventModalDate] = useState<string | null>(null)
+    const [eventModalItems, setEventModalItems] = useState<CalendarEventDetail[]>([])
+
     // UI State for modals and bulk actions
     const [bulkDeleteState, setBulkDeleteState] = useState<{
         isOpen: boolean;
@@ -111,6 +118,47 @@ export default function AnnouncementsPage() {
         filters: filtersHook.filters
     });
     const statsHook = useAnnouncementsStats();
+
+    // Build calendar events map from announcements
+    const eventsByDate = useMemo(() => {
+        const map: Record<string, { count: number; hasEmergency?: boolean; hasPinned?: boolean; items?: CalendarEventDetail[] }> = {}
+        const add = (dateStr: string, isEmergency: boolean, isPinned: boolean, item?: CalendarEventDetail) => {
+            if (!dateStr) return
+            const key = new Date(dateStr).toISOString().slice(0, 10)
+            if (!map[key]) map[key] = { count: 0, hasEmergency: false, hasPinned: false, items: [] }
+            map[key].count += 1
+            if (isEmergency) map[key].hasEmergency = true
+            if (isPinned) map[key].hasPinned = true
+            if (item) map[key].items!.push(item)
+        }
+        for (const a of dataHook.announcements) {
+            // Use publishDate; if there is a date range, also mark expiryDate day
+            if (a.publishDate) add(a.publishDate, a.isEmergency, a.isPinned, { id: a.id, title: a.title, time: a.publishDate?.slice(11, 16) || undefined, isEmergency: a.isEmergency, isPinned: a.isPinned })
+            if (a.expiryDate) add(a.expiryDate, a.isEmergency, a.isPinned, { id: a.id, title: a.title, time: a.expiryDate?.slice(11, 16) || undefined, isEmergency: a.isEmergency, isPinned: a.isPinned })
+        }
+        // Sample demo events to visualize the calendar (temporary)
+        const now = new Date()
+        const y = now.getFullYear()
+        const m = now.getMonth()
+        const makeKey = (d: number) => new Date(Date.UTC(y, m, d)).toISOString().slice(0, 10)
+        const sample: Record<string, { count: number; hasEmergency?: boolean; hasPinned?: boolean; items?: CalendarEventDetail[] }> = {
+          [makeKey(5)]: { count: 2, hasEmergency: true, items: [ { id: 'demo-1', title: 'Acil Su Kesintisi', time: '09:00', isEmergency: true }, { id: 'demo-2', title: 'Jeneratör Bakımı', time: '14:00' } ] },
+          [makeKey(12)]: { count: 1, hasPinned: true, items: [ { id: 'demo-3', title: 'Site Buluşması', time: '19:30', isPinned: true } ] },
+          [makeKey(18)]: { count: 3, hasPinned: true, items: [ { id: 'demo-4', title: 'Toplantı: Yönetim', time: '11:00', isPinned: true }, { id: 'demo-5', title: 'Havuz Bakımı', time: '13:30' }, { id: 'demo-6', title: 'Ortak Alan Temizliği', time: '16:00' } ] },
+          [makeKey(22)]: { count: 1, items: [ { id: 'demo-7', title: 'Otopark Boyası', time: '10:00' } ] }
+        }
+        Object.entries(sample).forEach(([key, val]) => {
+          if (!map[key]) {
+            map[key] = { ...val }
+          } else {
+            map[key].count += val.count
+            map[key].hasEmergency = map[key].hasEmergency || !!val.hasEmergency
+            map[key].hasPinned = map[key].hasPinned || !!val.hasPinned
+            map[key].items = [...(map[key].items || []), ...(val.items || [])]
+          }
+        })
+        return map
+    }, [dataHook.announcements])
 
     // Create action handlers with dependency injection
     const toastFunctions = {
@@ -351,9 +399,9 @@ export default function AnnouncementsPage() {
 
                     {/* Metadata */}
                     <div className="flex items-center justify-between text-xs text-text-light-secondary dark:text-text-secondary">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-1">
+                                        <CalendarIcon className="w-3 h-3" />
                                 <span>{new Date(announcement.createdAt).toLocaleDateString('tr-TR')}</span>
                             </div>
                             {(announcement as any).targetAudience && (
@@ -464,6 +512,32 @@ export default function AnnouncementsPage() {
                                     />
                                 ))}
                             </div>
+
+                            {/* Sıra 2.5: Aylık Takvim (duyuru/etkinlik görünümü) */}
+                            <Card className="mb-6">
+                                <div className="p-4">
+                                     <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">Aylık Takvim</h3>
+                                        <div className="text-xs text-text-light-secondary dark:text-text-secondary">
+                                            <span className="inline-flex items-center mr-3"><span className="w-2 h-2 rounded-full bg-primary-gold mr-1" /> Duyuru</span>
+                                            <span className="inline-flex items-center mr-3"><span className="w-2 h-2 rounded-full bg-red-500 mr-1" /> Acil</span>
+                                            <span className="inline-flex items-center"><span className="w-2 h-2 rounded-full bg-primary-gold mr-1" /> Sabit</span>
+                                        </div>
+                                    </div>
+                                     {/* Inline selected day preview removed per spec */}
+                                    <Calendar
+                                        eventsByDate={eventsByDate}
+                                        showSelectedSummary={false}
+                                        onDateSelect={(dateKey, items) => {
+                                            if (items && items.length > 0) {
+                                              setEventModalDate(dateKey)
+                                              setEventModalItems(items)
+                                              setEventModalOpen(true)
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            </Card>
 
                             {/* Sıra 3: Search and Filters (Arama ve Filtreler) */}
                             <Card className="mb-6">
@@ -654,6 +728,57 @@ export default function AnnouncementsPage() {
 
                 {/* Toast Container */}
                 <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+                {/* Day Events Modal */}
+                <Modal
+                  isOpen={eventModalOpen}
+                  onClose={() => setEventModalOpen(false)}
+                  title={`${eventModalDate ? new Date(eventModalDate).toLocaleDateString('tr-TR') : ''} Etkinlikleri`}
+                  size="md"
+                >
+                  <div className="space-y-3">
+                    {eventModalItems.length === 0 && (
+                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">Bu gün için kayıtlı etkinlik bulunamadı.</p>
+                    )}
+                    {eventModalItems.map((it, idx) => (
+                      <div key={(it.id as string) || idx}
+                           className="flex items-start justify-between p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light-soft dark:bg-background-soft">
+                        <div>
+                          <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
+                            {it.time && <span className="mr-2 text-primary-gold">{it.time}</span>}
+                            {it.title || 'Duyuru'}
+                          </p>
+                          {it.description && (
+                            <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1">{it.description}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {it.isEmergency && (
+                            <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-red/15 text-primary-red">Acil</span>
+                          )}
+                          {it.isPinned && (
+                            <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-gold/20 text-primary-gold">Sabit</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button variant="outline" size="sm" onClick={() => setEventModalOpen(false)}>Kapat</Button>
+                      {eventModalDate && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => {
+                            filtersHook.handleFiltersApply({ publishDate: eventModalDate })
+                            setEventModalOpen(false)
+                          }}
+                        >
+                          Günü filtrele
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Modal>
             </div>
         </ProtectedRoute>
     );

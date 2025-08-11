@@ -73,6 +73,9 @@ interface StaffFormProps {
   onCancel?: () => void
   isLoading?: boolean
   className?: string
+  // Optional: override dropdown options (e.g., enum-based)
+  departmentOptions?: SearchableOption[]
+  positionOptions?: SearchableOption[]
 }
 
 export function StaffForm({
@@ -83,7 +86,9 @@ export function StaffForm({
   onSubmit,
   onCancel,
   isLoading = false,
-  className
+  className,
+  departmentOptions,
+  positionOptions
 }: StaffFormProps) {
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(staff?.avatar || null)
@@ -118,13 +123,12 @@ export function StaffForm({
 
   const watchedDepartmentId = form.watch('departmentId')
 
-  // Filter positions based on selected department
+  // Filter positions based on selected department (skip when custom position options are provided)
   useEffect(() => {
+    if (positionOptions) return
     if (watchedDepartmentId) {
       const filtered = positions.filter(pos => pos.departmentId === watchedDepartmentId)
       setFilteredPositions(filtered)
-      
-      // Reset position if it doesn't belong to the selected department
       const currentPositionId = form.getValues('positionId')
       if (currentPositionId && !filtered.find(pos => pos.id === currentPositionId)) {
         form.setValue('positionId', '')
@@ -132,7 +136,7 @@ export function StaffForm({
     } else {
       setFilteredPositions(positions)
     }
-  }, [watchedDepartmentId, positions, form])
+  }, [watchedDepartmentId, positions, form, positionOptions])
 
   // Filter managers (exclude current staff member if editing)
   useEffect(() => {
@@ -395,7 +399,9 @@ export function StaffForm({
                         label="Departman *"
                         value={field.value}
                         onChange={field.onChange}
-                        options={departments.map(d => ({ value: d.id.toString(), label: d.name, description: d.code })) as SearchableOption[]}
+                         options={(departmentOptions && departmentOptions.length > 0)
+                           ? departmentOptions
+                           : (departments.map(d => ({ value: d.id.toString(), label: d.name, description: d.code })) as SearchableOption[])}
                         placeholder="Departman seçiniz"
                         searchable={false}
                         showSelectedSummary={false}
@@ -414,7 +420,9 @@ export function StaffForm({
                         label="Pozisyon *"
                         value={field.value}
                         onChange={field.onChange}
-                        options={filteredPositions.map(p => ({ value: p.id.toString(), label: p.title, description: p.department?.name })) as SearchableOption[]}
+                         options={(positionOptions && positionOptions.length > 0)
+                           ? positionOptions
+                           : (filteredPositions.map(p => ({ value: p.id.toString(), label: p.title, description: p.department?.name })) as SearchableOption[])}
                         placeholder="Pozisyon seçiniz"
                         searchable={false}
                         showSelectedSummary={false}

@@ -3,22 +3,44 @@
 import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 
+export interface CalendarEventDetail {
+  id?: string | number
+  title?: string
+  time?: string
+  description?: string
+  isEmergency?: boolean
+  isPinned?: boolean
+}
+
+interface CalendarEventsForDay {
+  count: number
+  hasEmergency?: boolean
+  hasPinned?: boolean
+  items?: CalendarEventDetail[]
+}
+
 interface CalendarProps {
   value?: Date
   onChange?: (date: Date) => void
+  onDateSelect?: (dateKey: string, details?: CalendarEventDetail[]) => void
   className?: string
   minDate?: Date
   maxDate?: Date
   disabled?: boolean
+  eventsByDate?: Record<string, CalendarEventsForDay>
+  showSelectedSummary?: boolean
 }
 
 const Calendar = ({ 
   value, 
   onChange, 
+  onDateSelect,
   className, 
   minDate, 
   maxDate, 
-  disabled = false 
+  disabled = false,
+  eventsByDate,
+  showSelectedSummary = true
 }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(value || new Date())
   const [viewDate, setViewDate] = useState(value || new Date())
@@ -61,6 +83,13 @@ const Calendar = ({
 
   const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
 
+  const formatDateKey = (date: Date) => {
+    // Use ISO date portion to keep a stable key (YYYY-MM-DD)
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+      .toISOString()
+      .slice(0, 10)
+  }
+
   const handleDateClick = (day: number, monthOffset: number = 0) => {
     if (disabled) return
     
@@ -72,6 +101,8 @@ const Calendar = ({
     
     setCurrentDate(newDate)
     onChange?.(newDate)
+    const key = formatDateKey(newDate)
+    onDateSelect?.(key, eventsByDate?.[key]?.items)
   }
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -113,13 +144,20 @@ const Calendar = ({
   }
 
   return (
-    <div className={cn('p-4 bg-white border rounded-lg shadow-sm', className)}>
+    <div
+      className={cn(
+        'p-4 rounded-xl shadow-lg',
+        'bg-background-light-card dark:bg-background-card',
+        'border border-border-light dark:border-border-dark',
+        className
+      )}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => navigateMonth('prev')}
           disabled={disabled}
-          className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-hover-light-cream dark:hover:bg-hover-gold-bg"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -133,7 +171,7 @@ const Calendar = ({
         <button
           onClick={() => navigateMonth('next')}
           disabled={disabled}
-          className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-1 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-hover-light-cream dark:hover:bg-hover-gold-bg"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -141,10 +179,47 @@ const Calendar = ({
         </button>
       </div>
 
+      {/* Selected day summary (titles) */}
+      {showSelectedSummary && (() => {
+        const selectedKey = formatDateKey(currentDate)
+        const selectedItems = eventsByDate?.[selectedKey]?.items || []
+        if (!selectedItems.length) return null
+        return (
+          <div className="mb-2 flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-text-on-light dark:text-text-on-dark mb-1">
+                {new Date(selectedKey).toLocaleDateString('tr-TR')} için etkinlikler
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedItems.map((it, idx) => (
+                  <span
+                    key={(it.id as string) || idx}
+                    className={cn(
+                      'inline-flex items-center max-w-[180px] truncate text-[11px] px-2 py-0.5 rounded-md border',
+                      it.isEmergency
+                        ? 'bg-primary-red/15 text-primary-red border-primary-red/30'
+                        : it.isPinned
+                          ? 'bg-primary-gold/20 text-primary-gold border-primary-gold/40'
+                          : 'bg-primary-gold/10 text-primary-gold border-primary-gold/25'
+                    )}
+                  >
+                    {it.time && <span className="mr-1">{it.time}</span>}
+                    <span className="truncate">{it.title || 'Duyuru'}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Day names */}
       <div className="grid grid-cols-7 gap-1 mb-2">
         {dayNames.map((day) => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+          <div
+            key={day}
+            className="p-2 text-center text-sm font-medium text-text-light-secondary dark:text-text-secondary"
+          >
             {day}
           </div>
         ))}
@@ -159,9 +234,10 @@ const Calendar = ({
             onClick={() => handleDateClick(day, -1)}
             disabled={disabled || isDateDisabled(day, -1)}
             className={cn(
-              'p-2 text-sm text-gray-400 hover:bg-gray-100 rounded transition-colors',
+              'p-2 text-sm rounded transition-colors',
+              'text-text-light-muted dark:text-text-muted',
               'disabled:opacity-50 disabled:cursor-not-allowed',
-              isDateSelected(day, -1) && 'bg-blue-500 text-white hover:bg-blue-600'
+              isDateSelected(day, -1) && 'bg-primary-gold/20 text-primary-gold hover:bg-primary-gold/30'
             )}
           >
             {day}
@@ -169,21 +245,49 @@ const Calendar = ({
         ))}
 
         {/* Current month days */}
-        {currentMonthDays.map((day) => (
-          <button
-            key={`current-${day}`}
-            onClick={() => handleDateClick(day)}
-            disabled={disabled || isDateDisabled(day)}
+        {currentMonthDays.map((day) => {
+          const dateObj = new Date(currentYear, currentMonth, day)
+          const dateKey = formatDateKey(dateObj)
+          const dayEvents = eventsByDate ? eventsByDate[dateKey] : undefined
+          const hasEvents = !!dayEvents && dayEvents.count > 0
+          const showEmergency = !!dayEvents?.hasEmergency
+          const showPinned = !!dayEvents?.hasPinned
+          return (
+            <button
+              key={`current-${day}`}
+              onClick={() => handleDateClick(day)}
+              disabled={disabled || isDateDisabled(day)}
             className={cn(
-              'p-2 text-sm hover:bg-gray-100 rounded transition-colors',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              isDateToday(day) && 'bg-gray-100 font-semibold',
-              isDateSelected(day) && 'bg-blue-500 text-white hover:bg-blue-600'
-            )}
-          >
-            {day}
-          </button>
-        ))}
+                'relative p-2 text-sm rounded transition-colors',
+                'hover:bg-hover-light-cream dark:hover:bg-hover-gold-bg',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+                isDateToday(day) && 'bg-background-light-soft dark:bg-background-soft font-semibold',
+                isDateSelected(day) && 'bg-primary-gold/20 text-primary-gold hover:bg-primary-gold/30',
+                !isDateSelected(day) && hasEvents && 'bg-primary-gold/10 dark:bg-primary-gold/15 ring-1 ring-primary-gold/30'
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-5 md:gap-6 lg:gap-8 xl:gap-10">
+                  <span>{day}</span>
+                  {hasEvents && (
+                    <span
+                      className={cn(
+                        'inline-flex items-center justify-center h-4 px-1.5 rounded-md text-[10px] leading-none border shadow-sm',
+                        showEmergency
+                          ? 'bg-primary-red/15 text-primary-red border-primary-red/40'
+                          : showPinned
+                            ? 'bg-primary-gold/20 text-primary-gold border-primary-gold/40'
+                            : 'bg-primary-gold/10 text-primary-gold border-primary-gold/25'
+                      )}
+                    >
+                      {showEmergency ? 'Acil' : showPinned ? 'Sabit' : 'Duyuru'}
+                    </span>
+                  )}
+                </span>
+              </div>
+            </button>
+          )
+        })}
 
         {/* Next month days */}
         {nextMonthDays.map((day) => (
@@ -192,9 +296,10 @@ const Calendar = ({
             onClick={() => handleDateClick(day, 1)}
             disabled={disabled || isDateDisabled(day, 1)}
             className={cn(
-              'p-2 text-sm text-gray-400 hover:bg-gray-100 rounded transition-colors',
+              'p-2 text-sm rounded transition-colors',
+              'text-text-light-muted dark:text-text-muted',
               'disabled:opacity-50 disabled:cursor-not-allowed',
-              isDateSelected(day, 1) && 'bg-blue-500 text-white hover:bg-blue-600'
+              isDateSelected(day, 1) && 'bg-primary-gold/20 text-primary-gold hover:bg-primary-gold/30'
             )}
           >
             {day}
