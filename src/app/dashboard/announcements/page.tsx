@@ -365,7 +365,7 @@ export default function AnnouncementsPage() {
                         </div>
                         <div className="flex items-center gap-1">
                             <MessageSquare className="w-3 h-3" />
-                            <span>{announcement.viewCount || 0} görüntüleme</span>
+                            <span>{((announcement as any).viewCount || 0)} görüntüleme</span>
                         </div>
                     </div>
                 </div>
