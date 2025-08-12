@@ -8,6 +8,7 @@ import type { StaffFilters, StaffPagination, StaffDataState } from '../types'
 import { calculateStaffStats, generateStatsSummary, getStaffCountByStatus, getTotalStaffCount } from '../utils/staffStats'
 import { StaffStatus } from '@/services/types/staff.types'
 import { STAFF_QUICK_FILTER_KEYS } from '../constants/staff'
+import { staffService } from '@/services/staff.service'
 
 interface UseStaffDataProps {
   initialData?: {
@@ -37,12 +38,23 @@ export function useStaffData({ initialData }: UseStaffDataProps = {}) {
     total: 0,
     totalPages: 0
   })
+  const [countsOverride, setCountsOverride] = useState<{
+    total: number
+    active: number
+    onLeave: number
+  } | null>(null)
 
   // Computed values
   const quickStats = useMemo(() => {
     const totalStaffCount = getTotalStaffCount(undefined, pagination, staff)
-    return calculateStaffStats(staff, departments, totalStaffCount)
-  }, [staff, departments, pagination])
+    const base = calculateStaffStats(staff, departments, totalStaffCount)
+    if (countsOverride) {
+      base.total = countsOverride.total
+      base.byStatus[StaffStatus.ACTIVE] = countsOverride.active
+      base.byStatus[StaffStatus.ON_LEAVE] = countsOverride.onLeave
+    }
+    return base
+  }, [staff, departments, pagination, countsOverride])
 
   const statsSummary = useMemo(() => {
     const activeCount = getStaffCountByStatus(quickStats, StaffStatus.ACTIVE)
@@ -67,10 +79,23 @@ export function useStaffData({ initialData }: UseStaffDataProps = {}) {
     setIsLoading(true)
     setError(null)
     try {
-      // TODO: Implement actual API call
-      // const response = await staffService.getStaff({ ...filters, search: searchQuery, page: pagination.page, limit: pagination.limit })
-      // setStaff(response.data)
-      // setPagination(response.pagination)
+      const response = await staffService.searchStaffAdmin({
+        q: searchQuery || undefined,
+        positionTitle: (filters.position && filters.position[0]) || undefined,
+        employmentStatus: (filters.employmentType && filters.employmentType[0]) || undefined,
+        isActive: filters.status?.includes(StaffStatus.ACTIVE) ? true : undefined,
+        isOnLeave: filters.status?.includes(StaffStatus.ON_LEAVE) ? true : undefined,
+        page: pagination.page,
+        limit: pagination.limit,
+        orderColumn: 'createdAt',
+        orderBy: 'DESC'
+      })
+      setStaff(response.data as any)
+      setPagination(prev => ({
+        ...prev,
+        total: response.total,
+        totalPages: response.totalPages
+      }))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -116,6 +141,30 @@ export function useStaffData({ initialData }: UseStaffDataProps = {}) {
       fetchManagers()
     ])
   }, [fetchStaff, fetchDepartments, fetchPositions, fetchManagers])
+
+  // Override quick stats with server counts when available
+  useEffect(() => {
+    let isMounted = true
+    const loadCounts = async () => {
+      try {
+        const [total, active, onLeave] = await Promise.all([
+          staffService.getTotalStaffCount(),
+          staffService.getActiveStaffCount(),
+          staffService.getOnLeaveStaffCount()
+        ])
+        if (!isMounted) return
+        setCountsOverride({ total, active, onLeave })
+        // Update pagination total to reflect server total in UI
+        setPagination((prev) => ({ ...prev, total }))
+      } catch (err) {
+        // Non-fatal; keep local computed stats
+        console.warn('Failed to load staff counts, using local stats', err)
+      }
+    }
+    loadCounts()
+    return () => { isMounted = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Filter and search functions
   const applyQuickFilter = useCallback((key: string) => {

@@ -18,12 +18,10 @@ import {
   Users,
   UserPlus,
   UserMinus,
-  Building,
   Briefcase,
   TrendingUp,
   TrendingDown,
   Calendar,
-  DollarSign,
   Clock,
   Award
 } from 'lucide-react'
@@ -122,31 +120,15 @@ export function StaffStats({
           </div>
         </Card>
 
-        {/* Departments */}
+        {/* On Leave Staff */}
         <Card className="p-6">
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="text-sm font-medium">Departman Sayısı</h3>
-            <Building className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-medium">İzinli Personel</h3>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </div>
           <div>
-            <div className="text-2xl font-bold">{stats.departmentCount}</div>
-            <div className="text-xs text-muted-foreground">
-              Aktif departman
-            </div>
-          </div>
-        </Card>
-
-        {/* Average Salary */}
-        <Card className="p-6">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <h3 className="text-sm font-medium">Ortalama Maaş</h3>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{formatCurrency(stats.averageSalary)}</div>
-            <div className="text-xs text-muted-foreground">
-              Aylık ortalama
-            </div>
+            <div className="text-2xl font-bold">{formatNumber(stats.byStatus.ON_LEAVE)}</div>
+            <div className="text-xs text-muted-foreground">Şu an izinli</div>
           </div>
         </Card>
       </div>

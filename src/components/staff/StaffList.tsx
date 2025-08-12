@@ -404,14 +404,14 @@ export function StaffList({
                 {staff.map((staffMember) => {
                   const statusConfig = STAFF_STATUS_CONFIG[staffMember.status]
                   const employmentConfig = EMPLOYMENT_TYPE_CONFIG[staffMember.employmentType]
-                  const isSelected = selectedStaff.includes(staffMember.id.toString())
+                  const isSelected = selectedStaff.includes(String(staffMember.id))
                   
                   return (
                     <TableRow key={staffMember.id} className={isSelected ? 'bg-muted/50' : ''}>
                       <TableCell>
                         <Checkbox
                           checked={isSelected}
-                          onChange={(e) => handleSelectStaff(staffMember.id.toString(), e.target.checked)}
+                          onChange={(e) => handleSelectStaff(String(staffMember.id), e.target.checked)}
                           aria-label={`${staffMember.firstName} ${staffMember.lastName} seç`}
                         />
                       </TableCell>

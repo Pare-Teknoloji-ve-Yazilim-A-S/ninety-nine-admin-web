@@ -3,8 +3,8 @@ import { StaffStatus } from '@/services/types/staff.types'
 import type { Department } from '@/services/types/department.types'
 
 export function calculateStaffStats(
-  staff: Staff[],
-  departments: Department[],
+  staff: Staff[] | undefined | null,
+  departments: Department[] | undefined | null,
   totalStaffCount: number
 ): StaffStats {
   const initialByStatus = Object.values(StaffStatus).reduce((acc, status) => {
@@ -21,25 +21,26 @@ export function calculateStaffStats(
     [EmploymentType.CONSULTANT]: 0
   }
 
-  const byStatus = staff.reduce((acc, s) => {
+  const safeStaff: Staff[] = Array.isArray(staff) ? staff : []
+  const byStatus = safeStaff.reduce((acc, s) => {
     acc[s.status] = (acc[s.status] || 0) + 1
     return acc
   }, { ...initialByStatus })
 
-  const byEmploymentType = staff.reduce((acc, s) => {
+  const byEmploymentType = safeStaff.reduce((acc, s) => {
     acc[s.employmentType] = (acc[s.employmentType] || 0) + 1
     return acc
   }, { ...initialByEmployment })
 
-  const averageSalary = staff.length > 0 
-    ? staff.reduce((sum, s) => sum + (s.salary || 0), 0) / staff.length
+  const averageSalary = safeStaff.length > 0 
+    ? safeStaff.reduce((sum, s) => sum + (s.salary || 0), 0) / safeStaff.length
     : 0
 
   return {
     total: totalStaffCount,
     byStatus,
     byEmploymentType,
-    departmentCount: departments.length,
+    departmentCount: Array.isArray(departments) ? departments.length : 0,
     averageSalary
   }
 }
@@ -68,8 +69,11 @@ export function getStaffCountByStatus(
 
 export function getTotalStaffCount(
   stats: StaffStats | undefined,
-  pagination: { total: number },
-  staff: Staff[]
+  pagination?: { total?: number },
+  staff?: unknown
 ): number {
-  return stats?.total ?? pagination.total ?? staff.length
+  if (stats && typeof stats.total === 'number') return stats.total
+  if (pagination && typeof pagination.total === 'number') return pagination.total
+  if (Array.isArray(staff)) return staff.length
+  return 0
 }

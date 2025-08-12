@@ -410,6 +410,53 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     }
   }
 
+  // Admin search endpoint: GET /api/admin/staff/search
+  async searchStaffAdmin(params: {
+    q?: string
+    positionTitle?: string
+    employmentStatus?: string
+    isOnDuty?: boolean
+    isActive?: boolean
+    isOnLeave?: boolean
+    page?: number
+    limit?: number
+    orderColumn?: string
+    orderBy?: 'ASC' | 'DESC'
+  }): Promise<PaginatedResponse<Staff>> {
+    try {
+      this.logger.info('Admin search staff', params)
+
+      const queryParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          queryParams.append(key, String(value))
+        }
+      })
+
+      const url = `/api/admin/staff/search${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+      const response = await apiClient.get<StaffListResponse>(url)
+
+      return {
+        data: response.data.data,
+        total: response.data.total,
+        page: response.data.page,
+        limit: response.data.limit,
+        totalPages: response.data.totalPages,
+        pagination: {
+          total: response.data.total,
+          page: response.data.page,
+          limit: response.data.limit,
+          totalPages: response.data.totalPages
+        },
+        success: response.success,
+        message: response.message
+      }
+    } catch (error) {
+      this.logger.error('Failed admin staff search', error)
+      throw error
+    }
+  }
+
   // Statistics and Analytics
   async getStaffStats(): Promise<ApiResponse<StaffStatsResponse>> {
     try {
@@ -455,6 +502,40 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
       return response
     } catch (error) {
       this.logger.error('Failed to fetch staff count by status', error)
+      throw error
+    }
+  }
+
+  // Staff Counts (Admin endpoints)
+  async getTotalStaffCount(): Promise<number> {
+    try {
+      this.logger.info('Fetching total staff count')
+      const response = await apiClient.get<{ count: number }>(`/api/admin/staff/count/total`)
+      return (response.data as any)?.count ?? 0
+    } catch (error) {
+      this.logger.error('Failed to fetch total staff count', error)
+      throw error
+    }
+  }
+
+  async getActiveStaffCount(): Promise<number> {
+    try {
+      this.logger.info('Fetching active staff count')
+      const response = await apiClient.get<{ count: number }>(`/api/admin/staff/count/active`)
+      return (response.data as any)?.count ?? 0
+    } catch (error) {
+      this.logger.error('Failed to fetch active staff count', error)
+      throw error
+    }
+  }
+
+  async getOnLeaveStaffCount(): Promise<number> {
+    try {
+      this.logger.info('Fetching on-leave staff count')
+      const response = await apiClient.get<{ count: number }>(`/api/admin/staff/count/on-leave`)
+      return (response.data as any)?.count ?? 0
+    } catch (error) {
+      this.logger.error('Failed to fetch on-leave staff count', error)
       throw error
     }
   }
