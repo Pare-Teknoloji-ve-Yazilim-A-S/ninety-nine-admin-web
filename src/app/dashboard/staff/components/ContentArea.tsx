@@ -27,10 +27,6 @@ interface ContentAreaProps {
   onActivate: (s: Staff) => void
   onDeactivate: (s: Staff) => void
   onBulkAction: (action: string, ids: string[]) => void
-  onExport: () => void
-  onImport: () => void
-  onRefresh: () => void
-  onCreateNew: () => void
 }
 
 export default function ContentArea(props: ContentAreaProps) {

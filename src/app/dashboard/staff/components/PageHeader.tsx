@@ -43,13 +43,14 @@ export default function PageHeader({
         )}
         {onCreateNew && (
           <Button variant="primary" size="md" icon={Plus} onClick={onCreateNew}>
-            Yeni Personel
+            Yeni Personel Ekle
           </Button>
         )}
       </div>
     </div>
   )
 }
+
 
 
 

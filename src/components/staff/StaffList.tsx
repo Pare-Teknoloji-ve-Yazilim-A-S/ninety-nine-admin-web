@@ -31,15 +31,12 @@ import StaffCard from './StaffCard'
 import {
   Search,
   Filter,
-  MoreVertical,
   Grid,
   List,
   Download,
   Upload,
   Plus,
   RefreshCw,
-  Eye,
-  Edit,
   Trash2,
   UserCheck,
   UserX,
@@ -401,7 +398,6 @@ export function StaffList({
                   <TableHead>İstihdam Türü</TableHead>
                   <TableHead>İşe Başlama</TableHead>
                   <TableHead>Maaş</TableHead>
-                  <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -459,55 +455,6 @@ export function StaffList({
                       </TableCell>
                       <TableCell>
                         {staffMember.salary ? formatSalary(staffMember.salary) : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">Menüyü aç</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {onView && (
-                              <DropdownMenuItem onClick={() => onView(staffMember)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                Görüntüle
-                              </DropdownMenuItem>
-                            )}
-                            {onEdit && (
-                              <DropdownMenuItem onClick={() => onEdit(staffMember)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Düzenle
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            {staffMember.status === StaffStatus.ACTIVE && onDeactivate && (
-                              <DropdownMenuItem onClick={() => onDeactivate(staffMember)}>
-                                <UserX className="mr-2 h-4 w-4" />
-                                Pasifleştir
-                              </DropdownMenuItem>
-                            )}
-                            {staffMember.status === StaffStatus.INACTIVE && onActivate && (
-                              <DropdownMenuItem onClick={() => onActivate(staffMember)}>
-                                <UserCheck className="mr-2 h-4 w-4" />
-                                Aktifleştir
-                              </DropdownMenuItem>
-                            )}
-                            {onDelete && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  onClick={() => onDelete(staffMember)}
-                                  className="text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Sil
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   )

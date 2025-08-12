@@ -31,7 +31,6 @@ function StaffPage () {
         title="Personel Yönetimi"
         totalLabel={totalCountLabel}
         summary={data.statsSummary}
-        onRefresh={actions.refresh}
         onOpenSettings={actions.openSettings}
         onCreateNew={actions.openCreate}
       />
@@ -83,10 +82,6 @@ function StaffPage () {
         onActivate={actions.onActivate}
         onDeactivate={actions.onDeactivate}
         onBulkAction={(action, ids) => actions.onBulk(action as any, ids)}
-        onExport={actions.onExport}
-        onImport={actions.onImportClick}
-        onRefresh={actions.refresh}
-        onCreateNew={actions.openCreate}
       />
 
       <ImportFileInput inputRef={refs.importInputRef} onChange={actions.onImportFile} />

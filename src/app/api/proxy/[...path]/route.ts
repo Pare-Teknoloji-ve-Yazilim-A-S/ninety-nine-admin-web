@@ -43,9 +43,18 @@ async function handleProxyRequest(
   method: string
 ) {
   try {
-    // Path'i oluştur
+    // Path ve hedef URL'yi oluştur (gerekiyorsa '/api' prefix'ini ekle ve iki kez eklenmesini önle)
     const path = pathSegments.join('/');
-    const targetUrl = `${API_BASE_URL}/${path}`;
+
+    const normalizedBase = API_BASE_URL.replace(/\/+$/, '');
+    const baseHasApi = /\/api(\/|$)/.test(normalizedBase);
+
+    // Path'teki olası leading 'api/' parçasını temizle
+    const cleanedPath = path.replace(/^api\//, '');
+
+    const targetUrl = baseHasApi
+      ? `${normalizedBase}/${cleanedPath}`
+      : `${normalizedBase}/api/${cleanedPath}`;
     
     // Query parametrelerini al
     const searchParams = request.nextUrl.searchParams;
@@ -111,7 +120,13 @@ async function handleProxyRequest(
       { 
         error: 'Proxy request failed', 
         message: error instanceof Error ? error.message : 'Unknown error',
-        target: `${API_BASE_URL}/${pathSegments.join('/')}`
+        target: (() => {
+          const normalizedBase = API_BASE_URL.replace(/\/+$/, '');
+          const baseHasApi = /\/api(\/|$)/.test(normalizedBase);
+          const p = pathSegments.join('/');
+          const cleaned = p.replace(/^api\//, '');
+          return baseHasApi ? `${normalizedBase}/${cleaned}` : `${normalizedBase}/api/${cleaned}`;
+        })()
       },
       { status: 500 }
     );

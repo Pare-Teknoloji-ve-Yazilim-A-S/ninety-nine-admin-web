@@ -84,11 +84,11 @@ export default function StaffFormModal({
   }
 
   const departmentOptions: SearchableOption[] = (departments && departments.length > 0)
-    ? departments.map(d => ({ value: d.id.toString(), label: d.name, description: d.code }))
+    ? departments.map(d => ({ value: d.code, label: d.name, description: d.code }))
     : buildDepartmentEnumOptions()
 
   const positionOptions: SearchableOption[] = (positions && positions.length > 0)
-    ? positions.map(p => ({ value: p.id.toString(), label: p.title, description: p.department?.name }))
+    ? positions.map(p => ({ value: (p.code ?? p.id.toString()), label: p.title, description: (p.code ?? p.department?.name) }))
     : buildPositionEnumOptions()
 
   return (
@@ -96,7 +96,8 @@ export default function StaffFormModal({
       isOpen={open}
       onClose={onClose}
       title={editingStaff ? 'Personel Düzenle' : 'Yeni Personel Ekle'}
-      size="lg"
+      size="xl"
+      className="max-w-5xl"
     >
       <StaffForm
         staff={editingStaff as Staff}

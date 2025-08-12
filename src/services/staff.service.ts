@@ -108,7 +108,8 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     try {
       this.logger.info('Creating new staff', data)
 
-      const response = await apiClient.post<Staff>(this.baseEndpoint, data)
+      // Use actual backend admin staff endpoint per spec: POST /api/admin/staff
+      const response = await apiClient.post<Staff>('/api/admin/staff', data)
 
       this.logger.info('Staff created successfully')
       return response

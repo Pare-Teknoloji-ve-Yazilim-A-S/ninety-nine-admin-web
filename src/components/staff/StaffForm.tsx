@@ -48,8 +48,8 @@ const staffFormSchema = z.object({
   address: z.string().optional(),
   dateOfBirth: z.string().optional(),
   nationalId: z.string().optional(),
-  departmentId: z.string().min(1, 'Departman seçiniz'),
-  positionId: z.string().min(1, 'Pozisyon seçiniz'),
+  departmentId: z.string().min(1, 'Departman seçiniz'), // will map to backend 'department' code
+  positionId: z.string().optional(), // optional per backend spec (maps to 'position' code)
   managerId: z.string().optional(),
   status: z.nativeEnum(StaffStatus),
   employmentType: z.nativeEnum(EmploymentType),
@@ -94,6 +94,7 @@ export function StaffForm({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(staff?.avatar || null)
   const [filteredPositions, setFilteredPositions] = useState<Position[]>(positions)
   const [filteredManagers, setFilteredManagers] = useState<Staff[]>(managers)
+  const [salaryInput, setSalaryInput] = useState<string>('')
 
   const isEditing = !!staff
 
@@ -122,6 +123,12 @@ export function StaffForm({
   })
 
   const watchedDepartmentId = form.watch('departmentId')
+  const watchedSalary = form.watch('salary')
+
+  // Keep local salary text in sync if form value changes programmatically
+  useEffect(() => {
+    setSalaryInput(watchedSalary !== undefined && watchedSalary !== null ? String(watchedSalary) : '')
+  }, [watchedSalary])
 
   // Filter positions based on selected department (skip when custom position options are provided)
   useEffect(() => {
@@ -176,11 +183,12 @@ export function StaffForm({
         address: data.address,
         dateOfBirth: data.dateOfBirth,
         nationalId: data.nationalId,
-        departmentId: data.departmentId,
-        positionId: data.positionId,
-        managerId: data.managerId || undefined,
+       // backend expects department code and optional position code with different keys
+       department: data.departmentId,
+       position: data.positionId || undefined,
+       // managerId not part of backend spec; omit
         status: data.status,
-        employmentType: data.employmentType,
+       employmentType: data.employmentType,
         startDate: data.startDate,
         salary: data.salary,
         notes: data.notes,
@@ -512,11 +520,40 @@ export function StaffForm({
                     <FormItem>
                       <FormLabel>Maaş (TL)</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="0" 
-                          {...field}
-                          onChange={(value: string) => field.onChange(value ? parseFloat(value) : undefined)}
+                        <Input
+                          type="text"
+                          placeholder="0"
+                          inputMode="decimal"
+                          value={salaryInput}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                            const raw = e.target.value
+                            // Allow only digits, comma, dot
+                            const sanitized = raw.replace(/[^0-9.,]/g, '')
+                            setSalaryInput(sanitized)
+                            if (sanitized === '') {
+                              field.onChange(undefined)
+                              return
+                            }
+                            // Accept partial numeric like "12.", "12,"
+                            const numericPattern = /^\d+([.,]\d*)?$/
+                            if (numericPattern.test(sanitized)) {
+                              const normalized = sanitized.replace(',', '.')
+                              const asNumber = Number(normalized)
+                              if (!Number.isNaN(asNumber)) {
+                                field.onChange(asNumber)
+                              }
+                            }
+                          }}
+                          onBlur={() => {
+                            if (salaryInput === '') return
+                            const normalized = salaryInput.replace(',', '.')
+                            const asNumber = Number(normalized)
+                            if (!Number.isNaN(asNumber)) {
+                              // Normalize display (remove trailing separators)
+                              setSalaryInput(String(asNumber))
+                              field.onChange(asNumber)
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
