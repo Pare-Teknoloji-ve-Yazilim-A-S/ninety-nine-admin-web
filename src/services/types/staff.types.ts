@@ -72,6 +72,11 @@ export interface StaffFilterParams {
   search?: string
   status?: StaffStatus[]
   employmentType?: EmploymentType[]
+  // New admin-search specific filters
+  employmentStatus?: StaffStatus[]
+  positionTitle?: string
+  department?: string[]
+  // Legacy/id-based filters (still used in some UIs)
   departmentId?: string[]
   positionId?: string[]
   managerId?: string

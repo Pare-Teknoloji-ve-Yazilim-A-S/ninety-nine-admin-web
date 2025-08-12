@@ -112,13 +112,15 @@ export function StaffList({
 }: StaffListProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
 
+  const staffList = Array.isArray(staff) ? staff : []
+
   // Selection handlers
-  const isAllSelected = selectedStaff.length === staff.length && staff.length > 0
-  const isIndeterminate = selectedStaff.length > 0 && selectedStaff.length < staff.length
+  const isAllSelected = selectedStaff.length === staffList.length && staffList.length > 0
+  const isIndeterminate = selectedStaff.length > 0 && selectedStaff.length < staffList.length
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      onSelectionChange?.(staff.map(s => s.id.toString()))
+      onSelectionChange?.(staffList.map(s => s.id.toString()))
     } else {
       onSelectionChange?.([])
     }
@@ -358,13 +360,13 @@ export function StaffList({
             <RefreshCw className="h-6 w-6 animate-spin" />
             <span className="ml-2">Yükleniyor...</span>
           </div>
-        ) : staff.length === 0 ? (
+        ) : staffList.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Personel bulunamadı</p>
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {staff.map((staffMember) => (
+            {staffList.map((staffMember) => (
               <StaffCard
                 key={staffMember.id}
                 staff={staffMember}
@@ -401,7 +403,7 @@ export function StaffList({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {staff.map((staffMember) => {
+                {staffList.map((staffMember) => {
                   const statusConfig = STAFF_STATUS_CONFIG[staffMember.status]
                   const employmentConfig = EMPLOYMENT_TYPE_CONFIG[staffMember.employmentType]
                   const isSelected = selectedStaff.includes(String(staffMember.id))

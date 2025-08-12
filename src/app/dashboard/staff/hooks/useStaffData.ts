@@ -9,6 +9,7 @@ import { calculateStaffStats, generateStatsSummary, getStaffCountByStatus, getTo
 import { StaffStatus } from '@/services/types/staff.types'
 import { STAFF_QUICK_FILTER_KEYS } from '../constants/staff'
 import { staffService } from '@/services/staff.service'
+import { transformApiStaffListToStaff } from '../utils/transformations'
 
 interface UseStaffDataProps {
   initialData?: {
@@ -34,7 +35,7 @@ export function useStaffData({ initialData }: UseStaffDataProps = {}) {
   const [filters, setFilters] = useState<StaffFilters>({})
   const [pagination, setPagination] = useState<StaffPagination>({
     page: 1,
-    limit: 20,
+    limit: 10,
     total: 0,
     totalPages: 0
   })
@@ -81,16 +82,17 @@ export function useStaffData({ initialData }: UseStaffDataProps = {}) {
     try {
       const response = await staffService.searchStaffAdmin({
         q: searchQuery || undefined,
-        positionTitle: (filters.position && filters.position[0]) || undefined,
-        employmentStatus: (filters.employmentType && filters.employmentType[0]) || undefined,
+        positionTitle: filters.positionTitle || undefined,
+        employmentStatus: (filters.employmentStatus && filters.employmentStatus[0]) || undefined,
         isActive: filters.status?.includes(StaffStatus.ACTIVE) ? true : undefined,
         isOnLeave: filters.status?.includes(StaffStatus.ON_LEAVE) ? true : undefined,
+        department: (filters.department && filters.department[0]) || undefined,
         page: pagination.page,
         limit: pagination.limit,
         orderColumn: 'createdAt',
         orderBy: 'DESC'
       })
-      setStaff(response.data as any)
+      setStaff(transformApiStaffListToStaff(response.data as any))
       setPagination(prev => ({
         ...prev,
         total: response.total,

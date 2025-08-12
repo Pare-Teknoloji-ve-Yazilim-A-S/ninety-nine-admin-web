@@ -20,7 +20,7 @@ function StaffLayout ({ children }: StaffLayoutProps) {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background-primary">
-        {/* Sidebar */}
+        {/* Sidebar - same structure as residents page */}
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -28,15 +28,15 @@ function StaffLayout ({ children }: StaffLayoutProps) {
 
         {/* Main Content Area */}
         <div className="lg:ml-72">
-          {/* Header */}
-          <DashboardHeader 
-            title="Personel Yönetimi" 
-            breadcrumbItems={breadcrumbItems} 
+          {/* Header - same component usage as residents */}
+          <DashboardHeader
+            title="Personel Yönetimi"
+            breadcrumbItems={breadcrumbItems}
           />
 
           {/* Main Content */}
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <div className="px-4 sm:px-0">
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="px-0">
               {children}
             </div>
           </main>

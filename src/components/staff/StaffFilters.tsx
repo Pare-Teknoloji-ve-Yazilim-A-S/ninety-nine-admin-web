@@ -6,6 +6,7 @@ import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
 import Label from '@/app/components/ui/Label'
 import Select, { SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/Select'
+import RadioButton from '@/app/components/ui/RadioButton'
 import Badge from '@/app/components/ui/Badge'
 import Separator from '@/app/components/ui/Separator'
 import Collapsible, { CollapsibleTrigger, CollapsibleContent } from '@/app/components/ui/Collapsible'
@@ -275,51 +276,35 @@ export function StaffFilters({
               </div>
             </div>
 
-            {/* Department Filter */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Departman</Label>
-              <Select
-                value={(filters.departmentId || [])[0] || ''}
-                onValueChange={(value) => 
-                  updateFilter('departmentId', value ? [value] : undefined)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Departman seçiniz" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Tümü</SelectItem>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id.toString()}>
-                      {dept.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Employment Status (Admin) */}
+            <RadioButton
+              label="Çalışma Durumu"
+              name="employmentStatus"
+              value={(filters.employmentStatus || [])[0] || ''}
+              onChange={(e) => updateFilter('employmentStatus', e.currentTarget.value ? [e.currentTarget.value] : undefined)}
+              options={[{ value: '', label: 'Tümü' }, ...Object.entries(STAFF_STATUS_CONFIG).map(([key, cfg]) => ({ value: key, label: cfg.label }))]}
+              direction="vertical"
+            />
 
-            {/* Position Filter */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Pozisyon</Label>
-              <Select
-                value={(filters.positionId || [])[0] || ''}
-                onValueChange={(value) => 
-                  updateFilter('positionId', value ? [value] : undefined)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pozisyon seçiniz" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Tümü</SelectItem>
-                  {positions.map((pos) => (
-                    <SelectItem key={pos.id} value={pos.id.toString()}>
-                      {pos.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Department Radio */}
+            <RadioButton
+              label="Departman"
+              name="department"
+              value={(filters.department || [])[0] || ''}
+              onChange={(e) => updateFilter('department', e.currentTarget.value ? [e.currentTarget.value] : undefined)}
+              options={[{ value: '', label: 'Tümü' }, ...departments.map(d => ({ value: d.code || String(d.id), label: d.name }))]}
+              direction="vertical"
+            />
+
+            {/* Position Radio */}
+            <RadioButton
+              label="Pozisyon"
+              name="positionTitle"
+              value={filters.positionTitle || ''}
+              onChange={(e) => updateFilter('positionTitle', e.currentTarget.value || undefined)}
+              options={[{ value: '', label: 'Tümü' }, ...positions.map(p => ({ value: p.title, label: p.title }))]}
+              direction="vertical"
+            />
 
             {/* Hire Date Range */}
             <div className="space-y-2">

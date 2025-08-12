@@ -315,14 +315,16 @@ const DataTable: React.FC<DataTableProps> = ({
 
     // Render table body
     const renderTableBody = () => {
-        // Determine skeleton row count based on pagination or data length
-        const skeletonRowCount = pagination?.recordsPerPage || data.length || 10;
+        // Determine row count to render: keep table height stable.
+        const pageSize = pagination?.recordsPerPage || data.length || 10;
+        const visibleRows = data.slice(0, pageSize);
+        const emptyRowCount = Math.max(pageSize - visibleRows.length, 0);
         
         return (
             <tbody>
                 {loading ? (
                     // Show skeleton rows when loading - use dynamic count
-                    Array.from({ length: skeletonRowCount }).map((_, index) => (
+                    Array.from({ length: pageSize }).map((_, index) => (
                         <tr key={`skeleton-${index}`} className="border-b border-gray-200 dark:border-gray-700 h-16">
                             {selectable && (
                                 <td className={paddingClasses[size]}>
@@ -356,7 +358,8 @@ const DataTable: React.FC<DataTableProps> = ({
                 ) : data.length === 0 ? (
                     renderEmptyRow()
                 ) : (
-                    data.map((row, rowIndex) => (
+                    <>
+                    {visibleRows.map((row, rowIndex) => (
                         <React.Fragment key={row.id || rowIndex}>
                             <tr
                                 className={cn(
@@ -428,7 +431,25 @@ const DataTable: React.FC<DataTableProps> = ({
                                 </tr>
                             )}
                         </React.Fragment>
-                    ))
+                    ))}
+                    {emptyRowCount > 0 && Array.from({ length: emptyRowCount }).map((_, idx) => (
+                        <tr key={`empty-${idx}`} className="border-b border-gray-200 dark:border-gray-700 h-16">
+                            {selectable && <td className={paddingClasses[size]} />}
+                            {expandable && <td className={paddingClasses[size]} />}
+                            {columns.map((column, columnIndex) => (
+                                <td
+                                    key={`empty-cell-${idx}-${columnIndex}`}
+                                    className={cn(paddingClasses[size], sizeClasses[size], column.className)}
+                                >
+                                    {/* empty row placeholder to keep height */}
+                                </td>
+                            ))}
+                            {(rowActions.length > 0 || ActionMenuComponent) && (
+                                <td className={paddingClasses[size]} />
+                            )}
+                        </tr>
+                    ))}
+                    </>
                 )}
             </tbody>
         );

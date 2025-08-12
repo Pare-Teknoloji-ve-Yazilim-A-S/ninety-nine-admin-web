@@ -9,6 +9,8 @@ export interface StaffFilters {
   department?: string[]
   position?: string[]
   employmentType?: string[]
+  employmentStatus?: StaffStatus[]
+  positionTitle?: string
   search?: string
 }
 

@@ -23,7 +23,12 @@ import type { CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.type
 function StaffPage () {
   const { ui, data, refs, actions } = useStaffPageViewModel()
 
-  const totalCountLabel = `${(data.pagination.total ?? data.staff.length).toLocaleString()} kişi`
+  const totalCount = (typeof data.pagination?.total === 'number' && data.pagination.total >= 0)
+    ? data.pagination.total
+    : Array.isArray(data.staff)
+      ? data.staff.length
+      : 0
+  const totalCountLabel = `${totalCount.toLocaleString()} kişi`
 
   return (
     <div className="space-y-6 text-on-light dark:text-on-dark">
@@ -53,8 +58,6 @@ function StaffPage () {
       <SearchAndFilters
         searchQuery={data.searchQuery}
         onSearch={actions.setSearchQuery}
-        viewMode={ui.viewMode}
-        onViewModeChange={actions.setViewMode}
         onOpenFilters={actions.openFilters}
       />
 
@@ -70,12 +73,12 @@ function StaffPage () {
         error={data.error}
         searchQuery={data.searchQuery}
         selectedStaff={ui.selectedStaffIds}
-        viewMode={ui.viewMode}
+        viewMode={'table'}
         onSearch={actions.setSearchQuery}
         onPageChange={actions.setPage}
         onPageSizeChange={actions.setLimit}
         onSelectionChange={actions.setSelected}
-        onViewModeChange={actions.setViewMode}
+        onViewModeChange={() => { /* grid disabled */ }}
         onView={actions.onView}
         onEdit={actions.openEdit}
         onDelete={actions.onDelete}

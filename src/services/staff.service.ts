@@ -418,6 +418,7 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     isOnDuty?: boolean
     isActive?: boolean
     isOnLeave?: boolean
+    department?: string
     page?: number
     limit?: number
     orderColumn?: string
@@ -435,21 +436,22 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
 
       const url = `/api/admin/staff/search${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
       const response = await apiClient.get<StaffListResponse>(url)
+      const payload: any = response as any
+      const list = payload?.data ?? payload?.results ?? []
+      const total = payload?.total ?? payload?.pagination?.total ?? Array.isArray(list) ? list.length : 0
+      const page = payload?.page ?? payload?.pagination?.page ?? 1
+      const limit = payload?.limit ?? payload?.pagination?.limit ?? list.length
+      const totalPages = payload?.totalPages ?? payload?.pagination?.totalPages ?? 1
 
       return {
-        data: response.data.data,
-        total: response.data.total,
-        page: response.data.page,
-        limit: response.data.limit,
-        totalPages: response.data.totalPages,
-        pagination: {
-          total: response.data.total,
-          page: response.data.page,
-          limit: response.data.limit,
-          totalPages: response.data.totalPages
-        },
-        success: response.success,
-        message: response.message
+        data: list,
+        total,
+        page,
+        limit,
+        totalPages,
+        pagination: { total, page, limit, totalPages },
+        success: payload?.success,
+        message: payload?.message
       }
     } catch (error) {
       this.logger.error('Failed admin staff search', error)

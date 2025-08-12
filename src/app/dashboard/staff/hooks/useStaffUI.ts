@@ -46,7 +46,7 @@ export function useStaffUI() {
   const uiState: StaffUIState = {
     isStaffFormOpen,
     filtersOpen,
-    viewMode,
+    viewMode: STAFF_VIEW_MODES.TABLE,
     selectedStaffIds,
     editingStaff
   }
@@ -57,7 +57,7 @@ export function useStaffUI() {
     closeForm,
     openFilters,
     closeFilters,
-    setViewMode,
+    setViewMode: () => {},
     setSelected,
     clearSelected
   }

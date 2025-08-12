@@ -1,7 +1,17 @@
 'use client'
 
-import StaffList from '@/components/staff/StaffList'
 import type { Staff } from '@/services/types/staff.types'
+import GenericListView from '@/app/components/templates/GenericListView'
+import GenericGridView from '@/app/components/templates/GenericGridView'
+import BulkActionsBar from '@/app/components/ui/BulkActionsBar'
+import Card from '@/app/components/ui/Card'
+import Button from '@/app/components/ui/Button'
+import Checkbox from '@/app/components/ui/Checkbox'
+import TablePagination from '@/app/components/ui/TablePagination'
+import Badge from '@/app/components/ui/Badge'
+import EmptyState from '@/app/components/ui/EmptyState'
+import Skeleton from '@/app/components/ui/Skeleton'
+import { getTableColumns } from './table-columns'
 
 type ViewMode = 'table' | 'grid'
 
@@ -29,13 +39,78 @@ interface ContentAreaProps {
   onBulkAction: (action: string, ids: string[]) => void
 }
 
-export default function ContentArea(props: ContentAreaProps) {
+export default function ContentArea({
+  staff,
+  totalCount,
+  currentPage,
+  totalPages,
+  pageSize,
+  isLoading,
+  error,
+  onSelectionChange,
+  onPageChange,
+  onPageSizeChange,
+  onView,
+  onDelete,
+  viewMode
+}: ContentAreaProps) {
+  const columns = getTableColumns({ onView })
+
+  const data = Array.isArray(staff) ? staff : []
+
   return (
-    <StaffList
-      {...props}
-      showSearchBar={false}
-      showViewToggle={false}
-    />
+    <>
+      {/** Table view */}
+      {viewMode === 'table' && (
+        <GenericListView
+          data={data}
+          loading={!!isLoading}
+          error={error}
+          columns={columns as any}
+          onSelectionChange={(rows: Staff[]) => onSelectionChange(rows.map(r => String(r.id)))}
+          pagination={{
+            currentPage,
+            totalPages,
+            totalRecords: totalCount,
+            recordsPerPage: pageSize,
+            onPageChange,
+            onRecordsPerPageChange: onPageSizeChange,
+            recordsPerPageOptions: [5, 10, 20, 30, 40, 50],
+            preventScroll: true
+          }}
+          emptyStateMessage={totalCount === 0 ? 'Henüz personel kaydı bulunmuyor.' : 'Kayıt bulunamadı.'}
+          selectable
+          showPagination
+        />
+      )}
+      {/** Grid view */}
+      {viewMode === 'grid' && (
+        <GenericGridView
+          data={data}
+          loading={!!isLoading}
+          error={error}
+          onSelectionChange={(ids) => onSelectionChange(ids.map(String) as any)}
+          pagination={{
+            currentPage,
+            totalPages,
+            totalRecords: totalCount,
+            recordsPerPage: pageSize,
+            onPageChange,
+            onRecordsPerPageChange: onPageSizeChange,
+            preventScroll: true
+          }}
+          emptyStateMessage={totalCount === 0 ? 'Henüz personel kaydı bulunmuyor.' : 'Kayıt bulunamadı.'}
+          ui={{ Card, Button, Checkbox, TablePagination, Badge, EmptyState, Skeleton, BulkActionsBar }}
+          renderCard={(item) => (
+            <Card className="p-4 rounded-2xl">
+              <div className="font-medium">{(item as Staff).firstName} {(item as Staff).lastName}</div>
+              <div className="text-sm text-text-light-muted">{(item as Staff).email}</div>
+            </Card>
+          )}
+          getItemId={(item) => (item as Staff).id}
+        />
+      )}
+    </>
   )
 }
 
