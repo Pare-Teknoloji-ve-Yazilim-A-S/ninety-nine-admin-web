@@ -183,10 +183,11 @@ export function StaffForm({
         address: data.address,
         dateOfBirth: data.dateOfBirth,
         nationalId: data.nationalId,
-       // backend expects department code and optional position code with different keys
-       department: data.departmentId,
-       position: data.positionId || undefined,
-       // managerId not part of backend spec; omit
+       // map form selections to DTO field names
+       departmentId: data.departmentId,
+       positionId: data.positionId || undefined,
+       // managerId can be included if provided
+       managerId: data.managerId || undefined,
         status: data.status,
        employmentType: data.employmentType,
         startDate: data.startDate,
@@ -405,7 +406,7 @@ export function StaffForm({
                     <FormItem>
                       <SearchableDropdown
                         label="Departman *"
-                        value={field.value}
+                        value={field.value || ''}
                         onChange={field.onChange}
                          options={(departmentOptions && departmentOptions.length > 0)
                            ? departmentOptions
@@ -426,7 +427,7 @@ export function StaffForm({
                     <FormItem>
                       <SearchableDropdown
                         label="Pozisyon *"
-                        value={field.value}
+                        value={field.value || ''}
                         onChange={field.onChange}
                          options={(positionOptions && positionOptions.length > 0)
                            ? positionOptions
