@@ -41,6 +41,7 @@ export default function CreateAnnouncementPage() {
 
     // Form submission handler
     const handleSubmit = useCallback(async (formData: AnnouncementFormData) => {
+        console.log('[CreateAnnouncementPage] submit called with', formData);
         setLoading(true);
 
         try {
@@ -58,9 +59,11 @@ export default function CreateAnnouncementPage() {
             };
 
             // Create announcement
+            console.log('[CreateAnnouncementPage] creating announcement with', createData);
             const response = await announcementService.createAnnouncement(createData);
-            
-            let announcementId = response.data.id;
+            console.log('[CreateAnnouncementPage] create response', response);
+            // API now returns entity under data: {}
+            const announcementId = (response as any)?.data?.id || (response as any)?.data?.data?.id;
 
             // Upload image if provided
             if (formData.image && announcementId) {

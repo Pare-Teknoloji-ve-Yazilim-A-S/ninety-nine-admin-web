@@ -333,7 +333,7 @@ export default function AnnouncementDetailPage() {
                     <DashboardHeader title="Duyuru Detayı" breadcrumbItems={breadcrumbItems} />
 
                     {/* Main Content */}
-                    <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                         {/* Back Button */}
                         <div className="mb-6">
                             <Button variant="ghost" size="md" icon={ArrowLeft} onClick={handleBack}>
@@ -341,213 +341,104 @@ export default function AnnouncementDetailPage() {
                             </Button>
                         </div>
 
-                        {/* Announcement Details */}
-                        <Card className="mb-6">
-                            <div className="p-8">
-                                {/* Header with title and badges */}
-                                <div className="mb-6">
-                                    <div className="flex items-start justify-between gap-4 mb-4">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h1 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                                                    {announcement.title}
-                                                </h1>
-                                                {announcement.isPinned && (
-                                                    <Pin className="w-6 h-6 text-primary-gold" />
-                                                )}
-                                                {announcement.isEmergency && (
-                                                    <AlertTriangle className="w-6 h-6 text-red-500" />
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
+                        {/* Sağ üst aksiyonlar */}
+                        <div className="mb-4 flex justify-end gap-3">
+                            <Button variant="secondary" size="md" icon={Edit} onClick={handleEdit}>
+                                Düzenle
+                            </Button>
+                            <Button variant="danger" size="md" icon={Trash2} onClick={handleDelete}>
+                                Kaldır
+                            </Button>
+                        </div>
 
-                                    {/* Status and Type Badges */}
-                                    <div className="flex flex-wrap gap-3 mb-6">
-                                        {renderStatusBadge(announcement)}
-                                        <Badge
-                                            variant="soft"
-                                            color={getAnnouncementTypeColor(announcement.type) as any}
-                                            className="text-sm px-4 py-2 rounded-full font-medium"
-                                        >
-                                            {getAnnouncementTypeLabel(announcement.type)}
-                                        </Badge>
-                                        {isExpired && (
-                                            <Badge
-                                                variant="soft"
-                                                color="red"
-                                                className="text-sm px-4 py-2 rounded-full font-medium"
-                                            >
-                                                Süresi Dolmuş
-                                            </Badge>
-                                        )}
-                                        {isExpiringSoon && !isExpired && (
-                                            <Badge
-                                                variant="soft"
-                                                color="gold"
-                                                className="text-sm px-4 py-2 rounded-full font-medium"
-                                            >
-                                                Yakında Bitiyor
-                                            </Badge>
-                                        )}
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex flex-wrap gap-3 mb-6">
-                                        {renderActionButtons(announcement)}
-                                    </div>
-                                </div>
-
-                                {/* Content */}
-                                <div className="mb-8">
-                                    <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4">
-                                        Duyuru İçeriği
-                                    </h3>
-                                    <div className="prose prose-gray dark:prose-invert max-w-none">
-                                        <p className="text-text-light-primary dark:text-text-primary whitespace-pre-wrap">
-                                            {announcement.content}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Image */}
-                                {announcement.imageUrl && (
-                                    <div className="mb-8">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4">
-                                            Görsel
-                                        </h3>
-                                        <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                                            <img
-                                                src={announcement.imageUrl}
-                                                alt={announcement.title}
-                                                className="w-full h-auto"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Metadata Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Date Information */}
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-                                            Tarih Bilgileri
-                                        </h3>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <Calendar className="w-5 h-5 text-text-light-secondary dark:text-text-secondary" />
-                                                <div>
-                                                    <p className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                                        Oluşturulma Tarihi
-                                                    </p>
-                                                    <p className="text-text-on-light dark:text-text-on-dark">
-                                                        {new Date(announcement.createdAt).toLocaleString('tr-TR')}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            {announcement.publishDate && (
-                                                <div className="flex items-center gap-3">
-                                                    <Send className="w-5 h-5 text-text-light-secondary dark:text-text-secondary" />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                                            Yayınlanma Tarihi
-                                                        </p>
-                                                        <p className="text-text-on-light dark:text-text-on-dark">
-                                                            {new Date(announcement.publishDate).toLocaleString('tr-TR')}
-                                                        </p>
-                                                    </div>
-                                                </div>
+                        {/* Üst dizilim: Sol büyük kart (Başlık ve İçerik) + Sağ küçük kart (Yayın/Bitiş/Tip) */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-8">
+                            {/* Sol: Başlık ve İçerik */}
+                            <div className="lg:col-span-2">
+                                <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-6">Başlık ve İçerik</h2>
+                                <Card className="shadow-lg">
+                                    <div className="p-6 space-y-6">
+                                        <div>
+                                            <p className="text-xs text-text-light-secondary dark:text-text-secondary">Başlık</p>
+                                            <p className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">{announcement.title}</p>
+                                            {/* Alt başlık satırı: A1 Daire 13 • Dolu • A Blok Blok • 10. Kat • 170 m² */}
+                                            {Array.isArray(announcement.properties) && announcement.properties.length > 0 && (
+                                                <p className="text-sm text-text-light-secondary dark:text-text-secondary mt-1">
+                                                    {/* Varsayılan ilk property üzerinden gösterim */}
+                                                    {(() => {
+                                                        const p: any = announcement.properties![0];
+                                                        const name = p?.name || '';
+                                                        const status = p?.status ? (p.status === 'OCCUPIED' ? 'Dolu' : p.status) : '';
+                                                        const block = p?.block || p?.blockNumber || 'A';
+                                                        const floor = p?.floor ?? 0;
+                                                        const area = p?.area ?? 0;
+                                                        const parts: string[] = [];
+                                                        if (name) parts.push(name);
+                                                        if (status) parts.push(status);
+                                                        parts.push(`${block} Blok Blok`);
+                                                        parts.push(`${floor}. Kat`);
+                                                        parts.push(`${area} m²`);
+                                                        return parts.join(' • ');
+                                                    })()}
+                                                </p>
                                             )}
-                                            {announcement.expiryDate && (
-                                                <div className="flex items-center gap-3">
-                                                    <Clock className="w-5 h-5 text-text-light-secondary dark:text-text-secondary" />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                                            Bitiş Tarihi
-                                                        </p>
-                                                        <p className="text-text-on-light dark:text-text-on-dark">
-                                                            {new Date(announcement.expiryDate).toLocaleString('tr-TR')}
-                                                            {daysUntilExpiry !== undefined && (
-                                                                <span className={`ml-2 text-sm ${
-                                                                    isExpired ? 'text-red-500' : 
-                                                                    isExpiringSoon ? 'text-yellow-500' : 
-                                                                    'text-text-light-secondary dark:text-text-secondary'
-                                                                }`}>
-                                                                    ({isExpired 
-                                                                        ? `${Math.abs(daysUntilExpiry)} gün geçti`
-                                                                        : `${daysUntilExpiry} gün kaldı`
-                                                                    })
-                                                                </span>
-                                                            )}
-                                                        </p>
-                                                    </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-text-light-secondary dark:text-text-secondary mb-1">İçerik</p>
+                                            <p className="text-sm text-text-on-light dark:text-text-on-dark whitespace-pre-wrap">{announcement.content}</p>
+                                        </div>
+                                    </div>
+                                </Card>
+
+                                {/* Görsel Kartı */}
+                                <div className="mt-6">
+                                    <Card className="shadow-md">
+                                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                            <h3 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Görsel</h3>
+                                        </div>
+                                        <div className="p-6">
+                                            {announcement.imageUrl ? (
+                                                <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                                    <img src={announcement.imageUrl} alt={announcement.title} className="w-full h-auto" />
+                                                </div>
+                                            ) : (
+                                                <div className="h-56 flex items-center justify-center rounded-lg bg-background-light-soft dark:bg-background-soft text-text-light-secondary dark:text-text-secondary">
+                                                    Görsel bulunamadı
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
-
-                                    {/* Author and Properties */}
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-                                            Diğer Bilgiler
-                                        </h3>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <User className="w-5 h-5 text-text-light-secondary dark:text-text-secondary" />
-                                                <div>
-                                                    <p className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                                        Oluşturan
-                                                    </p>
-                                                    <p className="text-text-on-light dark:text-text-on-dark">
-                                                        {announcement.createdBy 
-                                                            ? `${announcement.createdBy.firstName} ${announcement.createdBy.lastName}`
-                                                            : 'Bilinmiyor'
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <MapPin className="w-5 h-5 text-text-light-secondary dark:text-text-secondary" />
-                                                <div>
-                                                    <p className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                                                        Hedef Özellikler
-                                                    </p>
-                                                    <p className="text-text-on-light dark:text-text-on-dark">
-                                                        {announcement.properties && announcement.properties.length > 0
-                                                            ? `${announcement.properties.length} özellik seçildi`
-                                                            : 'Tüm özellikler'
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </Card>
                                 </div>
-
-                                {/* Properties List */}
-                                {announcement.properties && announcement.properties.length > 0 && (
-                                    <div className="mt-8">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4">
-                                            Hedef Özellikler
-                                        </h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                            {announcement.properties.map(property => (
-                                                <div key={property.id} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                                    <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                        {property.name}
-                                                    </p>
-                                                    {property.address && (
-                                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                                            {property.address}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
-                        </Card>
+                            {/* Sağ: Küçük özet kartı */}
+                            <div className="lg:sticky lg:top-24">
+                                <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-6">Duyuru Bilgileri</h2>
+                                <Card className="shadow-md">
+                                    <div className="p-6 space-y-6">
+                                        {/* Tip */}
+                                        <div>
+                                            <p className="text-xs text-text-light-secondary dark:text-text-secondary mb-1">Tip</p>
+                                            <p className={`text-sm font-medium ${announcement.type === 'EMERGENCY' ? 'text-primary-red' : 'text-text-on-light dark:text-text-on-dark'}`}>
+                                                {getAnnouncementTypeLabel(announcement.type)}
+                                            </p>
+                                        </div>
+                                        {/* Tarihler yan yana */}
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <p className="text-xs text-text-light-secondary dark:text-text-secondary mb-1">Yayınlanma Tarihi</p>
+                                                <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">{announcement.publishDate ? new Date(announcement.publishDate).toLocaleDateString('tr-TR') : '-'}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-text-light-secondary dark:text-text-secondary mb-1">Bitiş Tarihi</p>
+                                                <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">{announcement.expiryDate ? new Date(announcement.expiryDate).toLocaleDateString('tr-TR') : '-'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            </div>
+                        </div>
+
+                        {/* Alt içerikler burada devam eder (gerekirse ek kartlar) */}
                     </main>
                 </div>
 

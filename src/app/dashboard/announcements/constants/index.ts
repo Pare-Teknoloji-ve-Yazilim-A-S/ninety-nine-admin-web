@@ -92,8 +92,9 @@ export const STATS_CONFIG = [
         icon: MessageSquare,
     },
     {
-        key: 'draft',
-        title: 'Taslak',
+        // draft card removed per request
+        key: '__removed_draft__',
+        title: '',
         color: 'secondary' as const,
         icon: MessageSquare,
     },

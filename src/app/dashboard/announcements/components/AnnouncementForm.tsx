@@ -133,10 +133,12 @@ export default function AnnouncementForm({
         e.preventDefault();
         
         if (!validateForm()) {
+            console.warn('AnnouncementForm validation failed');
             return;
         }
 
         try {
+            console.log('AnnouncementForm submitting', formData);
             await onSubmit(formData);
         } catch (error) {
             console.error('Form submission error:', error);
@@ -183,7 +185,7 @@ export default function AnnouncementForm({
                             <TextArea
                                 label="İçerik"
                                 value={formData.content}
-                                onChange={(e: any) => handleInputChange('content', e.target.value)}
+                                onChange={(value: string) => handleInputChange('content', value)}
                                 error={errors.content}
                                 placeholder="Duyuru içeriğini girin..."
                                 required
@@ -233,7 +235,7 @@ export default function AnnouncementForm({
                         <div>
                             <DatePicker
                                 label="Yayınlanma Tarihi"
-                                value={formData.publishDate?.toISOString().split('T')[0]}
+                                value={formData.publishDate ? formData.publishDate.toISOString().split('T')[0] : ''}
                                 onChange={(e: any) => handleInputChange('publishDate', e.target.value ? new Date(e.target.value) : undefined)}
                                 placeholder="Yayınlanma tarihini seçin..."
                             />
@@ -246,7 +248,7 @@ export default function AnnouncementForm({
                         <div>
                             <DatePicker
                                 label="Bitiş Tarihi"
-                                value={formData.expiryDate?.toISOString().split('T')[0]}
+                                value={formData.expiryDate ? formData.expiryDate.toISOString().split('T')[0] : ''}
                                 onChange={(e: any) => handleInputChange('expiryDate', e.target.value ? new Date(e.target.value) : undefined)}
                                 error={errors.expiryDate}
                                 placeholder="Bitiş tarihini seçin..."
@@ -272,7 +274,7 @@ export default function AnnouncementForm({
                             <div className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                                 <Checkbox
                                     checked={formData.isPinned}
-                                    onChange={(checked) => handleInputChange('isPinned', checked)}
+                                    onChange={(e) => handleInputChange('isPinned', (e.target as HTMLInputElement).checked)}
                                 />
                                 <div className="flex items-center gap-2">
                                     <Pin className="w-5 h-5 text-primary-gold" />
@@ -290,7 +292,7 @@ export default function AnnouncementForm({
                             <div className="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                                 <Checkbox
                                     checked={formData.isEmergency}
-                                    onChange={(checked) => handleInputChange('isEmergency', checked)}
+                                    onChange={(e) => handleInputChange('isEmergency', (e.target as HTMLInputElement).checked)}
                                 />
                                 <div className="flex items-center gap-2">
                                     <AlertTriangle className="w-5 h-5 text-red-500" />

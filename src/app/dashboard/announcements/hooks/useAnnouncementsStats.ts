@@ -39,8 +39,21 @@ export function useAnnouncementsStats(): UseAnnouncementsStatsReturn {
         setError(null);
 
         try {
-            const response = await announcementService.getAnnouncementStats();
-            setStats(response.data || DEFAULT_STATS);
+            // Fetch counts in parallel using new lightweight endpoints
+            const [total, emergency, published, expiringSoon] = await Promise.all([
+                announcementService.getTotalCount().catch(() => 0),
+                announcementService.getEmergencyCount().catch(() => 0),
+                announcementService.getPublishedCount().catch(() => 0),
+                announcementService.getExpiringIn1dCount().catch(() => 0),
+            ]);
+
+            setStats({
+                ...DEFAULT_STATS,
+                total,
+                emergency,
+                published,
+                expiringSoon,
+            });
         } catch (err: any) {
             console.warn('Failed to fetch announcement stats, using defaults:', err);
             setError(null); // Don't show error to user, just use defaults

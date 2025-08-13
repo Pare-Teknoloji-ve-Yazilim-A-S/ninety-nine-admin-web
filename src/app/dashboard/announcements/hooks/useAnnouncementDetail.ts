@@ -28,7 +28,8 @@ export function useAnnouncementDetail({ announcementId }: UseAnnouncementDetailP
 
         try {
             const response = await announcementService.getAnnouncementById(announcementId);
-            setAnnouncement(response.data);
+            const ann = (response as any)?.data?.data || (response as any)?.data || (response as any);
+            setAnnouncement(ann as any);
         } catch (err: any) {
             console.error('Failed to fetch announcement:', err);
             setError(err?.message || 'Duyuru yüklenirken bir hata oluştu');

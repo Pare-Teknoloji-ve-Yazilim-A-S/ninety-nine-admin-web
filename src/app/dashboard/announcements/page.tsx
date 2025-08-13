@@ -122,9 +122,16 @@ export default function AnnouncementsPage() {
     // Build calendar events map from announcements
     const eventsByDate = useMemo(() => {
         const map: Record<string, { count: number; hasEmergency?: boolean; hasPinned?: boolean; items?: CalendarEventDetail[] }> = {}
+        const toDateKey = (dateStr: string): string => {
+            if (!dateStr) return ''
+            // Prefer ISO date part directly to avoid timezone shifts
+            if (dateStr.length >= 10) return dateStr.slice(0, 10)
+            const d = new Date(dateStr)
+            return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString().slice(0, 10)
+        }
         const add = (dateStr: string, isEmergency: boolean, isPinned: boolean, item?: CalendarEventDetail) => {
             if (!dateStr) return
-            const key = new Date(dateStr).toISOString().slice(0, 10)
+            const key = toDateKey(dateStr)
             if (!map[key]) map[key] = { count: 0, hasEmergency: false, hasPinned: false, items: [] }
             map[key].count += 1
             if (isEmergency) map[key].hasEmergency = true
@@ -133,30 +140,8 @@ export default function AnnouncementsPage() {
         }
         for (const a of dataHook.announcements) {
             // Use publishDate; if there is a date range, also mark expiryDate day
-            if (a.publishDate) add(a.publishDate, a.isEmergency, a.isPinned, { id: a.id, title: a.title, time: a.publishDate?.slice(11, 16) || undefined, isEmergency: a.isEmergency, isPinned: a.isPinned })
-            if (a.expiryDate) add(a.expiryDate, a.isEmergency, a.isPinned, { id: a.id, title: a.title, time: a.expiryDate?.slice(11, 16) || undefined, isEmergency: a.isEmergency, isPinned: a.isPinned })
+            if (a.publishDate) add(a.publishDate, a.isEmergency, a.isPinned, { id: a.id, title: a.title, description: a.content, time: a.publishDate?.slice(11, 16) || undefined, isEmergency: a.isEmergency, isPinned: a.isPinned })
         }
-        // Sample demo events to visualize the calendar (temporary)
-        const now = new Date()
-        const y = now.getFullYear()
-        const m = now.getMonth()
-        const makeKey = (d: number) => new Date(Date.UTC(y, m, d)).toISOString().slice(0, 10)
-        const sample: Record<string, { count: number; hasEmergency?: boolean; hasPinned?: boolean; items?: CalendarEventDetail[] }> = {
-          [makeKey(5)]: { count: 2, hasEmergency: true, items: [ { id: 'demo-1', title: 'Acil Su Kesintisi', time: '09:00', isEmergency: true }, { id: 'demo-2', title: 'Jeneratör Bakımı', time: '14:00' } ] },
-          [makeKey(12)]: { count: 1, hasPinned: true, items: [ { id: 'demo-3', title: 'Site Buluşması', time: '19:30', isPinned: true } ] },
-          [makeKey(18)]: { count: 3, hasPinned: true, items: [ { id: 'demo-4', title: 'Toplantı: Yönetim', time: '11:00', isPinned: true }, { id: 'demo-5', title: 'Havuz Bakımı', time: '13:30' }, { id: 'demo-6', title: 'Ortak Alan Temizliği', time: '16:00' } ] },
-          [makeKey(22)]: { count: 1, items: [ { id: 'demo-7', title: 'Otopark Boyası', time: '10:00' } ] }
-        }
-        Object.entries(sample).forEach(([key, val]) => {
-          if (!map[key]) {
-            map[key] = { ...val }
-          } else {
-            map[key].count += val.count
-            map[key].hasEmergency = map[key].hasEmergency || !!val.hasEmergency
-            map[key].hasPinned = map[key].hasPinned || !!val.hasPinned
-            map[key].items = [...(map[key].items || []), ...(val.items || [])]
-          }
-        })
         return map
     }, [dataHook.announcements])
 
@@ -208,7 +193,7 @@ export default function AnnouncementsPage() {
     const statsData = useMemo(() => {
         if (!statsHook.stats) return [];
         
-        return STATS_CONFIG.map(config => {
+        return STATS_CONFIG.filter(cfg => cfg.key !== 'draft' && cfg.key !== '__removed_draft__').map(config => {
             const statValue = statsHook.stats![config.key as keyof typeof statsHook.stats];
             // Handle both simple numbers and nested objects
             const value = typeof statValue === 'object' ? 0 : (statValue || 0);
@@ -401,8 +386,8 @@ export default function AnnouncementsPage() {
                     <div className="flex items-center justify-between text-xs text-text-light-secondary dark:text-text-secondary">
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-1">
-                                        <CalendarIcon className="w-3 h-3" />
-                                <span>{new Date(announcement.createdAt).toLocaleDateString('tr-TR')}</span>
+                            <CalendarIcon className="w-3 h-3" />
+                            <span>{announcement.publishDate ? new Date(announcement.publishDate).toLocaleDateString('tr-TR') : '-'}</span>
                             </div>
                             {(announcement as any).targetAudience && (
                                 <div className="flex items-center gap-1">
@@ -443,7 +428,16 @@ export default function AnnouncementsPage() {
 
     // Wrapper: ActionMenuComponent tipi { row: Announcement }
     const AnnouncementActionMenuWrapper: React.FC<{ row: Announcement }> = ({ row }) => (
-        <AnnouncementActionMenu announcement={row} onAction={handleAnnouncementAction} />
+        <div className="flex items-center justify-end">
+            <button
+                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
+                onClick={() => handleAnnouncementAction('view', row)}
+                type="button"
+                title="Detay"
+            >
+                <ChevronRight className="w-5 h-5" />
+            </button>
+        </div>
     );
 
     return (
@@ -484,14 +478,7 @@ export default function AnnouncementsPage() {
                                     <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                         Yenile
                                     </Button>
-                                    <ExportDropdown
-                                        onExportCSV={() => {
-                                            console.log('Export CSV');
-                                            toastFunctions.info('Bilgi', 'CSV export özelliği yakında gelecek');
-                                        }}
-                                        variant="secondary"
-                                        size="md"
-                                    />
+                                    {/* Export button removed as requested */}
                                     <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewAnnouncement}>
                                         Yeni Duyuru
                                     </Button>
@@ -513,31 +500,7 @@ export default function AnnouncementsPage() {
                                 ))}
                             </div>
 
-                            {/* Sıra 2.5: Aylık Takvim (duyuru/etkinlik görünümü) */}
-                            <Card className="mb-6">
-                                <div className="p-4">
-                                     <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">Aylık Takvim</h3>
-                                        <div className="text-xs text-text-light-secondary dark:text-text-secondary">
-                                            <span className="inline-flex items-center mr-3"><span className="w-2 h-2 rounded-full bg-primary-gold mr-1" /> Duyuru</span>
-                                            <span className="inline-flex items-center mr-3"><span className="w-2 h-2 rounded-full bg-red-500 mr-1" /> Acil</span>
-                                            <span className="inline-flex items-center"><span className="w-2 h-2 rounded-full bg-primary-gold mr-1" /> Sabit</span>
-                                        </div>
-                                    </div>
-                                     {/* Inline selected day preview removed per spec */}
-                                    <Calendar
-                                        eventsByDate={eventsByDate}
-                                        showSelectedSummary={false}
-                                        onDateSelect={(dateKey, items) => {
-                                            if (items && items.length > 0) {
-                                              setEventModalDate(dateKey)
-                                              setEventModalItems(items)
-                                              setEventModalOpen(true)
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            </Card>
+                            {/* Sıra 2.5: Aylık Takvim kaldırıldı */}
 
                             {/* Sıra 3: Search and Filters (Arama ve Filtreler) */}
                             <Card className="mb-6">
@@ -603,7 +566,7 @@ export default function AnnouncementsPage() {
                                         variant: action.variant === 'primary' ? 'default' : action.variant as any,
                                         onClick: (items: Announcement[]) => action.onClick()
                                     }))}
-                                    columns={getTableColumns(tableActionHandlers, AnnouncementActionMenuWrapper)}
+                                    columns={getTableColumns(tableActionHandlers)}
                                     sortConfig={filtersHook.sortConfig}
                                     onSortChange={(key, direction) => filtersHook.handleSort({ key: key as keyof Announcement, direction })}
                                     pagination={{
@@ -742,23 +705,29 @@ export default function AnnouncementsPage() {
                     )}
                     {eventModalItems.map((it, idx) => (
                       <div key={(it.id as string) || idx}
-                           className="flex items-start justify-between p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light-soft dark:bg-background-soft">
-                        <div>
-                          <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                            {it.time && <span className="mr-2 text-primary-gold">{it.time}</span>}
-                            {it.title || 'Duyuru'}
-                          </p>
-                          {it.description && (
-                            <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1">{it.description}</p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {it.isEmergency && (
-                            <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-red/15 text-primary-red">Acil</span>
-                          )}
-                          {it.isPinned && (
-                            <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-gold/20 text-primary-gold">Sabit</span>
-                          )}
+                           className="p-4 rounded-xl border border-border-light dark:border-border-dark bg-background-light-card dark:bg-background-card">
+                        <div className="flex items-start justify-between">
+                          <div className="pr-4">
+                            <p className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
+                              {it.title || 'Duyuru'}
+                            </p>
+                            {it.description && (
+                              <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1 line-clamp-3">{it.description}</p>
+                            )}
+                            <div className="mt-2 flex items-center gap-4 text-xs text-text-light-secondary dark:text-text-secondary">
+                              <span>Yayın: {eventModalDate ? new Date(eventModalDate).toLocaleDateString('tr-TR') : '-'}</span>
+                              {it.time && <span>Saat: {it.time}</span>}
+                              {/* expiryDate is not available in CalendarEventDetail; kept only publish date per requirement */}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 whitespace-nowrap">
+                            {it.isEmergency && (
+                              <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-red/15 text-primary-red">Acil</span>
+                            )}
+                            {it.isPinned && (
+                              <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-gold/20 text-primary-gold">Sabit</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

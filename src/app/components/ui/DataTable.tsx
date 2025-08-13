@@ -209,9 +209,6 @@ const DataTable: React.FC<DataTableProps> = ({
 
     // Render row actions
     const renderRowActions = (row: any) => {
-        if (ActionMenuComponent) {
-            return <ActionMenuComponent row={row} />;
-        }
         if (rowActions.length === 0) return null;
         const visibleActions = rowActions.filter(action => action.visible?.(row) ?? true);
         return (
@@ -417,7 +414,8 @@ const DataTable: React.FC<DataTableProps> = ({
                                 {/* Actions column */}
                                 {(rowActions.length > 0 || ActionMenuComponent) && (
                                     <td className={paddingClasses[size]}>
-                                        {renderRowActions(row)}
+                                        {rowActions.length > 0 && renderRowActions(row)}
+                                        {ActionMenuComponent && <ActionMenuComponent row={row} />}
                                     </td>
                                 )}
                             </tr>

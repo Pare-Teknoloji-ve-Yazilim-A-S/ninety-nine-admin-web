@@ -10,6 +10,8 @@ export interface CalendarEventDetail {
   description?: string
   isEmergency?: boolean
   isPinned?: boolean
+  publishDate?: string
+  expiryDate?: string
 }
 
 interface CalendarEventsForDay {
@@ -252,6 +254,15 @@ const Calendar = ({
           const hasEvents = !!dayEvents && dayEvents.count > 0
           const showEmergency = !!dayEvents?.hasEmergency
           const showPinned = !!dayEvents?.hasPinned
+          const eventClass = hasEvents
+            ? (
+                showEmergency
+                  ? 'bg-primary-red/20 text-primary-red ring-1 ring-primary-red/40'
+                  : showPinned
+                    ? 'bg-primary-gold/20 text-primary-gold ring-1 ring-primary-gold/40'
+                    : 'bg-primary-gold/10 text-primary-gold ring-1 ring-primary-gold/30'
+              )
+            : ''
           return (
             <button
               key={`current-${day}`}
@@ -262,29 +273,21 @@ const Calendar = ({
                 'hover:bg-hover-light-cream dark:hover:bg-hover-gold-bg',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 isDateToday(day) && 'bg-background-light-soft dark:bg-background-soft font-semibold',
-                isDateSelected(day) && 'bg-primary-gold/20 text-primary-gold hover:bg-primary-gold/30',
-                !isDateSelected(day) && hasEvents && 'bg-primary-gold/10 dark:bg-primary-gold/15 ring-1 ring-primary-gold/30'
+                isDateSelected(day) && 'ring-2 ring-primary-gold/50',
+                eventClass
               )}
             >
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-5 md:gap-6 lg:gap-8 xl:gap-10">
-                  <span>{day}</span>
-                  {hasEvents && (
-                    <span
-                      className={cn(
-                        'inline-flex items-center justify-center h-4 px-1.5 rounded-md text-[10px] leading-none border shadow-sm',
-                        showEmergency
-                          ? 'bg-primary-red/15 text-primary-red border-primary-red/40'
-                          : showPinned
-                            ? 'bg-primary-gold/20 text-primary-gold border-primary-gold/40'
-                            : 'bg-primary-gold/10 text-primary-gold border-primary-gold/25'
-                      )}
-                    >
-                      {showEmergency ? 'Acil' : showPinned ? 'Sabit' : 'Duyuru'}
-                    </span>
-                  )}
-                </span>
+              <div className="flex items-center justify-start">
+                <span className="font-medium">{day}</span>
               </div>
+              {hasEvents && (
+                <span
+                  className={cn(
+                    'absolute top-1 right-1 w-2 h-2 rounded-full',
+                    showEmergency ? 'bg-primary-red' : 'bg-primary-gold'
+                  )}
+                />
+              )}
             </button>
           )
         })}

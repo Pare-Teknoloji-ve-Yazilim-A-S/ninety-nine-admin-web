@@ -21,20 +21,40 @@ export function getTableColumns(
     actionHandlers: TableActionHandlers,
     ActionMenuComponent?: React.ComponentType<{ row: Announcement }>
 ) {
+    const colorToTextClass = (color: string): string => {
+        switch (color) {
+            case 'gold':
+                return 'text-primary-gold';
+            case 'red':
+                return 'text-primary-red';
+            case 'primary':
+                return 'text-text-accent';
+            case 'secondary':
+                return 'text-text-light-secondary dark:text-text-secondary';
+            case 'accent':
+                return 'text-text-accent';
+            default:
+                return 'text-text-on-light dark:text-text-on-dark';
+        }
+    };
     return [
         {
             id: 'title',
-            label: 'Başlık',
-            key: 'title' as keyof Announcement,
+            header: 'Başlık',
+            accessor: 'title',
             sortable: true,
-            render: (announcement: Announcement) => (
+            render: (_value: any, announcement: Announcement) => {
+                if (!announcement) return null;
+                const safeTitle = typeof announcement.title === 'string' ? announcement.title : '';
+
+                return (
                 <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                         <span 
                             className="font-medium text-text-on-light dark:text-text-on-dark cursor-pointer hover:text-primary-gold"
                             onClick={() => actionHandlers.handleViewAnnouncement(announcement)}
                         >
-                            {announcement.title}
+                            {safeTitle}
                         </span>
                         {announcement.isPinned && (
                             <Pin className="w-4 h-4 text-primary-gold" />
@@ -43,34 +63,31 @@ export function getTableColumns(
                             <AlertTriangle className="w-4 h-4 text-red-500" />
                         )}
                     </div>
-                    <span className="text-sm text-text-light-secondary dark:text-text-secondary line-clamp-2">
-                        {announcement.content.substring(0, 100)}
-                        {announcement.content.length > 100 && '...'}
-                    </span>
                 </div>
-            ),
+                );
+            },
         },
         {
             id: 'type',
-            label: 'Tip',
-            key: 'type' as keyof Announcement,
+            header: 'Tip',
+            accessor: 'type',
             sortable: true,
-            render: (announcement: Announcement) => (
-                <Badge
-                    variant="soft"
-                    color={getAnnouncementTypeColor(announcement.type) as any}
-                    className="text-xs px-3 py-1 rounded-full font-medium"
-                >
-                    {getAnnouncementTypeLabel(announcement.type)}
-                </Badge>
-            ),
+            render: (_value: any, announcement: Announcement) => {
+                const color = getAnnouncementTypeColor(announcement?.type as any) as string;
+                const cls = colorToTextClass(color);
+                return (
+                    <span className={`text-sm font-medium ${cls}`}>
+                        {announcement?.type ? getAnnouncementTypeLabel(announcement.type) : '-'}
+                    </span>
+                );
+            },
         },
         {
             id: 'status',
-            label: 'Durum',
-            key: 'status' as keyof Announcement,
+            header: 'Durum',
+            accessor: 'status',
             sortable: true,
-            render: (announcement: Announcement) => {
+            render: (_value: any, announcement: Announcement) => {
                 const isExpired = isAnnouncementExpired(announcement);
                 const isExpiringSoon = isAnnouncementExpiringSoon(announcement);
                 
@@ -81,27 +98,19 @@ export function getTableColumns(
                     statusColor = 'red';
                     statusLabel += ' (Süresi Dolmuş)';
                 } else if (isExpiringSoon) {
+                    // Only adjust color for expiring soon; do not append text
                     statusColor = 'gold';
-                    statusLabel += ' (Yakında)';
                 }
-                
-                return (
-                    <Badge
-                        variant="soft"
-                        color={statusColor as any}
-                        className="text-xs px-3 py-1 rounded-full font-medium"
-                    >
-                        {statusLabel}
-                    </Badge>
-                );
+                const cls = colorToTextClass(statusColor);
+                return <span className={`text-sm font-medium ${cls}`}>{statusLabel}</span>;
             },
         },
         {
             id: 'createdBy',
-            label: 'Oluşturan',
-            key: 'createdBy' as keyof Announcement,
+            header: 'Oluşturan',
+            accessor: 'createdBy',
             sortable: false,
-            render: (announcement: Announcement) => (
+            render: (_value: any, announcement: Announcement) => (
                 <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-text-light-secondary dark:text-text-secondary" />
                     <span className="text-sm">
@@ -115,10 +124,10 @@ export function getTableColumns(
         },
         {
             id: 'publishDate',
-            label: 'Yayın Tarihi',
-            key: 'publishDate' as keyof Announcement,
+            header: 'Yayın Tarihi',
+            accessor: 'publishDate',
             sortable: true,
-            render: (announcement: Announcement) => (
+            render: (_value: any, announcement: Announcement) => (
                 <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-text-light-secondary dark:text-text-secondary" />
                     <span className="text-sm">
@@ -132,10 +141,10 @@ export function getTableColumns(
         },
         {
             id: 'expiryDate',
-            label: 'Bitiş Tarihi',
-            key: 'expiryDate' as keyof Announcement,
+            header: 'Bitiş Tarihi',
+            accessor: 'expiryDate',
             sortable: true,
-            render: (announcement: Announcement) => {
+            render: (_value: any, announcement: Announcement) => {
                 if (!announcement.expiryDate) {
                     return <span className="text-sm text-text-light-secondary dark:text-text-secondary">-</span>;
                 }
@@ -170,10 +179,10 @@ export function getTableColumns(
         },
         {
             id: 'properties',
-            label: 'Hedef Özellikler',
-            key: 'properties' as keyof Announcement,
+            header: 'Hedef Özellikler',
+            accessor: 'properties',
             sortable: false,
-            render: (announcement: Announcement) => (
+            render: (_value: any, announcement: Announcement) => (
                 <span className="text-sm">
                     {announcement.properties && announcement.properties.length > 0
                         ? `${announcement.properties.length} özellik`
@@ -184,10 +193,10 @@ export function getTableColumns(
         },
         {
             id: 'createdAt',
-            label: 'Oluşturma Tarihi',
-            key: 'createdAt' as keyof Announcement,
+            header: 'Oluşturma Tarihi',
+            accessor: 'createdAt',
             sortable: true,
-            render: (announcement: Announcement) => (
+            render: (_value: any, announcement: Announcement) => (
                 <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-text-light-secondary dark:text-text-secondary" />
                     <span className="text-sm">
@@ -196,12 +205,5 @@ export function getTableColumns(
                 </div>
             ),
         },
-        ...(ActionMenuComponent ? [{
-            id: 'actions',
-            label: '',
-            key: 'actions' as keyof Announcement,
-            sortable: false,
-            render: (announcement: Announcement) => <ActionMenuComponent row={announcement} />,
-        }] : []),
     ];
 }

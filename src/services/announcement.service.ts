@@ -459,6 +459,30 @@ class AnnouncementService extends BaseService<Announcement, CreateAnnouncementDt
         }
     }
 
+  /**
+   * Count endpoints - API-99CLUB
+   * GET /admin/announcements/count/*
+   */
+  async getTotalCount(): Promise<number> {
+    const res = await apiClient.get<{ data: { count: number } }>(`${this.baseEndpoint}/count/total`);
+    return res.data?.count ?? 0;
+  }
+
+  async getEmergencyCount(): Promise<number> {
+    const res = await apiClient.get<{ data: { count: number } }>(`${this.baseEndpoint}/count/emergency`);
+    return res.data?.count ?? 0;
+  }
+
+  async getPublishedCount(): Promise<number> {
+    const res = await apiClient.get<{ data: { count: number } }>(`${this.baseEndpoint}/count/published`);
+    return res.data?.count ?? 0;
+  }
+
+  async getExpiringIn1dCount(): Promise<number> {
+    const res = await apiClient.get<{ data: { count: number } }>(`${this.baseEndpoint}/count/expiring-in-1d`);
+    return res.data?.count ?? 0;
+  }
+
     // === CONVENIENCE METHODS === //
 
     /**
