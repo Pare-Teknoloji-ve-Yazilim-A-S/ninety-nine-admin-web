@@ -164,21 +164,23 @@ export default function CreateTicketModal({
     const loadUsers = async () => {
         setLoadingUsers(true);
         try {
-            const response = await fetch('/api/proxy/admin/users', {
+            const response = await fetch('/api/proxy/admin/staff/maintenance/on-duty', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                 }
             });
             if (response.ok) {
                 const data = await response.json();
-                const userOptions = (data.data || []).map((user: any) => ({
-                    value: user.id,
-                    label: `${user.firstName} ${user.lastName}`
+                const userOptions = (data.data || []).map((staff: any) => ({
+                    value: staff.id,
+                    label: staff.positionTitle
+                        ? `${staff.firstName} ${staff.lastName} - ${staff.department} - ${staff.positionTitle}`
+                        : `${staff.firstName} ${staff.lastName} - ${staff.department}`
                 }));
                 setUsers(userOptions);
             }
         } catch (error) {
-            console.error('Users loading failed:', error);
+            console.error('On-duty maintenance staff loading failed:', error);
         } finally {
             setLoadingUsers(false);
         }
@@ -200,7 +202,18 @@ export default function CreateTicketModal({
                 }
                 
                 // File type validation
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+                const allowedTypes = [
+                    'image/jpeg',
+                    'image/jpg',
+                    'image/png',
+                    'image/gif',
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'text/plain'
+                ];
                 if (!allowedTypes.includes(file.type)) {
                     errors.push(`${file.name}: Desteklenmeyen dosya türü`);
                     return;
@@ -227,12 +240,13 @@ export default function CreateTicketModal({
         if (selectedFiles.length === 0) return;
 
         const formData = new FormData();
-        selectedFiles.forEach((file, index) => {
-            formData.append('attachments', file);
+        selectedFiles.forEach((file) => {
+            // Çoklu dosya yükleme için anahtar adı tam olarak 'files' olmalı
+            formData.append('files', file);
         });
 
         try {
-            const response = await fetch(`/api/proxy/admin/tickets/${ticketId}/attachments`, {
+            const response = await fetch(`/api/proxy/admin/tickets/${ticketId}/attachments/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -244,7 +258,8 @@ export default function CreateTicketModal({
                 throw new Error('Dosya yükleme başarısız');
             }
 
-            console.log('Attachments uploaded successfully');
+            const resJson = await response.json().catch(() => ({} as any));
+            console.log('Attachments uploaded successfully', resJson?.attachments || resJson);
         } catch (error) {
             console.error('Error uploading attachments:', error);
             throw error;
@@ -530,7 +545,7 @@ export default function CreateTicketModal({
                                 </label>
                                 <FileUpload
                                     onFilesChange={handleFilesChange}
-                                    accept=".jpg,.jpeg,.png,.gif,.pdf,.txt"
+                                    accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xls,.xlsx,.txt"
                                     multiple
                                     maxSize={10 * 1024 * 1024} // 10MB
                                 />

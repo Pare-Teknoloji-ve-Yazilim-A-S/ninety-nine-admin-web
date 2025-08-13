@@ -16,7 +16,7 @@ interface TabsProps extends HTMLAttributes<HTMLDivElement> {
     defaultValue?: string
     value?: string
     onValueChange?: (value: string) => void
-    variant?: 'default' | 'pills' | 'underline' | 'cards'
+    variant?: 'default' | 'pills' | 'underline' | 'cards' | 'soft-pills'
     size?: 'sm' | 'md' | 'lg'
     orientation?: 'horizontal' | 'vertical'
     fullWidth?: boolean
@@ -76,6 +76,11 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
             pills: {
                 tab: 'rounded-lg hover:bg-primary-gold/10 hover:text-text-primary',
                 activeTab: 'bg-primary-gold text-primary-dark-gray font-semibold',
+                container: ''
+            },
+            'soft-pills': {
+                tab: 'rounded-lg hover:bg-primary-gold/10 hover:text-text-primary focus:outline-none focus-visible:ring-0',
+                activeTab: 'bg-primary-gold/15 text-primary-gold font-semibold border border-primary-gold/30 ring-0 ring-offset-0',
                 container: ''
             },
             underline: {
@@ -159,7 +164,7 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
                   ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                   transition-all duration-200 font-helvetica
                   text-text-secondary
-                  focus:outline-none focus:ring-2 focus:ring-primary-gold/50 focus:ring-offset-1
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-gold/40 focus-visible:ring-offset-0
                   inline-flex items-center justify-center space-x-2
                   relative
                 `}

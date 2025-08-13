@@ -208,6 +208,29 @@ export const ticketService = {
     return response.data;
   },
 
+  async getAttachments(ticketId: string): Promise<any[]> {
+    try {
+      const response = await apiClient.get<any>(`/admin/tickets/${ticketId}/attachments`);
+      // Possible formats:
+      // 1) { success, data: { ticketId, attachments: [] } }
+      // 2) { attachments: [] }
+      // 3) [ ... ]
+      if (Array.isArray(response)) return response;
+      if (response?.data?.attachments && Array.isArray(response.data.attachments)) {
+        return response.data.attachments;
+      }
+      if (response?.attachments && Array.isArray(response.attachments)) {
+        return response.attachments;
+      }
+      return [];
+    } catch (error: any) {
+      if (error?.status === 404) {
+        return [];
+      }
+      return [];
+    }
+  },
+
   // --- Ticket CRUD Operations ---
   async getTicketById(id: string): Promise<Ticket> {
     const response: ApiResponse<Ticket> = await apiClient.get<Ticket>(`/admin/tickets/${id}`);
