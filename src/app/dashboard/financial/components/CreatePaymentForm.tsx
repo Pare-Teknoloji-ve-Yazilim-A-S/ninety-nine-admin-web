@@ -72,7 +72,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     defaultValues: {
       billId: '',
       amount: 0,
-      paymentMethod: 'CASH',
+        paymentMethod: PaymentMethod.CASH,
       paymentDate: new Date().toISOString().split('T')[0], // Format for HTML date input
       transactionId: '',
       receiptNumber: '',

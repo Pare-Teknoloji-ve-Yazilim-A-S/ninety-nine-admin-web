@@ -151,5 +151,5 @@ export const PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [
 ];
 
 export const DISABLED_PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [
-  { value: 'ONLINE_PAYMENT', label: 'Online Ödeme', icon: '💻', description: 'Yakında kullanılabilir olacak' }
+  { value: PaymentMethod.ONLINE_PAYMENT, label: 'Online Ödeme', icon: '💻', description: 'Yakında kullanılabilir olacak' }
 ];
