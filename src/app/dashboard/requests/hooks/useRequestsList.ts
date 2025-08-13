@@ -241,13 +241,11 @@ export function useRequestsList(): UseRequestsListResult {
   const fetchRequestsWithFilters = useCallback(async (
     currentFilters: RequestsListFilters,
     currentPagination: { page: number; limit: number },
-    isPageChange: boolean = false
+    lightLoading: boolean = false
   ) => {
-    if (isPageChange) {
-      setTableLoading(true);
-    } else {
-      setLoading(true);
-    }
+    // lightLoading=true: sadece tablo için spinner göster, üstteki kartlar sabit kalsın
+    setTableLoading(true);
+    if (!lightLoading) setLoading(true);
     setError(null);
 
     try {
@@ -435,17 +433,6 @@ export function useRequestsList(): UseRequestsListResult {
       const ticketsResponse = await ticketService.getTickets(apiFilters);
       console.log('🔍 Raw tickets response:', ticketsResponse);
       
-      // Fetch summary separately with error handling
-      let summaryResponse = null;
-      try {
-        console.log('🔍 Fetching summary...');
-        summaryResponse = await ticketService.getTicketSummary();
-        console.log('🔍 Raw summary response:', summaryResponse);
-      } catch (summaryError) {
-        console.error('🔍 Summary API error:', summaryError);
-        summaryResponse = null;
-      }
-      
       // Handle tickets response
       let tickets: Ticket[] = [];
       let paginationData = null;
@@ -469,6 +456,9 @@ export function useRequestsList(): UseRequestsListResult {
       const transformedRequests = tickets.map(transformTicketToServiceRequest);
       
       setRequests(transformedRequests);
+      // Update header and quick stats from current page data to avoid extra summary request
+      setSummary(generateSummary(transformedRequests));
+      setQuickStats(generateQuickStats(transformedRequests));
       
       // Update pagination with real data from API
       if (paginationData) {
@@ -485,78 +475,17 @@ export function useRequestsList(): UseRequestsListResult {
         setTotalItems(47); // Default total from your previous response
       }
       
-      // Update summary and quick stats from API
-      console.log('🔍 Processing summary response:', summaryResponse);
-      
-      if (summaryResponse) {
-        console.log('🔍 Setting summary data:', summaryResponse);
-        
-        // Generate summary from API data
-        const apiSummary: RequestSummary = {
-          totalRequests: summaryResponse.totalTickets,
-          activeRequests: summaryResponse.openTickets + summaryResponse.inProgressTickets + summaryResponse.waitingTickets,
-          completedToday: summaryResponse.resolvedTickets + summaryResponse.closedTickets,
-          overdueRequests: summaryResponse.overdueTickets,
-          averageResponseTime: '2h', // This would come from API if available
-          averageCompletionTime: '24h', // This would come from API if available
-          satisfactionRate: 85 // This would come from API if available
-        };
-        
-        // Generate quick stats from API data
-        const apiQuickStats: QuickStat[] = [
-          {
-            label: 'Yeni Talepler',
-            value: summaryResponse.openTickets,
-            change: '+15%',
-            trend: 'up',
-            color: '#3b82f6',
-            icon: '📝'
-          },
-          {
-            label: 'İşlemde',
-            value: summaryResponse.inProgressTickets,
-            change: '+8%',
-            trend: 'up',
-            color: '#8b5cf6',
-            icon: '⚙️'
-          },
-          {
-            label: 'Tamamlanan',
-            value: summaryResponse.resolvedTickets + summaryResponse.closedTickets,
-            change: '+23%',
-            trend: 'up',
-            color: '#10b981',
-            icon: '✅'
-          },
-          {
-            label: 'Gecikmiş',
-            value: summaryResponse.overdueTickets,
-            change: '-12%',
-            trend: 'down',
-            color: '#ef4444',
-            icon: '⏰'
-          }
-        ];
-        
-        console.log('🔍 Generated apiSummary:', apiSummary);
-        console.log('🔍 Generated apiQuickStats:', apiQuickStats);
-        
-        setSummary(apiSummary);
-        setQuickStats(apiQuickStats);
-      } else {
-        console.log('🔍 No summary response');
-      }
+      // Summary fetch removed from here to avoid extra request per list fetch
     } catch (err) {
       console.error('Failed to fetch requests:', err);
       setError('Talepler yüklenirken hata oluştu');
     } finally {
-      if (isPageChange) {
-        setTableLoading(false);
-      } else {
-        setLoading(false);
-      }
+      setTableLoading(false);
+      if (!lightLoading) setLoading(false);
     }
   }, []);
+
+  // Removed remote summary fetching to prevent extra requests
 
   // Update filters
   const updateFilters = useCallback((newFilters: Partial<RequestsListFilters>) => {
@@ -596,10 +525,13 @@ export function useRequestsList(): UseRequestsListResult {
     return fetchRequestsWithFilters(memoizedFilters, memoizedPagination);
   }, [fetchRequestsWithFilters, memoizedFilters, memoizedPagination]);
 
-  // Fetch data when filters change (but not pagination)
+  // Fetch data when filters change (but not pagination) without flashing header cards
+  // Use page-change style loading to only show table spinner
   useEffect(() => {
-    fetchRequestsWithFilters(memoizedFilters, memoizedPagination);
-  }, [fetchRequestsWithFilters, memoizedFilters]);
+    fetchRequestsWithFilters(memoizedFilters, memoizedPagination, true);
+  }, [fetchRequestsWithFilters, memoizedFilters, memoizedPagination]);
+
+  // No initial summary fetch
 
   // Memoized data
   const data = useMemo<ServiceRequestsList>(() => {

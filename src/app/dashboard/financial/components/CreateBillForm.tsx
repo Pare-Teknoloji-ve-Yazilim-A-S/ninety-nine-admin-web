@@ -23,7 +23,8 @@ import {
   BillFormData, 
   BillType, 
   BILL_TYPE_OPTIONS,
-  CreateBillDto 
+  CreateBillDto,
+  PAYMENT_METHOD_OPTIONS
 } from '@/services/types/billing.types';
 import { billingService } from '@/services';
 import { unitsService } from '@/services';
@@ -94,6 +95,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
       dueDate: new Date().toISOString().split('T')[0], // Format for HTML date input
       description: '',
       billType: 'DUES',
+      paymentMethod: undefined,
       propertyId: '',
       assignedToId: undefined as any,
       documentNumber: ''
@@ -190,6 +192,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         description: undefined,
         billType: data.billType,
         status: 'PENDING',
+        paymentMethod: data.paymentMethod,
         propertyId: data.propertyId,
         assignedToId: undefined,
         // ensure a doc number exists; generate one if missing
@@ -484,7 +487,45 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           </div>
         </div>
 
-        
+        {/* Payment Method */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Ödeme Yöntemi
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {PAYMENT_METHOD_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className={`relative flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                  watch('paymentMethod') === option.value
+                    ? 'border-primary-gold bg-primary-gold/5'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                <input
+                  type="radio"
+                  value={option.value}
+                  {...register('paymentMethod')}
+                  className="sr-only"
+                />
+                <div className="flex items-center gap-2 w-full">
+                  <span className="text-lg">{option.icon}</span>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {option.label}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
+                      {option.description}
+                    </div>
+                  </div>
+                </div>
+                {watch('paymentMethod') === option.value && (
+                  <div className="absolute top-2 right-2 w-2 h-2 bg-primary-gold rounded-full" />
+                )}
+              </label>
+            ))}
+          </div>
+        </div>
 
         {/* Atanacak Kişi alanı kaldırıldı */}
 

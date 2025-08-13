@@ -308,88 +308,22 @@ export default function FinancialListPage() {
 
     // Transaction Action Menu
     const TransactionActionMenu: React.FC<{ transaction: any; onAction: (action: string, transaction: any) => void }> = React.memo(({ transaction, onAction }) => {
-        const [isOpen, setIsOpen] = React.useState(false);
-        const buttonRef = React.useRef<HTMLButtonElement>(null);
-        const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({});
-
-        React.useEffect(() => {
-            if (isOpen && buttonRef.current) {
-                const rect = buttonRef.current.getBoundingClientRect();
-                const menuHeight = 150;
-                const menuWidth = 200;
-                const padding = 8;
-                let top = rect.bottom + window.scrollY + padding;
-                let left = rect.right + window.scrollX - menuWidth;
-                if (top + menuHeight > window.innerHeight + window.scrollY) {
-                    top = rect.top + window.scrollY - menuHeight - padding;
-                }
-                if (left < 0) {
-                    left = padding;
-                }
-                setMenuStyle({
-                    position: 'absolute',
-                    top,
-                    left,
-                    zIndex: 9999,
-                    minWidth: menuWidth,
-                });
-            }
-        }, [isOpen]);
-
-        React.useEffect(() => {
-            if (!isOpen) return;
-            const handleClick = (e: MouseEvent) => {
-                if (buttonRef.current && !buttonRef.current.contains(e.target as Node)) {
-                    setIsOpen(false);
-                }
-            };
-            document.addEventListener('click', handleClick);
-            return () => document.removeEventListener('click', handleClick);
-        }, [isOpen]);
-
-        const handleDropdownToggle = (e: React.MouseEvent) => {
+        const handleGoDetail = (e: React.MouseEvent) => {
             e.stopPropagation();
-            setIsOpen(!isOpen);
-        };
-
-        const handleAction = (action: string) => (e: React.MouseEvent) => {
-            e.stopPropagation();
-            setIsOpen(false);
-            onAction(action, transaction);
+            onAction('view', transaction);
         };
 
         return (
             <div className="flex items-center justify-center">
                 <button
-                    ref={buttonRef}
                     className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
-                    onClick={handleDropdownToggle}
+                    onClick={handleGoDetail}
                     type="button"
+                    title="Detaya git"
                 >
-                    <MoreVertical className="w-5 h-5" />
+                    {/* Replace 3-dot with > icon */}
+                    <span className="text-xl leading-none">›</span>
                 </button>
-                {isOpen && (
-                    <Portal>
-                        <div
-                            style={menuStyle}
-                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 py-1 max-h-72 overflow-auto"
-                        >
-                            <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <Eye className="w-4 h-4" /> Detay
-                            </button>
-                            <button 
-                                onClick={handleAction('edit')} 
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3"
-                                disabled={!['pending', 'overdue'].includes(transaction.status.id)}
-                            >
-                                <Edit className="w-4 h-4" /> Düzenle
-                            </button>
-                            <button onClick={handleAction('download')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <Download className="w-4 h-4" /> Makbuz İndir
-                            </button>
-                        </div>
-                    </Portal>
-                )}
             </div>
         );
     });

@@ -13,13 +13,15 @@ interface UseStaffActionsProps {
   importInputRef: React.RefObject<HTMLInputElement>
   clearSelected: () => void
   getEditingId?: () => string | number | undefined
+  onCloseForm?: () => void
 }
 
 export function useStaffActions({
   onRefresh,
   importInputRef,
   clearSelected,
-  getEditingId
+  getEditingId,
+  onCloseForm
 }: UseStaffActionsProps) {
   const router = useRouter()
 
@@ -27,11 +29,13 @@ export function useStaffActions({
     try {
       await staffService.createStaff(data)
       await onRefresh()
+      // Close form modal after successful create
+      onCloseForm?.()
     } catch (error: unknown) {
       console.error('Failed to create staff:', error)
       throw error
     }
-  }, [onRefresh])
+  }, [onRefresh, onCloseForm])
 
   const onUpdate = useCallback(async (data: UpdateStaffDto) => {
     try {

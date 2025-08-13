@@ -48,8 +48,8 @@ const staffFormSchema = z.object({
   address: z.string().optional(),
   dateOfBirth: z.string().optional(),
   nationalId: z.string().optional(),
-  departmentId: z.string().min(1, 'Departman seçiniz'), // will map to backend 'department' code
-  positionId: z.string().optional(), // optional per backend spec (maps to 'position' code)
+  department: z.string().min(1, 'Departman seçiniz'), // Department enum code
+  positionTitle: z.string().optional(), // Position enum/title
   managerId: z.string().optional(),
   status: z.nativeEnum(StaffStatus),
   employmentType: z.nativeEnum(EmploymentType),
@@ -108,8 +108,8 @@ export function StaffForm({
       address: staff?.address || '',
       dateOfBirth: staff?.dateOfBirth || '',
       nationalId: staff?.nationalId || '',
-      departmentId: staff?.department?.id?.toString() || '',
-      positionId: staff?.position?.id?.toString() || '',
+      department: staff?.department?.id?.toString() || '',
+      positionTitle: staff?.position?.id?.toString() || '',
       managerId: staff?.manager?.id?.toString() || '',
       status: staff?.status || StaffStatus.ACTIVE,
       employmentType: staff?.employmentType || EmploymentType.FULL_TIME,
@@ -122,7 +122,7 @@ export function StaffForm({
     }
   })
 
-  const watchedDepartmentId = form.watch('departmentId')
+  const watchedDepartmentId = form.watch('department')
   const watchedSalary = form.watch('salary')
 
   // Keep local salary text in sync if form value changes programmatically
@@ -136,9 +136,9 @@ export function StaffForm({
     if (watchedDepartmentId) {
       const filtered = positions.filter(pos => pos.departmentId === watchedDepartmentId)
       setFilteredPositions(filtered)
-      const currentPositionId = form.getValues('positionId')
+      const currentPositionId = form.getValues('positionTitle')
       if (currentPositionId && !filtered.find(pos => pos.id === currentPositionId)) {
-        form.setValue('positionId', '')
+        form.setValue('positionTitle', '')
       }
     } else {
       setFilteredPositions(positions)
@@ -175,7 +175,7 @@ export function StaffForm({
   // Form submission
   const handleSubmit = async (data: StaffFormData) => {
     try {
-      const formData: CreateStaffDto | UpdateStaffDto = {
+      const formData: any = {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -183,13 +183,13 @@ export function StaffForm({
         address: data.address,
         dateOfBirth: data.dateOfBirth,
         nationalId: data.nationalId,
-       // map form selections to DTO field names
-       departmentId: data.departmentId,
-       positionId: data.positionId || undefined,
-       // managerId can be included if provided
-       managerId: data.managerId || undefined,
+        // enum-based mapping for admin API
+        department: data.department,
+        positionTitle: data.positionTitle || undefined,
+        // managerId can be included if provided
+        managerId: data.managerId || undefined,
         status: data.status,
-       employmentType: data.employmentType,
+        employmentType: data.employmentType,
         startDate: data.startDate,
         salary: data.salary,
         notes: data.notes,
@@ -207,7 +207,7 @@ export function StaffForm({
         formData.avatar = avatarPreview || undefined
       }
 
-      await onSubmit(formData)
+      await onSubmit(formData as unknown as CreateStaffDto)
     } catch (error) {
       console.error('Form submission error:', error)
     }
@@ -401,16 +401,16 @@ export function StaffForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="departmentId"
+                  name="department"
                   render={({ field }) => (
                     <FormItem>
                       <SearchableDropdown
                         label="Departman *"
                         value={field.value || ''}
                         onChange={field.onChange}
-                         options={(departmentOptions && departmentOptions.length > 0)
-                           ? departmentOptions
-                           : (departments.map(d => ({ value: d.id.toString(), label: d.name, description: d.code })) as SearchableOption[])}
+                        options={(departmentOptions && departmentOptions.length > 0)
+                          ? departmentOptions
+                          : (departments.map(d => ({ value: d.code, label: d.name, description: d.code })) as SearchableOption[])}
                         placeholder="Departman seçiniz"
                         searchable={false}
                         showSelectedSummary={false}
@@ -422,16 +422,16 @@ export function StaffForm({
                 
                 <FormField
                   control={form.control}
-                  name="positionId"
+                  name="positionTitle"
                   render={({ field }) => (
                     <FormItem>
                       <SearchableDropdown
                         label="Pozisyon *"
                         value={field.value || ''}
                         onChange={field.onChange}
-                         options={(positionOptions && positionOptions.length > 0)
-                           ? positionOptions
-                           : (filteredPositions.map(p => ({ value: p.id.toString(), label: p.title, description: p.department?.name })) as SearchableOption[])}
+                        options={(positionOptions && positionOptions.length > 0)
+                          ? positionOptions
+                          : (filteredPositions.map(p => ({ value: p.code || p.title, label: p.title, description: p.department?.name })) as SearchableOption[])}
                         placeholder="Pozisyon seçiniz"
                         searchable={false}
                         showSelectedSummary={false}

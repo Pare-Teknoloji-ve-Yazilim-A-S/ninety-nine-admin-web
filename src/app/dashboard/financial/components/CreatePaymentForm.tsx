@@ -35,6 +35,7 @@ interface CreatePaymentFormProps {
   preselectedBills?: ResponseBillDto[];
   onRemoveBill?: (billId: string) => void;
   onClearBills?: () => void;
+  selectedPaymentMethod?: PaymentMethod;
 }
 
 interface BillOption {
@@ -53,6 +54,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
   preselectedBills = [],
   onRemoveBill,
   onClearBills,
+  selectedPaymentMethod,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bills, setBills] = useState<BillOption[]>([]);
@@ -80,6 +82,13 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
   });
 
   const watchedPaymentMethod = watch('paymentMethod');
+
+  // Reflect selected payment method from parent into form state
+  useEffect(() => {
+    if (selectedPaymentMethod) {
+      setValue('paymentMethod', selectedPaymentMethod, { shouldValidate: true });
+    }
+  }, [selectedPaymentMethod, setValue]);
 
   const totalSelectedAmount = useMemo(() => {
     return bills.reduce((sum, b) => sum + Number(b.amount || 0), 0);
@@ -175,44 +184,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
               Seçilen Faturalar
             </label>
           </div>
-          {/* Payment Method Selection placed right under the section title */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Ödeme Yöntemi *
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {PAYMENT_METHOD_OPTIONS.map((option) => (
-                <label
-                  key={option.value}
-                  className={`relative flex flex-col items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    watchedPaymentMethod === option.value
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    value={option.value}
-                    {...register('paymentMethod', { required: 'Ödeme yöntemi seçiniz' })}
-                    className="sr-only"
-                  />
-                  <span className="text-lg mb-1">{option.icon}</span>
-                  <div className="text-xs font-medium text-gray-900 dark:text-white text-center">
-                    {option.label}
-                  </div>
-                  {watchedPaymentMethod === option.value && (
-                    <div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full" />
-                  )}
-                </label>
-              ))}
-            </div>
-            {errors.paymentMethod && (
-              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.paymentMethod.message}
-              </p>
-            )}
-          </div>
+          {/* Payment method selection moved to parent card. We display current selection here. */}
           {loadingBills ? (
             <div className="text-sm text-text-light-secondary dark:text-text-secondary">Faturalar yükleniyor...</div>
           ) : bills.length === 0 ? (

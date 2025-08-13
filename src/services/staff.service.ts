@@ -104,6 +104,21 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     }
   }
 
+  // Admin endpoint: GET /api/admin/staff/:id
+  async getAdminStaffById(id: string | number): Promise<ApiResponse<any>> {
+    try {
+      this.logger.info('Fetching admin staff by ID', { id })
+
+      const response = await apiClient.get<any>(`/api/admin/staff/${id}`)
+
+      this.logger.info('Admin staff fetched successfully')
+      return response
+    } catch (error) {
+      this.logger.error('Failed to fetch admin staff', error)
+      throw error
+    }
+  }
+
   async createStaff(data: CreateStaffDto): Promise<ApiResponse<Staff>> {
     try {
       this.logger.info('Creating new staff', data)
@@ -143,6 +158,21 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
       return response
     } catch (error) {
       this.logger.error('Failed to delete staff', error)
+      throw error
+    }
+  }
+
+  // Admin endpoint: DELETE /api/admin/staff/:id
+  async deleteAdminStaff(id: string | number): Promise<ApiResponse<void>> {
+    try {
+      this.logger.info('Deleting admin staff', { id })
+
+      const response = await apiClient.delete<void>(`/api/admin/staff/${id}`)
+
+      this.logger.info('Admin staff deleted successfully')
+      return response
+    } catch (error) {
+      this.logger.error('Failed to delete admin staff', error)
       throw error
     }
   }

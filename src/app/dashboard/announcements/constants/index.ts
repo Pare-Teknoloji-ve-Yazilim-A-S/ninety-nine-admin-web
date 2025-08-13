@@ -1,9 +1,9 @@
 // Announcements Constants
-import { Users, AlertTriangle, Calendar, Settings, BookOpen, MessageSquare, Hash } from 'lucide-react';
+import { Users, AlertTriangle, Calendar, Settings, BookOpen, MessageSquare, Hash, LayoutGrid, Table } from 'lucide-react';
 
 export const VIEW_OPTIONS = [
-    { id: 'table', label: 'Tablo', icon: Users },
-    { id: 'grid', label: 'Kart', icon: Users }
+    { id: 'table', label: 'Tablo', icon: Table },
+    { id: 'grid', label: 'Kart', icon: LayoutGrid }
 ];
 
 export const BREADCRUMB_ITEMS = [

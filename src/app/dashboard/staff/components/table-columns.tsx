@@ -82,19 +82,26 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
       header: '',
       accessor: (row: Staff) => row,
       minWidth: '48px',
-      render: (_: any, row: Staff) => (
-        <div className="flex items-center justify-end">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-            title="Detay"
-            onClick={() => onView(row)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )
+      render: (_: any, row: Staff) => {
+        const targetId = String((row as any)?.id ?? (row as any)?.employeeId)
+        return (
+          <div className="flex items-center justify-end">
+            <a href={`/dashboard/staff/${targetId}`} title="Detay" className="inline-flex">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onView(row)
+                }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </a>
+          </div>
+        )
+      }
     }
   ]
 }

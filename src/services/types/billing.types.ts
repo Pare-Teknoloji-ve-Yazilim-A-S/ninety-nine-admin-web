@@ -5,7 +5,16 @@ export type BillType = 'DUES' | 'MAINTENANCE' | 'UTILITY' | 'PENALTY' | 'OTHER';
 export type BillStatus = 'PENDING' | 'PARTIALLY_PAID' | 'PAID' | 'OVERDUE' | 'CANCELLED';
 
 // Payment Types
-export type PaymentMethod = 'CASH' | 'CREDIT_CARD' | 'BANK_TRANSFER' | 'DIRECT_DEBIT' | 'ONLINE_PAYMENT' | 'MOBILE_PAYMENT' | 'CHECK' | 'OTHER';
+export enum PaymentMethod {
+  CASH = 'CASH',
+  CREDIT_CARD = 'CREDIT_CARD',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  DIRECT_DEBIT = 'DIRECT_DEBIT',
+  ONLINE_PAYMENT = 'ONLINE_PAYMENT',
+  MOBILE_PAYMENT = 'MOBILE_PAYMENT',
+  CHECK = 'CHECK',
+  OTHER = 'OTHER',
+}
 export type PaymentStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'REFUNDED' | 'CANCELED' | 'DISPUTED';
 
 // Bill Interfaces
@@ -16,6 +25,7 @@ export interface CreateBillDto {
   description?: string;
   billType: BillType;
   status: BillStatus;
+  paymentMethod?: PaymentMethod;
   penaltyStartDate?: string; // ISO string
   isPenaltyApplied?: boolean;
   documentNumber?: string;
@@ -88,6 +98,7 @@ export interface BillFormData {
   dueDate: string; // HTML date input uses string format
   description: string;
   billType: BillType;
+  paymentMethod?: PaymentMethod;
   propertyId: string;
   assignedToId: string;
   documentNumber: string;
@@ -129,9 +140,14 @@ export const BILL_TYPE_OPTIONS: BillTypeOption[] = [
 ];
 
 export const PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [
-  { value: 'CASH', label: 'Nakit', icon: '💵', description: 'Nakit ödeme' },
-  { value: 'CREDIT_CARD', label: 'Kredi Kartı', icon: '💳', description: 'Kredi kartı ile ödeme' },
-  { value: 'BANK_TRANSFER', label: 'Banka Havalesi', icon: '🏦', description: 'Banka havalesi ile ödeme' }
+  { value: PaymentMethod.CASH, label: 'Nakit', icon: '💵', description: 'Nakit ödeme' },
+  { value: PaymentMethod.CREDIT_CARD, label: 'Kredi Kartı', icon: '💳', description: 'Kredi kartı ile ödeme' },
+  { value: PaymentMethod.BANK_TRANSFER, label: 'Banka Havalesi/EFT', icon: '🏦', description: 'Banka havalesi/EFT ile ödeme' },
+  { value: PaymentMethod.DIRECT_DEBIT, label: 'Otomatik Ödeme Talimatı', icon: '🏛️', description: 'Hesaptan otomatik tahsilat' },
+  { value: PaymentMethod.ONLINE_PAYMENT, label: 'Online Ödeme', icon: '💻', description: 'İnternet üzerinden ödeme' },
+  { value: PaymentMethod.MOBILE_PAYMENT, label: 'Mobil Ödeme', icon: '📱', description: 'Mobil uygulama ile ödeme' },
+  { value: PaymentMethod.CHECK, label: 'Çek', icon: '🧾', description: 'Çek ile ödeme' },
+  { value: PaymentMethod.OTHER, label: 'Diğer', icon: '📄', description: 'Diğer ödeme yöntemi' }
 ];
 
 export const DISABLED_PAYMENT_METHOD_OPTIONS: PaymentMethodOption[] = [

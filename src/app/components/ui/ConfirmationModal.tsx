@@ -17,6 +17,8 @@ interface ConfirmationModalProps {
     loading?: boolean;
     itemName?: string;
     itemType?: string;
+    icon?: React.ComponentType<{ className?: string }>
+    customContent?: React.ReactNode;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -31,6 +33,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     loading = false,
     itemName,
     itemType = 'öğe',
+    icon,
+    customContent,
 }) => {
     const getVariantConfig = () => {
         switch (variant) {
@@ -78,6 +82,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     };
 
     const config = getVariantConfig();
+    const IconComponent = icon || config.icon;
 
     const handleConfirm = () => {
         if (!loading) {
@@ -105,7 +110,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 {/* Icon */}
                 <div className="mx-auto flex items-center justify-center w-16 h-16 rounded-full mb-4">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center ${config.iconBg}`}>
-                        <config.icon className={`w-6 h-6 ${config.iconColor}`} />
+                        <IconComponent className={`w-6 h-6 ${config.iconColor}`} />
                     </div>
                 </div>
 
@@ -114,10 +119,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     {config.title}
                 </h3>
 
-                {/* Description */}
-                <p className="text-sm text-text-light-secondary dark:text-text-secondary mb-6 leading-relaxed">
-                    {config.description}
-                </p>
+                {/* Description / Custom */}
+                {customContent ? (
+                    <div className="mb-6">{customContent}</div>
+                ) : (
+                    <p className="text-sm text-text-light-secondary dark:text-text-secondary mb-6 leading-relaxed whitespace-pre-line">
+                        {config.description}
+                    </p>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 justify-center">

@@ -68,6 +68,7 @@ export default function RequestsListPage() {
   // Event Handlers
   const handleRefresh = () => {
     refetch();
+    // Summary artık liste verisinden hesaplanıyor; ekstra istek yok
   };
 
   const handleCreateRequest = () => {

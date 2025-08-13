@@ -33,8 +33,8 @@ const defaultFormData: AnnouncementFormData = {
     content: '',
     type: AnnouncementType.GENERAL,
     status: AnnouncementStatus.DRAFT,
-    publishDate: undefined,
-    expiryDate: undefined,
+    publishDate: new Date(),
+    expiryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
     isPinned: false,
     isEmergency: false,
     image: undefined,
@@ -132,14 +132,26 @@ export default function AnnouncementForm({
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         
+        // Ensure default dates if empty: publishDate = today, expiryDate = tomorrow
+        const nextFormData = { ...formData };
+        if (!nextFormData.publishDate) {
+            nextFormData.publishDate = new Date();
+        }
+        if (!nextFormData.expiryDate) {
+            nextFormData.expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        }
+
+        // Replace state before validation/submit
+        setFormData(nextFormData);
+
         if (!validateForm()) {
             console.warn('AnnouncementForm validation failed');
             return;
         }
 
         try {
-            console.log('AnnouncementForm submitting', formData);
-            await onSubmit(formData);
+            console.log('AnnouncementForm submitting', nextFormData);
+            await onSubmit(nextFormData);
         } catch (error) {
             console.error('Form submission error:', error);
         }
@@ -240,7 +252,7 @@ export default function AnnouncementForm({
                                 placeholder="Yayınlanma tarihini seçin..."
                             />
                             <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1">
-                                Boş bırakılırsa hemen yayınlanır
+                                Boş bırakılırsa bugün olarak ayarlanır
                             </p>
                         </div>
 
@@ -254,7 +266,7 @@ export default function AnnouncementForm({
                                 placeholder="Bitiş tarihini seçin..."
                             />
                             <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1">
-                                Boş bırakılırsa süresiz olur
+                                Boş bırakılırsa bir sonraki güne ayarlanır
                             </p>
                         </div>
                     </div>

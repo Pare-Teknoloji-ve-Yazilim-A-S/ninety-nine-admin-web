@@ -39,14 +39,23 @@ export const useTransactionDetail = (id: string): UseTransactionDetailReturn => 
       // First try to fetch as a bill
       try {
         const billResponse = await billingService.getBillById(id);
-        if (billResponse.data) {
+        const billData = (billResponse as any)?.data ?? billResponse;
+        if (billData && billData.id) {
           // Fetch related payments for this bill
-          const relatedPayments = await paymentService.getPaymentsByBill(id);
-          
+          let relatedPayments: any[] = [];
+          try {
+            const paymentsResp = await paymentService.getPaymentsByBill(id);
+            relatedPayments = Array.isArray(paymentsResp)
+              ? paymentsResp
+              : (paymentsResp as any)?.data ?? [];
+          } catch (_) {
+            relatedPayments = [];
+          }
+
           setTransaction({
             id,
             type: 'bill',
-            data: billResponse.data,
+            data: billData,
             relatedTransactions: relatedPayments
           });
           return;
@@ -61,14 +70,15 @@ export const useTransactionDetail = (id: string): UseTransactionDetailReturn => 
       // If not found as a bill, try to fetch as a payment
       try {
         const paymentResponse = await paymentService.getPaymentById(id);
-        if (paymentResponse.data) {
+        const paymentData = (paymentResponse as any)?.data ?? paymentResponse;
+        if (paymentData && paymentData.id) {
           let relatedBill = null;
           
           // If payment has a billId, fetch the related bill
-          if (paymentResponse.data.billId) {
+          if (paymentData.billId) {
             try {
-              const billResponse = await billingService.getBillById(paymentResponse.data.billId);
-              relatedBill = billResponse.data;
+              const billResp2 = await billingService.getBillById(paymentData.billId);
+              relatedBill = (billResp2 as any)?.data ?? billResp2 ?? null;
             } catch (billError) {
               console.warn('Could not fetch related bill:', billError);
             }
@@ -77,17 +87,16 @@ export const useTransactionDetail = (id: string): UseTransactionDetailReturn => 
           setTransaction({
             id,
             type: 'payment',
-            data: paymentResponse.data,
+            data: paymentData,
             relatedTransactions: relatedBill || undefined
           });
           return;
         }
       } catch (paymentError: any) {
         // If it's not found as a payment either, it doesn't exist
-        if (paymentError?.response?.status === 404) {
-          throw new Error('Transaction not found');
+        if (paymentError?.response?.status !== 404) {
+          throw paymentError;
         }
-        throw paymentError;
       }
 
       // If we reach here, transaction wasn't found in either endpoint

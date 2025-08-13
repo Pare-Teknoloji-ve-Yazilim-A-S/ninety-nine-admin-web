@@ -496,6 +496,25 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     this.logger.info(`Bill ${billId} deleted successfully`);
     return response;
   }
+
+  /**
+   * Get monthly paid totals for DUES bills for a given year
+   * GET /admin/billing/dues/monthly-paid-totals/:year
+   */
+  async getDuesMonthlyPaidTotals(year: number): Promise<Array<{ month: number; totalPaid: number }>> {
+    this.logger.info('Fetching dues monthly paid totals', { year });
+    try {
+      const response = await apiClient.get<{ data: Array<{ month: number; totalPaid: number }> }>(
+        `${this.baseEndpoint}/dues/monthly-paid-totals/${year}`
+      );
+      const root: any = response as any;
+      const list = root?.data ?? root?.data?.data ?? root?.results ?? [];
+      return Array.isArray(list) ? list : [];
+    } catch (error) {
+      this.logger.error('Failed to fetch dues monthly paid totals', error);
+      return [];
+    }
+  }
 }
 
 const billingService = new BillingService();

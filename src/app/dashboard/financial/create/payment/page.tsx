@@ -13,6 +13,7 @@ import SearchBar from '@/app/components/ui/SearchBar';
 import billingService from '@/services/billing.service';
 import type { ResponseBillDto } from '@/services/types/billing.types';
 import TablePagination from '@/app/components/ui/TablePagination';
+import { PAYMENT_METHOD_OPTIONS, PaymentMethod } from '@/services/types/billing.types';
 
 export default function CreatePaymentPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -46,6 +47,7 @@ export default function CreatePaymentPage() {
   };
   const [selectedBills, setSelectedBills] = useState<ResponseBillDto[]>([]);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | undefined>(undefined);
   const router = useRouter();
 
   // Breadcrumb items
@@ -299,17 +301,50 @@ export default function CreatePaymentPage() {
               </div>
             </Card>
 
-            {/* Payment Creation Form */}
-            <div className="space-y-6 relative">
+            {/* Kart 2: Ödeme Yöntemi Seçimi */}
+            <Card className="p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ödeme Yöntemi Seçin</h3>
+              </div>
               {!isConfirmed && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center">
-                  <div className="bg-background-light-card/70 dark:bg-background-card/60 backdrop-blur-sm rounded-lg px-4 py-2 border border-primary-gold/20 text-sm text-text-light-secondary dark:text-text-secondary flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-primary-gold" />
-                    Lütfen önce üstteki karttan bir konut seçin ve onaylayın
-                  </div>
+                <div className="mb-4 rounded-lg px-4 py-2 border border-primary-gold/20 bg-background-light-card dark:bg-background-card text-sm text-text-light-secondary dark:text-text-secondary flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-primary-gold" />
+                  Lütfen önce üstteki karttan bir konut seçin ve onaylayın
                 </div>
               )}
               <div className={!isConfirmed ? 'pointer-events-none opacity-60 blur-[1px]' : ''}>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {PAYMENT_METHOD_OPTIONS.map(opt => (
+                    <button
+                      key={String(opt.value)}
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod(opt.value as PaymentMethod)}
+                      className={`relative flex flex-col items-center p-3 border rounded-lg transition-colors ${
+                        selectedPaymentMethod === opt.value
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      <span className="text-lg mb-1">{opt.icon}</span>
+                      <div className="text-xs font-medium text-gray-900 dark:text-white text-center">{opt.label}</div>
+                      {selectedPaymentMethod === opt.value && (
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* Payment Creation Form */}
+            <div className="space-y-6">
+              {(!isConfirmed || !selectedPaymentMethod) && (
+                <div className="rounded-lg px-4 py-2 border border-primary-gold/20 bg-background-light-card dark:bg-background-card text-sm text-text-light-secondary dark:text-text-secondary flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-primary-gold" />
+                  {(!isConfirmed) ? 'Lütfen önce üstteki karttan bir konut seçin ve onaylayın' : 'Lütfen ortadaki karttan bir ödeme yöntemi seçin'}
+                </div>
+              )}
+              <div className={(!isConfirmed || !selectedPaymentMethod) ? 'pointer-events-none opacity-60 blur-[1px]' : ''}>
                 <CreatePaymentForm
                   onSuccess={handleSuccess}
                   onCancel={handleCancel}
@@ -317,9 +352,10 @@ export default function CreatePaymentPage() {
                   preselectedBills={selectedBills}
                   onRemoveBill={(id) => {
                     setSelectedBills(prev => prev.filter(b => b.id !== id));
-                    if (selectedBills.length - 1 === 0) setIsConfirmed(false);
+                    if (selectedBills.length - 1 === 0) { setIsConfirmed(false); setSelectedPaymentMethod(undefined); }
                   }}
-                  onClearBills={() => { setSelectedBills([]); setIsConfirmed(false); }}
+                  onClearBills={() => { setSelectedBills([]); setIsConfirmed(false); setSelectedPaymentMethod(undefined); }}
+                  selectedPaymentMethod={selectedPaymentMethod}
                 />
               </div>
             </div>
