@@ -210,7 +210,7 @@ export const ticketService = {
 
   async getAttachments(ticketId: string): Promise<any[]> {
     try {
-      const response = await apiClient.get<any>(`/admin/tickets/${ticketId}/attachments`);
+      const response: any = await apiClient.get<any>(`/admin/tickets/${ticketId}/attachments`);
       // Possible formats:
       // 1) { success, data: { ticketId, attachments: [] } }
       // 2) { attachments: [] }
