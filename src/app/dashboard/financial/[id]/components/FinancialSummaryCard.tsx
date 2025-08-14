@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../hooks/useTransactionDetail';
 import { PAYMENT_METHOD_OPTIONS } from '@/services/types/billing.types';
+import { enumsService } from '@/services/enums.service';
 
 interface FinancialSummaryCardProps {
   transaction: TransactionDetail;
@@ -23,6 +24,17 @@ interface FinancialSummaryCardProps {
 const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({ 
   transaction 
 }) => {
+  const appEnums = (typeof window !== 'undefined') ? enumsService.getFromCache() : null;
+  const dynamicPaymentMethodOptions = (appEnums?.payment?.paymentMethod as string[] | undefined)
+    ? (appEnums!.payment!.paymentMethod as string[]).map((code) => {
+        const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === code);
+        return {
+          value: fallback?.value ?? code,
+          label: fallback?.label ?? code,
+          icon: fallback?.icon ?? '💳',
+        };
+      })
+    : PAYMENT_METHOD_OPTIONS;
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR').format(amount);
@@ -56,7 +68,7 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
 
   // Get payment method info
   const getPaymentMethodInfo = (paymentMethod: string) => {
-    const methodInfo = PAYMENT_METHOD_OPTIONS.find(option => option.value === paymentMethod);
+    const methodInfo = dynamicPaymentMethodOptions.find(option => option.value === paymentMethod);
     return methodInfo || { icon: '💳', label: paymentMethod, description: '' };
   };
 

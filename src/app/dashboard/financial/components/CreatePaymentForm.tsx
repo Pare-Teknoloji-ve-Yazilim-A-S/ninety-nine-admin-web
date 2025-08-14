@@ -27,6 +27,7 @@ import {
 import { paymentService } from '@/services';
 import type { ResponseBillDto } from '@/services/types/billing.types';
 import billingService from '@/services/billing.service';
+import { enumsService } from '@/services/enums.service';
 
 interface CreatePaymentFormProps {
   onSuccess: (payment: any) => void;
@@ -59,6 +60,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bills, setBills] = useState<BillOption[]>([]);
   const [loadingBills, setLoadingBills] = useState(true);
+  const [appEnums, setAppEnums] = useState<Record<string, any> | null>(null);
 
   const {
     register,
@@ -118,6 +120,12 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     load();
   }, [preselectedBills, setValue]);
 
+  // Load enums from localStorage if available
+  useEffect(() => {
+    const cached = enumsService.getFromCache();
+    if (cached) setAppEnums(cached);
+  }, []);
+
   // Keep derived fields in sync
   useEffect(() => {
     setValue('amount', totalSelectedAmount);
@@ -147,13 +155,27 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     }
   };
 
+  // Build dynamic options from localStorage (fallback to constants)
+  const dynamicPaymentMethodOptions = (appEnums?.payment?.paymentMethod as string[] | undefined)
+    ? (appEnums!.payment!.paymentMethod as string[]).map((code) => {
+        const enumValue = (PaymentMethod as any)[code] ?? code;
+        const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === String(enumValue));
+        return {
+          value: (PaymentMethod as any)[code] ?? (fallback?.value ?? enumValue),
+          label: fallback?.label ?? code,
+          icon: fallback?.icon ?? '💳',
+          description: fallback?.description ?? ''
+        };
+      })
+    : PAYMENT_METHOD_OPTIONS;
+
   const getPaymentMethodIcon = (method: PaymentMethod) => {
-    const option = PAYMENT_METHOD_OPTIONS.find(opt => opt.value === method);
+    const option = dynamicPaymentMethodOptions.find(opt => opt.value === method);
     return option?.icon || '💳';
   };
 
   const getPaymentMethodDescription = (method: PaymentMethod) => {
-    const option = PAYMENT_METHOD_OPTIONS.find(opt => opt.value === method);
+    const option = dynamicPaymentMethodOptions.find(opt => opt.value === method);
     return option?.description || '';
   };
 
@@ -284,7 +306,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
             <div className="flex items-center gap-2 text-sm">
               <span className="text-lg">{getPaymentMethodIcon(watchedPaymentMethod)}</span>
               <span className="font-medium text-gray-900 dark:text-white">
-                {PAYMENT_METHOD_OPTIONS.find(opt => opt.value === watchedPaymentMethod)?.label}
+                {dynamicPaymentMethodOptions.find(opt => opt.value === watchedPaymentMethod)?.label}
               </span>
               <span className="text-gray-500 dark:text-gray-400">
                 - {getPaymentMethodDescription(watchedPaymentMethod)}

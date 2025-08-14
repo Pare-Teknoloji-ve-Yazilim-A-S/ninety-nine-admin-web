@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from './components/auth/AuthProvider'
+import EnumsProvider from './components/providers/EnumsProvider'
 import ToastProvider from './components/providers/ToastProvider'
 
 // Google Fonts - Inter
@@ -25,9 +26,11 @@ export default function RootLayout({
     <html lang="tr">
       <body className={`${inter.variable} font-sans antialiased bg-background-primary overflow-x-hidden`}>
         <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          <EnumsProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </EnumsProvider>
         </AuthProvider>
       </body>
     </html>

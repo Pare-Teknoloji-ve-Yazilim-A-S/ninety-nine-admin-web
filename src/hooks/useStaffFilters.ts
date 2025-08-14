@@ -9,6 +9,7 @@ import {
 import { Department, Position } from '@/services/types/department.types'
 import { FilterOption, FilterGroup, QuickFilter, SavedFilter } from '@/services/types/ui.types'
 import { staffService } from '@/services/staff.service'
+import { enumsService } from '@/services/enums.service'
 
 interface UseStaffFiltersOptions {
   initialFilters?: StaffFilterParams
@@ -77,6 +78,7 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
   const [departments, setDepartments] = useState<Department[]>([])
   const [positions, setPositions] = useState<Position[]>([])
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
+  const [appEnums, setAppEnums] = useState<Record<string, any> | null>(null)
 
   // Load departments and positions
   useEffect(() => {
@@ -102,6 +104,12 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
     loadOptions()
   }, [])
 
+  // Load enums from localStorage if available
+  useEffect(() => {
+    const cached = enumsService.getFromCache()
+    if (cached) setAppEnums(cached)
+  }, [])
+
   // Load saved filters from localStorage
   useEffect(() => {
     if (enableSavedFilters) {
@@ -117,21 +125,47 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
   }, [enableSavedFilters])
 
   // Filter options
-  const statusOptions: FilterOption<StaffStatus>[] = useMemo(() => [
-    { label: 'Aktif', value: StaffStatus.ACTIVE },
-    { label: 'Pasif', value: StaffStatus.INACTIVE },
-    { label: 'İzinli', value: StaffStatus.ON_LEAVE },
-    { label: 'İşten Çıkarıldı', value: StaffStatus.TERMINATED },
-    { label: 'Askıya Alındı', value: StaffStatus.SUSPENDED }
-  ], [])
+  const statusOptions: FilterOption<StaffStatus>[] = useMemo(() => {
+    const tr: Record<string, string> = {
+      ACTIVE: 'Aktif',
+      INACTIVE: 'Pasif',
+      ON_LEAVE: 'İzinli',
+      TERMINATED: 'İşten Çıkarıldı',
+      SUSPENDED: 'Askıya Alındı'
+    }
+    const codes = (appEnums?.staff?.staffStatus as string[] | undefined)
+    if (codes && codes.length > 0) {
+      return codes.map((code) => ({ label: tr[code] || code, value: (StaffStatus as any)[code] ?? code })) as FilterOption<StaffStatus>[]
+    }
+    return [
+      { label: 'Aktif', value: StaffStatus.ACTIVE },
+      { label: 'Pasif', value: StaffStatus.INACTIVE },
+      { label: 'İzinli', value: StaffStatus.ON_LEAVE },
+      { label: 'İşten Çıkarıldı', value: StaffStatus.TERMINATED },
+      { label: 'Askıya Alındı', value: StaffStatus.SUSPENDED }
+    ]
+  }, [appEnums])
 
-  const employmentTypeOptions: FilterOption<EmploymentType>[] = useMemo(() => [
-    { label: 'Tam Zamanlı', value: EmploymentType.FULL_TIME },
-    { label: 'Yarı Zamanlı', value: EmploymentType.PART_TIME },
-    { label: 'Sözleşmeli', value: EmploymentType.CONTRACT },
-    { label: 'Stajyer', value: EmploymentType.INTERN },
-    { label: 'Danışman', value: EmploymentType.CONSULTANT }
-  ], [])
+  const employmentTypeOptions: FilterOption<EmploymentType>[] = useMemo(() => {
+    const tr: Record<string, string> = {
+      FULL_TIME: 'Tam Zamanlı',
+      PART_TIME: 'Yarı Zamanlı',
+      CONTRACT: 'Sözleşmeli',
+      INTERN: 'Stajyer',
+      CONSULTANT: 'Danışman'
+    }
+    const codes = (appEnums?.staff?.employmentType as string[] | undefined)
+    if (codes && codes.length > 0) {
+      return codes.map((code) => ({ label: tr[code] || code, value: (EmploymentType as any)[code] ?? code })) as FilterOption<EmploymentType>[]
+    }
+    return [
+      { label: 'Tam Zamanlı', value: EmploymentType.FULL_TIME },
+      { label: 'Yarı Zamanlı', value: EmploymentType.PART_TIME },
+      { label: 'Sözleşmeli', value: EmploymentType.CONTRACT },
+      { label: 'Stajyer', value: EmploymentType.INTERN },
+      { label: 'Danışman', value: EmploymentType.CONSULTANT }
+    ]
+  }, [appEnums])
 
   const departmentOptions: FilterOption<string>[] = useMemo(() => 
     departments.map(dept => ({

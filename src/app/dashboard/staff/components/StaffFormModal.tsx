@@ -6,6 +6,7 @@ import type { Staff, CreateStaffDto, UpdateStaffDto } from '@/services/types/sta
 import type { Department, Position } from '@/services/types/department.types'
 import type { SearchableOption } from '@/app/components/ui/SearchableDropdown'
 import { DepartmentCode, PositionCode } from '@/services/types/organization.enums'
+import { enumsService } from '@/services/enums.service'
 
 interface StaffFormModalProps {
   open: boolean
@@ -28,6 +29,7 @@ export default function StaffFormModal({
   onClose,
   isLoading,
 }: StaffFormModalProps) {
+  const appEnums = (typeof window !== 'undefined') ? enumsService.getFromCache() : null
   // Build fallback enum-based options when API lists are empty
   const trDepartmentLabels: Record<string, string> = {
     MANAGEMENT: 'Yönetim',
@@ -47,8 +49,8 @@ export default function StaffFormModal({
     PARKING: 'Otopark'
   }
   const buildDepartmentEnumOptions = (): SearchableOption[] => {
-    const enumValues = Object.values(DepartmentCode) as string[]
-    return enumValues.map((code) => ({ value: code, label: trDepartmentLabels[code] || code.replace(/_/g, ' '), description: code }))
+    const codes = (appEnums?.staff?.department as string[] | undefined) || (Object.values(DepartmentCode) as string[])
+    return codes.map((code) => ({ value: code, label: trDepartmentLabels[code] || code.replace(/_/g, ' '), description: code }))
   }
 
   const trPositionLabels: Record<string, string> = {
@@ -79,8 +81,8 @@ export default function StaffFormModal({
     PARKING_ATTENDANT: 'Otopark Görevlisi'
   }
   const buildPositionEnumOptions = (): SearchableOption[] => {
-    const enumValues = Object.values(PositionCode) as string[]
-    return enumValues.map((code) => ({ value: code, label: trPositionLabels[code] || code.replace(/_/g, ' '), description: code }))
+    const codes = (appEnums?.staff?.position as string[] | undefined) || (Object.values(PositionCode) as string[])
+    return codes.map((code) => ({ value: code, label: trPositionLabels[code] || code.replace(/_/g, ' '), description: code }))
   }
 
   const departmentOptions: SearchableOption[] = (departments && departments.length > 0)

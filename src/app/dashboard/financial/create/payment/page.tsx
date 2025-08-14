@@ -14,6 +14,7 @@ import billingService from '@/services/billing.service';
 import type { ResponseBillDto } from '@/services/types/billing.types';
 import TablePagination from '@/app/components/ui/TablePagination';
 import { PAYMENT_METHOD_OPTIONS, PaymentMethod } from '@/services/types/billing.types';
+import { enumsService } from '@/services/enums.service';
 
 export default function CreatePaymentPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,6 +49,7 @@ export default function CreatePaymentPage() {
   const [selectedBills, setSelectedBills] = useState<ResponseBillDto[]>([]);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | undefined>(undefined);
+  const [appEnums, setAppEnums] = useState<Record<string, any> | null>(null);
   const router = useRouter();
 
   // Breadcrumb items
@@ -98,6 +100,25 @@ export default function CreatePaymentPage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Load enums from localStorage if available
+  useEffect(() => {
+    const cached = enumsService.getFromCache();
+    if (cached) setAppEnums(cached);
+  }, []);
+
+  // Build dynamic payment method options from appEnums (fallback to constants)
+  const dynamicPaymentMethodOptions = (appEnums?.payment?.paymentMethod as string[] | undefined)
+    ? (appEnums!.payment!.paymentMethod as string[]).map((code) => {
+        const enumValue = (PaymentMethod as any)[code] ?? code;
+        const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === String(enumValue));
+        return {
+          value: (PaymentMethod as any)[code] ?? (fallback?.value ?? enumValue),
+          label: fallback?.label ?? code,
+          icon: fallback?.icon ?? '💳',
+        };
+      })
+    : PAYMENT_METHOD_OPTIONS;
 
   return (
     <ProtectedRoute>
@@ -314,7 +335,7 @@ export default function CreatePaymentPage() {
               )}
               <div className={!isConfirmed ? 'pointer-events-none opacity-60 blur-[1px]' : ''}>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {PAYMENT_METHOD_OPTIONS.map(opt => (
+                  {dynamicPaymentMethodOptions.map(opt => (
                     <button
                       key={String(opt.value)}
                       type="button"

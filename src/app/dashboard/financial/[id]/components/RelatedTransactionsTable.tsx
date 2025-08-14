@@ -17,6 +17,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../hooks/useTransactionDetail';
 import { PAYMENT_METHOD_OPTIONS } from '@/services/types/billing.types';
+import { enumsService } from '@/services/enums.service';
 
 interface RelatedTransactionsTableProps {
   transaction: TransactionDetail;
@@ -25,6 +26,17 @@ interface RelatedTransactionsTableProps {
 const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({ 
   transaction 
 }) => {
+  const appEnums = (typeof window !== 'undefined') ? enumsService.getFromCache() : null;
+  const dynamicPaymentMethodOptions = (appEnums?.payment?.paymentMethod as string[] | undefined)
+    ? (appEnums!.payment!.paymentMethod as string[]).map((code) => {
+        const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === code);
+        return {
+          value: fallback?.value ?? code,
+          label: fallback?.label ?? code,
+          icon: fallback?.icon ?? '💳',
+        };
+      })
+    : PAYMENT_METHOD_OPTIONS;
   const router = useRouter();
 
   // Format currency
@@ -82,7 +94,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
 
   // Get payment method info
   const getPaymentMethodInfo = (paymentMethod: string) => {
-    const methodInfo = PAYMENT_METHOD_OPTIONS.find(option => option.value === paymentMethod);
+    const methodInfo = dynamicPaymentMethodOptions.find(option => option.value === paymentMethod);
     return methodInfo || { icon: '💳', label: paymentMethod, description: '' };
   };
 

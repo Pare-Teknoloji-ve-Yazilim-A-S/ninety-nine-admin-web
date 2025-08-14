@@ -19,6 +19,7 @@ import {
     type AnnouncementFormData,
     type Announcement
 } from '@/services/types/announcement.types';
+import { enumsService } from '@/services/enums.service';
 
 interface AnnouncementFormProps {
     initialData?: Partial<Announcement>;
@@ -54,6 +55,7 @@ export default function AnnouncementForm({
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [imagePreview, setImagePreview] = useState<string>('');
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [appEnums, setAppEnums] = useState<Record<string, any> | null>(null);
 
     // Initialize form data
     useEffect(() => {
@@ -102,6 +104,12 @@ export default function AnnouncementForm({
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     }, [formData]);
+
+    // Read enums from localStorage (no network if present)
+    useEffect(() => {
+        const cached = enumsService.getFromCache();
+        if (cached) setAppEnums(cached);
+    }, []);
 
     // Form handlers
     const handleInputChange = useCallback((field: keyof AnnouncementFormData, value: any) => {
@@ -175,17 +183,33 @@ export default function AnnouncementForm({
         }
     }, [formData, validateForm, onSubmit]);
 
-    // Type options for select
-    const typeOptions = ANNOUNCEMENT_TYPE_OPTIONS.map(option => ({
-        value: option.value,
-        label: option.label
-    }));
+    // Label fallbacks in TR
+    const typeLabelMap: Record<string, string> = {
+        GENERAL: 'Genel',
+        MAINTENANCE: 'Bakım',
+        EMERGENCY: 'Acil Durum',
+        EVENT: 'Etkinlik',
+        RULE: 'Kural',
+        MEETING: 'Toplantı',
+        OTHER: 'Diğer'
+    };
+    const statusLabelMap: Record<string, string> = {
+        DRAFT: 'Taslak',
+        PUBLISHED: 'Yayında',
+        ARCHIVED: 'Arşiv'
+    };
 
-    // Status options for select
-    const statusOptions = ANNOUNCEMENT_STATUS_OPTIONS.map(option => ({
-        value: option.value,
-        label: option.label
-    }));
+    // Type options for select (prefer localStorage enums)
+    const typeOptions = (appEnums?.announcements?.announcementType as string[] | undefined)?.map((code) => ({
+        value: code as unknown as AnnouncementType,
+        label: typeLabelMap[code] || code
+    })) || ANNOUNCEMENT_TYPE_OPTIONS.map(option => ({ value: option.value, label: option.label }));
+
+    // Status options for select (prefer localStorage enums)
+    const statusOptions = (appEnums?.announcements?.announcementStatus as string[] | undefined)?.map((code) => ({
+        value: code as unknown as AnnouncementStatus,
+        label: statusLabelMap[code] || code
+    })) || ANNOUNCEMENT_STATUS_OPTIONS.map(option => ({ value: option.value, label: option.label }));
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
