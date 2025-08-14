@@ -1,3 +1,39 @@
+// Enums payload types for Settings page
+export interface EnumsResponse {
+	success: boolean;
+	message?: string;
+	data: EnumsData;
+}
+
+export interface EnumsData {
+	users?: {
+		userStatus?: string[];
+		verificationStatus?: string[];
+		membershipTier?: string[];
+		privacyLevel?: string[];
+		gender?: string[];
+		bulkActionType?: string[];
+		approvalDecision?: string[];
+	};
+	properties?: {
+		propertyStatus?: string[];
+		propertyType?: string[];
+	};
+	tickets?: {
+		ticketStatus?: string[];
+		ticketPriority?: string[];
+		ticketType?: string[];
+	};
+	billing?: { billStatus?: string[]; billType?: string[] };
+	payment?: { paymentStatus?: string[]; paymentMethod?: string[] };
+	qrcode?: { qrcodeStatus?: string[]; qrcodeType?: string[] };
+	roles?: { role?: string[] };
+	userProperties?: { propertyRelationship?: string[]; contractType?: string[]; billResponsibility?: string[] };
+	familyMembers?: { relationshipType?: string[] };
+	announcements?: { announcementType?: string[]; announcementStatus?: string[] };
+	staff?: { department?: string[]; position?: string[]; staffStatus?: string[]; employmentType?: string[] };
+}
+
 // UI Domain Types for Staff Module
 import { Staff, StaffStatus, EmploymentType } from './staff.types'
 import { Department, Position, PositionCategory } from './department.types'

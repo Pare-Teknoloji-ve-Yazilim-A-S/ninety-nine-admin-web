@@ -42,7 +42,7 @@ export default function WebsiteInfoPage() {
         <div className="lg:ml-72">
           {/* Header */}
           <DashboardHeader 
-            title="Site Bilgileri" 
+            title="Ayarlar"
             breadcrumbItems={BREADCRUMB_ITEMS}
           />
           
@@ -52,22 +52,22 @@ export default function WebsiteInfoPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div>
                 <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
-                  Site Bilgileri
+                  Site Tasarım Ayarları
                 </h2>
                 <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                  Şirket detaylarınızı, markanızı ve genel bilgilerinizi yönetin
+                  Markanıza uygun renk, tipografi ve logo ayarlarını yönetin
                 </p>
               </div>
-              
               <div className="flex gap-3">
-                <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-text-light-secondary dark:text-text-secondary rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+                <button className="px-4 py-2 border border-primary-gold/40 text-text-on-light dark:text-text-on-dark rounded-md hover:bg-primary-gold/10">
                   Değişiklikleri Önizle
                 </button>
-                <button className="px-4 py-2 bg-primary-gold text-white rounded-md hover:bg-primary-gold/90">
+                <button className="px-4 py-2 bg-gradient-gold text-primary-dark-gray rounded-md shadow-md hover:opacity-90">
                   Yayınla
                 </button>
               </div>
             </div>
+
 
             {/* Şirket Bilgileri */}
             <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
@@ -103,51 +103,42 @@ export default function WebsiteInfoPage() {
             </div>
 
             {/* Marka Ayarları */}
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+            <div className="bg-background-light-card dark:bg-background-card shadow-lg rounded-xl p-6 mb-6 border border-primary-gold/20">
               <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-4">
                 Marka Ayarları
               </h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Ana Renk
-                  </label>
-                  <input
-                    type="color"
-                    defaultValue="#AC8D6A"
-                    className="w-20 h-10 border border-gray-300 dark:border-gray-600 rounded-md"
-                  />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Renk Paleti */}
+                <div className="lg:col-span-1">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                        Ana Renk (Gold)
+                      </label>
+                      <input
+                        type="color"
+                        defaultValue="#AC8D6A"
+                        className="w-20 h-10 border border-primary-gold/30 rounded-md bg-background-light-card dark:bg-background-card"
+                      />
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {['#AC8D6A','#F2E7DC','#201F1D','#718096','#E53E3E'].map((c) => (
+                        <div key={c} className="h-8 rounded-md border border-primary-gold/20" style={{ backgroundColor: c }} />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-
-                <div>
+                {/* Logo */}
+                <div className="lg:col-span-2">
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
                     Logo Yükleme
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-                    <div className="space-y-2">
-                      <div className="mx-auto w-12 h-12 text-gray-400">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
-                        </svg>
-                      </div>
-                      <p className="text-text-light-secondary dark:text-text-secondary">
-                        Logonuzu buraya sürükleyin veya tıklayarak seçin
-                      </p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                        id="logo-upload"
-                      />
-                      <label
-                        htmlFor="logo-upload"
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-gold bg-primary-gold-light hover:bg-primary-gold/20 cursor-pointer"
-                      >
-                        Dosya Seç
-                      </label>
-                    </div>
+                  <div className="border-2 border-dashed border-primary-gold/30 rounded-xl p-6 text-center bg-background-light-soft dark:bg-background-soft">
+                    <p className="text-sm text-text-light-secondary dark:text-text-secondary mb-3">Logonuzu sürükleyin veya tıklayarak seçin</p>
+                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" id="logo-upload" />
+                    <label htmlFor="logo-upload" className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-gradient-gold text-primary-dark-gray cursor-pointer shadow">
+                      Dosya Seç
+                    </label>
                   </div>
                 </div>
               </div>

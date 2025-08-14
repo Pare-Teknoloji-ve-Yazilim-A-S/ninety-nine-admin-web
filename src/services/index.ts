@@ -39,6 +39,7 @@ export { default as paymentService } from './payment.service';
 export { default as announcementService } from './announcement.service';
 export { default as qrCodeService } from './qr-code.service';
 export { default as staffService } from './staff.service';
+export { default as adminService } from './admin.service';
 
 // Re-export commonly used types for convenience
 export type {
