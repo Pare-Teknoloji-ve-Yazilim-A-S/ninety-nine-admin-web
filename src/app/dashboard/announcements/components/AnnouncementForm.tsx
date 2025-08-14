@@ -39,6 +39,7 @@ const defaultFormData: AnnouncementFormData = {
     isEmergency: false,
     image: undefined,
     imageUrl: '',
+    files: [],
     propertyIds: [],
 };
 
@@ -52,6 +53,7 @@ export default function AnnouncementForm({
     const [formData, setFormData] = useState<AnnouncementFormData>(defaultFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [imagePreview, setImagePreview] = useState<string>('');
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     // Initialize form data
     useEffect(() => {
@@ -67,9 +69,11 @@ export default function AnnouncementForm({
                 isEmergency: initialData.isEmergency || false,
                 image: undefined,
                 imageUrl: initialData.imageUrl || '',
+                files: [],
                 propertyIds: initialData.properties?.map(p => p.id) || [],
             });
             setImagePreview(initialData.imageUrl || '');
+            setSelectedFiles([]);
         }
     }, [initialData, mode]);
 
@@ -109,23 +113,37 @@ export default function AnnouncementForm({
         }
     }, [errors]);
 
-    const handleImageChange = useCallback((files: File[]) => {
-        if (files.length > 0) {
-            const file = files[0];
-            handleInputChange('image', file);
-            
-            // Create preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setImagePreview(e.target?.result as string);
-            };
-            reader.readAsDataURL(file);
+    const handleFilesChange = useCallback((files: File[], mode: 'append' | 'replace' = 'append') => {
+        const existing = mode === 'append' ? selectedFiles : [];
+        const combined = [...existing, ...files];
+        // Deduplicate by name-size-lastModified
+        const uniqueMap = new Map<string, File>();
+        for (const f of combined) {
+            const key = `${f.name}-${f.size}-${f.lastModified}`;
+            if (!uniqueMap.has(key)) uniqueMap.set(key, f);
         }
-    }, [handleInputChange]);
+        const unique = Array.from(uniqueMap.values());
+        // Max 10 files
+        const limited = unique.slice(0, 10);
+        setSelectedFiles(limited);
+        handleInputChange('files', limited);
+
+        // Keep first image as legacy preview
+        const first = limited[0];
+        if (first) {
+            const reader = new FileReader();
+            reader.onload = (e) => setImagePreview(e.target?.result as string);
+            reader.readAsDataURL(first);
+        } else {
+            setImagePreview('');
+        }
+    }, [handleInputChange, selectedFiles]);
 
     const handleRemoveImage = useCallback(() => {
         handleInputChange('image', undefined);
         handleInputChange('imageUrl', '');
+        handleInputChange('files', []);
+        setSelectedFiles([]);
         setImagePreview('');
     }, [handleInputChange]);
 
@@ -330,43 +348,22 @@ export default function AnnouncementForm({
                         Görsel
                     </h3>
                     
-                    {imagePreview ? (
-                        <div className="space-y-4">
-                            <div className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                                <img
-                                    src={imagePreview}
-                                    alt="Duyuru görseli"
-                                    className="w-full h-48 object-cover"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleRemoveImage}
-                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleRemoveImage}
-                                icon={X}
-                            >
-                                Görseli Kaldır
-                            </Button>
-                        </div>
-                    ) : (
-                        <FileUpload
+                    <FileUpload
+                        multiple
+                        acceptedTypes={["image/jpeg","image/png","image/gif","image/webp"]}
+                        maxSize={5}
+                        selectedFiles={selectedFiles}
+                            onFileRemove={(index) => {
+                                const next = selectedFiles.filter((_, i) => i !== index);
+                                handleFilesChange(next, 'replace');
+                            }}
                             onFilesChange={(fileList) => {
                                 const files = fileList ? Array.from(fileList) : [];
-                                handleImageChange(files);
+                                handleFilesChange(files, 'append');
                             }}
-                            accept="image/*"
-                            title="Görsel Yükle"
-                            description="PNG, JPG formatında en fazla 5MB"
-                        />
-                    )}
+                        title="Görsel(ler) Yükle"
+                        description="JPEG/PNG/GIF/WEBP, en fazla 10 dosya, 5MB/dosya"
+                    />
                 </div>
             </Card>
 

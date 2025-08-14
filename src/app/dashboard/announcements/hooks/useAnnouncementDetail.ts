@@ -13,12 +13,15 @@ interface UseAnnouncementDetailReturn {
     error: string | null;
     refreshAnnouncement: () => Promise<void>;
     updateAnnouncement: (updates: Partial<Announcement>) => void;
+    images: string[];
+    refreshImages: () => Promise<void>;
 }
 
 export function useAnnouncementDetail({ announcementId }: UseAnnouncementDetailProps): UseAnnouncementDetailReturn {
     const [announcement, setAnnouncement] = useState<Announcement | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [images, setImages] = useState<string[]>([]);
 
     const fetchAnnouncement = useCallback(async () => {
         if (!announcementId) return;
@@ -49,12 +52,23 @@ export function useAnnouncementDetail({ announcementId }: UseAnnouncementDetailP
         }
     }, [announcement]);
 
+    const fetchImages = useCallback(async () => {
+        if (!announcementId) return;
+        try {
+            const imgs = await announcementService.getAnnouncementImages(announcementId);
+            setImages(imgs);
+        } catch (e) {
+            setImages([]);
+        }
+    }, [announcementId]);
+
     // Initial load and refetch when id changes  
     useEffect(() => {
         if (announcementId) {
             fetchAnnouncement();
+            fetchImages();
         }
-    }, [fetchAnnouncement, announcementId]);
+    }, [fetchAnnouncement, fetchImages, announcementId]);
 
     return {
         announcement,
@@ -62,5 +76,7 @@ export function useAnnouncementDetail({ announcementId }: UseAnnouncementDetailP
         error,
         refreshAnnouncement,
         updateAnnouncement,
+        images,
+        refreshImages: fetchImages,
     };
 }

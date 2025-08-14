@@ -149,8 +149,11 @@ export interface AnnouncementFormData {
     expiryDate?: Date;
     isPinned: boolean;
     isEmergency: boolean;
+    // For legacy single-image flows we keep these optional
     image?: File;
     imageUrl?: string;
+    // New multi-file upload support for create endpoint
+    files?: File[];
     propertyIds: string[];
 }
 

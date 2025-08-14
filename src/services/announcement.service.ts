@@ -83,10 +83,15 @@ class AnnouncementService extends BaseService<Announcement, CreateAnnouncementDt
      * Create new announcement
      * POST /admin/announcements
      */
-    async createAnnouncement(data: CreateAnnouncementDto): Promise<ApiResponse<Announcement>> {
+    async createAnnouncement(data: CreateAnnouncementDto | FormData): Promise<ApiResponse<Announcement>> {
         try {
-            this.logger.info('Creating new announcement', { title: data.title, type: data.type });
-            const response = await apiClient.post<Announcement>(this.baseEndpoint, data);
+            // If FormData is passed, assume multipart create (supports files)
+            const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+            this.logger.info('Creating new announcement', isFormData ? { multipart: true } : { title: (data as any).title, type: (data as any).type });
+            const response = await apiClient.post<Announcement>(
+                this.baseEndpoint,
+                data
+            );
             this.logger.info('Announcement created successfully');
             return response;
         } catch (error) {
@@ -488,6 +493,41 @@ class AnnouncementService extends BaseService<Announcement, CreateAnnouncementDt
   }
 
     // === CONVENIENCE METHODS === //
+
+    /**
+     * Fetch images for an announcement
+     * GET /admin/announcements/{id}/images
+     * Returns a list of image URLs (normalized)
+     */
+    async getAnnouncementImages(id: string): Promise<string[]> {
+        try {
+            this.logger.info(`Fetching images for announcement ID: ${id}`);
+            const response = await apiClient.get<any>(`${this.baseEndpoint}/${id}/images`);
+            const payload = (response as any)?.data ?? response;
+            const imagesNode =
+                payload?.images ??
+                payload?.data?.images ??
+                (Array.isArray(payload?.data) ? payload?.data : undefined) ??
+                (Array.isArray(payload) ? payload : undefined);
+            let urls: string[] = [];
+            if (Array.isArray(imagesNode)) {
+                // If items are objects, prefer staticUrl, fallback to relativeUrl
+                urls = imagesNode
+                    .map((item: any) => {
+                        if (typeof item === 'string') return item;
+                        return item?.staticUrl || item?.relativeUrl || item?.url || null;
+                    })
+                    .filter(Boolean);
+            } else if (typeof imagesNode === 'string') {
+                urls = [imagesNode];
+            }
+            this.logger.info(`Fetched ${urls.length} images`);
+            return urls;
+        } catch (error) {
+            this.logger.error('Failed to fetch announcement images', error);
+            return [];
+        }
+    }
 
     /**
      * Get announcements by type

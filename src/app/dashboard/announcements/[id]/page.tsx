@@ -10,13 +10,14 @@ import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import Skeleton from '@/app/components/ui/Skeleton';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
+import Modal from '@/app/components/ui/Modal';
 import { ToastContainer } from '@/app/components/ui/Toast';
 import { useToast } from '@/hooks/useToast';
 import { useAnnouncementDetail } from '../hooks/useAnnouncementDetail';
 import { createAnnouncementActionHandlers } from '../actions/announcement-actions';
 import {
     ArrowLeft, Edit, Trash2, Archive, Send, Pin, AlertTriangle, 
-    Copy, Calendar, User, MapPin, Clock, Eye, Download
+    Copy, Calendar, User, MapPin, Clock, Eye, Download, ChevronLeft, ChevronRight, X
 } from 'lucide-react';
 import {
     getAnnouncementTypeLabel,
@@ -52,11 +53,43 @@ export default function AnnouncementDetailPage() {
         action: '',
         loading: false
     });
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
 
     // Data hook
-    const { announcement, loading, error, refreshAnnouncement } = useAnnouncementDetail({
+    const { announcement, loading, error, refreshAnnouncement, images, refreshImages } = useAnnouncementDetail({
         announcementId
     });
+
+    const openLightbox = useCallback((index: number) => {
+        setLightboxIndex(index);
+        setLightboxOpen(true);
+    }, []);
+
+    const closeLightbox = useCallback(() => {
+        setLightboxOpen(false);
+    }, []);
+
+    const showPrev = useCallback(() => {
+        if (!images || images.length === 0) return;
+        setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+    }, [images]);
+
+    const showNext = useCallback(() => {
+        if (!images || images.length === 0) return;
+        setLightboxIndex((prev) => (prev + 1) % images.length);
+    }, [images]);
+
+    // Keyboard navigation for lightbox
+    React.useEffect(() => {
+        if (!lightboxOpen) return;
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowLeft') showPrev();
+            if (e.key === 'ArrowRight') showNext();
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [lightboxOpen, showPrev, showNext]);
 
     // Toast functions
     const toastFunctions = {
@@ -394,12 +427,25 @@ export default function AnnouncementDetailPage() {
                                 <div className="mt-6">
                                     <Card className="shadow-md">
                                         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                            <h3 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Görsel</h3>
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Görseller</h3>
+                                                <Button variant="ghost" size="sm" onClick={refreshImages}>Yenile</Button>
+                                            </div>
                                         </div>
                                         <div className="p-6">
-                                            {announcement.imageUrl ? (
-                                                <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                                                    <img src={announcement.imageUrl} alt={announcement.title} className="w-full h-auto" />
+                                            {images && images.length > 0 ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    {images.map((url, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            type="button"
+                                                            onClick={() => openLightbox(idx)}
+                                                            className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-gold/50"
+                                                            aria-label={`Görseli büyüt (${idx + 1}/${images.length})`}
+                                                        >
+                                                            <img src={url} alt={`${announcement.title} ${idx + 1}`} className="w-full h-48 object-cover" loading="lazy" referrerPolicy="no-referrer" />
+                                                        </button>
+                                                    ))}
                                                 </div>
                                             ) : (
                                                 <div className="h-56 flex items-center justify-center rounded-lg bg-background-light-soft dark:bg-background-soft text-text-light-secondary dark:text-text-secondary">
@@ -456,6 +502,71 @@ export default function AnnouncementDetailPage() {
 
                 {/* Toast Container */}
                 <ToastContainer toasts={toasts} onRemove={removeToast} />
+
+                {/* Lightbox Modal */}
+                <Modal
+                    isOpen={lightboxOpen}
+                    onClose={closeLightbox}
+                    size="full"
+                    variant="dark"
+                    showCloseButton={true}
+                    header={null}
+                    footer={null}
+                    scrollable={false}
+                >
+                    <div className="relative w-full h-[80vh] flex items-center justify-center p-0">
+                        {/* Dim the sidebar underlay with an extra overlay spanning layout */}
+                        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }} />
+                        {/* Close */}
+                        <button
+                            type="button"
+                            onClick={closeLightbox}
+                            className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white focus:outline-none focus:ring-2 focus:ring-primary-gold/50"
+                            aria-label="Kapat"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        {/* Image */}
+                        {images && images.length > 0 && (
+                            <img
+                                src={images[lightboxIndex]}
+                                alt={`${announcement?.title || 'Görsel'} ${lightboxIndex + 1}`}
+                                className="max-h-full max-w-full object-contain rounded-lg shadow-lg"
+                            />
+                        )}
+
+                        {/* Prev */}
+                        {images && images.length > 1 && (
+                            <button
+                                type="button"
+                                onClick={showPrev}
+                                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white focus:outline-none focus:ring-2 focus:ring-primary-gold/50"
+                                aria-label="Önceki görsel"
+                            >
+                                <ChevronLeft className="w-6 h-6" />
+                            </button>
+                        )}
+
+                        {/* Next */}
+                        {images && images.length > 1 && (
+                            <button
+                                type="button"
+                                onClick={showNext}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white focus:outline-none focus:ring-2 focus:ring-primary-gold/50"
+                                aria-label="Sonraki görsel"
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </button>
+                        )}
+
+                        {/* Counter */}
+                        {images && images.length > 0 && (
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 text-white text-sm">
+                                {lightboxIndex + 1} / {images.length}
+                            </div>
+                        )}
+                    </div>
+                </Modal>
             </div>
         </ProtectedRoute>
     );

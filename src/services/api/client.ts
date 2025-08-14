@@ -169,7 +169,15 @@ class ApiClient {
         data?: any,
         config?: RequestConfig
     ): Promise<ApiResponse<T>> {
-        const response = await this.client.post(url, data, this.mergeConfig(config));
+        const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+        const merged = this.mergeConfig(config);
+        if (isFormData) {
+            merged.headers = {
+                ...(merged.headers || {}),
+                'Content-Type': 'multipart/form-data',
+            } as any;
+        }
+        const response = await this.client.post(url, data, merged);
         return response.data;
     }
 

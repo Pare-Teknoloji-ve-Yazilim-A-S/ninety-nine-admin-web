@@ -12,8 +12,7 @@ import AnnouncementForm from '../components/AnnouncementForm';
 import { announcementService } from '@/services';
 import { ArrowLeft } from 'lucide-react';
 import type { 
-    AnnouncementFormData, 
-    CreateAnnouncementDto 
+    AnnouncementFormData
 } from '@/services/types/announcement.types';
 
 /**
@@ -45,35 +44,32 @@ export default function CreateAnnouncementPage() {
         setLoading(true);
 
         try {
-            // Prepare data for API
-            const createData: CreateAnnouncementDto = {
-                title: formData.title,
-                content: formData.content,
-                type: formData.type,
-                status: formData.status,
-                publishDate: formData.publishDate?.toISOString(),
-                expiryDate: formData.expiryDate?.toISOString(),
-                isPinned: formData.isPinned,
-                isEmergency: formData.isEmergency,
-                propertyIds: formData.propertyIds.length > 0 ? formData.propertyIds : undefined,
-            };
+            // Build multipart form data per new API
+            const fd = new FormData();
+            fd.append('title', formData.title);
+            fd.append('content', formData.content);
+            if (formData.type) fd.append('type', String(formData.type));
+            if (formData.status) fd.append('status', String(formData.status));
+            if (formData.publishDate) fd.append('publishDate', formData.publishDate.toISOString());
+            if (formData.expiryDate) fd.append('expiryDate', formData.expiryDate.toISOString());
+            if (typeof formData.isPinned === 'boolean') fd.append('isPinned', String(formData.isPinned));
+            if (typeof formData.isEmergency === 'boolean') fd.append('isEmergency', String(formData.isEmergency));
+            if (formData.propertyIds && formData.propertyIds.length > 0) {
+                formData.propertyIds.forEach((id) => fd.append('propertyIds', id));
+            }
+            if (formData.files && formData.files.length > 0) {
+                formData.files.slice(0, 10).forEach((file) => fd.append('files', file));
+            } else if (formData.image) {
+                // Backward compatibility if only single image selected
+                fd.append('files', formData.image);
+            }
 
-            // Create announcement
-            console.log('[CreateAnnouncementPage] creating announcement with', createData);
-            const response = await announcementService.createAnnouncement(createData);
+            // Create announcement (multipart)
+            console.log('[CreateAnnouncementPage] creating announcement (multipart)');
+            const response = await announcementService.createAnnouncement(fd);
             console.log('[CreateAnnouncementPage] create response', response);
             // API now returns entity under data: {}
             const announcementId = (response as any)?.data?.id || (response as any)?.data?.data?.id;
-
-            // Upload image if provided
-            if (formData.image && announcementId) {
-                try {
-                    await announcementService.uploadAnnouncementImage(announcementId, formData.image);
-                } catch (imageError) {
-                    console.warn('Image upload failed:', imageError);
-                    showToast('info', 'Uyarı', 'Duyuru oluşturuldu ancak görsel yüklenemedi');
-                }
-            }
 
             showToast('success', 'Başarılı', 'Duyuru başarıyla oluşturuldu');
             
