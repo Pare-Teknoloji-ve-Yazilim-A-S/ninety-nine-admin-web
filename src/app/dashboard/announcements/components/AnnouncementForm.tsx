@@ -200,13 +200,13 @@ export default function AnnouncementForm({
     };
 
     // Type options for select (prefer localStorage enums)
-    const typeOptions = (appEnums?.announcements?.announcementType as string[] | undefined)?.map((code) => ({
+    const typeOptions = (appEnums?.data?.announcements?.announcementType as string[] | undefined)?.map((code) => ({
         value: code as unknown as AnnouncementType,
         label: typeLabelMap[code] || code
     })) || ANNOUNCEMENT_TYPE_OPTIONS.map(option => ({ value: option.value, label: option.label }));
 
     // Status options for select (prefer localStorage enums)
-    const statusOptions = (appEnums?.announcements?.announcementStatus as string[] | undefined)?.map((code) => ({
+    const statusOptions = (appEnums?.data?.announcements?.announcementStatus as string[] | undefined)?.map((code) => ({
         value: code as unknown as AnnouncementStatus,
         label: statusLabelMap[code] || code
     })) || ANNOUNCEMENT_STATUS_OPTIONS.map(option => ({ value: option.value, label: option.label }));

@@ -96,9 +96,7 @@ class UnitPricesService {
    */
   async calculateDues(squareMeters: number): Promise<CalculateDuesResponse> {
     try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-dues`, {
-        params: { squareMeters }
-      });
+      const response = await apiClient.get(`${this.baseUrl}/calculate-dues?squareMeters=${squareMeters}`);
       return response.data;
     } catch (error) {
       console.error('Error calculating dues:', error);
@@ -111,9 +109,7 @@ class UnitPricesService {
    */
   async calculateElectricity(kWh: number): Promise<CalculateDuesResponse> {
     try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-electricity`, {
-        params: { kWh }
-      });
+      const response = await apiClient.get(`${this.baseUrl}/calculate-electricity?kWh=${kWh}`);
       return response.data;
     } catch (error) {
       console.error('Error calculating electricity:', error);
@@ -126,9 +122,7 @@ class UnitPricesService {
    */
   async calculateWater(cubicMeters: number): Promise<CalculateDuesResponse> {
     try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-water`, {
-        params: { cubicMeters }
-      });
+      const response = await apiClient.get(`${this.baseUrl}/calculate-water?cubicMeters=${cubicMeters}`);
       return response.data;
     } catch (error) {
       console.error('Error calculating water:', error);
@@ -141,9 +135,7 @@ class UnitPricesService {
    */
   async calculateGas(cubicMeters: number): Promise<CalculateDuesResponse> {
     try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-gas`, {
-        params: { cubicMeters }
-      });
+      const response = await apiClient.get(`${this.baseUrl}/calculate-gas?cubicMeters=${cubicMeters}`);
       return response.data;
     } catch (error) {
       console.error('Error calculating gas:', error);
@@ -156,9 +148,7 @@ class UnitPricesService {
    */
   async calculateHeating(squareMeters: number): Promise<CalculateDuesResponse> {
     try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-heating`, {
-        params: { squareMeters }
-      });
+      const response = await apiClient.get(`${this.baseUrl}/calculate-heating?squareMeters=${squareMeters}`);
       return response.data;
     } catch (error) {
       console.error('Error calculating heating:', error);

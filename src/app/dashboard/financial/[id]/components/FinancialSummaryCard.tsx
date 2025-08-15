@@ -25,8 +25,8 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
   transaction 
 }) => {
   const appEnums = (typeof window !== 'undefined') ? enumsService.getFromCache() : null;
-  const dynamicPaymentMethodOptions = (appEnums?.payment?.paymentMethod as string[] | undefined)
-    ? (appEnums!.payment!.paymentMethod as string[]).map((code) => {
+  const dynamicPaymentMethodOptions = (appEnums?.data?.payment?.paymentMethod as string[] | undefined)
+    ? (appEnums!.data!.payment!.paymentMethod as string[]).map((code) => {
         const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === code);
         return {
           value: fallback?.value ?? code,

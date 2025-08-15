@@ -49,7 +49,7 @@ export default function StaffFormModal({
     PARKING: 'Otopark'
   }
   const buildDepartmentEnumOptions = (): SearchableOption[] => {
-    const codes = (appEnums?.staff?.department as string[] | undefined) || (Object.values(DepartmentCode) as string[])
+    const codes = (appEnums?.data?.staff?.department as string[] | undefined) || (Object.values(DepartmentCode) as string[])
     return codes.map((code) => ({ value: code, label: trDepartmentLabels[code] || code.replace(/_/g, ' '), description: code }))
   }
 
@@ -81,7 +81,7 @@ export default function StaffFormModal({
     PARKING_ATTENDANT: 'Otopark Görevlisi'
   }
   const buildPositionEnumOptions = (): SearchableOption[] => {
-    const codes = (appEnums?.staff?.position as string[] | undefined) || (Object.values(PositionCode) as string[])
+    const codes = (appEnums?.data?.staff?.position as string[] | undefined) || (Object.values(PositionCode) as string[])
     return codes.map((code) => ({ value: code, label: trPositionLabels[code] || code.replace(/_/g, ' '), description: code }))
   }
 

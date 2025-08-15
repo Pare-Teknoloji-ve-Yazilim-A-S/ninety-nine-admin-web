@@ -108,8 +108,8 @@ export default function CreatePaymentPage() {
   }, []);
 
   // Build dynamic payment method options from appEnums (fallback to constants)
-  const dynamicPaymentMethodOptions = (appEnums?.payment?.paymentMethod as string[] | undefined)
-    ? (appEnums!.payment!.paymentMethod as string[]).map((code) => {
+  const dynamicPaymentMethodOptions = (appEnums?.data?.payment?.paymentMethod as string[] | undefined)
+    ? (appEnums!.data!.payment!.paymentMethod as string[]).map((code) => {
         const enumValue = (PaymentMethod as any)[code] ?? code;
         const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === String(enumValue));
         return {

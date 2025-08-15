@@ -149,12 +149,39 @@ export default function DashboardSettingsPage() {
         const response = await unitPricesService.getAllUnitPrices();
         
         if (response && Array.isArray(response)) {
-          setUnitPriceSettings(response);
+          // Transform the array into the expected object structure
+          const transformedSettings = response.reduce((acc, unitPrice) => {
+            acc[unitPrice.priceType] = { 
+              price: parseFloat(unitPrice.unitPrice), 
+              unit: unitPrice.unit 
+            };
+            return acc;
+          }, {} as any);
+          
+          setUnitPriceSettings(transformedSettings);
+          // Create price type options with proper structure
+          const priceTypeLabels: Record<string, string> = {
+            DUES: 'Aidat',
+            ELECTRICITY: 'Elektrik',
+            WATER: 'Su',
+            GAS: 'Doğalgaz',
+            HEATING: 'Isıtma'
+          };
+          
+          const priceTypeDescriptions: Record<string, string> = {
+            DUES: 'Metrekare başına aidat ücreti',
+            ELECTRICITY: 'Kilowatt saat başına elektrik ücreti',
+            WATER: 'Metreküp başına su ücreti',
+            GAS: 'Metreküp başına doğalgaz ücreti',
+            HEATING: 'Metrekare başına ısıtma ücreti'
+          };
+          
           setPriceTypes(response.map(unitPrice => ({
             id: unitPrice.id,
-            type: unitPrice.priceType,
-            price: unitPrice.price,
-            unit: unitPrice.unit
+            value: unitPrice.priceType,
+            label: priceTypeLabels[unitPrice.priceType] || unitPrice.priceType,
+            description: priceTypeDescriptions[unitPrice.priceType] || '',
+            defaultUnit: unitPrice.unit
           })));
         }
       } catch (error) {
@@ -216,7 +243,7 @@ export default function DashboardSettingsPage() {
     setUnitPriceSettings(prev => ({
       ...prev,
       [priceType]: {
-        ...prev[priceType],
+        ...prev[priceType as keyof typeof prev],
         [field]: value
       }
     }));
