@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ProtectedRoute } from "@/app/components/auth/ProtectedRoute";
@@ -44,6 +44,7 @@ import {
 import Modal from "@/app/components/ui/Modal";
 import { UpdateBasicInfoDto, UpdateOwnerInfoDto, UpdateTenantInfoDto } from "@/services/types/unit-detail.types";
 import { PropertyService } from "@/services/property.service";
+import { userService } from "@/services/user.service";
 
 export default function UnitDetailPage() {
   const params = useParams();
@@ -91,6 +92,11 @@ export default function UnitDetailPage() {
   
   // Add state for owner addition
   const [showAddOwnerModal, setShowAddOwnerModal] = useState(false);
+  
+  // Add state for active approved residents API call
+  const [activeApprovedResidents, setActiveApprovedResidents] = useState<any[]>([]);
+  const [residentsLoading, setResidentsLoading] = useState(false);
+  const [residentsError, setResidentsError] = useState<string | null>(null);
   
   const { 
     unit, 
@@ -143,6 +149,32 @@ export default function UnitDetailPage() {
         .finally(() => setDebtLoading(false));
     }
   }, [unitId]);
+
+  // Fetch active approved residents when page loads
+  useEffect(() => {
+    const fetchActiveApprovedResidents = async () => {
+      setResidentsLoading(true);
+      setResidentsError(null);
+      
+      try {
+        console.log('🧪 Fetching active approved residents on unit detail page...');
+        const response = await userService.getActiveApprovedResidents();
+        
+        console.log('✅ Active approved residents response:', response);
+        setActiveApprovedResidents(response.data || []);
+        
+        toast.success(`✅ ${response.data?.length || 0} aktif onaylı sakin bulundu.`);
+      } catch (error: any) {
+        console.error('❌ Failed to fetch active approved residents:', error);
+        setResidentsError(error.message || 'Aktif onaylı sakinler yüklenemedi');
+        toast.error(`❌ Aktif onaylı sakinler yüklenemedi: ${error.message || 'Bilinmeyen hata'}`);
+      } finally {
+        setResidentsLoading(false);
+      }
+    };
+
+    fetchActiveApprovedResidents();
+  }, []); // Run only once when component mounts
 
   // Handle tenant removal request (show modal)
   const handleRemoveTenantRequest = async () => {

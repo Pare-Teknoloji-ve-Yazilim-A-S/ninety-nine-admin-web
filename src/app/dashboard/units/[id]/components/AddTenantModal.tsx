@@ -40,6 +40,18 @@ interface ExistingUser {
   lastName: string;
   email: string;
   phone?: string;
+  status?: string;
+  membershipTier?: string;
+  verificationStatus?: string;
+  role?: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+  };
+  bloodType?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId }: AddTenantModalProps) {
@@ -66,12 +78,12 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const toast = useToast();
 
-  // Get all residents
+  // Get all active approved residents
   const fetchResidents = async () => {
     setSearching(true);
     try {
-      // Fetch with high limit to get all residents
-      const response = await fetch('/api/proxy/admin/users?limit=1000&page=1', {
+      // Use the new active approved residents endpoint
+      const response = await fetch('/api/proxy/admin/users/active-approved-residents', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           'Content-Type': 'application/json'
@@ -80,13 +92,16 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Fetched residents:', data.data?.length || 0, 'residents');
-        setExistingUsers(data.data || []);
-        setFilteredUsers(data.data || []);
+        console.log('Fetched active approved residents:', data?.length || 0, 'residents');
+        setExistingUsers(data || []);
+        setFilteredUsers(data || []);
+      } else {
+        console.error('Failed to fetch active approved residents:', response.status);
+        toast.error('⚠️ Aktif onaylı sakinler listesi yüklenemedi.');
       }
     } catch (error) {
-      console.error('Error fetching residents:', error);
-      toast.error('⚠️ Sakinler listesi yüklenemedi. Lütfen sayfayı yenileyin.');
+      console.error('Error fetching active approved residents:', error);
+      toast.error('⚠️ Aktif onaylı sakinler listesi yüklenemedi. Lütfen sayfayı yenileyin.');
     } finally {
       setSearching(false);
     }
@@ -405,18 +420,34 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
                                  {user.firstName[0]}{user.lastName[0]}
                                </span>
                              </div>
-                             <div>
-                               <div className="font-medium text-text-on-light dark:text-text-on-dark">
+                             <div className="flex-1 min-w-0">
+                               <div className="font-medium text-text-on-light dark:text-text-on-dark truncate">
                                  {user.firstName} {user.lastName}
                                </div>
-                               <div className="text-xs text-text-light-muted dark:text-text-muted">
+                               <div className="text-xs text-text-light-muted dark:text-text-muted truncate">
                                  {user.email}
                                </div>
-                               {user.phone && (
-                                 <div className="text-xs text-text-light-muted dark:text-text-muted">
-                                   {user.phone}
-                                 </div>
-                               )}
+                               <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                 {user.phone && (
+                                   <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                                     📞 {user.phone}
+                                   </span>
+                                 )}
+                                 {user.membershipTier && (
+                                   <span className={`text-xs px-2 py-1 rounded ${
+                                     user.membershipTier === 'GOLD' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
+                                     user.membershipTier === 'SILVER' ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200' :
+                                     'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                                   }`}>
+                                     {user.membershipTier}
+                                   </span>
+                                 )}
+                                 {user.verificationStatus === 'APPROVED' && (
+                                   <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
+                                     ✅ Onaylı
+                                   </span>
+                                 )}
+                               </div>
                              </div>
                            </div>
                          </button>

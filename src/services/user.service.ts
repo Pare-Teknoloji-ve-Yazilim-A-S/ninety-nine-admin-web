@@ -465,6 +465,24 @@ class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
             throw error;
         }
     }
+
+    /**
+     * Get active approved residents
+     * GET /admin/users/active-approved-residents
+     */
+    async getActiveApprovedResidents(): Promise<ApiResponse<any[]>> {
+        try {
+            this.logger.info('Fetching active approved residents');
+            const response = await apiClient.get<any[]>(apiConfig.endpoints.admin.activeApprovedResidents);
+            this.logger.info('Active approved residents fetched successfully', {
+                count: response?.data?.length || 0
+            });
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch active approved residents', error);
+            throw error;
+        }
+    }
 }
 
 // Export singleton instance

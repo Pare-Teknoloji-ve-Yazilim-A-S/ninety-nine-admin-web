@@ -581,6 +581,22 @@ export default function ResidentsPage() {
                             </div>
                         </div>
 
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                            {statsData.map((stat) => (
+                                <StatsCard
+                                    key={stat.title}
+                                    title={stat.title}
+                                    value={stat.value}
+                                    subtitle={stat.subtitle}
+                                    color={stat.color}
+                                    icon={stat.icon}
+                                    size="md"
+                                    loading={stats.loading}
+                                />
+                            ))}
+                        </div>
+
                         {/* Search and Filters */}
                         <Card className="mb-6">
                             <div className="p-6">
@@ -625,22 +641,6 @@ export default function ResidentsPage() {
                                 </div>
                             </div>
                         </Card>
-
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-                            {statsData.map((stat) => (
-                                <StatsCard
-                                    key={stat.title}
-                                    title={stat.title}
-                                    value={stat.value}
-                                    subtitle={stat.subtitle}
-                                    color={stat.color}
-                                    icon={stat.icon}
-                                    size="md"
-                                    loading={stats.loading}
-                                />
-                            ))}
-                        </div>
 
                         {/* Error Message */}
                         {dataHook.apiError && (

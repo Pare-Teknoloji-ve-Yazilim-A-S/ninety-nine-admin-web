@@ -54,7 +54,6 @@ import TablePagination from '@/app/components/ui/TablePagination';
 import Checkbox from '@/app/components/ui/Checkbox';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Portal from '@/app/components/ui/Portal';
 import { useUnitCounts } from '@/hooks/useUnitsData';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
@@ -372,90 +371,23 @@ export default function UnitsListPage() {
         },
     ], [statusConfig]);
 
-    // UnitActionMenu - MEMOIZED
+    // UnitActionMenu - MEMOIZED - Simplified to only show detail view
     const UnitActionMenu: React.FC<{ unit: Property; onAction: (action: string, unit: Property) => void }> = React.memo(({ unit, onAction }) => {
-        const [isOpen, setIsOpen] = React.useState(false);
-        const buttonRef = React.useRef<HTMLButtonElement>(null);
-        const [menuStyle, setMenuStyle] = React.useState<React.CSSProperties>({});
-
-        React.useEffect(() => {
-            if (isOpen && buttonRef.current) {
-                const rect = buttonRef.current.getBoundingClientRect();
-                const menuHeight = 180; // tahmini yükseklik
-                const menuWidth = 200;
-                const padding = 8;
-                let top = rect.bottom + window.scrollY + padding;
-                let left = rect.right + window.scrollX - menuWidth;
-                if (top + menuHeight > window.innerHeight + window.scrollY) {
-                    top = rect.top + window.scrollY - menuHeight - padding;
-                }
-                if (left < 0) {
-                    left = padding;
-                }
-                setMenuStyle({
-                    position: 'absolute',
-                    top,
-                    left,
-                    zIndex: 9999,
-                    minWidth: menuWidth,
-                });
-            }
-        }, [isOpen]);
-
-        React.useEffect(() => {
-            if (!isOpen) return;
-            const handleClick = (e: MouseEvent) => {
-                if (
-                    buttonRef.current &&
-                    !buttonRef.current.contains(e.target as Node)
-                ) {
-                    setIsOpen(false);
-                }
-            };
-            document.addEventListener('click', handleClick); // mousedown -> click
-            return () => document.removeEventListener('click', handleClick);
-        }, [isOpen]);
-
-        const handleDropdownToggle = (e: React.MouseEvent) => {
+        const handleDetailView = (e: React.MouseEvent) => {
             e.stopPropagation();
-            setIsOpen(!isOpen);
-        };
-
-        const handleAction = (action: string) => (e: React.MouseEvent) => {
-            e.stopPropagation();
-            setIsOpen(false);
-            onAction(action, unit);
+            onAction('view', unit);
         };
 
         return (
             <div className="flex items-center justify-center">
                 <button
-                    ref={buttonRef}
                     className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
-                    onClick={handleDropdownToggle}
+                    onClick={handleDetailView}
                     type="button"
+                    title="Detay"
                 >
                     <MoreVertical className="w-5 h-5" />
                 </button>
-                {isOpen && (
-                    <Portal>
-                        <div
-                            style={menuStyle}
-                            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 py-1 max-h-72 overflow-auto"
-                        >
-                            <button onClick={handleAction('view')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <Eye className="w-5 h-5" /> Detay
-                            </button>
-                            <button onClick={handleAction('edit')} className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3">
-                                <Edit className="w-5 h-5" /> Düzenle
-                            </button>
-                            <hr className="border-gray-200 dark:border-gray-600 my-1" />
-                            <button onClick={handleAction('delete')} className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3">
-                                <Trash2 className="w-5 h-5" /> Sil
-                            </button>
-                        </div>
-                    </Portal>
-                )}
             </div>
         );
     });

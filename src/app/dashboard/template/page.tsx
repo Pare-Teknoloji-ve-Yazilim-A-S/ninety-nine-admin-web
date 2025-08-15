@@ -30,6 +30,8 @@ export default function TemplatePage() {
         { label: 'Sayfa Şablonu', active: true }
     ];
 
+
+
     return (
         <ProtectedRoute>
             <div className="min-h-screen bg-background-primary">

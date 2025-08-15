@@ -42,6 +42,7 @@ export const apiConfig = {
             activeUsersCount: '/admin/users/active-users/count',
             tenantsCount: '/admin/users/tenants/count',
             ownersCount: '/admin/users/owners/count',
+            activeApprovedResidents: '/admin/users/active-approved-residents',
             roles: '/admin/roles',
             permissions: '/admin/permissions',
             configs: '/admin/configs',
