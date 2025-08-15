@@ -39,13 +39,27 @@ class EnumsService {
    */
   async getAllEnums(): Promise<EnumsResponse> {
     try {
+      // First try to get from cache
+      const cached = this.getFromCache();
+      if (cached) {
+        console.log('📦 Using cached enums data');
+        return cached;
+      }
+
+      // If not in cache, fetch from API
+      console.log('🌐 Fetching enums from API...');
       const response = await apiClient.get(this.baseUrl);
       console.log('🔍 Enums service raw response:', response);
       console.log('📊 Response.data:', response.data);
       console.log('📊 Response type:', typeof response);
       
       // Backend direkt data objesi döndürüyor, response.data değil
-      return response.data || response;
+      const data = response.data || response;
+      
+      // Cache the result
+      this.setCache(data);
+      
+      return data;
     } catch (error) {
       console.error('Error fetching enums:', error);
       throw error;
@@ -75,6 +89,65 @@ class EnumsService {
     } catch (error) {
       console.error(`Error fetching enums for ${module}.${category}:`, error);
       throw error;
+    }
+  }
+
+  /**
+   * Get enums from cache (localStorage)
+   */
+  getFromCache(): EnumsResponse | null {
+    try {
+      if (typeof window === 'undefined') return null;
+      
+      const cached = localStorage.getItem('enums_cache');
+      if (!cached) return null;
+      
+      const parsed = JSON.parse(cached);
+      const cacheTime = localStorage.getItem('enums_cache_time');
+      
+      // Check if cache is still valid (24 hours)
+      if (cacheTime) {
+        const cacheAge = Date.now() - parseInt(cacheTime);
+        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        if (cacheAge > maxAge) {
+          localStorage.removeItem('enums_cache');
+          localStorage.removeItem('enums_cache_time');
+          return null;
+        }
+      }
+      
+      return parsed;
+    } catch (error) {
+      console.error('Error reading enums from cache:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Set enums to cache (localStorage)
+   */
+  setCache(data: EnumsResponse): void {
+    try {
+      if (typeof window === 'undefined') return;
+      
+      localStorage.setItem('enums_cache', JSON.stringify(data));
+      localStorage.setItem('enums_cache_time', Date.now().toString());
+    } catch (error) {
+      console.error('Error setting enums cache:', error);
+    }
+  }
+
+  /**
+   * Clear enums cache
+   */
+  clearCache(): void {
+    try {
+      if (typeof window === 'undefined') return;
+      
+      localStorage.removeItem('enums_cache');
+      localStorage.removeItem('enums_cache_time');
+    } catch (error) {
+      console.error('Error clearing enums cache:', error);
     }
   }
 }
