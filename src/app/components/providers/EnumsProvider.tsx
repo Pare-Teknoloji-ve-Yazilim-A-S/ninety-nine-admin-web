@@ -14,15 +14,15 @@ export default function EnumsProvider({ children }: EnumsProviderProps) {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const cached = enumsService.getFromCache();
-    if (!cached) {
-      enumsService.fetchAndCache().catch((error) => {
-        console.warn('Failed to prefetch enums:', error);
-      });
-    }
+    // Prefetch enums when user is authenticated
+    enumsService.getAllEnums().catch((error) => {
+      console.warn('Failed to prefetch enums:', error);
+    });
   }, [isAuthenticated]);
 
   return <>{children}</>;
 }
+
+
 
 
