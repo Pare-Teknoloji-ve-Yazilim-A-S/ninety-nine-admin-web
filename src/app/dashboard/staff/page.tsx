@@ -31,14 +31,13 @@ function StaffPage () {
   const totalCountLabel = `${totalCount.toLocaleString()} kişi`
 
   return (
-    <div className="space-y-6 text-on-light dark:text-on-dark">
-      <PageHeader
-        title="Personel Yönetimi"
-        totalLabel={totalCountLabel}
-        summary={data.statsSummary}
-        onOpenSettings={actions.openSettings}
-        onCreateNew={actions.openCreate}
-      />
+    <div className="space-y-6 text-on-light dark:text-on-dark max-w-full">
+             <PageHeader
+         title="Personel Yönetimi"
+         totalLabel={totalCountLabel}
+         summary={data.statsSummary}
+         onCreateNew={actions.openCreate}
+       />
 
       <StaffFormModal
         open={ui.isStaffFormOpen}

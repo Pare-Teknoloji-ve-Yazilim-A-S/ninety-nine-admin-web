@@ -25,6 +25,7 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
 import { useMaintenanceRequests } from '@/hooks/useMaintenanceRequests';
 import { useAuditLogs } from '@/hooks/useAuditLogs';
 import { useTicketStats } from '@/hooks/useTicketStats';
+import { useExpiringAnnouncements } from '@/hooks/useExpiringAnnouncements';
 
 export default function DashboardPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,6 +45,9 @@ export default function DashboardPage() {
 
     // Fetch ticket stats
     const { stats: ticketStats, loading: ticketStatsLoading, error: ticketStatsError } = useTicketStats();
+
+    // Fetch expiring announcements count
+    const { count: expiringAnnouncementsCount, loading: expiringAnnouncementsLoading, error: expiringAnnouncementsError } = useExpiringAnnouncements();
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/dashboard' },
@@ -118,12 +122,14 @@ export default function DashboardPage() {
                                 loading={loading}
                                 ticketStats={ticketStats}
                                 ticketStatsLoading={ticketStatsLoading}
+                                expiringAnnouncementsCount={expiringAnnouncementsCount}
+                                expiringAnnouncementsLoading={expiringAnnouncementsLoading}
                             />
                             
                             {/* Error Display */}
-                            {(error || ticketStatsError) && (
+                            {(error || ticketStatsError || expiringAnnouncementsError) && (
                                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <p className="text-red-600 text-sm">{error || ticketStatsError}</p>
+                                    <p className="text-red-600 text-sm">{error || ticketStatsError || expiringAnnouncementsError}</p>
                                 </div>
                             )}
 

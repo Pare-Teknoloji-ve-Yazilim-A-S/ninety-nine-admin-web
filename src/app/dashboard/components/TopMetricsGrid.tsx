@@ -8,7 +8,8 @@ import {
     DollarSign,
     AlertTriangle,
     TrendingUp,
-    TrendingDown
+    TrendingDown,
+    Clock
 } from 'lucide-react';
 
 interface MetricData {
@@ -31,6 +32,8 @@ interface TopMetricsGridProps {
         changeDirection: 'increase' | 'decrease';
     } | null;
     ticketStatsLoading?: boolean;
+    expiringAnnouncementsCount?: number;
+    expiringAnnouncementsLoading?: boolean;
 }
 
 const defaultMetrics: MetricData[] = [
@@ -49,14 +52,7 @@ const defaultMetrics: MetricData[] = [
         color: 'gold',
         trend: null
     },
-    {
-        title: 'Bu Ay Tahsilat',
-        value: '₺4.2M',
-        subtitle: '↑ %12',
-        icon: DollarSign,
-        color: 'primary',
-        trend: 'up'
-    },
+
     {
         title: 'Açık Talepler',
         value: '47',
@@ -64,6 +60,14 @@ const defaultMetrics: MetricData[] = [
         icon: AlertTriangle,
         color: 'red',
         trend: 'down'
+    },
+    {
+        title: 'Süresi Dolacak Duyurular',
+        value: '1',
+        subtitle: '1 gün içinde',
+        icon: Clock,
+        color: 'gold',
+        trend: null
     }
 ];
 
@@ -73,7 +77,9 @@ export default function TopMetricsGrid({
     assignedProperties, 
     loading = false,
     ticketStats,
-    ticketStatsLoading = false
+    ticketStatsLoading = false,
+    expiringAnnouncementsCount,
+    expiringAnnouncementsLoading = false
 }: TopMetricsGridProps) {
     // Create dynamic metrics based on real data
     const dynamicMetrics: MetricData[] = [
@@ -93,14 +99,7 @@ export default function TopMetricsGrid({
             color: 'gold',
             trend: null
         },
-        {
-            title: 'Bu Ay Tahsilat',
-            value: '₺4.2M',
-            subtitle: '↑ %12',
-            icon: DollarSign,
-            color: 'primary',
-            trend: 'up'
-        },
+
         {
             title: 'Açık Talepler',
             value: ticketStatsLoading ? '...' : ticketStats?.currentMonthCount?.toString() || '0',
@@ -110,6 +109,14 @@ export default function TopMetricsGrid({
             icon: AlertTriangle,
             color: 'red',
             trend: ticketStats?.changeDirection === 'increase' ? 'up' : 'down'
+        },
+        {
+            title: 'Süresi Dolacak Duyurular',
+            value: expiringAnnouncementsLoading ? '...' : expiringAnnouncementsCount?.toString() || '0',
+            subtitle: '1 gün içinde',
+            icon: Clock,
+            color: 'gold',
+            trend: null
         }
     ];
 

@@ -1,14 +1,13 @@
 'use client'
 
 import Button from '@/app/components/ui/Button'
-import { Plus, RefreshCw, Settings } from 'lucide-react'
+import { Plus, RefreshCw } from 'lucide-react'
 
 interface PageHeaderProps {
   title: string
   totalLabel?: string
   summary?: string
   onRefresh?: () => void
-  onOpenSettings?: () => void
   onCreateNew?: () => void
 }
 
@@ -17,7 +16,6 @@ export default function PageHeader({
   totalLabel,
   summary,
   onRefresh,
-  onOpenSettings,
   onCreateNew,
 }: PageHeaderProps) {
   return (
@@ -36,11 +34,7 @@ export default function PageHeader({
             Yenile
           </Button>
         )}
-        {onOpenSettings && (
-          <Button variant="primary" size="md" icon={Settings} onClick={onOpenSettings}>
-            Rol Ayarları
-          </Button>
-        )}
+
         {onCreateNew && (
           <Button variant="primary" size="md" icon={Plus} onClick={onCreateNew}>
             Yeni Personel Ekle

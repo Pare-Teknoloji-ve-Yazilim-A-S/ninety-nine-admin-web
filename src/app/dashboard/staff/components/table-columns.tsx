@@ -16,19 +16,19 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
       id: 'personel',
       header: 'Personel',
       accessor: (row: Staff) => row,
-      minWidth: '220px',
+      minWidth: '200px',
       render: (_: any, row: Staff) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Avatar
             src={row.avatar}
             alt={`${row.firstName} ${row.lastName}`}
             fallback={`${row.firstName?.[0] ?? ''}${row.lastName?.[0] ?? ''}`.toUpperCase()}
             size="sm"
-            className="h-8 w-8"
+            className="h-7 w-7 flex-shrink-0"
           />
-          <div>
-            <div className="font-medium">{row.firstName} {row.lastName}</div>
-            <div className="text-xs text-text-light-muted dark:text-text-muted">{row.email || '-'}</div>
+          <div className="min-w-0 flex-1">
+            <div className="font-medium truncate">{row.firstName} {row.lastName}</div>
+            <div className="text-xs text-text-light-muted dark:text-text-muted truncate">{row.email || '-'}</div>
           </div>
         </div>
       )
@@ -37,13 +37,13 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
       id: 'position',
       header: 'Pozisyon',
       accessor: (row: Staff) => row.position?.title || '-',
-      minWidth: '160px'
+      minWidth: '140px'
     },
     {
       id: 'department',
       header: 'Departman',
       accessor: (row: Staff) => row.department?.name || '-',
-      minWidth: '160px'
+      minWidth: '140px'
     },
     {
       id: 'status',
@@ -60,21 +60,21 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
       header: 'İstihdam Türü',
       accessor: (row: Staff) => row.employmentType,
       render: (value: any) => <Badge variant="outline">{EMPLOYMENT_TYPE_CONFIG[value]?.label || String(value)}</Badge>,
-      minWidth: '140px'
+      minWidth: '120px'
     },
     {
       id: 'startDate',
       header: 'İşe Başlama',
       accessor: (row: Staff) => row.startDate,
       render: (value: string) => formatDate(value),
-      minWidth: '120px'
+      minWidth: '100px'
     },
     {
       id: 'salary',
       header: 'Maaş',
       accessor: (row: Staff) => row.salary,
       render: (value: number) => formatSalary(value),
-      minWidth: '120px',
+      minWidth: '100px',
       align: 'right'
     },
     {

@@ -38,12 +38,7 @@ export default function QuickActions({
         //     variant: 'secondary',
         //     onClick: () => console.log('Ödeme kaydı ekle')
         // },
-        {
-            label: 'Sakin Ekle',
-            icon: Users,
-            variant: 'secondary',
-            onClick: () => console.log('Yeni sakin ekle')
-        },
+
         {
             label: 'Talep Oluştur',
             icon: Settings,

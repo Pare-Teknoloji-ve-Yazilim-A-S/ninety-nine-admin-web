@@ -407,7 +407,9 @@ const DataTable: React.FC<DataTableProps> = ({
                                                 textAlign: column.align || 'left'
                                             }}
                                         >
-                                            {column.render ? column.render(value, row) : value}
+                                            {column.render ? column.render(value, row) : (
+                                                <div className="truncate">{value}</div>
+                                            )}
                                         </td>
                                     );
                                 })}
@@ -454,8 +456,8 @@ const DataTable: React.FC<DataTableProps> = ({
     };
 
     const tableContent = (
-        <div className="w-full">
-            <table className="w-full">
+        <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-full">
                 {renderTableHeader()}
                 {renderTableBody()}
             </table>
@@ -477,7 +479,7 @@ const DataTable: React.FC<DataTableProps> = ({
             )}
 
             {/* Table */}
-            <Card className={cn(variantClasses[variant])}>
+            <Card className={cn(variantClasses[variant], 'overflow-hidden')}>
                 {tableContent}
             </Card>
 
