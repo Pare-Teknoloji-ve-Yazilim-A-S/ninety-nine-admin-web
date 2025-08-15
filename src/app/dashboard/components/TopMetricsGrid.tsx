@@ -112,7 +112,7 @@ export default function TopMetricsGrid({
         },
         {
             title: 'Süresi Dolacak Duyurular',
-            value: expiringAnnouncementsLoading ? '...' : expiringAnnouncementsCount?.toString() || '0',
+            value: expiringAnnouncementsLoading ? '...' : (expiringAnnouncementsCount ?? 0).toString(),
             subtitle: '1 gün içinde',
             icon: Clock,
             color: 'gold',

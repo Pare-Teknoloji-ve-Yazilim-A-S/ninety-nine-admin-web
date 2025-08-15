@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '@/services/api/client';
 
 interface ExpiringAnnouncementsResponse {
-  data: {
+  data?: {
     count: number;
   };
+  count?: number;
 }
 
 export function useExpiringAnnouncements() {
@@ -19,8 +20,14 @@ export function useExpiringAnnouncements() {
         setError(null);
         
         const response = await apiClient.get('/admin/announcements/count/expiring-in-1d');
+        console.log('Expiring announcements response:', response);
         const data: ExpiringAnnouncementsResponse = response.data;
-        setCount(data.data.count);
+        console.log('Expiring announcements data:', data);
+        
+        // Handle different response structures
+        const count = data?.data?.count ?? data?.count ?? 0;
+        console.log('Expiring announcements count:', count);
+        setCount(count);
       } catch (err) {
         console.error('Error fetching expiring announcements count:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
