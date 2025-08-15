@@ -1,194 +1,116 @@
-import { useState, useEffect, useCallback } from 'react';
-import { unitsService } from '@/services/units.service';
-import { 
-    Property, 
-    PropertyFilterParams, 
-    QuickStats, 
-    PropertyActivity 
-} from '@/services/types/property.types';
-import { propertyService } from '@/services';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { Property } from '@/services/types/property.types';
+import { PropertyService } from '@/services/property.service';
 
-interface UseUnitsDataReturn {
-    units: Property[];
-    loading: boolean;
-    error: string | null;
-    quickStats: QuickStats | null;
-    recentActivities: PropertyActivity[];
-    pagination: {
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-    };
-    refetch: () => Promise<void>;
-    updateUnit: (id: string, data: Partial<Property>) => Promise<void>;
-    deleteUnit: (id: string) => Promise<void>;
-    exportUnits: (format: 'csv' | 'excel') => Promise<void>;
+interface PropertyFilterParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    type?: string;
+    status?: string;
+    propertyGroup?: string;
+    orderColumn?: string;
+    orderBy?: 'ASC' | 'DESC';
 }
 
-export const useUnitsData = (
-    filters: PropertyFilterParams = {},
-    autoLoad: boolean = true
-): UseUnitsDataReturn => {
-    const [units, setUnits] = useState<Property[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [quickStats, setQuickStats] = useState<QuickStats | null>(null);
-    const [recentActivities, setRecentActivities] = useState<PropertyActivity[]>([]);
-    const [pagination, setPagination] = useState({
-        total: 0,
-        page: 1,
-        limit: 20,
-        totalPages: 0
-    });
+interface UnitsDataHookProps {
+    currentPage: number;
+    recordsPerPage: number;
+    searchQuery: string;
+    sortConfig: { key: string; direction: 'asc' | 'desc' };
+    filters: PropertyFilterParams;
+}
 
-    const loadUnits = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const response = await unitsService.getAllUnits(filters);
-            setUnits(response.data);
-            setPagination(response.pagination);
-        } catch (err: any) {
-            console.error('Failed to load units:', err);
-            setError('Konutlar yüklenirken bir hata oluştu');
-            setUnits([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [filters]);
-
-    const loadQuickStats = useCallback(async () => {
-        try {
-            const response = await unitsService.getQuickStats();
-            setQuickStats(response.data);
-        } catch (err: any) {
-            console.error('Failed to load quick stats:', err);
-            setQuickStats({
-                apartmentUnits: { total: 85, occupied: 72, occupancyRate: 85 },
-                villaUnits: { total: 15, occupied: 12, occupancyRate: 80 },
-                commercialUnits: { total: 8, occupied: 6, occupancyRate: 75 },
-                parkingSpaces: { total: 120, occupied: 98, occupancyRate: 82 }
-            });
-        }
-    }, []);
-
-    const loadRecentActivities = useCallback(async () => {
-        try {
-            const response = await unitsService.getRecentActivities(10, 7);
-            setRecentActivities(response.data);
-        } catch (err: any) {
-            console.error('Failed to load recent activities:', err);
-            setRecentActivities([]);
-        }
-    }, []);
-
-    const refetch = useCallback(async () => {
-        await Promise.all([
-            loadUnits(),
-            loadQuickStats(),
-            loadRecentActivities()
-        ]);
-    }, [loadUnits, loadQuickStats, loadRecentActivities]);
-
-    const updateUnit = useCallback(async (id: string, data: Partial<Property>) => {
-        try {
-            setLoading(true);
-            await unitsService.updateUnit(id, data);
-            await loadUnits();
-        } catch (err: any) {
-            console.error('Failed to update unit:', err);
-            throw new Error('Konut güncellenirken bir hata oluştu');
-        } finally {
-            setLoading(false);
-        }
-    }, [loadUnits]);
-
-    const deleteUnit = useCallback(async (id: string) => {
-        try {
-            setLoading(true);
-            await unitsService.deleteUnit(id);
-            await loadUnits();
-        } catch (err: any) {
-            console.error('Failed to delete unit:', err);
-            throw new Error('Konut silinirken bir hata oluştu');
-        } finally {
-            setLoading(false);
-        }
-    }, [loadUnits]);
-
-    const exportUnits = useCallback(async (format: 'csv' | 'excel' = 'excel') => {
-        try {
-            const blob = await unitsService.exportUnits(filters, format);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `konutlar.${format === 'excel' ? 'xlsx' : 'csv'}`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        } catch (err: any) {
-            console.error('Failed to export units:', err);
-            throw new Error('Konutlar dışa aktarılırken bir hata oluştu');
-        }
-    }, [filters]);
-
-    useEffect(() => {
-        if (autoLoad) {
-            refetch();
-        }
-    }, [refetch, autoLoad]);
-
-    return {
-        units,
-        loading,
-        error,
-        quickStats,
-        recentActivities,
-        pagination,
-        refetch,
-        updateUnit,
-        deleteUnit,
-        exportUnits
-    };
-};
-
-export function useUnitCounts() {
-    const [residentCount, setResidentCount] = useState<number | null>(null);
-    const [villaCount, setVillaCount] = useState<number | null>(null);
-    const [availableCount, setAvailableCount] = useState<number | null>(null);
+export const useUnitsData = ({
+    currentPage,
+    recordsPerPage,
+    searchQuery,
+    sortConfig,
+    filters
+}: UnitsDataHookProps) => {
+    const [properties, setProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [lastUpdated, setLastUpdated] = useState(new Date());
 
-    useEffect(() => {
-        let isMounted = true;
-        setLoading(true);
-        setError(null);
-        Promise.all([
-            propertyService.getResidentCount(),
-            propertyService.getVillaCount(),
-            propertyService.getAvailableCount(),
-        ])
-            .then(([resident, villa, available]) => {
-                if (!isMounted) return;
-                setResidentCount(resident);
-                setVillaCount(villa);
-                setAvailableCount(available);
-            })
-            .catch((err) => {
-                if (!isMounted) return;
-                setError('Konut sayaçları yüklenirken bir hata oluştu');
-            })
-            .finally(() => {
-                if (!isMounted) return;
-                setLoading(false);
+    const unitsService = useMemo(() => new PropertyService(), []);
+
+    const loadProperties = useCallback(async (showLoadingIndicator: boolean = true) => {
+        try {
+            if (showLoadingIndicator) {
+                setLoading(true);
+            }
+            setError(null);
+
+            // Process filters
+            const processedFilters = { ...filters };
+            Object.keys(processedFilters).forEach(key => {
+                const value = processedFilters[key as keyof PropertyFilterParams];
+                if (value === '' || value === undefined || value === null) {
+                    delete processedFilters[key as keyof PropertyFilterParams];
+                }
             });
-        return () => {
-            isMounted = false;
-        };
-    }, []);
 
-    return { residentCount, villaCount, availableCount, loading, error };
-}
+            // Always keep pagination and ordering parameters
+            if (!processedFilters.page) processedFilters.page = currentPage;
+            if (!processedFilters.limit) processedFilters.limit = recordsPerPage;
+            if (!processedFilters.orderColumn) processedFilters.orderColumn = sortConfig.key || 'name';
+            if (!processedFilters.orderBy) processedFilters.orderBy = sortConfig.direction?.toUpperCase() as 'ASC' | 'DESC' || 'ASC';
+
+            // Add search query if exists
+            if (searchQuery) {
+                processedFilters.search = searchQuery;
+            }
+
+            console.log('🔍 Loading properties with filters:', processedFilters);
+
+            const response = await unitsService.getAllProperties({
+                ...processedFilters,
+                includeBills: false
+            });
+            
+            console.log('✅ Properties loaded:', response.data.length, 'items');
+            console.log('📄 Full response object:', response);
+            console.log('📄 Pagination info:', response.pagination);
+            
+            setProperties(response.data);
+            setTotalRecords(response.pagination?.total || 0);
+            setTotalPages(response.pagination?.totalPages || 1);
+            setLastUpdated(new Date());
+            
+        } catch (err: any) {
+            console.error('❌ Error loading properties:', err);
+            setError('Konutlar yüklenirken bir hata oluştu');
+            setProperties([]);
+            setTotalRecords(0);
+            setTotalPages(1);
+        } finally {
+            if (showLoadingIndicator) {
+                setLoading(false);
+            }
+        }
+    }, [currentPage, recordsPerPage, searchQuery, sortConfig, filters, unitsService]);
+
+    // Load data when dependencies change
+    useEffect(() => {
+        loadProperties();
+    }, [loadProperties]);
+
+    const refreshData = useCallback(() => {
+        loadProperties();
+    }, [loadProperties]);
+
+    return {
+        properties,
+        loading,
+        error,
+        totalRecords,
+        totalPages,
+        lastUpdated,
+        setProperties,
+        refreshData,
+        loadProperties
+    };
+};

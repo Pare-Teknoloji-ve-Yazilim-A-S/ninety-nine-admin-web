@@ -51,7 +51,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             // Response yapısını kontrol et
             this.logger.info('Raw response:', response);
             
-            // Response.data.data varsa paginated response, yoksa direkt array
+            // API response yapısını parse et
             let properties: Property[];
             let pagination = {
                 total: 0,
@@ -60,19 +60,46 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
                 totalPages: 1
             };
 
+            // API response yapısını kontrol et
+            this.logger.info('Response structure check:', {
+                hasData: !!response.data,
+                dataIsArray: Array.isArray(response.data),
+                hasPagination: !!response.pagination,
+                dataHasData: !!(response.data && response.data.data),
+                dataDataIsArray: !!(response.data && response.data.data && Array.isArray(response.data.data)),
+                dataHasPagination: !!(response.data && response.data.pagination)
+            });
+
             if (response.data && response.data.data && Array.isArray(response.data.data)) {
-                // Paginated response
+                // Nested paginated response: { data: { data: [...], pagination: {...} } }
                 properties = response.data.data;
                 pagination = response.data.pagination || pagination;
-                this.logger.info(`Fetched ${properties.length} properties (paginated)`);
+                this.logger.info(`Fetched ${properties.length} properties (nested paginated)`);
+            } else if (response.data && response.data.pagination && Array.isArray(response.data)) {
+                // Direct paginated response: { data: [...], pagination: {...} }
+                properties = response.data;
+                pagination = response.data.pagination;
+                this.logger.info(`Fetched ${properties.length} properties (direct paginated)`);
+            } else if (response.data && response.data.pagination && Array.isArray(response.data.data)) {
+                // API response: { data: [...], pagination: {...} }
+                properties = response.data.data;
+                pagination = response.data.pagination;
+                this.logger.info(`Fetched ${properties.length} properties (API paginated)`);
             } else if (response.data && Array.isArray(response.data)) {
                 // Direct array response
                 properties = response.data;
                 this.logger.info(`Fetched ${properties.length} properties (direct array)`);
+            } else if (response.data && response.pagination && Array.isArray(response.data)) {
+                // API response: { data: [...], pagination: {...} }
+                properties = response.data;
+                pagination = response.pagination;
+                this.logger.info(`Fetched ${properties.length} properties (API paginated)`);
             } else {
                 // Empty or unexpected response
                 properties = [];
                 this.logger.warn('Unexpected response structure, returning empty array');
+                this.logger.warn('Response data:', response.data);
+                this.logger.warn('Response pagination:', response.pagination);
             }
 
             return {

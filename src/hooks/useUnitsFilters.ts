@@ -1,78 +1,156 @@
 import { useState, useCallback, useMemo } from 'react';
-import { PropertyFilterParams } from '@/services/types/property.types';
 
-interface UseUnitsFiltersReturn {
-    filters: PropertyFilterParams;
-    searchQuery: string;
-    showFilters: boolean;
-    viewMode: 'table' | 'grid' | 'block' | 'map';
-    setFilters: (filters: PropertyFilterParams) => void;
-    updateFilter: (key: keyof PropertyFilterParams, value: any) => void;
-    setSearchQuery: (query: string) => void;
-    setShowFilters: (show: boolean) => void;
-    setViewMode: (mode: 'table' | 'grid' | 'block' | 'map') => void;
-    resetFilters: () => void;
-    getFilteredParams: () => PropertyFilterParams;
+interface PropertyFilterParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+    type?: string;
+    status?: string;
+    propertyGroup?: string;
+    orderColumn?: string;
+    orderBy?: 'ASC' | 'DESC';
 }
 
-const DEFAULT_FILTERS: PropertyFilterParams = {
-    type: undefined,
-    status: undefined,
-    page: 1,
-    limit: 20,
-    orderColumn: 'firstName',
-    orderBy: 'ASC'
-};
+export const useUnitsFilters = () => {
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [recordsPerPage, setRecordsPerPage] = useState(10);
 
-export const useUnitsFilters = (
-    initialFilters: PropertyFilterParams = DEFAULT_FILTERS
-): UseUnitsFiltersReturn => {
-    const [filters, setFilters] = useState<PropertyFilterParams>(initialFilters);
+    // Search state
     const [searchQuery, setSearchQuery] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
-    const [viewMode, setViewMode] = useState<'table' | 'grid' | 'block' | 'map'>('table');
 
-    const updateFilter = useCallback((key: keyof PropertyFilterParams, value: any) => {
-        setFilters(prev => ({
-            ...prev,
-            [key]: value,
-            page: key === 'page' ? value : 1 // Reset to first page when other filters change
-        }));
+    // Sort state
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({
+        key: 'name',
+        direction: 'asc'
+    });
+
+    // Filter state
+    const [filters, setFilters] = useState<PropertyFilterParams>({});
+
+    // View state
+    const [selectedView, setSelectedView] = useState<'table' | 'grid'>('table');
+
+    // Selection state
+    const [selectedUnits, setSelectedUnits] = useState<any[]>([]);
+
+    // Filter panel state
+    const [showFilterPanel, setShowFilterPanel] = useState(false);
+    const [drawerClosing, setDrawerClosing] = useState(false);
+
+    // Page change handler
+    const handlePageChange = useCallback((page: number) => {
+        console.log('🔄 Page change requested:', page);
+        setCurrentPage(page);
     }, []);
 
-    const resetFilters = useCallback(() => {
-        setFilters(DEFAULT_FILTERS);
-        setSearchQuery('');
+    // Records per page change handler
+    const handleRecordsPerPageChange = useCallback((newRecordsPerPage: number) => {
+        console.log('📄 Records per page change:', newRecordsPerPage);
+        setRecordsPerPage(newRecordsPerPage);
+        setCurrentPage(1); // Reset to first page
     }, []);
 
-    const getFilteredParams = useMemo((): PropertyFilterParams => {
-        const params: PropertyFilterParams = { ...filters };
+    // Search handler
+    const handleSearch = useCallback((query: string) => {
+        console.log('🔍 Search query:', query);
+        setSearchQuery(query);
+        setCurrentPage(1); // Reset to first page
+    }, []);
+
+    // Sort handler
+    const handleSort = useCallback((key: string, direction: 'asc' | 'desc') => {
+        console.log('📊 Sort change:', key, direction);
+        setSortConfig({ key, direction });
+    }, []);
+
+    // View change handler
+    const handleViewChange = useCallback((view: 'table' | 'grid') => {
+        setSelectedView(view);
+    }, []);
+
+    // Selection change handler
+    const handleSelectionChange = useCallback((selected: any[]) => {
+        setSelectedUnits(selected);
+    }, []);
+
+    // Filter panel handlers
+    const handleOpenDrawer = useCallback(() => {
+        setShowFilterPanel(true);
+        setDrawerClosing(false);
+    }, []);
+
+    const handleCloseDrawer = useCallback(() => {
+        setDrawerClosing(true);
+        setTimeout(() => {
+            setShowFilterPanel(false);
+            setDrawerClosing(false);
+        }, 300);
+    }, []);
+
+    // Apply filters handler
+    const handleFiltersApply = useCallback((newFilters: PropertyFilterParams) => {
+        console.log('🔧 Applying filters:', newFilters);
+        setFilters(newFilters);
+        setCurrentPage(1); // Reset to first page
+        handleCloseDrawer();
+    }, [handleCloseDrawer]);
+
+    // Reset filters handler
+    const handleFiltersReset = useCallback(() => {
+        console.log('🔄 Resetting filters');
+        setFilters({});
+        setCurrentPage(1);
+        handleCloseDrawer();
+    }, [handleCloseDrawer]);
+
+    // Memoized filters object
+    const processedFilters = useMemo(() => {
+        const processed = { ...filters };
         
-        if (searchQuery.trim()) {
-            params.search = searchQuery.trim();
-        }
-
-        // Remove undefined values
-        Object.keys(params).forEach(key => {
-            if (params[key as keyof PropertyFilterParams] === undefined) {
-                delete params[key as keyof PropertyFilterParams];
+        // Remove empty values
+        Object.keys(processed).forEach(key => {
+            const value = processed[key as keyof PropertyFilterParams];
+            if (value === '' || value === undefined || value === null) {
+                delete processed[key as keyof PropertyFilterParams];
             }
         });
 
-        return params;
-    }, [filters, searchQuery]);
+        return processed;
+    }, [filters]);
 
     return {
-        filters,
+        // Pagination
+        currentPage,
+        recordsPerPage,
+        handlePageChange,
+        handleRecordsPerPageChange,
+
+        // Search
         searchQuery,
-        showFilters,
-        viewMode,
-        setFilters,
-        updateFilter,
-        setSearchQuery,
-        setShowFilters,
-        setViewMode,
-        resetFilters,
-        getFilteredParams: () => getFilteredParams
+        handleSearch,
+
+        // Sort
+        sortConfig,
+        handleSort,
+
+        // View
+        selectedView,
+        handleViewChange,
+
+        // Selection
+        selectedUnits,
+        handleSelectionChange,
+
+        // Filters
+        filters: processedFilters,
+        handleFiltersApply,
+        handleFiltersReset,
+
+        // Filter panel
+        showFilterPanel,
+        drawerClosing,
+        handleOpenDrawer,
+        handleCloseDrawer
     };
 };

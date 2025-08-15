@@ -48,6 +48,13 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
         const response = await apiClient.get<any>(`${this.baseEndpoint}?${queryParams.toString()}`);
 
         const body = response?.data ?? response;
+        console.log('🔍 Units Service API Response:', {
+            body,
+            hasPagination: !!body?.pagination,
+            hasDataPagination: !!body?.data?.pagination,
+            itemsLength: Array.isArray(body?.data) ? body.data.length : 'not array'
+        });
+        
         // Normalize various response shapes: { data: [...] }, { data: { data: [...], pagination } }, or [...]
         const items: Property[] = Array.isArray(body)
             ? body
@@ -60,6 +67,7 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
         const fallbackLimit = (items.length || 10);
         const effectivePage = (params?.page ?? 1);
         const effectiveLimit = (params?.limit ?? fallbackLimit);
+        
         const pagination = body?.pagination || body?.data?.pagination || {
             total: items.length,
             page: effectivePage,
@@ -67,8 +75,23 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
             totalPages: Math.max(1, Math.ceil((items.length || 0) / effectiveLimit))
         };
 
+        console.log('🔍 Units Service Pagination Calculation:', {
+            originalPagination: body?.pagination || body?.data?.pagination,
+            fallbackPagination: pagination,
+            itemsLength: items.length,
+            effectivePage,
+            effectiveLimit
+        });
+
         this.logger.info(`Fetched ${items.length} properties`);
-        return { data: items, pagination } as PaginatedResponse<Property>;
+        return { 
+            data: items, 
+            pagination: pagination,
+            total: pagination.total,
+            page: pagination.page,
+            limit: pagination.limit,
+            totalPages: pagination.totalPages
+        } as PaginatedResponse<Property>;
     }
 
     /**

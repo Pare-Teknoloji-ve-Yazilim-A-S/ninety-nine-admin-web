@@ -34,7 +34,7 @@ const TablePagination: React.FC<TablePaginationProps> = ({
     showPrevNext = true,
     showRecordsPerPage = true,
     recordsPerPageOptions = [10, 25, 50, 100],
-    maxVisiblePages = 5,
+    maxVisiblePages = 7,
     size = 'md',
     className,
     itemName = 'kayıt',
@@ -42,14 +42,6 @@ const TablePagination: React.FC<TablePaginationProps> = ({
     showRecordInfo = true,
     preventScroll = false, // Default to false for backward compatibility
 }) => {
-    console.log('TablePagination props:', {
-        currentPage,
-        totalPages,
-        totalRecords,
-        recordsPerPage,
-        showRecordsPerPage,
-        recordsPerPageOptions
-    });
     const sizeClasses = {
         sm: 'h-8 px-2 text-xs',
         md: 'h-10 px-3 text-sm',
@@ -74,20 +66,52 @@ const TablePagination: React.FC<TablePaginationProps> = ({
     const isFirstPage = currentPage === 1;
     const isLastPage = currentPage === totalPages;
 
+    console.log('TablePagination props:', {
+        currentPage,
+        totalPages,
+        totalRecords,
+        recordsPerPage,
+        showRecordsPerPage,
+        recordsPerPageOptions
+    });
+    
     // Calculate visible pages
     const getVisiblePages = () => {
         const pages = [];
-        const start = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        const end = Math.min(totalPages, start + maxVisiblePages - 1);
-
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
+        
+        // If total pages is less than or equal to maxVisiblePages, show all pages
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Calculate start and end for visible pages
+            let start = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let end = Math.min(totalPages, start + maxVisiblePages - 1);
+            
+            // Adjust start if we're near the end
+            if (end === totalPages) {
+                start = Math.max(1, end - maxVisiblePages + 1);
+            }
+            
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
         }
-
+        
+        console.log('getVisiblePages result:', { totalPages, maxVisiblePages, currentPage, pages });
         return pages;
     };
 
     const visiblePages = getVisiblePages();
+
+    console.log('TablePagination calculated values:', {
+        isFirstPage,
+        isLastPage,
+        visiblePages,
+        startRecord,
+        endRecord
+    });
 
     const getItemName = (count: number) => {
         return count === 1 ? itemName : itemNamePlural;
@@ -119,8 +143,11 @@ const TablePagination: React.FC<TablePaginationProps> = ({
     };
 
     if (totalRecords === 0) {
+        console.log('TablePagination: No records, returning null');
         return null;
     }
+    
+    console.log('TablePagination: Rendering pagination component');
 
     return (
         <div className={cn(
