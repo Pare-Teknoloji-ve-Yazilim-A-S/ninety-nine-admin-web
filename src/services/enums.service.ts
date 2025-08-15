@@ -27,6 +27,32 @@ export interface EnumsResponse {
       payment_status?: string[];
       currency?: string[];
     };
+    payment?: {
+      paymentMethod?: string[];
+      paymentStatus?: string[];
+      paymentType?: string[];
+    };
+    users?: {
+      role?: string[];
+      status?: string[];
+    };
+    announcements?: {
+      type?: string[];
+      status?: string[];
+    };
+    qrcode?: {
+      status?: string[];
+    };
+    familyMembers?: {
+      relationship?: string[];
+      status?: string[];
+    };
+    userProperties?: {
+      status?: string[];
+    };
+    roles?: {
+      permissions?: string[];
+    };
     [key: string]: any; // For any additional modules
   };
 }
