@@ -1,161 +1,73 @@
 import { apiClient } from './api/client';
 
 export interface UnitPrice {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
-  name: string;
-  priceType: 'DUES' | 'ELECTRICITY' | 'WATER' | 'GAS' | 'HEATING';
-  unitPrice: string; // Backend string olarak dönüyor
-  unit: string;
-  isActive: boolean;
-  description: string;
-  validFrom: string | null;
-  validTo: string | null;
-  isDefault: boolean;
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    name: string;
+    priceType: 'DUES' | 'ELECTRICITY' | 'GAS' | 'WATER';
+    unitPrice: string;
+    unit: string;
+    isActive: boolean;
+    description: string;
+    validFrom: string | null;
+    validTo: string | null;
+    isDefault: boolean;
 }
 
-export interface UnitPriceResponse {
-  data: UnitPrice[];
-  total: number;
-  totalPages: number;
-  page: number;
-  limit: number;
-}
-
-export interface UpdateUnitPriceDto {
-  unitPrice: number;
-}
-
-export interface CalculateDuesDto {
-  squareMeters: number;
-}
-
-export interface CalculateDuesResponse {
-  amount: number;
-  unitPrice: number;
-  squareMeters: number;
+export interface UnitPricesResponse {
+    data: UnitPrice[];
 }
 
 class UnitPricesService {
-  private baseUrl = '/unit-prices';
+    private baseUrl = '/admin/unit-prices';
 
-  /**
-   * Get all unit prices
-   */
-  async getAllUnitPrices(): Promise<UnitPrice[]> {
-    try {
-      const response = await apiClient.get(this.baseUrl);
-      console.log('🔍 Raw API response:', response);
-      console.log('🔍 Response.data:', response.data);
-      
-      // Backend direkt array dönüyor, response.data wrapper'ı yok
-      if (Array.isArray(response.data)) {
-        return response.data;
-      } else if (Array.isArray(response)) {
-        return response;
-      } else {
-        console.error('Unexpected response format:', response);
-        return [];
-      }
-    } catch (error) {
-      console.error('Error fetching unit prices:', error);
-      throw error;
+    async getUnitPrices(): Promise<UnitPrice[]> {
+        try {
+            const response = await apiClient.get<UnitPrice[]>(this.baseUrl);
+            return response.data;
+        } catch (error) {
+            console.error('Failed to fetch unit prices:', error);
+            return [];
+        }
     }
-  }
 
-  /**
-   * Get unit price by type
-   */
-  async getUnitPriceByType(type: string): Promise<UnitPrice> {
-    try {
-      const response = await apiClient.get(`${this.baseUrl}/${type}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching unit price for type ${type}:`, error);
-      throw error;
+    async getAllUnitPrices(): Promise<UnitPrice[]> {
+        return this.getUnitPrices();
     }
-  }
 
-  /**
-   * Update unit price
-   */
-  async updateUnitPrice(id: string, data: UpdateUnitPriceDto): Promise<UnitPrice> {
-    try {
-      const response = await apiClient.patch(`${this.baseUrl}/${id}`, data);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating unit price for id ${id}:`, error);
-      throw error;
+    async updateUnitPrice(id: string, updateData: Partial<UnitPrice>): Promise<UnitPrice> {
+        try {
+            const response = await apiClient.patch<UnitPrice>(`${this.baseUrl}/${id}`, updateData);
+            return response.data;
+        } catch (error) {
+            console.error('Failed to update unit price:', error);
+            throw error;
+        }
     }
-  }
 
-  /**
-   * Calculate dues amount
-   */
-  async calculateDues(squareMeters: number): Promise<CalculateDuesResponse> {
-    try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-dues?squareMeters=${squareMeters}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error calculating dues:', error);
-      throw error;
+    async getActiveUnitPrices(): Promise<UnitPrice[]> {
+        try {
+            const unitPrices = await this.getUnitPrices();
+            return unitPrices.filter(price => price.isActive);
+        } catch (error) {
+            console.error('Failed to fetch active unit prices:', error);
+            return [];
+        }
     }
-  }
 
-  /**
-   * Calculate electricity bill
-   */
-  async calculateElectricity(kWh: number): Promise<CalculateDuesResponse> {
-    try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-electricity?kWh=${kWh}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error calculating electricity:', error);
-      throw error;
+    getPriceByType(prices: UnitPrice[], type: string): UnitPrice | undefined {
+        return prices.find(price => price.priceType === type && price.isActive);
     }
-  }
 
-  /**
-   * Calculate water bill
-   */
-  async calculateWater(cubicMeters: number): Promise<CalculateDuesResponse> {
-    try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-water?cubicMeters=${cubicMeters}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error calculating water:', error);
-      throw error;
+    formatUnitPrice(price: UnitPrice): string {
+        const numericPrice = parseFloat(price.unitPrice);
+        return new Intl.NumberFormat('tr-TR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(numericPrice);
     }
-  }
-
-  /**
-   * Calculate gas bill
-   */
-  async calculateGas(cubicMeters: number): Promise<CalculateDuesResponse> {
-    try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-gas?cubicMeters=${cubicMeters}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error calculating gas:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Calculate heating bill
-   */
-  async calculateHeating(squareMeters: number): Promise<CalculateDuesResponse> {
-    try {
-      const response = await apiClient.get(`${this.baseUrl}/calculate-heating?squareMeters=${squareMeters}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error calculating heating:', error);
-      throw error;
-    }
-  }
 }
 
 export const unitPricesService = new UnitPricesService();
-export default unitPricesService;

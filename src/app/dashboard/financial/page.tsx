@@ -28,7 +28,10 @@ import {
     Home,
     User,
     Calendar,
-    Building
+    Building,
+    Zap,
+    Droplets,
+    Flame
 } from 'lucide-react';
 import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
@@ -47,6 +50,7 @@ import Portal from '@/app/components/ui/Portal';
 import { useRouter } from 'next/navigation';
 import { useFinancialList } from './hooks/useFinancialList';
 import billingService from '@/services/billing.service';
+import { unitPricesService, UnitPrice } from '@/services/unit-prices.service';
 
 export default function FinancialListPage() {
     // UI State
@@ -83,6 +87,22 @@ export default function FinancialListPage() {
     // Format currency
     const formatCurrency = useCallback((amount: number) => {
         return new Intl.NumberFormat('tr-TR').format(amount);
+    }, []);
+
+    // Format unit prices for display
+    const formatUnitPrices = useCallback((prices: UnitPrice[]) => {
+        if (prices.length === 0) return 'Yükleniyor...';
+        
+        const duesPrice = prices.find(p => p.priceType === 'DUES');
+        const electricityPrice = prices.find(p => p.priceType === 'ELECTRICITY');
+        const waterPrice = prices.find(p => p.priceType === 'WATER');
+        const gasPrice = prices.find(p => p.priceType === 'GAS');
+        
+        const activePrices = [duesPrice, electricityPrice, waterPrice, gasPrice].filter(Boolean);
+        
+        if (activePrices.length === 0) return 'Fiyat bulunamadı';
+        
+        return `${activePrices.length} aktif fiyat`;
     }, []);
 
     // Financial statistics from data
@@ -155,6 +175,11 @@ export default function FinancialListPage() {
     const [pendingSummary, setPendingSummary] = useState<number | null>(null);
     const [paidSummary, setPaidSummary] = useState<number | null>(null);
     const [overduePendingSummary, setOverduePendingSummary] = useState<number | null>(null);
+    
+    // Unit prices state
+    const [unitPrices, setUnitPrices] = useState<UnitPrice[]>([]);
+    const [unitPricesLoading, setUnitPricesLoading] = useState(true);
+    
     useEffect(() => {
         let isActive = true;
         (async () => {
@@ -175,6 +200,20 @@ export default function FinancialListPage() {
                 if (isActive) setOverduePendingSummary(res3.totalOverduePendingAmount ?? 0);
             } catch (e) {
                 if (isActive) setOverduePendingSummary(0);
+            }
+            
+            // Fetch unit prices
+            try {
+                const prices = await unitPricesService.getAllUnitPrices();
+                if (isActive) {
+                    setUnitPrices(prices);
+                    setUnitPricesLoading(false);
+                }
+            } catch (e) {
+                if (isActive) {
+                    setUnitPrices([]);
+                    setUnitPricesLoading(false);
+                }
             }
         })();
         return () => { isActive = false };
@@ -555,14 +594,23 @@ export default function FinancialListPage() {
                                     size="md"
                                 />
                                 <StatsCard
-                                    title="Gecikmiş Borçlar"
-                                    value={`${formatCurrency((overduePendingSummary ?? financialStats.totalOverdue))} IQD`}
+                                    title="Vadesi Geçen Ödemeler"
+                                    value={`${formatCurrency(overduePendingSummary ?? financialStats.totalOverdue)} IQD`}
                                     icon={AlertTriangle}
                                     color="danger"
                                     loading={cardsLoading || overduePendingSummary === null}
                                     size="md"
                                 />
-                                {/* Tahsilat Oranı kartı kaldırıldı */}
+                                {/* Unit Prices Card - Temporarily commented out
+                                <StatsCard
+                                    title="Birim Fiyatları"
+                                    value={formatUnitPrices(unitPrices)}
+                                    icon={Calculator}
+                                    color="info"
+                                    loading={unitPricesLoading}
+                                    size="md"
+                                />
+                                */}
                             </div>
                         </div>
 

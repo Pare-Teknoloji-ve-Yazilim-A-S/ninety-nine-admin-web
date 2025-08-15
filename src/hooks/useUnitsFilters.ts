@@ -1,15 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-
-interface PropertyFilterParams {
-    page?: number;
-    limit?: number;
-    search?: string;
-    type?: string;
-    status?: string;
-    propertyGroup?: string;
-    orderColumn?: string;
-    orderBy?: 'ASC' | 'DESC';
-}
+import { PropertyFilterParams } from '@/services/types/property.types';
 
 export const useUnitsFilters = () => {
     // Pagination state

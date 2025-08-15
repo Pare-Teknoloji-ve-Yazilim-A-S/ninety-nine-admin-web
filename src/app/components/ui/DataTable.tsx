@@ -486,24 +486,13 @@ const DataTable: React.FC<DataTableProps> = ({
             {/* Pagination */}
             {pagination ? (
                 <>
-                    {console.log('DataTable: Rendering TablePagination with props:', pagination)}
-                    {console.log('DataTable: Pagination details:', {
-                        currentPage: pagination.currentPage,
-                        totalPages: pagination.totalPages,
-                        totalRecords: pagination.totalRecords,
-                        recordsPerPage: pagination.recordsPerPage,
-                        hasOnPageChange: !!pagination.onPageChange,
-                        hasOnRecordsPerPageChange: !!pagination.onRecordsPerPageChange
-                    })}
                     <TablePagination 
                         {...pagination} 
                         recordsPerPageOptions={pagination.recordsPerPageOptions}
                         preventScroll={true}
                     />
                 </>
-            ) : (
-                console.log('DataTable: No pagination props provided')
-            )}
+            ) : null}
         </div>
     );
 };

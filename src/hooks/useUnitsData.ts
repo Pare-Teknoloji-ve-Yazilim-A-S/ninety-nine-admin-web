@@ -6,8 +6,8 @@ interface PropertyFilterParams {
     page?: number;
     limit?: number;
     search?: string;
-    type?: string;
-    status?: string;
+    type?: 'RESIDENCE' | 'VILLA' | 'COMMERCIAL' | 'OFFICE';
+    status?: 'AVAILABLE' | 'OCCUPIED' | 'UNDER_MAINTENANCE' | 'RESERVED';
     propertyGroup?: string;
     orderColumn?: string;
     orderBy?: 'ASC' | 'DESC';
@@ -67,8 +67,7 @@ export const useUnitsData = ({
             console.log('🔍 Loading properties with filters:', processedFilters);
 
             const response = await unitsService.getAllProperties({
-                ...processedFilters,
-                includeBills: false
+                ...processedFilters
             });
             
             console.log('✅ Properties loaded:', response.data.length, 'items');

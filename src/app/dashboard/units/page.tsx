@@ -689,101 +689,6 @@ export default function UnitsListPage() {
                             </div>
                         </Card>
                         
-                        {/* Quick Filters Section - NEW */}
-                        <Card className="mb-6">
-                            <div className="p-4 flex flex-col gap-3">
-                                <div className="flex items-center gap-3 flex-wrap">
-                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary w-16">Durum</span>
-                                    <Button
-                                        variant={!filtersHook.filters.status ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => filtersHook.handleFiltersApply({ ...filtersHook.filters, status: undefined }));
-                                        }}
-                                    >
-                                        Tümü
-                                    </Button>
-                                    <Button
-                                        variant={filtersHook.filters.status === 'OCCUPIED' ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => filtersHook.handleFiltersApply({ ...filtersHook.filters, status: 'OCCUPIED' }));
-                                        }}
-                                    >
-                                        Dolu
-                                    </Button>
-                                    <Button
-                                        variant={filters.status === 'AVAILABLE' ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: 'AVAILABLE' as any, page: 1 })));
-                                        }}
-                                    >
-                                        Boş
-                                    </Button>
-                                    <Button
-                                        variant={filters.status === 'UNDER_MAINTENANCE' ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: 'UNDER_MAINTENANCE' as any, page: 1 })));
-                                        }}
-                                    >
-                                        Bakımda
-                                    </Button>
-                                    <Button
-                                        variant={filters.status === 'RESERVED' ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => setFilters(prev => ({ ...prev, status: 'RESERVED' as any, page: 1 })));
-                                        }}
-                                    >
-                                        Rezerve
-                                    </Button>
-                                </div>
-                                <div className="flex items-center gap-3 flex-wrap">
-                                    <span className="text-sm text-text-light-secondary dark:text-text-secondary w-16">Tip</span>
-                                    <Button
-                                        variant={!filters.type ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: undefined, page: 1 })));
-                                        }}
-                                    >
-                                        Tümü
-                                    </Button>
-                                    <Button
-                                        variant={filters.type === 'RESIDENCE' ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: 'RESIDENCE' as any, page: 1 })));
-                                        }}
-                                    >
-                                        Daire
-                                    </Button>
-                                    <Button
-                                        variant={filters.type === 'VILLA' ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: 'VILLA' as any, page: 1 })));
-                                        }}
-                                    >
-                                        Villa
-                                    </Button>
-                                    <Button
-                                        variant={filters.type === 'COMMERCIAL' ? 'primary' : 'secondary'}
-                                        size="sm"
-                                        onClick={() => {
-                                            React.startTransition(() => setFilters(prev => ({ ...prev, type: 'COMMERCIAL' as any, page: 1 })));
-                                        }}
-                                    >
-                                        Ticari
-                                    </Button>
-                                </div>
-                            </div>
-                        </Card>
-                                           
-
-
                         {/* Filter Sidebar (Drawer) */}
                         <div className={`fixed inset-0 z-50 ${showFilters ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                             {/* Backdrop */}
@@ -860,7 +765,6 @@ export default function UnitsListPage() {
                                                     filtersHook.handlePageChange(page);
                                                 },
                                                 onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
-                                                recordsPerPageOptions: [10, 25, 50, 100],
                                                 preventScroll: true, // Prevent auto-scroll to top
                                             }}
                                             emptyStateMessage="Henüz konut kaydı bulunmuyor."
@@ -925,7 +829,6 @@ export default function UnitsListPage() {
                                                     filtersHook.handlePageChange(page);
                                                 },
                                                 onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
-                                                recordsPerPageOptions: [10, 25, 50, 100],
                                                 preventScroll: true, // Prevent auto-scroll to top
                                             }}
                                             emptyStateMessage="Henüz konut kaydı bulunmuyor."

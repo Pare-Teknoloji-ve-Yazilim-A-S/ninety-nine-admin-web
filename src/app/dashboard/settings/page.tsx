@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
-import unitPricesService from '@/services/unit-prices.service';
+import { unitPricesService } from '@/services/unit-prices.service';
 import enumsService from '@/services/enums.service';
 
 // Breadcrumb Items
@@ -578,7 +578,7 @@ export default function DashboardSettingsPage() {
 
       // Service kullanarak güncelleme yap - UUID kullan
       const response = await unitPricesService.updateUnitPrice(priceTypeObj.id, {
-        unitPrice: priceValue
+        unitPrice: priceValue.toString()
       });
 
       // Başarılı güncelleme
