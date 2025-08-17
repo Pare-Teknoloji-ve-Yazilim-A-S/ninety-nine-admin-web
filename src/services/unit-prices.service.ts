@@ -47,8 +47,8 @@ class UnitPricesService {
             console.log('🔧 Update request data:', updateData);
             const response = await apiClient.patch<UnitPrice>(`${this.baseUrl}/${id}`, updateData);
             console.log('🔧 Update response:', response);
-            // API client direkt object döndürüyor, response.data değil
-            return response;
+            // API client response'u döndürüyor, response.data'yı al
+            return response.data;
         } catch (error) {
             console.error('Failed to update unit price:', error);
             throw error;

@@ -594,7 +594,7 @@ export default function DashboardSettingsPage() {
       });
       
       const response = await unitPricesService.updateUnitPrice(priceTypeObj.id, {
-        unitPrice: priceValue // Number olarak gönder
+        unitPrice: priceValue.toString() // String olarak gönder
       });
 
       // Başarılı güncelleme
