@@ -1,4 +1,5 @@
 import { apiClient } from './api/client';
+import { apiConfig } from './config/api.config';
 
 export interface UnitPrice {
     id: string;
@@ -21,12 +22,16 @@ export interface UnitPricesResponse {
 }
 
 class UnitPricesService {
-    private baseUrl = '/admin/unit-prices';
+    private baseUrl = apiConfig.endpoints.unitPrices.base;
 
     async getUnitPrices(): Promise<UnitPrice[]> {
         try {
             const response = await apiClient.get<UnitPrice[]>(this.baseUrl);
-            return response.data;
+            console.log('🔧 Service response:', response);
+            console.log('🔧 Response data:', response.data);
+            console.log('🔧 Is response array:', Array.isArray(response));
+            // API client direkt array döndürüyor, response.data değil
+            return Array.isArray(response) ? response : [];
         } catch (error) {
             console.error('Failed to fetch unit prices:', error);
             return [];
@@ -39,8 +44,11 @@ class UnitPricesService {
 
     async updateUnitPrice(id: string, updateData: Partial<UnitPrice>): Promise<UnitPrice> {
         try {
+            console.log('🔧 Update request data:', updateData);
             const response = await apiClient.patch<UnitPrice>(`${this.baseUrl}/${id}`, updateData);
-            return response.data;
+            console.log('🔧 Update response:', response);
+            // API client direkt object döndürüyor, response.data değil
+            return response;
         } catch (error) {
             console.error('Failed to update unit price:', error);
             throw error;

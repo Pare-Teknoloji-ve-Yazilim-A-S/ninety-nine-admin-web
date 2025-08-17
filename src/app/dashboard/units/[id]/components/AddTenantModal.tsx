@@ -254,13 +254,15 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
         console.log('API Request Payload (existing user):', simplePayload);
         console.log('propertyId:', propertyId);
         
-        const addTenantResponse = await fetch(`/api/proxy/admin/properties/${propertyId}/tenant`, {
+        const addTenantResponse = await fetch(`/api/proxy/admin/properties/${propertyId}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(simplePayload)
+          body: JSON.stringify({
+            tenantId: formData.existingUserId
+          })
         });
         
         console.log('API Response Status:', addTenantResponse.status);

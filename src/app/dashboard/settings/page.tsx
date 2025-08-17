@@ -147,6 +147,9 @@ export default function DashboardSettingsPage() {
         setUnitPricesLoading(true);
         
         const response = await unitPricesService.getAllUnitPrices();
+        console.log('🔧 API Response:', response);
+        console.log('🔧 Response type:', typeof response);
+        console.log('🔧 Is Array:', Array.isArray(response));
         
         if (response && Array.isArray(response)) {
           // Transform the array into the expected object structure
@@ -158,6 +161,7 @@ export default function DashboardSettingsPage() {
             return acc;
           }, {} as any);
           
+          console.log('🔧 Transformed settings:', transformedSettings);
           setUnitPriceSettings(transformedSettings);
           // Create price type options with proper structure
           const priceTypeLabels: Record<string, string> = {
@@ -176,19 +180,26 @@ export default function DashboardSettingsPage() {
             HEATING: 'Metrekare başına ısıtma ücreti'
           };
           
-          setPriceTypes(response.map(unitPrice => ({
+          const mappedPriceTypes = response.map(unitPrice => ({
             id: unitPrice.id,
             value: unitPrice.priceType,
             label: priceTypeLabels[unitPrice.priceType] || unitPrice.priceType,
             description: priceTypeDescriptions[unitPrice.priceType] || '',
             defaultUnit: unitPrice.unit
-          })));
+          }));
+          
+          console.log('🔧 Mapped price types:', mappedPriceTypes);
+          console.log('🔧 Setting price types...');
+          setPriceTypes(mappedPriceTypes);
+          console.log('🔧 Price types set successfully');
         }
       } catch (error) {
         console.error('Error loading unit prices:', error);
-      } finally {
-        setUnitPricesLoading(false);
-      }
+              } finally {
+          console.log('🔧 Setting loading to false');
+          setUnitPricesLoading(false);
+          console.log('🔧 Loading set to false');
+        }
     };
 
     loadUnitPrices();
@@ -577,8 +588,13 @@ export default function DashboardSettingsPage() {
       console.log('🔄 Güncellenecek price type:', priceTypeObj);
 
       // Service kullanarak güncelleme yap - UUID kullan
+      console.log('🔄 Gönderilecek data:', {
+        unitPrice: priceValue,
+        priceValueType: typeof priceValue
+      });
+      
       const response = await unitPricesService.updateUnitPrice(priceTypeObj.id, {
-        unitPrice: priceValue.toString()
+        unitPrice: priceValue // Number olarak gönder
       });
 
       // Başarılı güncelleme

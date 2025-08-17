@@ -540,13 +540,43 @@ export default function UnitDetailPage() {
     try {
       console.log('Removing tenant from property:', { unitId, tenantId });
       
-      const response = await fetch(`/api/proxy/admin/properties/${unitId}/tenant`, {
-        method: 'DELETE',
+             // Try different approaches to remove tenant
+       const removeTenantPayload = {
+         tenantId: null,
+         tenant: null,
+         isRented: false,
+         status: 'AVAILABLE',
+         removeTenant: true,
+         hasTenant: false,
+         // Try additional fields that might work
+         clearTenant: true,
+         unassignTenant: true,
+         tenantRemoved: true
+       };
+      
+      console.log('Sending tenant removal payload:', removeTenantPayload);
+      
+      // First try the new endpoint
+      let response = await fetch(`/api/proxy/admin/properties/${unitId}`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify(removeTenantPayload)
       });
+      
+      // If new endpoint doesn't work, try the old endpoint
+      if (!response.ok) {
+        console.log('New endpoint failed, trying old endpoint...');
+        response = await fetch(`/api/proxy/admin/properties/${unitId}/tenant`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -555,6 +585,8 @@ export default function UnitDetailPage() {
 
       const result = await response.json();
       console.log('Tenant removal response:', result);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       // Check if tenant was actually removed
       if (result.data?.property?.tenantId || result.data?.property?.tenant) {
@@ -562,6 +594,8 @@ export default function UnitDetailPage() {
           tenantId: result.data?.property?.tenantId,
           tenant: result.data?.property?.tenant
         });
+      } else {
+        console.log('✅ Tenant appears to be removed from response');
       }
 
       // Force refresh unit data with cache busting
@@ -577,6 +611,12 @@ export default function UnitDetailPage() {
           await refetch();
         }
       }, 1000);
+      
+      // Additional refresh after 3 seconds
+      setTimeout(async () => {
+        console.log('Final refresh check...');
+        await refetch();
+      }, 3000);
       
       toast.success('Kiracı kaldırma işlemi tamamlandı!');
       setShowRemoveTenantModal(false);

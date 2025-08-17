@@ -142,6 +142,10 @@ export const apiConfig = {
         files: {
             upload: '/admin/files/upload',
         },
+        unitPrices: {
+            base: '/unit-prices',
+            admin: '/admin/unit-prices',
+        },
         tickets: {
             base: '/admin/tickets',
             attachments: (ticketId: string) => `/admin/tickets/${ticketId}/attachments`,

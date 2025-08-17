@@ -28,6 +28,7 @@ import {
 } from '@/services/types/billing.types';
 import { billingService } from '@/services';
 import { unitsService } from '@/services';
+import { unitPricesService } from '@/services/unit-prices.service';
 // import { userService } from '@/services';
 
 interface CreateBillFormProps {
@@ -41,6 +42,7 @@ interface PropertyOption {
   value: string;
   label: string;
   propertyNumber: string;
+  area?: number; // Metrekare bilgisi
   // optional raw for owner/tenant info if available
   __raw?: any;
 }
@@ -79,6 +81,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
+  // Unit prices state
+  const [unitPrices, setUnitPrices] = useState<any[]>([]);
+  const [unitPricesLoading, setUnitPricesLoading] = useState(true);
 
   const {
     register,
@@ -105,6 +111,33 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   const watchedBillType = watch('billType');
   const watchedPropertyId = watch('propertyId');
 
+  // Helper function to get unit price by type
+  const getUnitPriceByType = (type: string) => {
+    return unitPrices.find(price => price.priceType === type);
+  };
+
+  // Helper function to calculate dues amount
+  const calculateDuesAmount = () => {
+    const duesPrice = getUnitPriceByType('DUES');
+    const selectedProperty = properties.find(p => p.id === watchedPropertyId);
+    
+    if (duesPrice && selectedProperty && selectedProperty.area) {
+      const unitPrice = parseFloat(duesPrice.unitPrice);
+      const area = selectedProperty.area;
+      const totalAmount = unitPrice * area;
+      
+      console.log('🔧 Dues calculation:', {
+        unitPrice,
+        area,
+        totalAmount,
+        property: selectedProperty.label
+      });
+      
+      return totalAmount;
+    }
+    return 0;
+  };
+
   // Generate/clear document number when property selection changes
   useEffect(() => {
     if (watchedPropertyId && watchedPropertyId !== '') {
@@ -113,6 +146,17 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
       setValue('documentNumber', '', { shouldValidate: false });
     }
   }, [watchedPropertyId, setValue]);
+
+  // Auto-calculate dues amount when bill type is DUES and property is selected
+  useEffect(() => {
+    if (watchedBillType === 'DUES' && watchedPropertyId && unitPrices.length > 0) {
+      const calculatedAmount = calculateDuesAmount();
+      if (calculatedAmount > 0) {
+        console.log('🔧 Auto-setting dues amount:', calculatedAmount);
+        setValue('amount', calculatedAmount, { shouldValidate: true });
+      }
+    }
+  }, [watchedBillType, watchedPropertyId, unitPrices, setValue]);
 
   // Fetch properties from admin/properties with search (server-side pagination)
   useEffect(() => {
@@ -130,15 +174,16 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           search: propertySearchQuery || undefined,
           includeBills: false,
         } as any);
-        const list = res?.data || [];
-        const mapped: PropertyOption[] = list.map((property: any) => ({
-          id: property.id,
-          value: property.id,
-          label: `${property.propertyNumber} - ${property.name}`,
-          propertyNumber: property.propertyNumber,
-          __raw: property,
-        }));
-        if (!active) return;
+                 const list = res?.data || [];
+         const mapped: PropertyOption[] = list.map((property: any) => ({
+           id: property.id,
+           value: property.id,
+           label: `${property.propertyNumber} - ${property.name}`,
+           propertyNumber: property.propertyNumber,
+           area: property.area || 0, // Metrekare bilgisini al
+           __raw: property,
+         }));
+         if (!active) return;
         setProperties(mapped);
         setFilteredProperties(mapped);
         const current = res?.pagination?.page ?? 1;
@@ -178,6 +223,24 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
     };
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  // Load unit prices
+  useEffect(() => {
+    const loadUnitPrices = async () => {
+      try {
+        setUnitPricesLoading(true);
+        const response = await unitPricesService.getAllUnitPrices();
+        setUnitPrices(response);
+      } catch (error) {
+        console.error('Error loading unit prices:', error);
+        setUnitPrices([]);
+      } finally {
+        setUnitPricesLoading(false);
+      }
+    };
+
+    loadUnitPrices();
   }, []);
 
   const onSubmit = async (data: BillFormData) => {
@@ -227,17 +290,66 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
 
   return (
     <Card className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary-gold/10 rounded-lg">
-          <FileText className="h-5 w-5 text-primary-gold" />
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary-gold/10 rounded-lg">
+            <FileText className="h-5 w-5 text-primary-gold" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Yeni Fatura Oluştur
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Aidat, bakım veya fayda faturası oluşturun
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Yeni Fatura Oluştur
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Aidat, bakım veya fayda faturası oluşturun
-          </p>
+        
+        {/* Unit Prices Info */}
+        <div className="flex flex-col gap-2 min-w-[200px]">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Güncel Birim Fiyatlar
+          </h4>
+          {unitPricesLoading ? (
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Fiyatlar yükleniyor...
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {getUnitPriceByType('DUES') && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600 dark:text-gray-400">Aidat:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {parseFloat(getUnitPriceByType('DUES')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('DUES')?.unit}
+                  </span>
+                </div>
+              )}
+              {getUnitPriceByType('ELECTRICITY') && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600 dark:text-gray-400">Elektrik:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {parseFloat(getUnitPriceByType('ELECTRICITY')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('ELECTRICITY')?.unit}
+                  </span>
+                </div>
+              )}
+              {getUnitPriceByType('WATER') && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600 dark:text-gray-400">Su:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {parseFloat(getUnitPriceByType('WATER')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('WATER')?.unit}
+                  </span>
+                </div>
+              )}
+              {getUnitPriceByType('GAS') && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600 dark:text-gray-400">Doğalgaz:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {parseFloat(getUnitPriceByType('GAS')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('GAS')?.unit}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -353,14 +465,15 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                         search: propertySearchQuery || undefined,
                         includeBills: false,
                       } as any);
-                      const list = res?.data || [];
-                      const mapped: PropertyOption[] = list.map((property: any) => ({
-                        id: property.id,
-                        value: property.id,
-                        label: `${property.propertyNumber} - ${property.name}`,
-                        propertyNumber: property.propertyNumber,
-                        __raw: property,
-                      }));
+                                             const list = res?.data || [];
+                       const mapped: PropertyOption[] = list.map((property: any) => ({
+                         id: property.id,
+                         value: property.id,
+                         label: `${property.propertyNumber} - ${property.name}`,
+                         propertyNumber: property.propertyNumber,
+                         area: property.area || 0, // Metrekare bilgisini al
+                         __raw: property,
+                       }));
                       setProperties(prev => [...prev, ...mapped]);
                       setFilteredProperties(prev => [...prev, ...mapped]);
                       const totalPages = res?.pagination?.totalPages;
@@ -467,24 +580,44 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tutar (IQD) *
-            </label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              {...register('amount', { 
-                required: 'Tutar gereklidir',
-                min: { value: 0.01, message: 'Tutar 0\'dan büyük olmalıdır' }
-              })}
-              placeholder="0.00"
-              icon={DollarSign}
-              error={errors.amount?.message}
-              disabled={isLoading}
-            />
-          </div>
+                     <div className="space-y-2">
+             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+               Tutar (IQD) *
+             </label>
+             <Input
+               type="number"
+               step="0.01"
+               min="0"
+               {...register('amount', { 
+                 required: 'Tutar gereklidir',
+                 min: { value: 0.01, message: 'Tutar 0\'dan büyük olmalıdır' }
+               })}
+               placeholder="0.00"
+               icon={DollarSign}
+               error={errors.amount?.message}
+               disabled={isLoading}
+             />
+             {/* Aidat hesaplama bilgisi */}
+             {watchedBillType === 'DUES' && watchedPropertyId && (
+               <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded">
+                 <div className="flex justify-between">
+                   <span>Aidat Hesaplama:</span>
+                   <span className="font-medium">
+                     {(() => {
+                       const selectedProperty = properties.find(p => p.id === watchedPropertyId);
+                       const duesPrice = getUnitPriceByType('DUES');
+                       if (selectedProperty?.area && duesPrice) {
+                         const unitPrice = parseFloat(duesPrice.unitPrice);
+                         const area = selectedProperty.area;
+                         return `${unitPrice.toFixed(2)} ₺/m² × ${area} m² = ${(unitPrice * area).toFixed(2)} ₺`;
+                       }
+                       return 'Hesaplanamadı';
+                     })()}
+                   </span>
+                 </div>
+               </div>
+             )}
+           </div>
         </div>
 
         {/* Payment Method */}
