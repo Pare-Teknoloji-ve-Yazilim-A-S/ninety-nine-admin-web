@@ -683,10 +683,10 @@ export default function DashboardSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-                      Güvenlik Ayarları
+                      Parametre Ayarları
                     </h2>
                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                      Kimlik doğrulama ve erişim kontrollerini yapılandırın. İki faktörlü kimlik doğrulama, oturum süreleri ve şifre politikalarını belirleyin.
+                    Uygulama için önceden tanımlı parametreleri kontrol edin ve güncelleyin.
                     </p>
                   </div>
                   <div className="w-6 h-6 transition-transform duration-200">
