@@ -117,7 +117,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
       billType: 'DUES',
       paymentMethod: undefined,
       propertyId: '',
-      assignedToId: undefined as any,
+      assignedToId: '',
       documentNumber: ''
     }
   });
@@ -585,7 +585,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                   if (resolvedAssignedId) {
                     setValue('assignedToId', resolvedAssignedId, { shouldValidate: false });
                   } else {
-                    setValue('assignedToId', undefined, { shouldValidate: false });
+                    setValue('assignedToId', '', { shouldValidate: false });
                   }
                           setPropertyDropdownOpen(false);
                           setPropertySearchQuery('');
