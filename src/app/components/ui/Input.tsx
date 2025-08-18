@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes } from 'react'
+import { forwardRef, InputHTMLAttributes, ChangeEvent } from 'react'
 import { LucideIcon } from 'lucide-react'
 
 interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -8,7 +8,7 @@ interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChan
     icon?: LucideIcon
     variant?: 'default' | 'filled' | 'outlined'
     isRequired?: boolean
-    onChange?: any
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(

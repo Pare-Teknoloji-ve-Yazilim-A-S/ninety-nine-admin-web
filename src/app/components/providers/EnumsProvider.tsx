@@ -15,7 +15,7 @@ export default function EnumsProvider({ children }: EnumsProviderProps) {
     if (!isAuthenticated) return;
 
     // Prefetch enums when user is authenticated
-    enumsService.getAllEnums().catch((error) => {
+    enumsService.refreshEnums().catch((error) => {
       console.warn('Failed to prefetch enums:', error);
     });
   }, [isAuthenticated]);

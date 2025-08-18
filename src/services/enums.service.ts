@@ -93,6 +93,34 @@ class EnumsService {
   }
 
   /**
+   * Refresh enums data (clear cache and fetch fresh data)
+   */
+  async refreshEnums(): Promise<EnumsResponse> {
+    try {
+      console.log('🔄 Refreshing enums data...');
+      
+      // Clear cache first
+      this.clearCache();
+      
+      // Fetch fresh data from API
+      const response = await apiClient.get(this.baseUrl);
+      console.log('🌐 Fresh enums response:', response);
+      
+      // Backend direkt data objesi döndürüyor, response.data değil
+      const data = response.data || response;
+      
+      // Cache the fresh result
+      this.setCache(data);
+      
+      console.log('✅ Enums refreshed successfully');
+      return data;
+    } catch (error) {
+      console.error('Error refreshing enums:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get enums by module
    */
   async getEnumsByModule(module: string): Promise<any> {

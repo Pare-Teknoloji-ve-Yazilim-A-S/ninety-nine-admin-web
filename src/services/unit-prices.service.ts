@@ -8,7 +8,7 @@ export interface UnitPrice {
     deletedAt: string | null;
     name: string;
     priceType: 'DUES' | 'ELECTRICITY' | 'GAS' | 'WATER';
-    unitPrice: string;
+    unitPrice: number; // Changed from string to number
     unit: string;
     isActive: boolean;
     description: string;
@@ -45,10 +45,50 @@ class UnitPricesService {
     async updateUnitPrice(id: string, updateData: Partial<UnitPrice>): Promise<UnitPrice> {
         try {
             console.log('🔧 Update request data:', updateData);
-            const response = await apiClient.patch<UnitPrice>(`${this.baseUrl}/${id}`, updateData);
+            console.log('🔧 Update URL:', `${this.baseUrl}/${id}`);
+            
+            // Prepare data for backend - convert string values to numbers where needed
+            const preparedData = { ...updateData };
+            
+            // Convert unitPrice from string to number if it exists
+            if (preparedData.unitPrice && typeof preparedData.unitPrice === 'string') {
+                const numericPrice = parseFloat(preparedData.unitPrice);
+                if (!isNaN(numericPrice) && numericPrice >= 0) {
+                    preparedData.unitPrice = numericPrice;
+                } else {
+                    throw new Error('unitPrice must be a valid positive number');
+                }
+            }
+            
+            // Ensure other numeric fields are properly typed
+            if (preparedData.isActive !== undefined && typeof preparedData.isActive === 'string') {
+                preparedData.isActive = preparedData.isActive === 'true';
+            }
+            
+            if (preparedData.isDefault !== undefined && typeof preparedData.isDefault === 'string') {
+                preparedData.isDefault = preparedData.isDefault === 'true';
+            }
+            
+            console.log('🔧 Prepared data for backend:', preparedData);
+            
+            const response = await apiClient.patch<UnitPrice>(`${this.baseUrl}/${id}`, preparedData);
             console.log('🔧 Update response:', response);
-            // API client response'u döndürüyor, response.data'yı al
-            return response.data;
+            console.log('🔧 Response type:', typeof response);
+            console.log('🔧 Response.data:', response.data);
+            
+            // API client ApiResponse<T> döndürüyor, response.data UnitPrice objesi
+            let result: UnitPrice;
+            if (response && typeof response === 'object' && 'data' in response) {
+                // response.data UnitPrice objesi
+                result = response.data as UnitPrice;
+            } else {
+                // Fallback: response direkt UnitPrice objesi olabilir
+                result = response as unknown as UnitPrice;
+            }
+            
+            console.log('🔧 Final result:', result);
+            
+            return result;
         } catch (error) {
             console.error('Failed to update unit price:', error);
             throw error;
@@ -70,7 +110,7 @@ class UnitPricesService {
     }
 
     formatUnitPrice(price: UnitPrice): string {
-        const numericPrice = parseFloat(price.unitPrice);
+        const numericPrice = typeof price.unitPrice === 'string' ? parseFloat(price.unitPrice) : price.unitPrice;
         return new Intl.NumberFormat('tr-TR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2

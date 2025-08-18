@@ -155,7 +155,7 @@ export default function DashboardSettingsPage() {
           // Transform the array into the expected object structure
           const transformedSettings = response.reduce((acc, unitPrice) => {
             acc[unitPrice.priceType] = { 
-              price: parseFloat(unitPrice.unitPrice), 
+              price: typeof unitPrice.unitPrice === 'string' ? parseFloat(unitPrice.unitPrice) : unitPrice.unitPrice, 
               unit: unitPrice.unit 
             };
             return acc;
@@ -212,7 +212,7 @@ export default function DashboardSettingsPage() {
         setEnumsLoading(true);
         console.log('🚀 Enum değerleri yükleniyor...');
         
-        const response = await enumsService.getAllEnums();
+        const response = await enumsService.refreshEnums();
         console.log('✅ Backend\'den gelen enum response:', response);
         console.log('📊 Response type:', typeof response);
         console.log('📋 Response keys:', response ? Object.keys(response) : 'No data');
@@ -239,9 +239,13 @@ export default function DashboardSettingsPage() {
   const fetchEnumsData = async () => {
     try {
       setEnumsLoading(true);
-      const response = await enumsService.getAllEnums();
+      console.log('🔄 Refreshing enums data after enum creation...');
+      
+      // Use refreshEnums to get fresh data from API
+      const response = await enumsService.refreshEnums();
       if (response && typeof response === 'object') {
         setEnumsData(response);
+        console.log('✅ Enums data refreshed successfully');
       }
     } catch (error) {
       console.error('Error fetching enums:', error);
@@ -370,7 +374,7 @@ export default function DashboardSettingsPage() {
         console.log('✅ Pozisyon başarıyla oluşturuldu');
         closePositionModal();
         // Enum değerlerini yeniden yükle
-        const enumsResponse = await enumsService.getAllEnums();
+        const enumsResponse = await enumsService.refreshEnums();
         if (enumsResponse && typeof enumsResponse === 'object') {
           setEnumsData(enumsResponse);
         }
@@ -594,7 +598,7 @@ export default function DashboardSettingsPage() {
       });
       
       const response = await unitPricesService.updateUnitPrice(priceTypeObj.id, {
-        unitPrice: priceValue.toString() // String olarak gönder
+        unitPrice: priceValue // Number olarak gönder
       });
 
       // Başarılı güncelleme
