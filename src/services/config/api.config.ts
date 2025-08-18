@@ -148,6 +148,7 @@ export const apiConfig = {
         },
         tickets: {
             base: '/admin/tickets',
+            summary: '/admin/tickets/summary',
             attachments: (ticketId: string) => `/admin/tickets/${ticketId}/attachments`,
         },
         announcements: {

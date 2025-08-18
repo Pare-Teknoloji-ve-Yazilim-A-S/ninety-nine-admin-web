@@ -157,7 +157,7 @@ export default function RequestsFiltersBar({
               placeholder="Tüm teknisyenler"
               options={[
                 { value: '', label: 'Tüm teknisyenler' },
-                { value: '', label: 'Atanmamış' },
+                { value: 'unassigned', label: 'Atanmamış' },
                 { value: 'tech1', label: 'Ahmet Yılmaz' },
                 { value: 'tech2', label: 'Mehmet Demir' },
                 { value: 'tech3', label: 'Ali Kaya' }

@@ -19,6 +19,7 @@ import { getTableColumns } from './components/table-columns';
 
 // Hooks and types
 import { useRequestsList } from './hooks/useRequestsList';
+import { useTicketSummary } from './hooks/useTicketSummary';
 import { ServiceRequest } from '@/services/types/request-list.types';
 
 // Existing modals
@@ -58,6 +59,23 @@ export default function RequestsListPage() {
     updatePagination
   } = useRequestsList();
 
+  // Ticket summary hook
+  const {
+    summary: ticketSummary,
+    loading: summaryLoading,
+    error: summaryError,
+    refetch: refetchSummary
+  } = useTicketSummary();
+
+  // Debug logging
+  console.log('🔍 RequestsPage - Ticket Summary State:', {
+    ticketSummary,
+    summaryLoading,
+    summaryError,
+    hasSummary: !!ticketSummary,
+    summaryType: typeof ticketSummary
+  });
+
   // Breadcrumb configuration
   const breadcrumbItems = [
     { label: 'Ana Sayfa', href: '/dashboard' },
@@ -68,7 +86,7 @@ export default function RequestsListPage() {
   // Event Handlers
   const handleRefresh = () => {
     refetch();
-    // Summary artık liste verisinden hesaplanıyor; ekstra istek yok
+    refetchSummary();
   };
 
   const handleCreateRequest = () => {
@@ -203,10 +221,10 @@ export default function RequestsListPage() {
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Page Header */}
             <RequestsPageHeader
-              summary={data.summary}
+              summary={ticketSummary}
               onRefresh={handleRefresh}
               onCreateRequest={handleCreateRequest}
-              loading={loading}
+              loading={summaryLoading}
             />
 
             {/* Summary Stats */}
@@ -217,8 +235,8 @@ export default function RequestsListPage() {
 
             {/* Quick Stats */}
             <RequestsQuickStats
-              quickStats={data.quickStats}
-              loading={loading}
+              summary={ticketSummary}
+              loading={summaryLoading}
             />
 
             {/* Filters Bar */}

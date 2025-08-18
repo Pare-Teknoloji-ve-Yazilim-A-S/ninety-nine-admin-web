@@ -1,7 +1,14 @@
 import React from 'react';
 import Button from '@/app/components/ui/Button';
-import { RequestsPageHeaderProps } from '@/services/types/request-list.types';
 import { Plus, RefreshCw, Wrench } from 'lucide-react';
+import { TicketSummary } from '../hooks/useTicketSummary';
+
+interface RequestsPageHeaderProps {
+  summary: TicketSummary | null;
+  onRefresh: () => void;
+  onCreateRequest: () => void;
+  loading: boolean;
+}
 
 export default function RequestsPageHeader({
   summary,
@@ -28,39 +35,48 @@ export default function RequestsPageHeader({
         </div>
         
         {/* Summary Stats */}
-        <div className="flex flex-wrap items-center gap-4 text-sm">
-          <div>
-            <span className="text-text-light-muted dark:text-text-muted">Toplam: </span>
-            <span className="font-semibold text-primary-gold">
-              {loading ? '...' : summary.totalRequests}
-            </span>
+        {summary && (
+          <div className="flex flex-wrap items-center gap-4 text-sm">
+            <div>
+              <span className="text-text-light-muted dark:text-text-muted">Toplam: </span>
+              <span className="font-semibold text-primary-gold">
+                {loading ? '...' : summary.totalTickets}
+              </span>
+            </div>
+            <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
+            <div>
+              <span className="text-text-light-muted dark:text-text-muted">Açık: </span>
+              <span className="font-semibold text-semantic-info-600">
+                {loading ? '...' : summary.openTickets}
+              </span>
+            </div>
+            <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
+            <div>
+              <span className="text-text-light-muted dark:text-text-muted">İşlemde: </span>
+              <span className="font-semibold text-semantic-warning-600">
+                {loading ? '...' : summary.inProgressTickets}
+              </span>
+            </div>
+            <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
+            <div>
+              <span className="text-text-light-muted dark:text-text-muted">Çözülen: </span>
+              <span className="font-semibold text-semantic-success-600">
+                {loading ? '...' : summary.resolvedTickets}
+              </span>
+            </div>
+            {summary.overdueTickets > 0 && (
+              <>
+                <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
+                <div>
+                  <span className="text-text-light-muted dark:text-text-muted">Gecikmiş: </span>
+                  <span className="font-semibold text-primary-red">
+                    {loading ? '...' : summary.overdueTickets}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
-          <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
-          <div>
-            <span className="text-text-light-muted dark:text-text-muted">Aktif: </span>
-            <span className="font-semibold text-semantic-info-600">
-              {loading ? '...' : summary.activeRequests}
-            </span>
-          </div>
-          <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
-          <div>
-            <span className="text-text-light-muted dark:text-text-muted">Bugün Tamamlanan: </span>
-            <span className="font-semibold text-semantic-success-600">
-              {loading ? '...' : summary.completedToday}
-            </span>
-          </div>
-          {summary.overdueRequests > 0 && (
-            <>
-              <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
-              <div>
-                <span className="text-text-light-muted dark:text-text-muted">Gecikmiş: </span>
-                <span className="font-semibold text-primary-red">
-                  {loading ? '...' : summary.overdueRequests}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Right side - Action Buttons */}
