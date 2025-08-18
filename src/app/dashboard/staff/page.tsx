@@ -1,14 +1,9 @@
 'use client'
 
-/**
- * Personel Yönetimi sayfası:
- * - Listeleme, arama, filtreleme, sayfalandırma
- * - Personel oluşturma/düzenleme (modal)
- * - Toplu işlemler (aktif/pasif/sil)
- * - Dışa aktarma / içe aktarma
- * - Hızlı filtreler ve gelişmiş filtre çekmecesi
- */
-
+import React, { useState } from 'react';
+import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
+import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
+import Sidebar from '@/app/components/ui/Sidebar';
 import PageHeader from './components/PageHeader'
 import QuickStats from './components/QuickStats'
 import SearchAndFilters from './components/SearchAndFilters'
@@ -20,7 +15,17 @@ import ImportFileInput from './components/ImportFileInput'
 import { useStaffPageViewModel } from './hooks/useStaffPageViewModel'
 import type { CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.types'
 
+/**
+ * Personel Yönetimi sayfası:
+ * - Listeleme, arama, filtreleme, sayfalandırma
+ * - Personel oluşturma/düzenleme (modal)
+ * - Toplu işlemler (aktif/pasif/sil)
+ * - Dışa aktarma / içe aktarma
+ * - Hızlı filtreler ve gelişmiş filtre çekmecesi
+ */
+
 function StaffPage () {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { ui, data, refs, actions } = useStaffPageViewModel()
 
   const totalCount = (typeof data.pagination?.total === 'number' && data.pagination.total >= 0)
@@ -30,81 +35,102 @@ function StaffPage () {
       : 0
   const totalCountLabel = `${totalCount.toLocaleString()} kişi`
 
+  // Breadcrumb items
+  const breadcrumbItems = [
+    { label: 'Ana Sayfa', href: '/dashboard' },
+    { label: 'Personel Yönetimi', active: true }
+  ];
+
   return (
-    <div className="space-y-6 text-on-light dark:text-on-dark max-w-full">
-             <PageHeader
-         title="Personel Yönetimi"
-         totalLabel={totalCountLabel}
-         summary={data.statsSummary}
-         onCreateNew={actions.openCreate}
-       />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background-primary">
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        
+        <div className="lg:ml-72">
+          <DashboardHeader
+            title="Personel Yönetimi"
+            breadcrumbItems={breadcrumbItems}
+          />
 
-      <StaffFormModal
-        open={ui.isStaffFormOpen}
-        editingStaff={ui.editingStaff}
-        departments={data.departments}
-        positions={data.positions}
-        managers={data.managers}
-        onSubmit={(payload: CreateStaffDto | UpdateStaffDto) => (
-          ui.editingStaff ? actions.onUpdate(payload as UpdateStaffDto) : actions.onCreate(payload as CreateStaffDto)
-        )}
-        onClose={actions.closeForm}
-        isLoading={data.isLoading}
-      />
+          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div className="space-y-6 text-on-light dark:text-on-dark max-w-full">
+              <PageHeader
+                title="Personel Yönetimi"
+                totalLabel={totalCountLabel}
+                summary={data.statsSummary}
+                onCreateNew={actions.openCreate}
+              />
 
-      <QuickStats stats={data.quickStats} />
+              <StaffFormModal
+                open={ui.isStaffFormOpen}
+                editingStaff={ui.editingStaff}
+                departments={data.departments}
+                positions={data.positions}
+                managers={data.managers}
+                onSubmit={(payload: CreateStaffDto | UpdateStaffDto) => (
+                  ui.editingStaff ? actions.onUpdate(payload as UpdateStaffDto) : actions.onCreate(payload as CreateStaffDto)
+                )}
+                onClose={actions.closeForm}
+                isLoading={data.isLoading}
+              />
 
-      <SearchAndFilters
-        searchQuery={data.searchQuery}
-        onSearch={actions.setSearchQuery}
-        onOpenFilters={actions.openFilters}
-      />
+              <QuickStats stats={data.quickStats} />
 
-      <QuickFilters quickFilters={data.quickFilters} onApply={actions.applyQuickFilter} />
+              <SearchAndFilters
+                searchQuery={data.searchQuery}
+                onSearch={actions.setSearchQuery}
+                onOpenFilters={actions.openFilters}
+              />
 
-      <ContentArea
-        staff={data.staff}
-        totalCount={data.pagination.total}
-        currentPage={data.pagination.page}
-        totalPages={data.pagination.totalPages}
-        pageSize={data.pagination.limit}
-        isLoading={data.isLoading}
-        error={data.error}
-        searchQuery={data.searchQuery}
-        selectedStaff={ui.selectedStaffIds}
-        viewMode={'table'}
-        onSearch={actions.setSearchQuery}
-        onPageChange={actions.setPage}
-        onPageSizeChange={actions.setLimit}
-        onSelectionChange={actions.setSelected}
-        onViewModeChange={() => { /* grid disabled */ }}
-        onView={actions.onView}
-        onEdit={actions.openEdit}
-        onDelete={actions.onDelete}
-        onActivate={actions.onActivate}
-        onDeactivate={actions.onDeactivate}
-        onBulkAction={(action, ids) => actions.onBulk(action as any, ids)}
-      />
+              <QuickFilters quickFilters={data.quickFilters} onApply={actions.applyQuickFilter} />
 
-      <ImportFileInput inputRef={refs.importInputRef} onChange={actions.onImportFile} />
+              <ContentArea
+                staff={data.staff}
+                totalCount={data.pagination.total}
+                currentPage={data.pagination.page}
+                totalPages={data.pagination.totalPages}
+                pageSize={data.pagination.limit}
+                isLoading={data.isLoading}
+                error={data.error}
+                searchQuery={data.searchQuery}
+                selectedStaff={ui.selectedStaffIds}
+                viewMode={'table'}
+                onSearch={actions.setSearchQuery}
+                onPageChange={actions.setPage}
+                onPageSizeChange={actions.setLimit}
+                onSelectionChange={actions.setSelected}
+                onViewModeChange={() => { /* grid disabled */ }}
+                onView={actions.onView}
+                onEdit={actions.openEdit}
+                onDelete={actions.onDelete}
+                onActivate={actions.onActivate}
+                onDeactivate={actions.onDeactivate}
+                onBulkAction={(action, ids) => actions.onBulk(action as any, ids)}
+              />
 
-      <FilterDrawer
-        open={ui.filtersOpen}
-        onClose={actions.closeFilters}
-        filters={data.filters as any}
-        departments={data.departments}
-        positions={data.positions}
-        quickFilters={data.quickFilters}
-        savedFilters={data.savedFilters}
-        onFiltersChange={(f) => actions.setFilters(f as any)}
-        onQuickFilterApply={actions.applyQuickFilter}
-        onSaveFilter={() => { /* no-op */ }}
-        onDeleteSavedFilter={() => { /* no-op */ }}
-        onExportFilters={actions.onExport}
-        onImportFilters={() => { /* handled via hidden input in component */ }}
-        onReset={() => actions.setFilters({})}
-      />
-    </div>
+              <ImportFileInput inputRef={refs.importInputRef} onChange={actions.onImportFile} />
+
+              <FilterDrawer
+                open={ui.filtersOpen}
+                onClose={actions.closeFilters}
+                filters={data.filters as any}
+                departments={data.departments}
+                positions={data.positions}
+                quickFilters={data.quickFilters}
+                savedFilters={data.savedFilters}
+                onFiltersChange={(f) => actions.setFilters(f as any)}
+                onQuickFilterApply={actions.applyQuickFilter}
+                onSaveFilter={() => { /* no-op */ }}
+                onDeleteSavedFilter={() => { /* no-op */ }}
+                onExportFilters={actions.onExport}
+                onImportFilters={() => { /* handled via hidden input in component */ }}
+                onReset={() => actions.setFilters({})}
+              />
+            </div>
+          </main>
+        </div>
+      </div>
+    </ProtectedRoute>
   )
 }
 
