@@ -137,7 +137,10 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   };
 
   // Button visibility logic
-  const status = currentItem.status;
+  const status = statusKey;
+  
+
+  
   const actionButtons = [
     status === 'OPEN' && {
       label: 'İşleme Al',
@@ -170,6 +173,8 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
       variant: 'danger',
     },
   ].filter(Boolean);
+
+
 
   // Add comment handler
   const handleAddComment = async () => {

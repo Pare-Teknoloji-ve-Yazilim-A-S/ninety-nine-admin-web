@@ -1,5 +1,6 @@
 import { apiClient } from './api/client';
 import { ApiResponse } from './core/types';
+import { apiConfig } from './config/api.config';
 
 export interface Ticket {
   id: string;
@@ -95,7 +96,7 @@ export const ticketService = {
   // Create new ticket
   async createTicket(data: CreateTicketRequest): Promise<Ticket> {
     console.log('Sending ticket creation request:', JSON.stringify(data, null, 2));
-    const response: ApiResponse<Ticket> = await apiClient.post<Ticket>('/admin/tickets', data);
+    const response: ApiResponse<Ticket> = await apiClient.post<Ticket>(apiConfig.endpoints.tickets.base, data);
     console.log('Ticket creation response:', response);
     return response.data;
   },
@@ -129,7 +130,7 @@ export const ticketService = {
     if (filters.orderBy) params.append('orderBy', filters.orderBy);
 
     const queryString = params.toString();
-    const url = `/admin/tickets${queryString ? `?${queryString}` : ''}`;
+    const url = `${apiConfig.endpoints.tickets.base}${queryString ? `?${queryString}` : ''}`;
 
     const response: ApiResponse<TicketPaginationResponse> = await apiClient.get<TicketPaginationResponse>(url);
     return response;
@@ -151,7 +152,7 @@ export const ticketService = {
     console.log(`🎫 Fetching tickets for userId: ${userId}`);
     
     // This endpoint returns direct array without data wrapper
-    const response = await apiClient.get<Ticket[]>(`/admin/tickets/user/${userId}`);
+    const response = await apiClient.get<Ticket[]>(`${apiConfig.endpoints.tickets.base}/user/${userId}`);
     
     // API returns direct array, so we return response directly (not response.data)
     // because apiClient already extracts the response body
@@ -173,44 +174,44 @@ export const ticketService = {
 
   // --- Ticket Status Update Methods ---
   async startProgress(id: string): Promise<Ticket> {
-    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/start-progress`, {});
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.startProgress(id), {});
     return response.data;
   },
   async markWaiting(id: string): Promise<Ticket> {
-    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/mark-waiting`, {});
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.markWaiting(id), {});
     return response.data;
   },
   async resolve(id: string): Promise<Ticket> {
-    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/resolve`, {});
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.resolve(id), {});
     return response.data;
   },
   async close(id: string): Promise<Ticket> {
-    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/close`, {});
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.close(id), {});
     return response.data;
   },
   async cancel(id: string): Promise<Ticket> {
-    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}/cancel`, {});
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.cancel(id), {});
     return response.data;
   },
   // --- Ticket Comments ---
   async getComments(id: string): Promise<any[]> {
-    const response: ApiResponse<any[]> = await apiClient.get<any[]>(`/admin/tickets/${id}/comments`);
+    const response: ApiResponse<any[]> = await apiClient.get<any[]>(apiConfig.endpoints.tickets.comments(id));
     return response.data;
   },
   async addComment(id: string, content: string): Promise<any> {
-    const response: ApiResponse<any> = await apiClient.post<any>(`/admin/tickets/${id}/comments`, { content });
+    const response: ApiResponse<any> = await apiClient.post<any>(apiConfig.endpoints.tickets.comments(id), { content });
     return response.data;
   },
 
   // --- Ticket Attachments ---
   async addAttachment(ticketId: string, data: CreateAttachmentRequest): Promise<any> {
-    const response: ApiResponse<any> = await apiClient.post<any>(`/admin/tickets/${ticketId}/attachments`, data);
+    const response: ApiResponse<any> = await apiClient.post<any>(apiConfig.endpoints.tickets.attachments(ticketId), data);
     return response.data;
   },
 
   async getAttachments(ticketId: string): Promise<any[]> {
     try {
-      const response: any = await apiClient.get<any>(`/admin/tickets/${ticketId}/attachments`);
+      const response: any = await apiClient.get<any>(apiConfig.endpoints.tickets.attachments(ticketId));
       // Possible formats:
       // 1) { success, data: { ticketId, attachments: [] } }
       // 2) { attachments: [] }
@@ -233,20 +234,20 @@ export const ticketService = {
 
   // --- Ticket CRUD Operations ---
   async getTicketById(id: string): Promise<Ticket> {
-    const response: ApiResponse<Ticket> = await apiClient.get<Ticket>(`/admin/tickets/${id}`);
+    const response: ApiResponse<Ticket> = await apiClient.get<Ticket>(`${apiConfig.endpoints.tickets.base}/${id}`);
     return response.data;
   },
 
   async updateTicket(id: string, data: UpdateTicketRequest): Promise<Ticket> {
     console.log('Updating ticket:', id, data);
-    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`/admin/tickets/${id}`, data);
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(`${apiConfig.endpoints.tickets.base}/${id}`, data);
     console.log('Ticket update response:', response);
     return response.data;
   },
 
   async deleteTicket(id: string): Promise<void> {
     console.log('Deleting ticket:', id);
-    await apiClient.delete(`/admin/tickets/${id}`);
+    await apiClient.delete(`${apiConfig.endpoints.tickets.base}/${id}`);
     console.log('Ticket deleted successfully');
   },
 
@@ -273,13 +274,13 @@ export const ticketService = {
       changeDirection: 'increase' | 'decrease';
       currentMonthName: string;
       previousMonthName: string;
-    }>('/admin/tickets/monthly-stats');
+    }>(apiConfig.endpoints.tickets.monthlyStats);
     return response.data;
   },
 
   // Get ticket summary statistics
   async getTicketSummary(): Promise<TicketSummary> {
-    const response = await apiClient.get<TicketSummary>('/admin/tickets/summary');
+    const response = await apiClient.get<TicketSummary>(apiConfig.endpoints.tickets.summary);
     console.log('🔍 getTicketSummary response:', response);
     console.log('🔍 getTicketSummary response.data:', response.data);
     // API returns direct TicketSummary object, not wrapped in ApiResponse

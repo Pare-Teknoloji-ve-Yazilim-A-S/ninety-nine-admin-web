@@ -25,7 +25,6 @@ import { ServiceRequest } from '@/services/types/request-list.types';
 // Existing modals
 import RequestDetailModal from './RequestDetailModal';
 import CreateTicketModal from '@/app/dashboard/components/CreateTicketModal';
-import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 
 export default function RequestsListPage() {
   const toast = useToast();
@@ -42,10 +41,7 @@ export default function RequestsListPage() {
     item: null
   });
   const [createTicketModal, setCreateTicketModal] = useState(false);
-  const [confirmationDialog, setConfirmationDialog] = useState({
-    isOpen: false,
-    request: null as ServiceRequest | null
-  });
+
 
   // Main data hook
   const {
@@ -154,13 +150,6 @@ export default function RequestsListPage() {
       case 'view':
         setDetailModal({ open: true, item: request });
         break;
-      case 'edit':
-        // Handle edit action
-        console.log('Edit request:', request.id);
-        break;
-      case 'delete':
-        setConfirmationDialog({ isOpen: true, request });
-        break;
       default:
         console.log('Unknown action:', action);
     }
@@ -171,14 +160,6 @@ export default function RequestsListPage() {
     setDetailModal({ open: true, item: request });
   };
 
-  const handleEditRequest = (request: ServiceRequest) => {
-    console.log('Edit request:', request.id);
-  };
-
-  const handleDeleteRequest = (request: ServiceRequest) => {
-    setConfirmationDialog({ isOpen: true, request });
-  };
-
   const handleBulkAction = (actionId: string) => {
     console.log('Bulk action:', actionId, 'for', selectedRequests.length, 'requests');
     // Handle bulk actions
@@ -186,14 +167,7 @@ export default function RequestsListPage() {
     setSelectedRequests([]);
   };
 
-  const handleConfirmDelete = () => {
-    if (confirmationDialog.request) {
-      console.log('Delete confirmed for:', confirmationDialog.request.id);
-      toast.success('Talep silindi', 'Talep başarıyla silindi');
-      setConfirmationDialog({ isOpen: false, request: null });
-      refetch();
-    }
-  };
+
 
   const getActiveFiltersCount = () => {
     // This is now handled by the RequestsFiltersBar component internally
@@ -270,12 +244,10 @@ export default function RequestsListPage() {
             ) : (
               <>
                 {viewMode === 'table' ? (
-                  <DataTable
-                    columns={getTableColumns({
-                      handleViewRequest,
-                      handleEditRequest,
-                      handleDeleteRequest
-                    })}
+                                     <DataTable
+                     columns={getTableColumns({
+                       handleViewRequest
+                     })}
                     data={data.requests}
                     loading={tableLoading}
                     selectable={true}
@@ -326,6 +298,7 @@ export default function RequestsListPage() {
           onActionComplete={() => {
             setDetailModal({ open: false, item: null });
             refetch();
+            refetchSummary(); // Summary kartlarını da güncelle
           }}
           toast={toast}
         />
@@ -337,27 +310,11 @@ export default function RequestsListPage() {
           onSuccess={() => {
             setCreateTicketModal(false);
             refetch();
+            refetchSummary(); // Summary kartlarını da güncelle
           }}
         />
 
-        {/* Delete Confirmation Modal */}
-        <ConfirmationModal
-          isOpen={confirmationDialog.isOpen}
-          onClose={() => setConfirmationDialog({ isOpen: false, request: null })}
-          onConfirm={handleConfirmDelete}
-          title="Talebi Sil"
-          description={
-            confirmationDialog.request
-              ? `"${confirmationDialog.request.title}" adlı talep kalıcı olarak silinecektir. Bu işlem geri alınamaz.`
-              : "Bu talebi silmek istediğinizden emin misiniz?"
-          }
-          confirmText="Sil"
-          cancelText="İptal"
-          variant="danger"
-          loading={false}
-          itemName={confirmationDialog.request?.title}
-          itemType="talep"
-        />
+
 
         {/* Toast Container */}
         <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />

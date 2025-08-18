@@ -3,8 +3,6 @@ import { ServiceRequest } from '@/services/types/request-list.types';
 import Badge from '@/app/components/ui/Badge';
 import { 
     Eye, 
-    Edit, 
-    Trash2, 
     MoreVertical,
     AlertCircle,
     Clock,
@@ -22,29 +20,15 @@ import {
 interface ActionMenuProps {
     request: ServiceRequest;
     onViewRequest: (request: ServiceRequest) => void;
-    onEditRequest: (request: ServiceRequest) => void;
-    onDeleteRequest: (request: ServiceRequest) => void;
 }
 
 const ActionMenu: React.FC<ActionMenuProps> = ({
     request,
     onViewRequest,
-    onEditRequest,
-    onDeleteRequest,
 }) => {
     const handleView = (e: React.MouseEvent) => {
         e.stopPropagation();
         onViewRequest(request);
-    };
-
-    const handleEdit = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onEditRequest(request);
-    };
-
-    const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onDeleteRequest(request);
     };
 
     return (
@@ -53,27 +37,13 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
                 <button className="p-2 rounded-lg hover:bg-background-light-soft dark:hover:bg-background-soft transition-colors">
                     <MoreVertical size={16} className="text-text-light-secondary dark:text-text-secondary" />
                 </button>
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-background-card border border-background-light-secondary dark:border-background-secondary rounded-lg shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-background-card border border-background-light-secondary dark:border-background-secondary rounded-lg shadow-lg py-1 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                     <button
                         onClick={handleView}
                         className="w-full px-4 py-2 text-left text-sm hover:bg-background-light-soft dark:hover:bg-background-soft flex items-center gap-3 text-text-on-light dark:text-text-on-dark"
                     >
                         <Eye size={16} />
                         Detay
-                    </button>
-                    <button
-                        onClick={handleEdit}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-background-light-soft dark:hover:bg-background-soft flex items-center gap-3 text-text-on-light dark:text-text-on-dark"
-                    >
-                        <Edit size={16} />
-                        Düzenle
-                    </button>
-                    <button
-                        onClick={handleDelete}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-background-light-soft dark:hover:bg-background-soft flex items-center gap-3 text-primary-red"
-                    >
-                        <Trash2 size={16} />
-                        Sil
                     </button>
                 </div>
             </div>
@@ -117,8 +87,6 @@ const formatDate = (dateString: string) => {
 export const getTableColumns = (
     actionHandlers: {
         handleViewRequest: (request: ServiceRequest) => void;
-        handleEditRequest: (request: ServiceRequest) => void;
-        handleDeleteRequest: (request: ServiceRequest) => void;
     },
     ActionMenuComponent?: React.ComponentType<{ row: ServiceRequest }>
 ) => {
@@ -279,8 +247,6 @@ export const getTableColumns = (
                 <ActionMenu
                     request={row}
                     onViewRequest={actionHandlers.handleViewRequest}
-                    onEditRequest={actionHandlers.handleEditRequest}
-                    onDeleteRequest={actionHandlers.handleDeleteRequest}
                 />
             ),
         });

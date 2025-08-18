@@ -149,7 +149,15 @@ export const apiConfig = {
         tickets: {
             base: '/admin/tickets',
             summary: '/admin/tickets/summary',
+            monthlyStats: '/admin/tickets/monthly-stats',
             attachments: (ticketId: string) => `/admin/tickets/${ticketId}/attachments`,
+            comments: (ticketId: string) => `/admin/tickets/${ticketId}/comments`,
+            // Ticket status actions
+            resolve: (ticketId: string) => `/admin/tickets/${ticketId}/resolve`,
+            close: (ticketId: string) => `/admin/tickets/${ticketId}/close`,
+            cancel: (ticketId: string) => `/admin/tickets/${ticketId}/cancel`,
+            startProgress: (ticketId: string) => `/admin/tickets/${ticketId}/start-progress`,
+            markWaiting: (ticketId: string) => `/admin/tickets/${ticketId}/mark-waiting`,
         },
         announcements: {
             // Admin Panel - Announcement Management (API-99CLUB Compatible)
