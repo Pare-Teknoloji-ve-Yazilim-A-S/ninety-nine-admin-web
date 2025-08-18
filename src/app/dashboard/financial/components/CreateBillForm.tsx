@@ -43,6 +43,20 @@ interface PropertyOption {
   label: string;
   propertyNumber: string;
   area?: number; // Metrekare bilgisi
+  owner?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
+  tenant?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+  };
   // optional raw for owner/tenant info if available
   __raw?: any;
 }
@@ -181,6 +195,20 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
            label: `${property.propertyNumber} - ${property.name}`,
            propertyNumber: property.propertyNumber,
            area: property.area || 0, // Metrekare bilgisini al
+           owner: property.owner ? {
+             id: property.owner.id,
+             firstName: property.owner.firstName,
+             lastName: property.owner.lastName,
+             email: property.owner.email,
+             phone: property.owner.phone
+           } : undefined,
+           tenant: property.tenant ? {
+             id: property.tenant.id,
+             firstName: property.tenant.firstName,
+             lastName: property.tenant.lastName,
+             email: property.tenant.email,
+             phone: property.tenant.phone
+           } : undefined,
            __raw: property,
          }));
          if (!active) return;
@@ -248,6 +276,31 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Property'den owner veya tenant ID'sini al
+      let assignedToId: string | undefined = undefined;
+      
+      if (data.propertyId) {
+        try {
+          // Property detaylarını getir
+          const propertyResponse = await unitsService.getPropertyById(data.propertyId, false);
+          const property = propertyResponse;
+          
+          // Öncelik sırası: tenant varsa tenant, yoksa owner
+          if (property?.tenant?.id) {
+            assignedToId = property.tenant.id;
+            console.log('🔗 Bill assigned to tenant:', property.tenant.firstName, property.tenant.lastName);
+          } else if (property?.owner?.id) {
+            assignedToId = property.owner.id;
+            console.log('🔗 Bill assigned to owner:', property.owner.firstName, property.owner.lastName);
+          } else {
+            console.log('⚠️ No tenant or owner found for property:', data.propertyId);
+          }
+        } catch (propertyError) {
+          console.error('Error fetching property details for assignment:', propertyError);
+          // Property detayı alınamazsa assignedToId undefined kalır
+        }
+      }
+
       const billData: CreateBillDto = {
         title: data.title,
         amount: Number(data.amount),
@@ -257,7 +310,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         status: 'PENDING',
         paymentMethod: data.paymentMethod,
         propertyId: data.propertyId,
-        assignedToId: undefined,
+        assignedToId: assignedToId, // Property'den alınan owner/tenant ID
         // ensure a doc number exists; generate one if missing
         documentNumber: data.documentNumber && data.documentNumber.trim() !== '' ? data.documentNumber : generateDocumentNumber()
       };
@@ -472,6 +525,20 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                          label: `${property.propertyNumber} - ${property.name}`,
                          propertyNumber: property.propertyNumber,
                          area: property.area || 0, // Metrekare bilgisini al
+                         owner: property.owner ? {
+                           id: property.owner.id,
+                           firstName: property.owner.firstName,
+                           lastName: property.owner.lastName,
+                           email: property.owner.email,
+                           phone: property.owner.phone
+                         } : undefined,
+                         tenant: property.tenant ? {
+                           id: property.tenant.id,
+                           firstName: property.tenant.firstName,
+                           lastName: property.tenant.lastName,
+                           email: property.tenant.email,
+                           phone: property.tenant.phone
+                         } : undefined,
                          __raw: property,
                        }));
                       setProperties(prev => [...prev, ...mapped]);
@@ -503,15 +570,22 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                         onClick={() => {
                   setValue('propertyId', p.id, { shouldValidate: true });
                   // Prefer tenant, otherwise owner, for assignedToId
-                  const selected = (properties || []).find(x => x.id === p.id) as any;
-                  const selectedFull: any = (selected as any)?.__raw || selected;
-                  const tenantId = (selectedFull?.tenant && selectedFull.tenant.id) || undefined;
-                  const ownerId = (selectedFull?.owner && selectedFull.owner.id) || undefined;
+                  const tenantId = p.tenant?.id;
+                  const ownerId = p.owner?.id;
                   const resolvedAssignedId = tenantId || ownerId || undefined;
+                  
+                  console.log('🔗 Property selected:', {
+                    propertyId: p.id,
+                    propertyNumber: p.propertyNumber,
+                    tenant: p.tenant ? `${p.tenant.firstName} ${p.tenant.lastName}` : 'None',
+                    owner: p.owner ? `${p.owner.firstName} ${p.owner.lastName}` : 'None',
+                    assignedToId: resolvedAssignedId
+                  });
+                  
                   if (resolvedAssignedId) {
-                    setValue('assignedToId', resolvedAssignedId as any, { shouldValidate: false });
+                    setValue('assignedToId', resolvedAssignedId, { shouldValidate: false });
                   } else {
-                    setValue('assignedToId', undefined as any, { shouldValidate: false });
+                    setValue('assignedToId', undefined, { shouldValidate: false });
                   }
                           setPropertyDropdownOpen(false);
                           setPropertySearchQuery('');
@@ -522,9 +596,25 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                           <div className="w-8 h-8 bg-primary-gold/20 rounded-full flex items-center justify-center">
                             <span className="text-xs font-medium text-primary-gold">{p.propertyNumber?.slice(0,2) || 'PR'}</span>
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <div className="font-medium text-text-on-light dark:text-text-on-dark">{p.label}</div>
                             <div className="text-xs text-text-light-muted dark:text-text-muted">{p.propertyNumber}</div>
+                            {/* Owner/Tenant Info */}
+                            {(p.owner || p.tenant) && (
+                              <div className="text-xs text-text-light-muted dark:text-text-muted mt-1">
+                                {p.tenant ? (
+                                  <span className="inline-flex items-center gap-1">
+                                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                    Kiracı: {p.tenant.firstName} {p.tenant.lastName}
+                                  </span>
+                                ) : p.owner ? (
+                                  <span className="inline-flex items-center gap-1">
+                                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                    Malik: {p.owner.firstName} {p.owner.lastName}
+                                  </span>
+                                ) : null}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </button>
