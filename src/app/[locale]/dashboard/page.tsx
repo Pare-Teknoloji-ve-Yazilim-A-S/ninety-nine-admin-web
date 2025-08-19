@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
-import { useTranslations } from 'next-intl';
 
 // Dashboard Components
 import DashboardHeader from '../../dashboard/components/DashboardHeader';
@@ -30,7 +29,6 @@ import { useTicketStats } from '@/hooks/useTicketStats';
 import { useExpiringAnnouncements } from '@/hooks/useExpiringAnnouncements';
 
 export default function DashboardPage() {
-    const t = useTranslations('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [calendarEvents, setCalendarEvents] = useState<Record<string, { count: number; hasEmergency?: boolean; hasPinned?: boolean; items?: CalendarEventDetail[] }>>({});
     const [dayModalOpen, setDayModalOpen] = useState(false);
@@ -53,7 +51,7 @@ export default function DashboardPage() {
     const { count: expiringAnnouncementsCount, loading: expiringAnnouncementsLoading, error: expiringAnnouncementsError } = useExpiringAnnouncements();
 
     const breadcrumbItems = [
-        { label: t('title'), href: '/dashboard' },
+        { label: 'Dashboard', href: '/dashboard' },
     ];
 
     React.useEffect(() => {
@@ -112,7 +110,7 @@ export default function DashboardPage() {
                 {/* Main Content Area */}
                 <div className="lg:ml-72">
                     {/* Header */}
-                    <DashboardHeader title={t('title')} breadcrumbItems={breadcrumbItems} />
+                    <DashboardHeader title="Dashboard" breadcrumbItems={breadcrumbItems} />
 
                     {/* Main Content */}
                     <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -122,10 +120,10 @@ export default function DashboardPage() {
                             <div className="flex justify-between items-center mb-6">
                                 <div>
                                     <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark">
-                                        {t('title')}
+                                        Dashboard
                                     </h1>
                                     <p className="mt-2 text-text-light-secondary dark:text-text-secondary">
-                                        {t('welcome')}
+                                        Hoş Geldiniz
                                     </p>
                                 </div>
                                 <LanguageSwitcher />

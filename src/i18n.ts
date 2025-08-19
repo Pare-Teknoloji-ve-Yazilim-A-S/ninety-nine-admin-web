@@ -18,6 +18,20 @@ export default getRequestConfig(async ({ locale }) => {
   };
 });
 
+// Static rendering için gerekli
+export async function getMessages({ locale }: { locale: string }) {
+  try {
+    return (await import(`./messages/${locale}.json`)).default;
+  } catch (error) {
+    notFound();
+  }
+}
+
+// Static params generation
+export async function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
 // Path oluşturma yardımcısı
 export function createLocalizedPath(path: string, locale: Locale): string {
   // Eğer path zaten locale içeriyorsa, sadece locale'i değiştir

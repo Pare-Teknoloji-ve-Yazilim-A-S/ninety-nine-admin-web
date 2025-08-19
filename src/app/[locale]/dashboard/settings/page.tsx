@@ -7,7 +7,6 @@ import Sidebar from '@/app/components/ui/Sidebar';
 import { unitPricesService } from '@/services/unit-prices.service';
 import enumsService from '@/services/enums.service';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
-import { useTranslations } from 'next-intl';
 
 // Breadcrumb Items
 const BREADCRUMB_ITEMS = [
@@ -16,7 +15,6 @@ const BREADCRUMB_ITEMS = [
 ];
 
 export default function DashboardSettingsPage() {
-  const t = useTranslations('settings');
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   return (
@@ -29,7 +27,7 @@ export default function DashboardSettingsPage() {
         <div className="lg:ml-72">
           {/* Header */}
           <DashboardHeader 
-            title={t('title')} 
+            title="Ayarlar" 
             breadcrumbItems={BREADCRUMB_ITEMS}
           />
           
@@ -39,7 +37,7 @@ export default function DashboardSettingsPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-2">
-                  {t('title')}
+                  Ayarlar
                 </h2>
                 <p className="text-sm text-text-light-secondary dark:text-text-secondary">
                   Sistem genelindeki ayarları, entegrasyonları ve bakımı yapılandırın

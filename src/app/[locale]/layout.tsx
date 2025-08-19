@@ -1,5 +1,3 @@
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
 import { locales } from '@/i18n';
 
 export async function generateStaticParams() {
@@ -13,11 +11,9 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  const messages = await getMessages();
-
   return (
-    <NextIntlClientProvider messages={messages}>
+    <div data-locale={locale}>
       {children}
-    </NextIntlClientProvider>
+    </div>
   );
 }
