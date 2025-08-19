@@ -19,7 +19,7 @@ import Modal from '@/app/components/ui/Modal';
 import { announcementService } from '@/services';
 import type { Announcement } from '@/services/types/announcement.types';
 import RecentActivities from './components/RecentActivities';
-import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+
 
 // Hooks
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -171,18 +171,7 @@ export default function DashboardPage() {
                     <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                         <div className="px-4 sm:px-0">
 
-                            {/* Header with Language Switcher */}
-                            <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark">
-                                        {t.title}
-                                    </h1>
-                                    <p className="mt-2 text-text-light-secondary dark:text-text-secondary">
-                                        {t.welcome}
-                                    </p>
-                                </div>
-                                <LanguageSwitcher />
-                            </div>
+
 
                             {/* Top Metrics Cards */}
                             <TopMetricsGrid

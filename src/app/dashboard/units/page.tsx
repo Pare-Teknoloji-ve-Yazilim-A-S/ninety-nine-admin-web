@@ -58,7 +58,7 @@ import { useUnitsData } from '@/hooks/useUnitsData';
 import { useUnitsFilters } from '@/hooks/useUnitsFilters';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
-import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+
 
 // Dil çevirileri
 const translations = {
@@ -743,18 +743,7 @@ export default function UnitsListPage() {
                             </div>
                         </div>
 
-                        {/* Header with Language Switcher */}
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark">
-                                    {t.title}
-                                </h1>
-                                <p className="mt-2 text-text-light-secondary dark:text-text-secondary">
-                                    {t.welcome}
-                                </p>
-                            </div>
-                            <LanguageSwitcher />
-                        </div>
+
 
 {/* Quick Stats Cards */}
 {dataHook.error && (

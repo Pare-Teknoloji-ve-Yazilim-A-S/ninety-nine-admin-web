@@ -6,7 +6,7 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import { useToast } from '@/hooks/useToast';
 import { ToastContainer } from '@/app/components/ui/Toast';
-import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+
 
 // Dil çevirileri
 const translations = {
@@ -267,10 +267,7 @@ export default function RequestsListPage() {
             breadcrumbItems={breadcrumbItems}
           />
 
-          {/* Language Switcher */}
-          <div className="lg:ml-72 flex justify-end px-4 sm:px-6 lg:px-8 py-2">
-            <LanguageSwitcher />
-          </div>
+
 
           {/* Main Content */}
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

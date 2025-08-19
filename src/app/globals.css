@@ -56,6 +56,16 @@ body {
   min-height: 100vh;
 }
 
+/* Dark mode styles */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+}
+
 /* Font Face Fallbacks */
 @font-face {
   font-family: "Helvetica";

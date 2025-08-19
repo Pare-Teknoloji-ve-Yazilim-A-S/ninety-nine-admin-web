@@ -24,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <body className={`${inter.variable} font-sans antialiased bg-background-primary overflow-x-hidden`}>
+      <body className={`${inter.variable} font-sans antialiased bg-background-primary overflow-x-hidden dark`}>
         <AuthProvider>
           <EnumsProvider>
             <ToastProvider>
