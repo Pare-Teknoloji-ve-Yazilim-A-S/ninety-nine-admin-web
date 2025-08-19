@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ServiceRequest } from '@/services/types/request-list.types';
 import Badge from '@/app/components/ui/Badge';
 import { 
@@ -14,6 +14,145 @@ import {
     Calendar
 } from 'lucide-react';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Table headers
+    title: 'Başlık',
+    apartment: 'Daire',
+    category: 'Kategori',
+    priority: 'Öncelik',
+    status: 'Durum',
+    technician: 'Teknisyen',
+    createdDate: 'Oluşturulma',
+    dueDate: 'Vade',
+    
+    // Badges and labels
+    urgent: 'Acil',
+    block: 'Blok',
+    unassigned: 'Atanmamış',
+    overdue: 'Gecikmiş',
+    
+    // Action menu
+    detail: 'Detay',
+    
+    // Backend status translations
+    resolved: 'Çözüldü',
+    closed: 'Kapalı',
+    cancelled: 'İptal Edildi',
+    open: 'Açık',
+    inProgress: 'İşlemde',
+    waiting: 'Bekliyor',
+    completed: 'Tamamlandı',
+    
+    // Backend category translations
+    request: 'İstek',
+    complaint: 'Şikayet',
+    faultRepair: 'Arıza/Tamir',
+    maintenance: 'Bakım',
+    cleaning: 'Temizlik',
+    security: 'Güvenlik',
+    other: 'Diğer',
+    
+    // Backend priority translations
+    low: 'Düşük',
+    medium: 'Orta',
+    high: 'Yüksek',
+    urgent: 'Acil',
+    emergency: 'Acil'
+  },
+  en: {
+    // Table headers
+    title: 'Title',
+    apartment: 'Apartment',
+    category: 'Category',
+    priority: 'Priority',
+    status: 'Status',
+    technician: 'Technician',
+    createdDate: 'Created',
+    dueDate: 'Due Date',
+    
+    // Badges and labels
+    urgent: 'Urgent',
+    block: 'Block',
+    unassigned: 'Unassigned',
+    overdue: 'Overdue',
+    
+    // Action menu
+    detail: 'Detail',
+    
+    // Backend status translations
+    resolved: 'Resolved',
+    closed: 'Closed',
+    cancelled: 'Cancelled',
+    open: 'Open',
+    inProgress: 'In Progress',
+    waiting: 'Waiting',
+    completed: 'Completed',
+    
+    // Backend category translations
+    request: 'Request',
+    complaint: 'Complaint',
+    faultRepair: 'Fault/Repair',
+    maintenance: 'Maintenance',
+    cleaning: 'Cleaning',
+    security: 'Security',
+    other: 'Other',
+    
+    // Backend priority translations
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    urgent: 'Urgent',
+    emergency: 'Emergency'
+  },
+  ar: {
+    // Table headers
+    title: 'العنوان',
+    apartment: 'الشقة',
+    category: 'الفئة',
+    priority: 'الأولوية',
+    status: 'الحالة',
+    technician: 'الفني',
+    createdDate: 'تاريخ الإنشاء',
+    dueDate: 'تاريخ الاستحقاق',
+    
+    // Badges and labels
+    urgent: 'عاجل',
+    block: 'البلوك',
+    unassigned: 'غير محدد',
+    overdue: 'متأخر',
+    
+    // Action menu
+    detail: 'التفاصيل',
+    
+    // Backend status translations
+    resolved: 'تم الحل',
+    closed: 'مغلق',
+    cancelled: 'ملغي',
+    open: 'مفتوح',
+    inProgress: 'قيد التنفيذ',
+    waiting: 'في الانتظار',
+    completed: 'مكتمل',
+    
+    // Backend category translations
+    request: 'طلب',
+    complaint: 'شكوى',
+    faultRepair: 'عطل/إصلاح',
+    maintenance: 'صيانة',
+    cleaning: 'تنظيف',
+    security: 'أمان',
+    other: 'أخرى',
+    
+    // Backend priority translations
+    low: 'منخفض',
+    medium: 'متوسط',
+    high: 'عالي',
+    urgent: 'عاجل',
+    emergency: 'طارئ'
+  }
+};
+
 /**
  * Action menu component for table rows
  */
@@ -26,6 +165,18 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
     request,
     onViewRequest,
 }) => {
+    // Dil tercihini localStorage'dan al
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
     const handleView = (e: React.MouseEvent) => {
         e.stopPropagation();
         onViewRequest(request);
@@ -43,12 +194,92 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
                         className="w-full px-4 py-2 text-left text-sm hover:bg-background-light-soft dark:hover:bg-background-soft flex items-center gap-3 text-text-on-light dark:text-text-on-dark"
                     >
                         <Eye size={16} />
-                        Detay
+                        {t.detail}
                     </button>
                 </div>
             </div>
         </div>
     );
+};
+
+/**
+ * Helper function to translate backend status values
+ */
+const getTranslatedStatus = (status: any, t: any) => {
+    if (!status || !status.label) return '';
+    
+    const statusLabel = status.label.toLowerCase();
+    
+    // Handle both enum values and direct Turkish strings
+    if (statusLabel === 'resolved' || statusLabel === 'çözüldü') {
+        return t.resolved;
+    } else if (statusLabel === 'closed' || statusLabel === 'kapalı') {
+        return t.closed;
+    } else if (statusLabel === 'cancelled' || statusLabel === 'iptal edildi') {
+        return t.cancelled;
+    } else if (statusLabel === 'open' || statusLabel === 'açık') {
+        return t.open;
+    } else if (statusLabel === 'in_progress' || statusLabel === 'işlemde') {
+        return t.inProgress;
+    } else if (statusLabel === 'waiting' || statusLabel === 'bekliyor') {
+        return t.waiting;
+    } else if (statusLabel === 'completed' || statusLabel === 'tamamlandı') {
+        return t.completed;
+    }
+    
+    return status.label; // Return original if no match
+};
+
+/**
+ * Helper function to translate backend category values
+ */
+const getTranslatedCategory = (category: any, t: any) => {
+    if (!category || !category.label) return '';
+    
+    const categoryLabel = category.label.toLowerCase();
+    
+    // Handle both enum values and direct Turkish strings
+    if (categoryLabel === 'request' || categoryLabel === 'istek') {
+        return t.request;
+    } else if (categoryLabel === 'complaint' || categoryLabel === 'şikayet') {
+        return t.complaint;
+    } else if (categoryLabel === 'fault_repair' || categoryLabel === 'arıza/tamir') {
+        return t.faultRepair;
+    } else if (categoryLabel === 'maintenance' || categoryLabel === 'bakım') {
+        return t.maintenance;
+    } else if (categoryLabel === 'cleaning' || categoryLabel === 'temizlik') {
+        return t.cleaning;
+    } else if (categoryLabel === 'security' || categoryLabel === 'güvenlik') {
+        return t.security;
+    } else if (categoryLabel === 'other' || categoryLabel === 'diğer') {
+        return t.other;
+    }
+    
+    return category.label; // Return original if no match
+};
+
+/**
+ * Helper function to translate backend priority values
+ */
+const getTranslatedPriority = (priority: any, t: any) => {
+    if (!priority || !priority.label) return '';
+    
+    const priorityLabel = priority.label.toLowerCase();
+    
+    // Handle both enum values and direct Turkish strings
+    if (priorityLabel === 'low' || priorityLabel === 'düşük') {
+        return t.low;
+    } else if (priorityLabel === 'medium' || priorityLabel === 'orta') {
+        return t.medium;
+    } else if (priorityLabel === 'high' || priorityLabel === 'yüksek') {
+        return t.high;
+    } else if (priorityLabel === 'urgent' || priorityLabel === 'acil') {
+        return t.urgent;
+    } else if (priorityLabel === 'emergency' || priorityLabel === 'acil') {
+        return t.emergency;
+    }
+    
+    return priority.label; // Return original if no match
 };
 
 /**
@@ -90,10 +321,16 @@ export const getTableColumns = (
     },
     ActionMenuComponent?: React.ComponentType<{ row: ServiceRequest }>
 ) => {
+    // Dil tercihini localStorage'dan al
+    const currentLanguage = typeof window !== 'undefined' ? localStorage.getItem('preferredLanguage') || 'tr' : 'tr';
+    
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations] || translations.tr;
+
     const columns = [
         {
             id: 'title',
-            header: 'Başlık',
+            header: t.title,
             accessor: 'title',
             sortable: true,
             render: (value: string, row: ServiceRequest) => (
@@ -103,7 +340,7 @@ export const getTableColumns = (
                     </p>
                     {row.isUrgent && (
                         <Badge variant="solid" color="red" className="text-xs mt-1">
-                            Acil
+                            {t.urgent}
                         </Badge>
                     )}
                 </div>
@@ -111,7 +348,7 @@ export const getTableColumns = (
         },
         {
             id: 'apartment',
-            header: 'Daire',
+            header: t.apartment,
             accessor: 'apartment',
             render: (value: any, row: ServiceRequest) => (
                 <div className="text-sm">
@@ -119,14 +356,14 @@ export const getTableColumns = (
                         {row.apartment.number}
                     </p>
                     <p className="text-text-light-muted dark:text-text-muted">
-                        {row.apartment.block} Blok
+                        {row.apartment.block} {t.block}
                     </p>
                 </div>
             ),
         },
         {
             id: 'category',
-            header: 'Kategori',
+            header: t.category,
             accessor: 'category',
             render: (value: any, row: ServiceRequest) => (
                 <Badge
@@ -135,13 +372,13 @@ export const getTableColumns = (
                     className="text-xs"
                 >
                     <span className="mr-1">{row.category.icon}</span>
-                    {row.category.label}
+                    {getTranslatedCategory(row.category, t)}
                 </Badge>
             ),
         },
         {
             id: 'priority',
-            header: 'Öncelik',
+            header: t.priority,
             accessor: 'priority',
             sortable: true,
             render: (value: any, row: ServiceRequest) => (
@@ -155,13 +392,13 @@ export const getTableColumns = (
                     className="text-xs"
                 >
                     <span className="mr-1">{row.priority.icon}</span>
-                    {row.priority.label}
+                    {getTranslatedPriority(row.priority, t)}
                 </Badge>
             ),
         },
         {
             id: 'status',
-            header: 'Durum',
+            header: t.status,
             accessor: 'status',
             sortable: true,
             render: (value: any, row: ServiceRequest) => {
@@ -174,7 +411,7 @@ export const getTableColumns = (
                             color="secondary"
                             className="text-xs"
                         >
-                            {row.status.label}
+                            {getTranslatedStatus(row.status, t)}
                         </Badge>
                     </div>
                 );
@@ -182,7 +419,7 @@ export const getTableColumns = (
         },
         {
             id: 'assignee',
-            header: 'Teknisyen',
+            header: t.technician,
             accessor: 'assignee',
             render: (value: any, row: ServiceRequest) => (
                 row.assignee ? (
@@ -201,14 +438,14 @@ export const getTableColumns = (
                     </div>
                 ) : (
                     <Badge variant="soft" color="secondary" className="text-xs">
-                        Atanmamış
+                        {t.unassigned}
                     </Badge>
                 )
             ),
         },
         {
             id: 'createdDate',
-            header: 'Oluşturulma',
+            header: t.createdDate,
             accessor: 'createdDate',
             sortable: true,
             render: (value: string, row: ServiceRequest) => (
@@ -219,7 +456,7 @@ export const getTableColumns = (
         },
         {
             id: 'dueDate',
-            header: 'Vade',
+            header: t.dueDate,
             accessor: 'dueDate',
             sortable: true,
             render: (value: string, row: ServiceRequest) => (
@@ -229,7 +466,7 @@ export const getTableColumns = (
                     </p>
                     {row.isOverdue && (
                         <Badge variant="soft" color="red" className="text-xs mt-1">
-                            Gecikmiş
+                            {t.overdue}
                         </Badge>
                     )}
                 </div>

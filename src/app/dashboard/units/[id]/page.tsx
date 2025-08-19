@@ -41,14 +41,253 @@ import {
   FileText,
   UserX
 } from "lucide-react";
+
 import Modal from "@/app/components/ui/Modal";
 import { UpdateBasicInfoDto, UpdateOwnerInfoDto, UpdateTenantInfoDto } from "@/services/types/unit-detail.types";
 import { PropertyService } from "@/services/property.service";
 import { userService } from "@/services/user.service";
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    title: 'Konut Detayı',
+    welcome: 'Konut detay sayfası',
+    home: 'Ana Sayfa',
+    units: 'Konutlar',
+    unitDetail: 'Konut Detayı',
+    back: 'Geri Dön',
+    loading: 'Yükleniyor...',
+    error: 'Hata',
+    unitNotFound: 'Konut bulunamadı',
+    unitDetailError: 'Konut detayı yüklenemedi.',
+    backToList: 'Konut Listesine Dön',
+    block: 'Blok',
+    floor: 'Kat',
+    area: 'Alan',
+    status: 'Durum',
+    available: 'Müsait',
+    occupied: 'Dolu',
+    residents: 'Sakinler',
+    financial: 'Finansal',
+    consumption: 'Tüketim',
+    maintenance: 'Bakım',
+    visitors: 'Ziyaretçiler',
+    documents: 'Belgeler',
+    financialDetails: 'Finansal Detaylar',
+    financialDetailsDesc: 'Bu konut için finansal detaylar burada görüntülenecek.',
+    consumptionData: 'Tüketim Verileri',
+    consumptionDataDesc: 'Elektrik, su ve gaz tüketim verileri burada görüntülenecek.',
+    maintenanceHistory: 'Bakım Geçmişi',
+    maintenanceHistoryDesc: 'Bu konut için bakım kayıtları burada görüntülenecek.',
+    visitorHistory: 'Ziyaretçi Geçmişi',
+    visitorHistoryDesc: 'Bu konut için ziyaretçi kayıtları burada görüntülenecek.',
+    documentsDesc: 'Bu konut için belgeler burada görüntülenecek.',
+    financialStatus: 'Finansal Durum',
+    totalDebt: 'Toplam Borç',
+    notes: 'Notlar',
+    removeTenant: 'Kiracıyı Kaldır',
+    removeTenantConfirm: 'Kiracıyı kaldırmak istediğinizden emin misiniz?',
+    removeTenantWarning: 'Bu işlem geri alınamaz. Kiracı bu konuttan kaldırılacak ve konut durumu "Uygun" olarak değiştirilecektir.',
+    tenant: 'Kiracı',
+    removeOwner: 'Maliki Kaldır',
+    removeOwnerConfirm: 'Maliki kaldırmak istediğinizden emin misiniz?',
+    removeOwnerWarning: 'Bu işlem geri alınamaz. Malik bu konuttan kaldırılacaktır.',
+    owner: 'Malik',
+    cancel: 'İptal',
+    removing: 'Kaldırılıyor...',
+    removeTenantAction: 'Kiracıyı Kaldır',
+    removeOwnerAction: 'Maliki Kaldır',
+    tenantRemovalSuccess: 'Kiracı kaldırma işlemi tamamlandı!',
+    ownerRemovalSuccess: 'Malik kaldırma işlemi tamamlandı!',
+    tenantRemovalError: 'Kiracı kaldırılırken bir hata oluştu',
+    ownerRemovalError: 'Malik kaldırılırken bir hata oluştu',
+    tenantIdNotFound: 'Kiracı ID\'si bulunamadı. Backend\'de tenantId field\'ı eksik olabilir.',
+    ownerIdNotFound: 'Malik ID\'si bulunamadı. Backend\'de ownerId field\'ı eksik olabilir.',
+    activeApprovedResidentsFound: 'aktif onaylı sakin bulundu.',
+    activeApprovedResidentsError: 'Aktif onaylı sakinler yüklenemedi',
+    unknownError: 'Bilinmeyen hata',
+    updateSuccess: 'başarıyla güncellendi!',
+    updateError: 'Güncelleme sırasında bir hata oluştu',
+    updateFailed: 'Güncelleme başarısız',
+    basicInfoUpdateSuccess: 'Konut bilgileri başarıyla güncellendi!',
+    ownerInfoUpdateSuccess: 'Malik bilgileri başarıyla güncellendi!',
+    tenantInfoUpdateSuccess: 'Kiracı bilgileri başarıyla güncellendi!',
+    ownerInfoUpdateError: 'Malik bilgileri güncellenemedi: Malik kimliği bulunamadı',
+    tenantInfoUpdateError: 'Kiracı bilgileri güncellenemedi: Kiracı kimliği bulunamadı',
+    noChanges: 'Değişiklik yok',
+    apiError: 'API hatası',
+    propertyType: {
+      RESIDENCE: 'Daire',
+      VILLA: 'Villa',
+      COMMERCIAL: 'Ticari',
+      OFFICE: 'Ofis'
+    }
+  },
+  en: {
+    title: 'Unit Detail',
+    welcome: 'Unit detail page',
+    home: 'Home',
+    units: 'Units',
+    unitDetail: 'Unit Detail',
+    back: 'Go Back',
+    loading: 'Loading...',
+    error: 'Error',
+    unitNotFound: 'Unit not found',
+    unitDetailError: 'Unit detail could not be loaded.',
+    backToList: 'Back to Unit List',
+    block: 'Block',
+    floor: 'Floor',
+    area: 'Area',
+    status: 'Status',
+    available: 'Available',
+    occupied: 'Occupied',
+    residents: 'Residents',
+    financial: 'Financial',
+    consumption: 'Consumption',
+    maintenance: 'Maintenance',
+    visitors: 'Visitors',
+    documents: 'Documents',
+    financialDetails: 'Financial Details',
+    financialDetailsDesc: 'Financial details for this unit will be displayed here.',
+    consumptionData: 'Consumption Data',
+    consumptionDataDesc: 'Electricity, water and gas consumption data will be displayed here.',
+    maintenanceHistory: 'Maintenance History',
+    maintenanceHistoryDesc: 'Maintenance records for this unit will be displayed here.',
+    visitorHistory: 'Visitor History',
+    visitorHistoryDesc: 'Visitor records for this unit will be displayed here.',
+    documentsDesc: 'Documents for this unit will be displayed here.',
+    financialStatus: 'Financial Status',
+    totalDebt: 'Total Debt',
+    notes: 'Notes',
+    removeTenant: 'Remove Tenant',
+    removeTenantConfirm: 'Are you sure you want to remove the tenant?',
+    removeTenantWarning: 'This action cannot be undone. The tenant will be removed from this unit and the unit status will be changed to "Available".',
+    tenant: 'Tenant',
+    removeOwner: 'Remove Owner',
+    removeOwnerConfirm: 'Are you sure you want to remove the owner?',
+    removeOwnerWarning: 'This action cannot be undone. The owner will be removed from this unit.',
+    owner: 'Owner',
+    cancel: 'Cancel',
+    removing: 'Removing...',
+    removeTenantAction: 'Remove Tenant',
+    removeOwnerAction: 'Remove Owner',
+    tenantRemovalSuccess: 'Tenant removal completed!',
+    ownerRemovalSuccess: 'Owner removal completed!',
+    tenantRemovalError: 'An error occurred while removing the tenant',
+    ownerRemovalError: 'An error occurred while removing the owner',
+    tenantIdNotFound: 'Tenant ID not found. The tenantId field may be missing in the backend.',
+    ownerIdNotFound: 'Owner ID not found. The ownerId field may be missing in the backend.',
+    activeApprovedResidentsFound: 'active approved residents found.',
+    activeApprovedResidentsError: 'Active approved residents could not be loaded',
+    unknownError: 'Unknown error',
+    updateSuccess: 'updated successfully!',
+    updateError: 'An error occurred during update',
+    updateFailed: 'Update failed',
+    basicInfoUpdateSuccess: 'Unit information updated successfully!',
+    ownerInfoUpdateSuccess: 'Owner information updated successfully!',
+    tenantInfoUpdateSuccess: 'Tenant information updated successfully!',
+    ownerInfoUpdateError: 'Owner information could not be updated: Owner ID not found',
+    tenantInfoUpdateError: 'Tenant information could not be updated: Tenant ID not found',
+    noChanges: 'No changes',
+    apiError: 'API error',
+    propertyType: {
+      RESIDENCE: 'Residence',
+      VILLA: 'Villa',
+      COMMERCIAL: 'Commercial',
+      OFFICE: 'Office'
+    }
+  },
+  ar: {
+    title: 'تفاصيل الوحدة',
+    welcome: 'صفحة تفاصيل الوحدة',
+    home: 'الرئيسية',
+    units: 'الوحدات',
+    unitDetail: 'تفاصيل الوحدة',
+    back: 'العودة',
+    loading: 'جاري التحميل...',
+    error: 'خطأ',
+    unitNotFound: 'الوحدة غير موجودة',
+    unitDetailError: 'لا يمكن تحميل تفاصيل الوحدة.',
+    backToList: 'العودة إلى قائمة الوحدات',
+    block: 'كتلة',
+    floor: 'طابق',
+    area: 'مساحة',
+    status: 'الحالة',
+    available: 'متاح',
+    occupied: 'مشغول',
+    residents: 'المقيمون',
+    financial: 'مالي',
+    consumption: 'الاستهلاك',
+    maintenance: 'الصيانة',
+    visitors: 'الزوار',
+    documents: 'المستندات',
+    financialDetails: 'التفاصيل المالية',
+    financialDetailsDesc: 'ستعرض التفاصيل المالية لهذه الوحدة هنا.',
+    consumptionData: 'بيانات الاستهلاك',
+    consumptionDataDesc: 'ستعرض بيانات استهلاك الكهرباء والماء والغاز هنا.',
+    maintenanceHistory: 'تاريخ الصيانة',
+    maintenanceHistoryDesc: 'ستعرض سجلات الصيانة لهذه الوحدة هنا.',
+    visitorHistory: 'تاريخ الزوار',
+    visitorHistoryDesc: 'ستعرض سجلات الزوار لهذه الوحدة هنا.',
+    documentsDesc: 'ستعرض المستندات لهذه الوحدة هنا.',
+    financialStatus: 'الحالة المالية',
+    totalDebt: 'إجمالي الدين',
+    notes: 'ملاحظات',
+    removeTenant: 'إزالة المستأجر',
+    removeTenantConfirm: 'هل أنت متأكد من إزالة المستأجر؟',
+    removeTenantWarning: 'لا يمكن التراجع عن هذا الإجراء. سيتم إزالة المستأجر من هذه الوحدة وتغيير حالة الوحدة إلى "متاح".',
+    tenant: 'المستأجر',
+    removeOwner: 'إزالة المالك',
+    removeOwnerConfirm: 'هل أنت متأكد من إزالة المالك؟',
+    removeOwnerWarning: 'لا يمكن التراجع عن هذا الإجراء. سيتم إزالة المالك من هذه الوحدة.',
+    owner: 'المالك',
+    cancel: 'إلغاء',
+    removing: 'جاري الإزالة...',
+    removeTenantAction: 'إزالة المستأجر',
+    removeOwnerAction: 'إزالة المالك',
+    tenantRemovalSuccess: 'تم إكمال إزالة المستأجر!',
+    ownerRemovalSuccess: 'تم إكمال إزالة المالك!',
+    tenantRemovalError: 'حدث خطأ أثناء إزالة المستأجر',
+    ownerRemovalError: 'حدث خطأ أثناء إزالة المالك',
+    tenantIdNotFound: 'معرف المستأجر غير موجود. قد يكون حقل tenantId مفقود في الخلفية.',
+    ownerIdNotFound: 'معرف المالك غير موجود. قد يكون حقل ownerId مفقود في الخلفية.',
+    activeApprovedResidentsFound: 'مقيم نشط معتمد تم العثور عليه.',
+    activeApprovedResidentsError: 'لا يمكن تحميل المقيمين النشطين المعتمدين',
+    unknownError: 'خطأ غير معروف',
+    updateSuccess: 'تم التحديث بنجاح!',
+    updateError: 'حدث خطأ أثناء التحديث',
+    updateFailed: 'فشل التحديث',
+    basicInfoUpdateSuccess: 'تم تحديث معلومات الوحدة بنجاح!',
+    ownerInfoUpdateSuccess: 'تم تحديث معلومات المالك بنجاح!',
+    tenantInfoUpdateSuccess: 'تم تحديث معلومات المستأجر بنجاح!',
+    ownerInfoUpdateError: 'لا يمكن تحديث معلومات المالك: معرف المالك غير موجود',
+    tenantInfoUpdateError: 'لا يمكن تحديث معلومات المستأجر: معرف المستأجر غير موجود',
+    noChanges: 'لا توجد تغييرات',
+    apiError: 'خطأ في API',
+    propertyType: {
+      RESIDENCE: 'سكني',
+      VILLA: 'فيلا',
+      COMMERCIAL: 'تجاري',
+      OFFICE: 'مكتب'
+    }
+  }
+};
+
 export default function UnitDetailPage() {
   const params = useParams();
   const unitId = params.id as string;
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+  // Dil tercihini localStorage'dan al
+  React.useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
   
   // DEBUG: Log params and unitId
   console.log('📄 UnitDetailPage - params:', params);
@@ -107,23 +346,17 @@ export default function UnitDetailPage() {
     updateNotes
   } = useUnitDetail(unitId);
 
-  // Helper function to get property type label in Turkish
+  // Helper function to get property type label
   const getPropertyTypeLabel = (type: string) => {
-    const typeMap: Record<string, string> = {
-      'RESIDENCE': 'Daire',
-      'VILLA': 'Villa', 
-      'COMMERCIAL': 'Ticari',
-      'OFFICE': 'Ofis'
-    };
-    return typeMap[type] || type;
+    return t.propertyType[type as keyof typeof t.propertyType] || type;
   };
 
   // Helper function to get status info
   const getStatusInfo = (status: string) => {
     if (status === 'occupied') {
-      return { label: 'Dolu', color: 'red' as const };
+      return { label: t.occupied, color: 'red' as const };
     } else {
-      return { label: 'Müsait', color: 'success' as const };
+      return { label: t.available, color: 'success' as const };
     }
   };
 
@@ -163,11 +396,11 @@ export default function UnitDetailPage() {
         console.log('✅ Active approved residents response:', response);
         setActiveApprovedResidents(response.data || []);
         
-        toast.success(`✅ ${response.data?.length || 0} aktif onaylı sakin bulundu.`);
+        toast.success(`✅ ${response.data?.length || 0} ${t.activeApprovedResidentsFound}`);
       } catch (error: any) {
         console.error('❌ Failed to fetch active approved residents:', error);
-        setResidentsError(error.message || 'Aktif onaylı sakinler yüklenemedi');
-        toast.error(`❌ Aktif onaylı sakinler yüklenemedi: ${error.message || 'Bilinmeyen hata'}`);
+        setResidentsError(error.message || t.activeApprovedResidentsError);
+        toast.error(`❌ ${t.activeApprovedResidentsError}: ${error.message || t.unknownError}`);
       } finally {
         setResidentsLoading(false);
       }
@@ -233,7 +466,7 @@ export default function UnitDetailPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Güncelleme başarısız');
+        throw new Error(errorData.message || t.updateFailed);
       }
 
       const result = await response.json();
@@ -242,11 +475,11 @@ export default function UnitDetailPage() {
       // Refresh unit data
       await refetch();
       
-      toast.success('Konut bilgileri başarıyla güncellendi!');
+      toast.success(t.basicInfoUpdateSuccess);
     } catch (error: any) {
-      console.error('Error updating basic info:', error);
-      toast.error(error.message || 'Güncelleme sırasında bir hata oluştu');
-      throw error; // Re-throw to handle in component
+              console.error('Error updating basic info:', error);
+        toast.error(error.message || t.updateError);
+        throw error; // Re-throw to handle in component
     }
   };
 
@@ -306,7 +539,7 @@ export default function UnitDetailPage() {
         // Check if owner exists in the property data
         if (!propertyData || !propertyData.owner || !propertyData.owner.id) {
           console.error('Property owner ID not found');
-          toast.error('Malik bilgileri güncellenemedi: Malik kimliği bulunamadı');
+          toast.error(t.ownerInfoUpdateError);
           return;
         }
         
@@ -330,7 +563,7 @@ export default function UnitDetailPage() {
         // Refresh unit data after successful update
         await refetch();
         
-        toast.success('Malik bilgileri başarıyla güncellendi!');
+        toast.success(t.ownerInfoUpdateSuccess);
         return;
       } catch (propertyError) {
         console.error('Error updating property owner info:', propertyError);
@@ -346,7 +579,7 @@ export default function UnitDetailPage() {
         // Check if owner exists in the property data
         if (!propertyData || !propertyData.owner || !propertyData.owner.id) {
           console.error('Property owner ID not found for fallback');
-          toast.error('Malik bilgileri güncellenemedi: Malik kimliği bulunamadı');
+          toast.error(t.ownerInfoUpdateError);
           return;
         }
         
@@ -362,14 +595,14 @@ export default function UnitDetailPage() {
           // Refresh unit data after successful update
           await refetch();
           
-          toast.success('Malik bilgileri başarıyla güncellendi!');
+          toast.success(t.ownerInfoUpdateSuccess);
         } else {
           console.warn('Could not update owner info: no changes to make');
-          toast.error('Malik bilgileri güncellenemedi: Değişiklik yok');
+          toast.error(`${t.ownerInfoUpdateError}: ${t.noChanges}`);
         }
       } catch (residentError) {
         console.error('Error updating resident with API owner ID:', residentError);
-        toast.error('Malik bilgileri güncellenemedi: API hatası');
+        toast.error(`${t.ownerInfoUpdateError}: ${t.apiError}`);
       }
     } catch (error: any) {
       console.error('Error updating owner info:', error);
@@ -433,7 +666,7 @@ export default function UnitDetailPage() {
         // Check if tenant exists in the property data
         if (!propertyData || !propertyData.tenant || !propertyData.tenant.id) {
           console.error('Property tenant ID not found');
-          toast.error('Kiracı bilgileri güncellenemedi: Kiracı kimliği bulunamadı');
+          toast.error(t.tenantInfoUpdateError);
           return;
         }
         
@@ -449,14 +682,14 @@ export default function UnitDetailPage() {
           // Refresh unit data after successful update
           await refetch();
           
-          toast.success('Kiracı bilgileri başarıyla güncellendi!');
+          toast.success(t.tenantInfoUpdateSuccess);
         } else {
           console.warn('Could not update tenant info: no changes to make');
-          toast.error('Kiracı bilgileri güncellenemedi: Değişiklik yok');
+          toast.error(`${t.tenantInfoUpdateError}: ${t.noChanges}`);
         }
       } catch (error) {
         console.error('Error updating tenant with API tenant ID:', error);
-        toast.error('Kiracı bilgileri güncellenemedi: API hatası');
+        toast.error(`${t.tenantInfoUpdateError}: ${t.apiError}`);
       }
     } catch (error: any) {
       console.error('Error updating tenant info:', error);
@@ -532,7 +765,7 @@ export default function UnitDetailPage() {
     }
     
     if (!tenantId) {
-      toast.error('Kiracı ID\'si bulunamadı. Backend\'de tenantId field\'ı eksik olabilir.');
+      toast.error(t.tenantIdNotFound);
       return;
     }
     
@@ -580,7 +813,7 @@ export default function UnitDetailPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Kiracı kaldırma işlemi başarısız');
+        throw new Error(errorData.message || t.tenantRemovalError);
       }
 
       const result = await response.json();
@@ -618,11 +851,11 @@ export default function UnitDetailPage() {
         await refetch();
       }, 3000);
       
-      toast.success('Kiracı kaldırma işlemi tamamlandı!');
+      toast.success(t.tenantRemovalSuccess);
       setShowRemoveTenantModal(false);
     } catch (error: any) {
       console.error('Error removing tenant:', error);
-      toast.error(error.message || 'Kiracı kaldırılırken bir hata oluştu');
+      toast.error(error.message || t.tenantRemovalError);
     } finally {
       setRemovingTenant(false);
     }
@@ -693,7 +926,7 @@ export default function UnitDetailPage() {
     }
     
     if (!ownerId) {
-      toast.error('Malik ID\'si bulunamadı. Backend\'de ownerId field\'ı eksik olabilir.');
+      toast.error(t.ownerIdNotFound);
       return;
     }
     
@@ -726,20 +959,20 @@ export default function UnitDetailPage() {
         }
       }, 1000);
       
-      toast.success('Malik kaldırma işlemi tamamlandı!');
+      toast.success(t.ownerRemovalSuccess);
       setShowRemoveOwnerModal(false);
     } catch (error: any) {
       console.error('Error removing owner:', error);
-      toast.error(error.message || 'Malik kaldırılırken bir hata oluştu');
+      toast.error(error.message || t.ownerRemovalError);
     } finally {
       setRemovingOwner(false);
     }
   };
 
   const breadcrumbItems = [
-    { label: "Ana Sayfa", href: "/dashboard" },
-    { label: "Konutlar", href: "/dashboard/units" },
-    { label: unit?.apartmentNumber || "Konut Detayı", active: true },
+    { label: t.home, href: "/dashboard" },
+    { label: t.units, href: "/dashboard/units" },
+    { label: unit?.apartmentNumber || t.unitDetail, active: true },
   ];
 
   // Helper functions
@@ -774,7 +1007,7 @@ export default function UnitDetailPage() {
         <div className="min-h-screen bg-background-primary">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <div className="lg:ml-72">
-            <DashboardHeader title="Konut Detayı" breadcrumbItems={breadcrumbItems} />
+            <DashboardHeader title={t.title} breadcrumbItems={breadcrumbItems} />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="animate-pulse">
                 <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -796,19 +1029,19 @@ export default function UnitDetailPage() {
         <div className="min-h-screen bg-background-primary">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <div className="lg:ml-72">
-            <DashboardHeader title="Hata" breadcrumbItems={breadcrumbItems} />
+            <DashboardHeader title={t.error} breadcrumbItems={breadcrumbItems} />
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <Card className="text-center">
                 <div className="p-8">
                   <AlertCircle className="h-12 w-12 text-primary-red mx-auto mb-4" />
                   <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-                    Konut bulunamadı
+                    {t.unitNotFound}
                   </h2>
                   <p className="text-text-light-secondary dark:text-text-secondary mb-6">
-                    {error || "Konut detayı yüklenemedi."}
+                    {error || t.unitDetailError}
                   </p>
                   <Link href="/dashboard/units">
-                    <Button variant="primary">Konut Listesine Dön</Button>
+                    <Button variant="primary">{t.backToList}</Button>
                   </Link>
                 </div>
               </Card>
@@ -832,7 +1065,7 @@ export default function UnitDetailPage() {
         <div className="lg:ml-72">
           {/* Header */}
           <DashboardHeader
-            title={unit?.apartmentNumber || 'Konut Detayı'}
+            title={unit?.apartmentNumber || t.title}
             breadcrumbItems={breadcrumbItems}
           />
 
@@ -843,13 +1076,13 @@ export default function UnitDetailPage() {
               <div className="flex items-center gap-4">
                 <Link href="/dashboard/units">
                   <Button variant="ghost" icon={ArrowLeft}>
-                    Geri Dön
+                    {t.back}
                   </Button>
                 </Link>
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                      {unit?.apartmentNumber || 'Yükleniyor...'}
+                      {unit?.apartmentNumber || t.loading}
                     </h1>
                     {unit && (
                       <>
@@ -863,7 +1096,7 @@ export default function UnitDetailPage() {
                     )}
                   </div>
                   <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                    {unit?.block} Blok • {unit?.floor}. Kat • {unit?.area} m²
+                    {unit?.block} {t.block} • {unit?.floor}. {t.floor} • {unit?.area} m²
                   </p>
                 </div>
               </div>
@@ -908,25 +1141,25 @@ export default function UnitDetailPage() {
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <p className="text-text-light-muted dark:text-text-muted">Blok</p>
+                          <p className="text-text-light-muted dark:text-text-muted">{t.block}</p>
                           <p className="font-medium text-text-on-light dark:text-text-on-dark">
                             {unit?.block}
                           </p>
                         </div>
                         <div>
-                          <p className="text-text-light-muted dark:text-text-muted">Kat</p>
+                          <p className="text-text-light-muted dark:text-text-muted">{t.floor}</p>
                           <p className="font-medium text-text-on-light dark:text-text-on-dark">
                             {unit?.floor}
                           </p>
                         </div>
                         <div>
-                          <p className="text-text-light-muted dark:text-text-muted">Alan</p>
+                          <p className="text-text-light-muted dark:text-text-muted">{t.area}</p>
                           <p className="font-medium text-text-on-light dark:text-text-on-dark">
                             {unit?.area} m²
                           </p>
                         </div>
                         <div>
-                          <p className="text-text-light-muted dark:text-text-muted">Durum</p>
+                          <p className="text-text-light-muted dark:text-text-muted">{t.status}</p>
                           <Badge variant="soft" color={getStatusInfo(unit?.status || '').color}>
                             {getStatusInfo(unit?.status || '').label}
                           </Badge>
@@ -952,12 +1185,12 @@ export default function UnitDetailPage() {
                     <div className="border-b border-gray-200 dark:border-gray-700 px-6 pt-6">
                       <nav className="flex space-x-4" aria-label="Tabs">
                         {[
-                          { label: "Sakinler", key: "residents", icon: Users },
-                          { label: "Finansal", key: "financial", icon: DollarSign },
-                          { label: "Tüketim", key: "consumption", icon: Zap },
-                          { label: "Bakım", key: "maintenance", icon: Wrench },
-                          { label: "Ziyaretçiler", key: "visitors", icon: UserCheck },
-                          { label: "Belgeler", key: "documents", icon: FileText }
+                          { label: t.residents, key: "residents", icon: Users },
+                          { label: t.financial, key: "financial", icon: DollarSign },
+                          { label: t.consumption, key: "consumption", icon: Zap },
+                          { label: t.maintenance, key: "maintenance", icon: Wrench },
+                          { label: t.visitors, key: "visitors", icon: UserCheck },
+                          { label: t.documents, key: "documents", icon: FileText }
                         ].map((tab) => (
                           <button
                             key={tab.key}
@@ -988,10 +1221,10 @@ export default function UnitDetailPage() {
                         <div className="text-center py-8">
                           <DollarSign className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
                           <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Finansal Detaylar
+                            {t.financialDetails}
                           </h3>
                           <p className="text-sm text-text-light-muted dark:text-text-muted">
-                            Bu konut için finansal detaylar burada görüntülenecek.
+                            {t.financialDetailsDesc}
                           </p>
                         </div>
                       )}
@@ -999,10 +1232,10 @@ export default function UnitDetailPage() {
                         <div className="text-center py-8">
                           <Zap className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
                           <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Tüketim Verileri
+                            {t.consumptionData}
                           </h3>
                           <p className="text-sm text-text-light-muted dark:text-text-muted">
-                            Elektrik, su ve gaz tüketim verileri burada görüntülenecek.
+                            {t.consumptionDataDesc}
                           </p>
                         </div>
                       )}
@@ -1010,10 +1243,10 @@ export default function UnitDetailPage() {
                         <div className="text-center py-8">
                           <Wrench className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
                           <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Bakım Geçmişi
+                            {t.maintenanceHistory}
                           </h3>
                           <p className="text-sm text-text-light-muted dark:text-text-muted">
-                            Bu konut için bakım kayıtları burada görüntülenecek.
+                            {t.maintenanceHistoryDesc}
                           </p>
                         </div>
                       )}
@@ -1021,10 +1254,10 @@ export default function UnitDetailPage() {
                         <div className="text-center py-8">
                           <UserCheck className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
                           <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Ziyaretçi Geçmişi
+                            {t.visitorHistory}
                           </h3>
                           <p className="text-sm text-text-light-muted dark:text-text-muted">
-                            Bu konut için ziyaretçi kayıtları burada görüntülenecek.
+                            {t.visitorHistoryDesc}
                           </p>
                         </div>
                       )}
@@ -1032,10 +1265,10 @@ export default function UnitDetailPage() {
                         <div className="text-center py-8">
                           <FileText className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
                           <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                            Belgeler
+                            {t.documents}
                           </h3>
                           <p className="text-sm text-text-light-muted dark:text-text-muted">
-                            Bu konut için belgeler burada görüntülenecek.
+                            {t.documentsDesc}
                           </p>
                         </div>
                       )}
@@ -1077,11 +1310,11 @@ export default function UnitDetailPage() {
                     <div className="p-6">
                       <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                         <DollarSign className="h-5 w-5 text-primary-gold" />
-                        Finansal Durum
+                        {t.financialStatus}
                       </h3>
                       <div className="space-y-4">
                         <div className="bg-background-light-soft dark:bg-background-soft rounded-lg p-4">
-                          <p className="text-sm text-text-light-muted dark:text-text-muted">Toplam Borç</p>
+                          <p className="text-sm text-text-light-muted dark:text-text-muted">{t.totalDebt}</p>
                           {debtLoading ? (
                             <div className="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
                           ) : (
@@ -1101,7 +1334,7 @@ export default function UnitDetailPage() {
                     <div className="p-6">
                       <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                         <FileText className="h-5 w-5 text-primary-gold" />
-                        Notlar
+                        {t.notes}
                       </h3>
                       <p className="text-sm text-text-light-secondary dark:text-text-secondary">
                         {unit.notes.data.generalNotes.value}
@@ -1130,7 +1363,7 @@ export default function UnitDetailPage() {
       <Modal
         isOpen={showRemoveTenantModal}
         onClose={() => setShowRemoveTenantModal(false)}
-        title="Kiracıyı Kaldır"
+        title={t.removeTenant}
         icon={UserX}
         size="md"
       >
@@ -1141,15 +1374,15 @@ export default function UnitDetailPage() {
             </div>
             <div>
               <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                Kiracıyı kaldırmak istediğinizden emin misiniz?
+                {t.removeTenantConfirm}
               </h3>
               <p className="mt-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                Bu işlem geri alınamaz. Kiracı bu konuttan kaldırılacak ve konut durumu "Uygun" olarak değiştirilecektir.
+                {t.removeTenantWarning}
               </p>
               {unit?.tenantInfo?.data?.tenantName?.value && (
                 <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-sm">
-                    <span className="font-medium text-text-on-light dark:text-text-on-dark">Kiracı: </span>
+                    <span className="font-medium text-text-on-light dark:text-text-on-dark">{t.tenant}: </span>
                     <span className="text-text-light-secondary dark:text-text-secondary">
                       {unit.tenantInfo.data.tenantName.value}
                     </span>
@@ -1166,7 +1399,7 @@ export default function UnitDetailPage() {
             onClick={() => setShowRemoveTenantModal(false)}
             disabled={removingTenant}
           >
-            İptal
+            {t.cancel}
           </Button>
           <Button
             variant="danger"
@@ -1175,7 +1408,7 @@ export default function UnitDetailPage() {
             disabled={removingTenant}
             icon={UserX}
           >
-            {removingTenant ? 'Kaldırılıyor...' : 'Kiracıyı Kaldır'}
+            {removingTenant ? t.removing : t.removeTenantAction}
           </Button>
         </div>
       </Modal>
@@ -1184,7 +1417,7 @@ export default function UnitDetailPage() {
       <Modal
         isOpen={showRemoveOwnerModal}
         onClose={() => setShowRemoveOwnerModal(false)}
-        title="Maliki Kaldır"
+        title={t.removeOwner}
         icon={UserX}
         size="md"
       >
@@ -1195,15 +1428,15 @@ export default function UnitDetailPage() {
             </div>
             <div>
               <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                Maliki kaldırmak istediğinizden emin misiniz?
+                {t.removeOwnerConfirm}
               </h3>
               <p className="mt-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                Bu işlem geri alınamaz. Malik bu konuttan kaldırılacaktır.
+                {t.removeOwnerWarning}
               </p>
               {unit?.ownerInfo?.data?.fullName?.value && (
                 <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-sm">
-                    <span className="font-medium text-text-on-light dark:text-text-on-dark">Malik: </span>
+                    <span className="font-medium text-text-on-light dark:text-text-on-dark">{t.owner}: </span>
                     <span className="text-text-light-secondary dark:text-text-secondary">
                       {unit.ownerInfo.data.fullName.value}
                     </span>
@@ -1220,7 +1453,7 @@ export default function UnitDetailPage() {
             onClick={() => setShowRemoveOwnerModal(false)}
             disabled={removingOwner}
           >
-            İptal
+            {t.cancel}
           </Button>
           <Button
             variant="danger"
@@ -1229,7 +1462,7 @@ export default function UnitDetailPage() {
             disabled={removingOwner}
             icon={UserX}
           >
-            {removingOwner ? 'Kaldırılıyor...' : 'Maliki Kaldır'}
+            {removingOwner ? t.removing : t.removeOwnerAction}
           </Button>
         </div>
       </Modal>
@@ -1250,3 +1483,4 @@ export default function UnitDetailPage() {
     </ProtectedRoute>
   );
 }
+

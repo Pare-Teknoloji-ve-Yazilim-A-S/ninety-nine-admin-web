@@ -1,7 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button';
 import { Plus, RefreshCw, Wrench } from 'lucide-react';
 import { TicketSummary } from '../hooks/useTicketSummary';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles
+    serviceRequests: 'Hizmet Talepleri',
+    maintenanceAndFaultManagement: 'Bakım ve Arıza Yönetimi',
+    
+    // Summary labels
+    total: 'Toplam',
+    open: 'Açık',
+    inProgress: 'İşlemde',
+    resolved: 'Çözülen',
+    overdue: 'Gecikmiş',
+    
+    // Buttons
+    refresh: 'Yenile',
+    newRequest: 'Yeni Talep'
+  },
+  en: {
+    // Page titles
+    serviceRequests: 'Service Requests',
+    maintenanceAndFaultManagement: 'Maintenance and Fault Management',
+    
+    // Summary labels
+    total: 'Total',
+    open: 'Open',
+    inProgress: 'In Progress',
+    resolved: 'Resolved',
+    overdue: 'Overdue',
+    
+    // Buttons
+    refresh: 'Refresh',
+    newRequest: 'New Request'
+  },
+  ar: {
+    // Page titles
+    serviceRequests: 'طلبات الخدمة',
+    maintenanceAndFaultManagement: 'إدارة الصيانة والأعطال',
+    
+    // Summary labels
+    total: 'المجموع',
+    open: 'مفتوح',
+    inProgress: 'قيد التنفيذ',
+    resolved: 'تم الحل',
+    overdue: 'متأخر',
+    
+    // Buttons
+    refresh: 'تحديث',
+    newRequest: 'طلب جديد'
+  }
+};
 
 interface RequestsPageHeaderProps {
   summary: TicketSummary | null;
@@ -16,6 +68,18 @@ export default function RequestsPageHeader({
   onCreateRequest,
   loading = false
 }: RequestsPageHeaderProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       {/* Left side - Title and Summary */}
@@ -26,10 +90,10 @@ export default function RequestsPageHeader({
           </div>
           <div>
             <h1 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-              Hizmet Talepleri
+              {t.serviceRequests}
             </h1>
             <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-              Bakım ve Arıza Yönetimi
+              {t.maintenanceAndFaultManagement}
             </p>
           </div>
         </div>
@@ -38,28 +102,28 @@ export default function RequestsPageHeader({
         {summary && (
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <div>
-              <span className="text-text-light-muted dark:text-text-muted">Toplam: </span>
+              <span className="text-text-light-muted dark:text-text-muted">{t.total}: </span>
               <span className="font-semibold text-primary-gold">
                 {loading ? '...' : summary.totalTickets}
               </span>
             </div>
             <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
             <div>
-              <span className="text-text-light-muted dark:text-text-muted">Açık: </span>
+              <span className="text-text-light-muted dark:text-text-muted">{t.open}: </span>
               <span className="font-semibold text-semantic-info-600">
                 {loading ? '...' : summary.openTickets}
               </span>
             </div>
             <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
             <div>
-              <span className="text-text-light-muted dark:text-text-muted">İşlemde: </span>
+              <span className="text-text-light-muted dark:text-text-muted">{t.inProgress}: </span>
               <span className="font-semibold text-semantic-warning-600">
                 {loading ? '...' : summary.inProgressTickets}
               </span>
             </div>
             <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
             <div>
-              <span className="text-text-light-muted dark:text-text-muted">Çözülen: </span>
+              <span className="text-text-light-muted dark:text-text-muted">{t.resolved}: </span>
               <span className="font-semibold text-semantic-success-600">
                 {loading ? '...' : summary.resolvedTickets}
               </span>
@@ -68,7 +132,7 @@ export default function RequestsPageHeader({
               <>
                 <div className="w-1 h-1 bg-text-light-muted dark:bg-text-muted rounded-full"></div>
                 <div>
-                  <span className="text-text-light-muted dark:text-text-muted">Gecikmiş: </span>
+                  <span className="text-text-light-muted dark:text-text-muted">{t.overdue}: </span>
                   <span className="font-semibold text-primary-red">
                     {loading ? '...' : summary.overdueTickets}
                   </span>
@@ -89,7 +153,7 @@ export default function RequestsPageHeader({
           disabled={loading}
           isLoading={loading}
         >
-          Yenile
+          {t.refresh}
         </Button>
         <Button
           variant="primary"
@@ -98,7 +162,7 @@ export default function RequestsPageHeader({
           onClick={onCreateRequest}
           disabled={loading}
         >
-          Yeni Talep
+          {t.newRequest}
         </Button>
       </div>
     </div>

@@ -1,11 +1,76 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import { useToast } from '@/hooks/useToast';
 import { ToastContainer } from '@/app/components/ui/Toast';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles
+    pageTitle: 'Hizmet Talepleri',
+    activeRequests: 'Aktif Talepler',
+    
+    // Breadcrumb
+    home: 'Ana Sayfa',
+    serviceRequests: 'Hizmet Talepleri',
+    
+    // Actions
+    bulkAction: 'Toplu işlem',
+    bulkActionSuccess: 'işlemi {count} talep için gerçekleştirildi',
+    unknownAction: 'Bilinmeyen işlem',
+    
+    // Empty states
+    noRequestsYet: 'Henüz talep bulunmuyor',
+    
+    // Error messages
+    error: 'Hata'
+  },
+  en: {
+    // Page titles
+    pageTitle: 'Service Requests',
+    activeRequests: 'Active Requests',
+    
+    // Breadcrumb
+    home: 'Home',
+    serviceRequests: 'Service Requests',
+    
+    // Actions
+    bulkAction: 'Bulk action',
+    bulkActionSuccess: 'action completed for {count} requests',
+    unknownAction: 'Unknown action',
+    
+    // Empty states
+    noRequestsYet: 'No requests yet',
+    
+    // Error messages
+    error: 'Error'
+  },
+  ar: {
+    // Page titles
+    pageTitle: 'طلبات الخدمة',
+    activeRequests: 'الطلبات النشطة',
+    
+    // Breadcrumb
+    home: 'الرئيسية',
+    serviceRequests: 'طلبات الخدمة',
+    
+    // Actions
+    bulkAction: 'إجراء جماعي',
+    bulkActionSuccess: 'تم إكمال الإجراء لـ {count} طلب',
+    unknownAction: 'إجراء غير معروف',
+    
+    // Empty states
+    noRequestsYet: 'لا توجد طلبات بعد',
+    
+    // Error messages
+    error: 'خطأ'
+  }
+};
 
 // New modular components
 import RequestsPageHeader from './components/RequestsPageHeader';
@@ -42,6 +107,17 @@ export default function RequestsListPage() {
   });
   const [createTicketModal, setCreateTicketModal] = useState(false);
 
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
 
   // Main data hook
   const {
@@ -74,9 +150,9 @@ export default function RequestsListPage() {
 
   // Breadcrumb configuration
   const breadcrumbItems = [
-    { label: 'Ana Sayfa', href: '/dashboard' },
-    { label: 'Hizmet Talepleri', href: '/dashboard/requests' },
-    { label: 'Aktif Talepler', active: true }
+    { label: t.home, href: '/dashboard' },
+    { label: t.serviceRequests, href: '/dashboard/requests' },
+    { label: t.activeRequests, active: true }
   ];
 
   // Event Handlers
@@ -163,7 +239,7 @@ export default function RequestsListPage() {
   const handleBulkAction = (actionId: string) => {
     console.log('Bulk action:', actionId, 'for', selectedRequests.length, 'requests');
     // Handle bulk actions
-    toast.success('Toplu işlem', `${actionId} işlemi ${selectedRequests.length} talep için gerçekleştirildi`);
+    toast.success(t.bulkAction, t.bulkActionSuccess.replace('{count}', selectedRequests.length.toString()));
     setSelectedRequests([]);
   };
 
@@ -187,9 +263,14 @@ export default function RequestsListPage() {
         <div className="lg:ml-72">
           {/* Header */}
           <DashboardHeader
-            title="Hizmet Talepleri"
+            title={t.pageTitle}
             breadcrumbItems={breadcrumbItems}
           />
+
+          {/* Language Switcher */}
+          <div className="lg:ml-72 flex justify-end px-4 sm:px-6 lg:px-8 py-2">
+            <LanguageSwitcher />
+          </div>
 
           {/* Main Content */}
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -237,10 +318,10 @@ export default function RequestsListPage() {
             )}
 
             {/* Content Area */}
-            {error ? (
-              <div className="text-center py-8">
-                <p className="text-primary-red">{error}</p>
-              </div>
+                          {error ? (
+                <div className="text-center py-8">
+                  <p className="text-primary-red">{t.error}</p>
+                </div>
             ) : (
               <>
                 {viewMode === 'table' ? (
@@ -268,7 +349,7 @@ export default function RequestsListPage() {
                     onSortChange={(key: string, direction: 'asc' | 'desc') => {
                       console.log('Sort changed:', key, direction);
                     }}
-                    emptyStateMessage="Henüz talep bulunmuyor"
+                    emptyStateMessage={t.noRequestsYet}
                     className="mt-6"
                   />
                 ) : (

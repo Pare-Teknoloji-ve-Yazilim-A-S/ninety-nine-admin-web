@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import SearchBar from '@/app/components/ui/SearchBar';
@@ -7,6 +7,163 @@ import Badge from '@/app/components/ui/Badge';
 import Select from '@/app/components/ui/Select';
 import { RequestsFiltersBarProps } from '@/services/types/request-list.types';
 import { Filter, List, Grid3X3, X, Search } from 'lucide-react';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Search
+    searchPlaceholder: 'Talep ID, açıklama veya daire numarası ile ara...',
+    
+    // View toggle
+    table: 'Tablo',
+    grid: 'Kart',
+    
+    // Filter labels
+    category: 'Kategori',
+    priority: 'Öncelik',
+    status: 'Durum',
+    technician: 'Teknisyen',
+    
+    // Filter placeholders
+    allCategories: 'Tüm kategoriler',
+    allPriorities: 'Tüm öncelikler',
+    allStatuses: 'Tüm durumlar',
+    allTechnicians: 'Tüm teknisyenler',
+    
+    // Category options
+    plumbing: 'Su Tesisatı',
+    electrical: 'Elektrik',
+    heating: 'Isıtma',
+    cleaning: 'Temizlik',
+    security: 'Güvenlik',
+    other: 'Diğer',
+    
+    // Priority options
+    low: 'Düşük',
+    medium: 'Orta',
+    high: 'Yüksek',
+    urgent: 'Acil',
+    
+    // Status options
+    open: 'Açık',
+    inProgress: 'İşlemde',
+    waiting: 'Bekliyor',
+    resolved: 'Çözüldü',
+    closed: 'Kapalı',
+    
+    // Technician options
+    unassigned: 'Atanmamış',
+    tech1: 'Ahmet Yılmaz',
+    tech2: 'Mehmet Demir',
+    tech3: 'Ali Kaya',
+    
+    // Active filters
+    activeFilters: 'filtre aktif',
+    clearFilters: 'Filtreleri Temizle'
+  },
+  en: {
+    // Search
+    searchPlaceholder: 'Search by Request ID, description or apartment number...',
+    
+    // View toggle
+    table: 'Table',
+    grid: 'Grid',
+    
+    // Filter labels
+    category: 'Category',
+    priority: 'Priority',
+    status: 'Status',
+    technician: 'Technician',
+    
+    // Filter placeholders
+    allCategories: 'All categories',
+    allPriorities: 'All priorities',
+    allStatuses: 'All statuses',
+    allTechnicians: 'All technicians',
+    
+    // Category options
+    plumbing: 'Plumbing',
+    electrical: 'Electrical',
+    heating: 'Heating',
+    cleaning: 'Cleaning',
+    security: 'Security',
+    other: 'Other',
+    
+    // Priority options
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    urgent: 'Urgent',
+    
+    // Status options
+    open: 'Open',
+    inProgress: 'In Progress',
+    waiting: 'Waiting',
+    resolved: 'Resolved',
+    closed: 'Closed',
+    
+    // Technician options
+    unassigned: 'Unassigned',
+    tech1: 'Ahmet Yılmaz',
+    tech2: 'Mehmet Demir',
+    tech3: 'Ali Kaya',
+    
+    // Active filters
+    activeFilters: 'filters active',
+    clearFilters: 'Clear Filters'
+  },
+  ar: {
+    // Search
+    searchPlaceholder: 'البحث برقم الطلب أو الوصف أو رقم الشقة...',
+    
+    // View toggle
+    table: 'جدول',
+    grid: 'شبكة',
+    
+    // Filter labels
+    category: 'الفئة',
+    priority: 'الأولوية',
+    status: 'الحالة',
+    technician: 'الفني',
+    
+    // Filter placeholders
+    allCategories: 'جميع الفئات',
+    allPriorities: 'جميع الأولويات',
+    allStatuses: 'جميع الحالات',
+    allTechnicians: 'جميع الفنيين',
+    
+    // Category options
+    plumbing: 'السباكة',
+    electrical: 'الكهرباء',
+    heating: 'التدفئة',
+    cleaning: 'التنظيف',
+    security: 'الأمان',
+    other: 'أخرى',
+    
+    // Priority options
+    low: 'منخفض',
+    medium: 'متوسط',
+    high: 'عالي',
+    urgent: 'عاجل',
+    
+    // Status options
+    open: 'مفتوح',
+    inProgress: 'قيد التنفيذ',
+    waiting: 'في الانتظار',
+    resolved: 'تم الحل',
+    closed: 'مغلق',
+    
+    // Technician options
+    unassigned: 'غير محدد',
+    tech1: 'أحمد يلماز',
+    tech2: 'محمد ديمير',
+    tech3: 'علي كايا',
+    
+    // Active filters
+    activeFilters: 'مرشح نشط',
+    clearFilters: 'مسح المرشحات'
+  }
+};
 
 export default function RequestsFiltersBar({
   searchValue,
@@ -23,6 +180,18 @@ export default function RequestsFiltersBar({
   onApplyFilters?: (filters: any) => void;
   onResetFilters?: () => void;
 }) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const [localFilters, setLocalFilters] = useState({
     category: '',
     priority: '',
@@ -62,7 +231,7 @@ export default function RequestsFiltersBar({
         <div className="flex items-center gap-64 mb-4">
           <div className="flex-1 max-w-[70%]">
             <SearchBar
-              placeholder="Talep ID, açıklama veya daire numarası ile ara..."
+              placeholder={t.searchPlaceholder}
               value={searchValue}
               onChange={onSearchChange}
               onSearch={onSearchSubmit}
@@ -74,8 +243,8 @@ export default function RequestsFiltersBar({
           <div className="flex-shrink-0">
             <ViewToggle
               options={[
-                { id: 'table', label: 'Tablo', icon: List },
-                { id: 'grid', label: 'Kart', icon: Grid3X3 },
+                { id: 'table', label: t.table, icon: List },
+                { id: 'grid', label: t.grid, icon: Grid3X3 },
               ]}
               activeView={viewMode}
               onViewChange={(viewId) => onViewModeChange(viewId as 'table' | 'grid')}
@@ -89,20 +258,20 @@ export default function RequestsFiltersBar({
           {/* Kategori Filtresi */}
           <div>
             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-              Kategori
+              {t.category}
             </label>
             <Select
               value={localFilters.category}
               onChange={(e: any) => handleFilterChange('category', e.target.value)}
-              placeholder="Tüm kategoriler"
+              placeholder={t.allCategories}
               options={[
-                { value: '', label: 'Tüm kategoriler' },
-                { value: 'plumbing', label: 'Su Tesisatı' },
-                { value: 'electrical', label: 'Elektrik' },
-                { value: 'heating', label: 'Isıtma' },
-                { value: 'cleaning', label: 'Temizlik' },
-                { value: 'security', label: 'Güvenlik' },
-                { value: 'other', label: 'Diğer' }
+                { value: '', label: t.allCategories },
+                { value: 'plumbing', label: t.plumbing },
+                { value: 'electrical', label: t.electrical },
+                { value: 'heating', label: t.heating },
+                { value: 'cleaning', label: t.cleaning },
+                { value: 'security', label: t.security },
+                { value: 'other', label: t.other }
               ]}
             />
           </div>
@@ -110,18 +279,18 @@ export default function RequestsFiltersBar({
           {/* Öncelik Filtresi */}
           <div>
             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-              Öncelik
+              {t.priority}
             </label>
             <Select
               value={localFilters.priority}
               onChange={(e: any) => handleFilterChange('priority', e.target.value)}
-              placeholder="Tüm öncelikler"
+              placeholder={t.allPriorities}
               options={[
-                { value: '', label: 'Tüm öncelikler' },
-                { value: 'low', label: 'Düşük' },
-                { value: 'medium', label: 'Orta' },
-                { value: 'high', label: 'Yüksek' },
-                { value: 'urgent', label: 'Acil' }
+                { value: '', label: t.allPriorities },
+                { value: 'low', label: t.low },
+                { value: 'medium', label: t.medium },
+                { value: 'high', label: t.high },
+                { value: 'urgent', label: t.urgent }
               ]}
             />
           </div>
@@ -129,19 +298,19 @@ export default function RequestsFiltersBar({
           {/* Durum Filtresi */}
           <div>
             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-              Durum
+              {t.status}
             </label>
             <Select
               value={localFilters.status}
               onChange={(e: any) => handleFilterChange('status', e.target.value)}
-              placeholder="Tüm durumlar"
+              placeholder={t.allStatuses}
               options={[
-                { value: '', label: 'Tüm durumlar' },
-                { value: 'open', label: 'Açık' },
-                { value: 'in_progress', label: 'İşlemde' },
-                { value: 'waiting', label: 'Bekliyor' },
-                { value: 'resolved', label: 'Çözüldü' },
-                { value: 'closed', label: 'Kapalı' }
+                { value: '', label: t.allStatuses },
+                { value: 'open', label: t.open },
+                { value: 'in_progress', label: t.inProgress },
+                { value: 'waiting', label: t.waiting },
+                { value: 'resolved', label: t.resolved },
+                { value: 'closed', label: t.closed }
               ]}
             />
           </div>
@@ -149,18 +318,18 @@ export default function RequestsFiltersBar({
           {/* Teknisyen Filtresi */}
           <div>
             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-              Teknisyen
+              {t.technician}
             </label>
             <Select
               value={localFilters.assignee}
               onChange={(e: any) => handleFilterChange('assignee', e.target.value)}
-              placeholder="Tüm teknisyenler"
+              placeholder={t.allTechnicians}
               options={[
-                { value: '', label: 'Tüm teknisyenler' },
-                { value: 'unassigned', label: 'Atanmamış' },
-                { value: 'tech1', label: 'Ahmet Yılmaz' },
-                { value: 'tech2', label: 'Mehmet Demir' },
-                { value: 'tech3', label: 'Ali Kaya' }
+                { value: '', label: t.allTechnicians },
+                { value: 'unassigned', label: t.unassigned },
+                { value: 'tech1', label: t.tech1 },
+                { value: 'tech2', label: t.tech2 },
+                { value: 'tech3', label: t.tech3 }
               ]}
             />
           </div>
@@ -170,7 +339,7 @@ export default function RequestsFiltersBar({
         {hasActiveFilters && (
           <div className="flex items-center gap-3 pt-4 border-t border-background-light-secondary dark:border-background-secondary">
             <Badge variant="soft" color="primary" className="text-xs">
-              {Object.values(localFilters).filter(v => v !== '').length} filtre aktif
+              {Object.values(localFilters).filter(v => v !== '').length} {t.activeFilters}
             </Badge>
             <Button
               variant="ghost"
@@ -179,7 +348,7 @@ export default function RequestsFiltersBar({
               onClick={handleResetFilters}
               className="text-text-light-muted dark:text-text-muted hover:text-primary-red"
             >
-              Filtreleri Temizle
+              {t.clearFilters}
             </Button>
           </div>
         )}

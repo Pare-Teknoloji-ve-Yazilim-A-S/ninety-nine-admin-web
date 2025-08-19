@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface CalendarEventDetail {
@@ -46,6 +46,15 @@ const Calendar = ({
 }: CalendarProps) => {
   const [currentDate, setCurrentDate] = useState(value || new Date())
   const [viewDate, setViewDate] = useState(value || new Date())
+  const [currentLanguage, setCurrentLanguage] = useState('tr')
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
 
   const today = new Date()
   const currentYear = viewDate.getFullYear()
@@ -78,12 +87,40 @@ const Calendar = ({
     (_, i) => i + 1
   )
 
-  const monthNames = [
-    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-  ]
+  // Dil bazlı ay ve gün isimleri
+  const getMonthNames = () => {
+    switch (currentLanguage) {
+      case 'en':
+        return [
+          'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+      case 'ar':
+        return [
+          'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+          'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+        ];
+      default: // tr
+        return [
+          'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+        ];
+    }
+  };
 
-  const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']
+  const getDayNames = () => {
+    switch (currentLanguage) {
+      case 'en':
+        return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      case 'ar':
+        return ['أحد', 'اثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'];
+      default: // tr
+        return ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    }
+  };
+
+  const monthNames = getMonthNames();
+  const dayNames = getDayNames();
 
   const formatDateKey = (date: Date) => {
     // Use ISO date portion to keep a stable key (YYYY-MM-DD)
@@ -190,7 +227,7 @@ const Calendar = ({
           <div className="mb-2 flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-text-on-light dark:text-text-on-dark mb-1">
-                {new Date(selectedKey).toLocaleDateString('tr-TR')} için etkinlikler
+                {new Date(selectedKey).toLocaleDateString(currentLanguage === 'tr' ? 'tr-TR' : currentLanguage === 'ar' ? 'ar-SA' : 'en-US')} için etkinlikler
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {selectedItems.map((it, idx) => (

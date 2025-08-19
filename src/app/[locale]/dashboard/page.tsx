@@ -1,24 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
+import { useTranslations } from 'next-intl';
 
 // Dashboard Components
-import DashboardHeader from './components/DashboardHeader';
+import DashboardHeader from '../../dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
-import TopMetricsGrid from './components/TopMetricsGrid';
-import FinancialChart from './components/FinancialChart';
-import RecentTransactions from './components/RecentTransactions';
-import MaintenanceRequests from './components/MaintenanceRequests';
-import QuickActions from './components/QuickActions';
-import OccupancyStatus from './components/OccupancyStatus';
-import TodaysAgenda from './components/TodaysAgenda';
+import TopMetricsGrid from '../../dashboard/components/TopMetricsGrid';
+import FinancialChart from '../../dashboard/components/FinancialChart';
+import RecentTransactions from '../../dashboard/components/RecentTransactions';
+import MaintenanceRequests from '../../dashboard/components/MaintenanceRequests';
+import QuickActions from '../../dashboard/components/QuickActions';
+import OccupancyStatus from '../../dashboard/components/OccupancyStatus';
+import TodaysAgenda from '../../dashboard/components/TodaysAgenda';
 import Card from '@/app/components/ui/Card';
 import Calendar, { CalendarEventDetail } from '@/app/components/ui/Calendar';
 import Modal from '@/app/components/ui/Modal';
 import { announcementService } from '@/services';
 import type { Announcement } from '@/services/types/announcement.types';
-import RecentActivities from './components/RecentActivities';
+import RecentActivities from '../../dashboard/components/RecentActivities';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 // Hooks
@@ -28,67 +29,13 @@ import { useAuditLogs } from '@/hooks/useAuditLogs';
 import { useTicketStats } from '@/hooks/useTicketStats';
 import { useExpiringAnnouncements } from '@/hooks/useExpiringAnnouncements';
 
-// Dil çevirileri
-const translations = {
-  tr: {
-    title: 'Dashboard',
-    welcome: 'Hoş Geldiniz',
-    monthlyCalendar: 'Aylık Takvim',
-    events: 'Etkinlikleri',
-    noEvents: 'Bu gün için kayıtlı etkinlik bulunamadı.',
-    publish: 'Yayın',
-    end: 'Bitiş',
-    time: 'Saat',
-    urgent: 'Acil',
-    pinned: 'Sabit',
-    announcement: 'Duyuru'
-  },
-  en: {
-    title: 'Dashboard',
-    welcome: 'Welcome',
-    monthlyCalendar: 'Monthly Calendar',
-    events: 'Events',
-    noEvents: 'No events found for this day.',
-    publish: 'Publish',
-    end: 'End',
-    time: 'Time',
-    urgent: 'Urgent',
-    pinned: 'Pinned',
-    announcement: 'Announcement'
-  },
-  ar: {
-    title: 'لوحة التحكم',
-    welcome: 'مرحباً بك',
-    monthlyCalendar: 'التقويم الشهري',
-    events: 'الأحداث',
-    noEvents: 'لا توجد أحداث مسجلة لهذا اليوم.',
-    publish: 'نشر',
-    end: 'نهاية',
-    time: 'الوقت',
-    urgent: 'عاجل',
-    pinned: 'مثبت',
-    announcement: 'إعلان'
-  }
-};
-
 export default function DashboardPage() {
+    const t = useTranslations('dashboard');
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [calendarEvents, setCalendarEvents] = useState<Record<string, { count: number; hasEmergency?: boolean; hasPinned?: boolean; items?: CalendarEventDetail[] }>>({});
     const [dayModalOpen, setDayModalOpen] = useState(false);
     const [dayModalDate, setDayModalDate] = useState<string>('');
     const [dayModalItems, setDayModalItems] = useState<CalendarEventDetail[]>([]);
-    const [currentLanguage, setCurrentLanguage] = useState('tr');
-
-    // Dil tercihini localStorage'dan al
-    useEffect(() => {
-        const savedLanguage = localStorage.getItem('preferredLanguage');
-        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
-            setCurrentLanguage(savedLanguage);
-        }
-    }, []);
-
-    // Çevirileri al
-    const t = translations[currentLanguage as keyof typeof translations];
 
     // Fetch dashboard metrics
     const { totalProperties, assignedProperties, loading, error } = useDashboardMetrics();
@@ -106,7 +53,7 @@ export default function DashboardPage() {
     const { count: expiringAnnouncementsCount, loading: expiringAnnouncementsLoading, error: expiringAnnouncementsError } = useExpiringAnnouncements();
 
     const breadcrumbItems = [
-        { label: t.title, href: '/dashboard' },
+        { label: t('title'), href: '/dashboard' },
     ];
 
     React.useEffect(() => {
@@ -165,7 +112,7 @@ export default function DashboardPage() {
                 {/* Main Content Area */}
                 <div className="lg:ml-72">
                     {/* Header */}
-                    <DashboardHeader title={t.title} breadcrumbItems={breadcrumbItems} />
+                    <DashboardHeader title={t('title')} breadcrumbItems={breadcrumbItems} />
 
                     {/* Main Content */}
                     <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -175,10 +122,10 @@ export default function DashboardPage() {
                             <div className="flex justify-between items-center mb-6">
                                 <div>
                                     <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark">
-                                        {t.title}
+                                        {t('title')}
                                     </h1>
                                     <p className="mt-2 text-text-light-secondary dark:text-text-secondary">
-                                        {t.welcome}
+                                        {t('welcome')}
                                     </p>
                                 </div>
                                 <LanguageSwitcher />
@@ -234,7 +181,7 @@ export default function DashboardPage() {
                                     <Card>
                                         <div className="p-4">
                                             <div className="flex items-center justify-between mb-3">
-                                                <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">{t.monthlyCalendar}</h3>
+                                                <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">Aylık Takvim</h3>
                                             </div>
                                             <Calendar
                                                 showSelectedSummary={false}
@@ -248,36 +195,36 @@ export default function DashboardPage() {
                                                 }}
                                             />
                                             {/* Day Events Modal */}
-                                                                                         <Modal
-                                                 isOpen={dayModalOpen}
-                                                 onClose={() => setDayModalOpen(false)}
-                                                 title={`${dayModalDate ? new Date(dayModalDate).toLocaleDateString(currentLanguage === 'tr' ? 'tr-TR' : currentLanguage === 'ar' ? 'ar-SA' : 'en-US') : ''} ${t.events}`}
-                                                 size="md"
-                                             >
+                                            <Modal
+                                                isOpen={dayModalOpen}
+                                                onClose={() => setDayModalOpen(false)}
+                                                title={`${dayModalDate ? new Date(dayModalDate).toLocaleDateString('tr-TR') : ''} Etkinlikleri`}
+                                                size="md"
+                                            >
                                                 <div className="space-y-3">
                                                     {dayModalItems.length === 0 && (
-                                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary">{t.noEvents}</p>
+                                                        <p className="text-sm text-text-light-secondary dark:text-text-secondary">Bu gün için kayıtlı etkinlik bulunamadı.</p>
                                                     )}
                                                     {dayModalItems.map((it, idx) => (
                                                         <div key={(it.id as string) || idx} className="p-4 rounded-xl border border-border-light dark:border-border-dark bg-background-light-card dark:bg-background-card">
                                                             <div className="flex items-start justify-between">
                                                                 <div className="pr-4">
-                                                                    <p className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">{it.title || t.announcement}</p>
+                                                                    <p className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">{it.title || 'Duyuru'}</p>
                                                                     {it.description && (
                                                                         <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1 line-clamp-3">{it.description}</p>
                                                                     )}
-                                                                                                                                         <div className="mt-2 flex items-center gap-4 text-xs text-text-light-secondary dark:text-text-secondary">
-                                                                         <span>{t.publish}: {it.publishDate ? new Date(it.publishDate).toLocaleDateString(currentLanguage === 'tr' ? 'tr-TR' : currentLanguage === 'ar' ? 'ar-SA' : 'en-US') : (dayModalDate ? new Date(dayModalDate).toLocaleDateString(currentLanguage === 'tr' ? 'tr-TR' : currentLanguage === 'ar' ? 'ar-SA' : 'en-US') : '-')}</span>
-                                                                         {it.expiryDate && <span>{t.end}: {new Date(it.expiryDate).toLocaleDateString(currentLanguage === 'tr' ? 'tr-TR' : currentLanguage === 'ar' ? 'ar-SA' : 'en-US')}</span>}
-                                                                         {it.time && <span>{t.time}: {it.time}</span>}
-                                                                     </div>
+                                                                    <div className="mt-2 flex items-center gap-4 text-xs text-text-light-secondary dark:text-text-secondary">
+                                                                        <span>Yayın: {it.publishDate ? new Date(it.publishDate).toLocaleDateString('tr-TR') : (dayModalDate ? new Date(dayModalDate).toLocaleDateString('tr-TR') : '-')}</span>
+                                                                        {it.expiryDate && <span>Bitiş: {new Date(it.expiryDate).toLocaleDateString('tr-TR')}</span>}
+                                                                        {it.time && <span>Saat: {it.time}</span>}
+                                                                    </div>
                                                                 </div>
                                                                 <div className="flex items-center gap-2 whitespace-nowrap">
                                                                     {it.isEmergency && (
-                                                                        <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-red/15 text-primary-red">{t.urgent}</span>
+                                                                        <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-red/15 text-primary-red">Acil</span>
                                                                     )}
                                                                     {it.isPinned && (
-                                                                        <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-gold/20 text-primary-gold">{t.pinned}</span>
+                                                                        <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-gold/20 text-primary-gold">Sabit</span>
                                                                     )}
                                                                 </div>
                                                             </div>

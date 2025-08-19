@@ -60,11 +60,576 @@ import qrCodeService, { GuestQrCode } from '@/services/qr-code.service';
 import { useRouter } from 'next/navigation';
 import { familyMemberService } from '@/services/family-member.service';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles and headers
+    pageTitle: 'Sakin Detayı',
+    residentDetail: 'Sakin Detayı',
+    loading: 'Yükleniyor...',
+    error: 'Hata',
+    residentNotFound: 'Sakin bulunamadı',
+    backToResidents: 'Sakin Listesine Dön',
+    
+    // Breadcrumb
+    home: 'Ana Sayfa',
+    residents: 'Sakinler',
+    
+    // Page header
+    back: 'Geri Dön',
+    call: 'Ara',
+    message: 'Mesaj',
+    remove: 'Kaldır',
+    edit: 'Düzenle',
+    residentId: 'Sakin ID:',
+    
+    // Profile section
+    membershipLevel: 'Üyelik Seviyesi',
+    registrationDate: 'Kayıt Tarihi',
+    approve: 'Onayla',
+    documentsRequired: 'Belgelerin yüklenmesi gerek',
+    
+    // Tabs
+    familyMembers: 'Aile Üyeleri',
+    documents: 'Belgeler',
+    requests: 'Talepler',
+    activity: 'Aktivite',
+    addFamilyMember: 'Aile Üyesi Ekle',
+    
+    // Family members section
+    familyMembersTitle: 'Aile Üyeleri',
+    familyMembersLoading: 'Aile üyeleri yüklenemedi',
+    noFamilyMembers: 'Henüz aile üyesi eklenmemiş',
+    noFamilyMembersDesc: 'Bu sakin için aile üyesi bilgilerini ekleyebilirsiniz.',
+    tryAgain: 'Tekrar Dene',
+    photo: 'Foto',
+    name: 'Ad Soyad',
+    relationship: 'İlişki',
+    age: 'Yaş',
+    phone: 'Telefon',
+    action: 'İşlem',
+    minor: 'Reşit Değil',
+    
+    // Documents section
+    documentsTitle: 'Belgeler',
+    identityDocument: 'Kimlik Belgesi',
+    ownershipDocument: 'Tapu / Mülkiyet Belgesi',
+    loaded: 'Yüklü',
+    missing: 'Eksik',
+    upload: 'Yükle',
+    view: 'Görüntüle',
+    
+    // Requests section
+    requestsTitle: 'Talep Listesi',
+    newRequest: 'Yeni Talep',
+    requestsLoading: 'Talepler yüklenemedi',
+    noRequests: 'Henüz talep bulunmuyor',
+    noRequestsDesc: 'Bu sakin için henüz bir hizmet talebi oluşturulmamış.',
+    open: 'Açık',
+    inProgress: 'İşlemde',
+    resolved: 'Çözüldü',
+    closed: 'Kapatıldı',
+    propertyNotSpecified: 'Konut Belirtilmemiş',
+    faultRepair: 'Arıza/Tamir',
+    complaint: 'Şikayet',
+    request: 'Talep',
+    maintenance: 'Bakım',
+    
+    // Activity section
+    activityTitle: 'QR Kod Aktivite Günlüğü',
+    activityLoading: 'Yükleniyor...',
+    noActivity: 'Henüz QR kod aktivitesi yok.',
+    date: 'Tarih',
+    action: 'Aksiyon',
+    type: 'Tip',
+    qrCodeId: 'QR Kod ID',
+    
+    // Property information
+    propertyInfo: 'Konut Bilgileri',
+    propertyName: 'Konut Adı',
+    debt: 'Borç',
+    propertyInfoNotFound: 'Konut bilgisi bulunamadı.',
+    
+    // Contact information
+    contactInfo: 'İletişim Bilgileri',
+    mobilePhone: 'Cep Telefonu',
+    email: 'E-posta',
+    lastActivity: 'Son Aktivite',
+    unspecified: 'Belirtilmemiş',
+    
+    // Notes
+    notes: 'Notlar',
+    
+    // Modals
+    addFamilyMemberTitle: 'Aile Üyesi Ekle',
+    cancel: 'İptal',
+    adding: 'Ekleniyor...',
+    
+    // Form fields
+    nationalIdPassport: 'Ulusal kimlik numarası / Pasaport numarası',
+    nationalIdPassportPlaceholder: '12345678901 veya AA1234567',
+    firstName: 'Ad',
+    firstNamePlaceholder: 'Ayşe',
+    lastName: 'Soyad',
+    lastNamePlaceholder: 'Yılmaz',
+    relationshipDegree: 'Yakınlık derecesi',
+    select: 'Seçiniz',
+    spouse: 'Eş',
+    child: 'Çocuk',
+    mother: 'Anne',
+    father: 'Baba',
+    sibling: 'Kardeş',
+    parent: 'Ebeveyn',
+    grandparent: 'Büyükbaba/Büyükanne',
+    grandchild: 'Torun',
+    uncleAunt: 'Amca/Teyze/Dayı/Hala',
+    nephewNiece: 'Yeğen',
+    cousin: 'Kuzen',
+    other: 'Diğer',
+    phonePlaceholder: '0555 123 4567',
+    additionalInfo: 'Ek Bilgiler (Opsiyonel)',
+    gender: 'Cinsiyet',
+    male: 'Erkek',
+    female: 'Kadın',
+    birthDate: 'Doğum Tarihi',
+    birthPlace: 'Doğum Yeri',
+    birthPlacePlaceholder: 'İstanbul, Türkiye',
+    bloodType: 'Kan Grubu',
+    
+    // Upload popup
+    selectFile: 'Dosya seçin',
+    orDrag: 'veya sürükleyin',
+    fileTypes: 'JPEG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT • Max 10MB',
+    uploadSuccess: 'yüklendi',
+    uploadFailed: 'Yükleme başarısız',
+    
+    // Toast messages
+    userInfoUpdated: 'Kullanıcı bilgileri başarıyla güncellendi!',
+    updateFailed: 'Güncelleme işlemi başarısız oldu. Lütfen tekrar deneyin.',
+    userApproved: 'Kullanıcı başarıyla onaylandı!',
+    userRejected: 'Kullanıcı başarıyla reddedildi!',
+    approvalFailed: 'Onaylama işlemi başarısız oldu. Lütfen tekrar deneyin.',
+    familyMemberAdded: 'Aile üyesi başarıyla eklendi!',
+    familyMemberError: 'Aile üyesi eklenirken bir hata oluştu.',
+    fillRequiredFields: 'Lütfen tüm zorunlu alanları doldurun.',
+    requestCreated: 'Talep başarıyla oluşturuldu!',
+    userDeleted: 'Kullanıcı başarıyla silindi!',
+    deleteError: 'Kullanıcı silinirken bir hata oluştu.',
+    deleteConfirm: 'Bu kullanıcıyı silmek istediğinize emin misiniz?',
+    propertyInfoError: 'Konut bilgisi yüklenemedi',
+    qrCodesError: 'QR kodlar yüklenemedi',
+    logsError: 'Loglar yüklenemedi'
+  },
+  en: {
+    // Page titles and headers
+    pageTitle: 'Resident Detail',
+    residentDetail: 'Resident Detail',
+    loading: 'Loading...',
+    error: 'Error',
+    residentNotFound: 'Resident not found',
+    backToResidents: 'Back to Residents',
+    
+    // Breadcrumb
+    home: 'Home',
+    residents: 'Residents',
+    
+    // Page header
+    back: 'Back',
+    call: 'Call',
+    message: 'Message',
+    remove: 'Remove',
+    edit: 'Edit',
+    residentId: 'Resident ID:',
+    
+    // Profile section
+    membershipLevel: 'Membership Level',
+    registrationDate: 'Registration Date',
+    approve: 'Approve',
+    documentsRequired: 'Documents need to be uploaded',
+    
+    // Tabs
+    familyMembers: 'Family Members',
+    documents: 'Documents',
+    requests: 'Requests',
+    activity: 'Activity',
+    addFamilyMember: 'Add Family Member',
+    
+    // Family members section
+    familyMembersTitle: 'Family Members',
+    familyMembersLoading: 'Failed to load family members',
+    noFamilyMembers: 'No family members added yet',
+    noFamilyMembersDesc: 'You can add family member information for this resident.',
+    tryAgain: 'Try Again',
+    photo: 'Photo',
+    name: 'Name',
+    relationship: 'Relationship',
+    age: 'Age',
+    phone: 'Phone',
+    action: 'Action',
+    minor: 'Minor',
+    
+    // Documents section
+    documentsTitle: 'Documents',
+    identityDocument: 'Identity Document',
+    ownershipDocument: 'Deed / Ownership Document',
+    loaded: 'Loaded',
+    missing: 'Missing',
+    upload: 'Upload',
+    view: 'View',
+    
+    // Requests section
+    requestsTitle: 'Request List',
+    newRequest: 'New Request',
+    requestsLoading: 'Failed to load requests',
+    noRequests: 'No requests yet',
+    noRequestsDesc: 'No service request has been created for this resident yet.',
+    open: 'Open',
+    inProgress: 'In Progress',
+    resolved: 'Resolved',
+    closed: 'Closed',
+    propertyNotSpecified: 'Property Not Specified',
+    faultRepair: 'Fault/Repair',
+    complaint: 'Complaint',
+    request: 'Request',
+    maintenance: 'Maintenance',
+    
+    // Activity section
+    activityTitle: 'QR Code Activity Log',
+    activityLoading: 'Loading...',
+    noActivity: 'No QR code activity yet.',
+    date: 'Date',
+    action: 'Action',
+    type: 'Type',
+    qrCodeId: 'QR Code ID',
+    
+    // Property information
+    propertyInfo: 'Property Information',
+    propertyName: 'Property Name',
+    debt: 'Debt',
+    propertyInfoNotFound: 'Property information not found.',
+    
+    // Contact information
+    contactInfo: 'Contact Information',
+    mobilePhone: 'Mobile Phone',
+    email: 'Email',
+    lastActivity: 'Last Activity',
+    unspecified: 'Unspecified',
+    
+    // Notes
+    notes: 'Notes',
+    
+    // Modals
+    addFamilyMemberTitle: 'Add Family Member',
+    cancel: 'Cancel',
+    adding: 'Adding...',
+    
+    // Form fields
+    nationalIdPassport: 'National ID / Passport Number',
+    nationalIdPassportPlaceholder: '12345678901 or AA1234567',
+    firstName: 'First Name',
+    firstNamePlaceholder: 'John',
+    lastName: 'Last Name',
+    lastNamePlaceholder: 'Doe',
+    relationshipDegree: 'Relationship Degree',
+    select: 'Select',
+    spouse: 'Spouse',
+    child: 'Child',
+    mother: 'Mother',
+    father: 'Father',
+    sibling: 'Sibling',
+    parent: 'Parent',
+    grandparent: 'Grandparent',
+    grandchild: 'Grandchild',
+    uncleAunt: 'Uncle/Aunt',
+    nephewNiece: 'Nephew/Niece',
+    cousin: 'Cousin',
+    other: 'Other',
+    phonePlaceholder: '0555 123 4567',
+    additionalInfo: 'Additional Information (Optional)',
+    gender: 'Gender',
+    male: 'Male',
+    female: 'Female',
+    birthDate: 'Birth Date',
+    birthPlace: 'Birth Place',
+    birthPlacePlaceholder: 'Istanbul, Turkey',
+    bloodType: 'Blood Type',
+    
+    // Upload popup
+    selectFile: 'Select file',
+    orDrag: 'or drag',
+    fileTypes: 'JPEG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT • Max 10MB',
+    uploadSuccess: 'uploaded',
+    uploadFailed: 'Upload failed',
+    
+    // Toast messages
+    userInfoUpdated: 'User information updated successfully!',
+    updateFailed: 'Update failed. Please try again.',
+    userApproved: 'User approved successfully!',
+    userRejected: 'User rejected successfully!',
+    approvalFailed: 'Approval failed. Please try again.',
+    familyMemberAdded: 'Family member added successfully!',
+    familyMemberError: 'An error occurred while adding family member.',
+    fillRequiredFields: 'Please fill in all required fields.',
+    requestCreated: 'Request created successfully!',
+    userDeleted: 'User deleted successfully!',
+    deleteError: 'An error occurred while deleting user.',
+    deleteConfirm: 'Are you sure you want to delete this user?',
+    propertyInfoError: 'Failed to load property information',
+    qrCodesError: 'Failed to load QR codes',
+    logsError: 'Failed to load logs'
+  },
+  ar: {
+    // Page titles and headers
+    pageTitle: 'تفاصيل الساكن',
+    residentDetail: 'تفاصيل الساكن',
+    loading: 'جاري التحميل...',
+    error: 'خطأ',
+    residentNotFound: 'الساكن غير موجود',
+    backToResidents: 'العودة إلى السكان',
+    
+    // Breadcrumb
+    home: 'الرئيسية',
+    residents: 'السكان',
+    
+    // Page header
+    back: 'رجوع',
+    call: 'اتصال',
+    message: 'رسالة',
+    remove: 'إزالة',
+    edit: 'تعديل',
+    residentId: 'معرف الساكن:',
+    
+    // Profile section
+    membershipLevel: 'مستوى العضوية',
+    registrationDate: 'تاريخ التسجيل',
+    approve: 'موافقة',
+    documentsRequired: 'يجب رفع المستندات',
+    
+    // Tabs
+    familyMembers: 'أفراد العائلة',
+    documents: 'المستندات',
+    requests: 'الطلبات',
+    activity: 'النشاط',
+    addFamilyMember: 'إضافة فرد عائلة',
+    
+    // Family members section
+    familyMembersTitle: 'أفراد العائلة',
+    familyMembersLoading: 'فشل في تحميل أفراد العائلة',
+    noFamilyMembers: 'لم يتم إضافة أفراد عائلة بعد',
+    noFamilyMembersDesc: 'يمكنك إضافة معلومات أفراد العائلة لهذا الساكن.',
+    tryAgain: 'حاول مرة أخرى',
+    photo: 'صورة',
+    name: 'الاسم',
+    relationship: 'العلاقة',
+    age: 'العمر',
+    phone: 'الهاتف',
+    action: 'الإجراء',
+    minor: 'قاصر',
+    
+    // Documents section
+    documentsTitle: 'المستندات',
+    identityDocument: 'وثيقة الهوية',
+    ownershipDocument: 'سند الملكية / وثيقة الملكية',
+    loaded: 'محمّل',
+    missing: 'مفقود',
+    upload: 'رفع',
+    view: 'عرض',
+    
+    // Requests section
+    requestsTitle: 'قائمة الطلبات',
+    newRequest: 'طلب جديد',
+    requestsLoading: 'فشل في تحميل الطلبات',
+    noRequests: 'لا توجد طلبات بعد',
+    noRequestsDesc: 'لم يتم إنشاء طلب خدمة لهذا الساكن بعد.',
+    open: 'مفتوح',
+    inProgress: 'قيد التنفيذ',
+    resolved: 'تم الحل',
+    closed: 'مغلق',
+    propertyNotSpecified: 'العقار غير محدد',
+    faultRepair: 'عطل/إصلاح',
+    complaint: 'شكوى',
+    request: 'طلب',
+    maintenance: 'صيانة',
+    
+    // Activity section
+    activityTitle: 'سجل نشاط رمز QR',
+    activityLoading: 'جاري التحميل...',
+    noActivity: 'لا يوجد نشاط رمز QR بعد.',
+    date: 'التاريخ',
+    action: 'الإجراء',
+    type: 'النوع',
+    qrCodeId: 'معرف رمز QR',
+    
+    // Property information
+    propertyInfo: 'معلومات العقار',
+    propertyName: 'اسم العقار',
+    debt: 'الدين',
+    propertyInfoNotFound: 'معلومات العقار غير موجودة.',
+    
+    // Contact information
+    contactInfo: 'معلومات الاتصال',
+    mobilePhone: 'الهاتف المحمول',
+    email: 'البريد الإلكتروني',
+    lastActivity: 'آخر نشاط',
+    unspecified: 'غير محدد',
+    
+    // Notes
+    notes: 'ملاحظات',
+    
+    // Modals
+    addFamilyMemberTitle: 'إضافة فرد عائلة',
+    cancel: 'إلغاء',
+    adding: 'جاري الإضافة...',
+    
+    // Form fields
+    nationalIdPassport: 'رقم الهوية الوطنية / رقم جواز السفر',
+    nationalIdPassportPlaceholder: '12345678901 أو AA1234567',
+    firstName: 'الاسم الأول',
+    firstNamePlaceholder: 'أحمد',
+    lastName: 'اسم العائلة',
+    lastNamePlaceholder: 'محمد',
+    relationshipDegree: 'درجة القرابة',
+    select: 'اختر',
+    spouse: 'الزوج/الزوجة',
+    child: 'الطفل',
+    mother: 'الأم',
+    father: 'الأب',
+    sibling: 'الأخ/الأخت',
+    parent: 'الوالد',
+    grandparent: 'الجد/الجدة',
+    grandchild: 'الحفيد/الحفيدة',
+    uncleAunt: 'العم/العمة/الخال/الخالة',
+    nephewNiece: 'ابن الأخ/ابنة الأخ',
+    cousin: 'ابن العم/ابنة العم',
+    other: 'آخر',
+    phonePlaceholder: '0555 123 4567',
+    additionalInfo: 'معلومات إضافية (اختياري)',
+    gender: 'الجنس',
+    male: 'ذكر',
+    female: 'أنثى',
+    birthDate: 'تاريخ الميلاد',
+    birthPlace: 'مكان الميلاد',
+    birthPlacePlaceholder: 'إسطنبول، تركيا',
+    bloodType: 'فصيلة الدم',
+    
+    // Upload popup
+    selectFile: 'اختر الملف',
+    orDrag: 'أو اسحب',
+    fileTypes: 'JPEG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT • الحد الأقصى 10 ميجابايت',
+    uploadSuccess: 'تم الرفع',
+    uploadFailed: 'فشل الرفع',
+    
+    // Toast messages
+    userInfoUpdated: 'تم تحديث معلومات المستخدم بنجاح!',
+    updateFailed: 'فشل التحديث. يرجى المحاولة مرة أخرى.',
+    userApproved: 'تمت الموافقة على المستخدم بنجاح!',
+    userRejected: 'تم رفض المستخدم بنجاح!',
+    approvalFailed: 'فشلت الموافقة. يرجى المحاولة مرة أخرى.',
+    familyMemberAdded: 'تم إضافة فرد العائلة بنجاح!',
+    familyMemberError: 'حدث خطأ أثناء إضافة فرد العائلة.',
+    fillRequiredFields: 'يرجى ملء جميع الحقول المطلوبة.',
+    requestCreated: 'تم إنشاء الطلب بنجاح!',
+    userDeleted: 'تم حذف المستخدم بنجاح!',
+    deleteError: 'حدث خطأ أثناء حذف المستخدم.',
+    deleteConfirm: 'هل أنت متأكد من أنك تريد حذف هذا المستخدم؟',
+    propertyInfoError: 'فشل في تحميل معلومات العقار',
+    qrCodesError: 'فشل في تحميل رموز QR',
+    logsError: 'فشل في تحميل السجلات'
+  }
+};
 
 export default function ResidentViewPage() {
     const params = useParams();
     const residentId = params.id as string;
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Dil tercihini localStorage'dan al
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
+    // Helper fonksiyonlar - backend'den gelen değerleri çevirmek için
+    const getTranslatedMembershipTier = (tier: string) => {
+        console.log('Membership Tier:', tier, 'Current Language:', currentLanguage);
+        switch (tier) {
+            case 'STANDARD':
+                return currentLanguage === 'tr' ? 'Standart Üye' : 
+                       currentLanguage === 'en' ? 'Standard Member' : 'عضو قياسي';
+            case 'GOLD':
+                return currentLanguage === 'tr' ? 'Gold Üye' : 
+                       currentLanguage === 'en' ? 'Gold Member' : 'عضو ذهبي';
+            case 'SILVER':
+                return currentLanguage === 'tr' ? 'Silver Üye' : 
+                       currentLanguage === 'en' ? 'Silver Member' : 'عضو فضي';
+            case 'Standart Üye':
+                return currentLanguage === 'tr' ? 'Standart Üye' : 
+                       currentLanguage === 'en' ? 'Standard Member' : 'عضو قياسي';
+            case 'Gold Üye':
+                return currentLanguage === 'tr' ? 'Gold Üye' : 
+                       currentLanguage === 'en' ? 'Gold Member' : 'عضو ذهبي';
+            case 'Silver Üye':
+                return currentLanguage === 'tr' ? 'Silver Üye' : 
+                       currentLanguage === 'en' ? 'Silver Member' : 'عضو فضي';
+            default:
+                return tier;
+        }
+    };
+
+    const getTranslatedStatus = (status: any) => {
+        if (!status || !status.label) return status;
+        
+        const label = status.label;
+        console.log('Status Label:', label, 'Current Language:', currentLanguage);
+        switch (label) {
+            case 'Aktif':
+                return currentLanguage === 'tr' ? 'Aktif' : 
+                       currentLanguage === 'en' ? 'Active' : 'نشط';
+            case 'Pasif':
+                return currentLanguage === 'tr' ? 'Pasif' : 
+                       currentLanguage === 'en' ? 'Inactive' : 'غير نشط';
+            case 'Beklemede':
+                return currentLanguage === 'tr' ? 'Beklemede' : 
+                       currentLanguage === 'en' ? 'Pending' : 'في الانتظار';
+            case 'Askıya Alınmış':
+                return currentLanguage === 'tr' ? 'Askıya Alınmış' : 
+                       currentLanguage === 'en' ? 'Suspended' : 'معلق';
+            case 'İnceleniyor':
+                return currentLanguage === 'tr' ? 'İnceleniyor' : 
+                       currentLanguage === 'en' ? 'Under Review' : 'قيد المراجعة';
+            case 'Onaylandı':
+                return currentLanguage === 'tr' ? 'Onaylandı' : 
+                       currentLanguage === 'en' ? 'Approved' : 'تمت الموافقة';
+            case 'Reddedildi':
+                return currentLanguage === 'tr' ? 'Reddedildi' : 
+                       currentLanguage === 'en' ? 'Rejected' : 'مرفوض';
+            default:
+                return label;
+        }
+    };
+
+    const getTranslatedResidentType = (residentType: any) => {
+        if (!residentType || !residentType.label) return residentType;
+        
+        const label = residentType.label;
+        console.log('Resident Type Label:', label, 'Current Language:', currentLanguage);
+        switch (label) {
+            case 'Malik':
+                return currentLanguage === 'tr' ? 'Malik' : 
+                       currentLanguage === 'en' ? 'Owner' : 'مالك';
+            case 'Kiracı':
+                return currentLanguage === 'tr' ? 'Kiracı' : 
+                       currentLanguage === 'en' ? 'Tenant' : 'مستأجر';
+            default:
+                return label;
+        }
+    };
     const [showDocumentsModal, setShowDocumentsModal] = useState(false);
     const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
@@ -181,11 +746,11 @@ export default function ResidentViewPage() {
                 }
             })
                 .then(async (res) => {
-                    if (!res.ok) throw new Error('Konut bilgisi yüklenemedi');
+                    if (!res.ok) throw new Error(t.propertyInfoError);
                     const data = await res.json();
                     setPropertyInfo(data?.data || null);
                 })
-                .catch(() => setPropertyError('Konut bilgisi yüklenemedi'))
+                .catch(() => setPropertyError(t.propertyInfoError))
                 .finally(() => setPropertyLoading(false));
         }
     }, [residentId]);
@@ -221,7 +786,7 @@ export default function ResidentViewPage() {
             setQrError(null);
             qrCodeService.getGuestQRCodesByUser(residentId)
                 .then(setGuestQRCodes)
-                .catch(() => setQrError('QR kodlar yüklenemedi'))
+                .catch(() => setQrError(t.qrCodesError))
                 .finally(() => setQrLoading(false));
         }
     }, [activeTab, residentId]);
@@ -236,11 +801,11 @@ export default function ResidentViewPage() {
                 }
             })
                 .then(async (res) => {
-                    if (!res.ok) throw new Error('Loglar yüklenemedi');
+                    if (!res.ok) throw new Error(t.logsError);
                     const data = await res.json();
                     setQrAuditLogs(data?.data?.data || []);
                 })
-                .catch(() => setQrAuditError('Loglar yüklenemedi'))
+                .catch(() => setQrAuditError(t.logsError))
                 .finally(() => setQrAuditLoading(false));
         }
     }, [activeTab, residentId]);
@@ -256,9 +821,9 @@ export default function ResidentViewPage() {
 
     // Breadcrumb for resident view page
     const breadcrumbItems = [
-        { label: 'Ana Sayfa', href: '/dashboard' },
-        { label: 'Sakinler', href: '/dashboard/residents' },
-        { label: resident?.fullName || 'Sakin Detayı', active: true }
+        { label: t.home, href: '/dashboard' },
+        { label: t.residents, href: '/dashboard/residents' },
+        { label: resident?.fullName || t.residentDetail, active: true }
     ];
 
     // Yeni: Status ikonunu type'a göre göster
@@ -315,13 +880,13 @@ export default function ResidentViewPage() {
             setEditLoading(true);
             // TODO: API call to update resident data
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API call
-            toast.success('Kullanıcı bilgileri başarıyla güncellendi!');
+            toast.success(t.userInfoUpdated);
             await refreshData(); // Refresh resident data after update
         } catch (error: any) {
             console.error('Edit failed:', error);
             toast.error(
                 error?.response?.data?.message ||
-                'Güncelleme işlemi başarısız oldu. Lütfen tekrar deneyin.'
+                t.updateFailed
             );
         } finally {
             setEditLoading(false);
@@ -344,8 +909,8 @@ export default function ResidentViewPage() {
 
             toast.success(
                 data.decision === 'approved'
-                    ? 'Kullanıcı başarıyla onaylandı!'
-                    : 'Kullanıcı başarıyla reddedildi!'
+                    ? t.userApproved
+                    : t.userRejected
             );
 
             // Refresh resident data to update verification status
@@ -355,7 +920,7 @@ export default function ResidentViewPage() {
             console.error('Approval failed:', error);
             toast.error(
                 error?.response?.data?.message ||
-                'Onaylama işlemi başarısız oldu. Lütfen tekrar deneyin.'
+                t.approvalFailed
             );
         } finally {
             setApprovalLoading(false);
@@ -410,10 +975,10 @@ export default function ResidentViewPage() {
                     bloodType: ''
                 });
                 setShowAddFamilyModal(false);
-                toast.success('Aile üyesi başarıyla eklendi!');
+                toast.success(t.familyMemberAdded);
             } catch (error: any) {
                 console.error('Family member creation error:', error);
-                toast.error(error?.response?.data?.message || 'Aile üyesi eklenirken bir hata oluştu.');
+                toast.error(error?.response?.data?.message || t.familyMemberError);
             }
         } else {
             console.log('Validation failed. Missing fields:', {
@@ -427,7 +992,7 @@ export default function ResidentViewPage() {
                 birthPlace: !familyFormData.birthPlace,
                 bloodType: !familyFormData.bloodType
             });
-            toast.error('Lütfen tüm zorunlu alanları doldurun.');
+            toast.error(t.fillRequiredFields);
         }
     };
 
@@ -446,19 +1011,19 @@ export default function ResidentViewPage() {
     const handleTicketCreated = () => {
         setShowCreateTicketModal(false);
         refreshTickets(); // Refresh the tickets list
-        toast.success('Talep başarıyla oluşturuldu!');
+        toast.success(t.requestCreated);
     };
 
     // Delete resident handler
     const handleDeleteResident = async () => {
         if (!residentId) return;
-        if (!window.confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) return;
+        if (!window.confirm(t.deleteConfirm)) return;
         try {
             await adminResidentService.deleteResident(residentId);
-            toast.success('Kullanıcı başarıyla silindi!');
+            toast.success(t.userDeleted);
             router.push('/dashboard/residents');
         } catch (error) {
-            toast.error('Kullanıcı silinirken bir hata oluştu.');
+            toast.error(t.deleteError);
         }
     };
 
@@ -468,7 +1033,7 @@ export default function ResidentViewPage() {
                 <div className="min-h-screen bg-background-primary">
                     <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
                     <div className="lg:ml-72">
-                        <DashboardHeader title="Sakin Detayı" breadcrumbItems={breadcrumbItems} />
+                        <DashboardHeader title={t.pageTitle} breadcrumbItems={breadcrumbItems} />
                         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                             <div className="animate-pulse">
                                 <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -491,20 +1056,20 @@ export default function ResidentViewPage() {
                 <div className="min-h-screen bg-background-primary">
                     <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
                     <div className="lg:ml-72">
-                        <DashboardHeader title="Hata" breadcrumbItems={breadcrumbItems} />
+                        <DashboardHeader title={t.error} breadcrumbItems={breadcrumbItems} />
                         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                             <Card className="text-center">
                                 <div className="p-8">
                                     <AlertCircle className="h-12 w-12 text-primary-red mx-auto mb-4" />
                                     <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-                                        Sakin bulunamadı
+                                        {t.residentNotFound}
                                     </h2>
                                     <p className="text-text-light-secondary dark:text-text-secondary mb-6">
                                         {error}
                                     </p>
                                     <Link href="/dashboard/residents">
                                         <Button variant="primary">
-                                            Sakin Listesine Dön
+                                            {t.backToResidents}
                                         </Button>
                                     </Link>
                                 </div>
@@ -533,7 +1098,7 @@ export default function ResidentViewPage() {
                 <div className="lg:ml-72">
                     {/* Header */}
                     <DashboardHeader
-                        title={resident?.fullName || 'Sakin Detayı'}
+                        title={resident?.fullName || t.residentDetail}
                         breadcrumbItems={breadcrumbItems}
                     />
 
@@ -544,29 +1109,29 @@ export default function ResidentViewPage() {
                             <div className="flex items-center gap-4">
                                 <Link href="/dashboard/residents">
                                     <Button variant="ghost" icon={ArrowLeft}>
-                                        Geri Dön
+                                        {t.back}
                                     </Button>
                                 </Link>
                                 <div>
                                     <h1 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark">
-                                        {resident?.fullName || 'Yükleniyor...'}
+                                        {resident?.fullName || t.loading}
                                     </h1>
                                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                        Sakin ID: #{resident?.id || residentId}
+                                        {t.residentId} #{resident?.id || residentId}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="flex gap-3">
                                 <Button variant="secondary" icon={Phone}>
-                                    Ara
+                                    {t.call}
                                 </Button>
                                 <Button variant="secondary" icon={MessageSquare}>
-                                    Mesaj
+                                    {t.message}
                                 </Button>
                                 <Link href="#" onClick={e => { e.preventDefault(); handleDeleteResident(); }}>
                                     <Button variant="danger" icon={Trash2}>
-                                        Kaldır
+                                        {t.remove}
                                     </Button>
                                 </Link>
                             </div>
@@ -607,7 +1172,7 @@ export default function ResidentViewPage() {
                                                                 variant="soft"
                                                                 color={getTypeColor(resident.residentType.type)}
                                                             >
-                                                                {resident.residentType.label}
+                                                                {getTranslatedResidentType(resident.residentType)}
                                                             </Badge>
                                                         )}
                                                     </div>
@@ -620,7 +1185,7 @@ export default function ResidentViewPage() {
                                                         onClick={() => setShowEditModal(true)}
                                                     >
                                                         <Edit className="h-4 w-4" />
-                                                        Düzenle
+                                                        {t.edit}
                                                     </Button>
                                                 </div>
 
@@ -635,7 +1200,7 @@ export default function ResidentViewPage() {
                                                                     variant="soft"
                                                                     color={getStatusColor(resident.status.color)}
                                                                 >
-                                                                    {resident.status.label}
+                                                                    {getTranslatedStatus(resident.status)}
                                                                 </Badge>
                                                             )}
                                                             {resident.verificationStatus && resident.verificationStatus.color === 'yellow' && (
@@ -650,11 +1215,11 @@ export default function ResidentViewPage() {
                                                                         onClick={() => setShowApprovalModal(true)}
                                                                                 disabled={!docsUploaded || approvalLoading}
                                                                     >
-                                                                        Onayla
+                                                                        {t.approve}
                                                                     </Button>
                                                                             {!docsUploaded && (
                                                                                 <span className="text-sm text-text-light-muted dark:text-text-muted">
-                                                                                    Belgelerin yüklenmesi gerek
+                                                                                    {t.documentsRequired}
                                                                                 </span>
                                                                             )}
                                                                             </>
@@ -666,13 +1231,13 @@ export default function ResidentViewPage() {
 
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                                             <div>
-                                                                <p className="text-text-light-muted dark:text-text-muted">Üyelik Seviyesi</p>
+                                                                <p className="text-text-light-muted dark:text-text-muted">{t.membershipLevel}</p>
                                                                 <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                                    {resident.membershipTier}
+                                                                    {getTranslatedMembershipTier(resident.membershipTier)}
                                                                 </p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-text-light-muted dark:text-text-muted">Kayıt Tarihi</p>
+                                                                <p className="text-text-light-muted dark:text-text-muted">{t.registrationDate}</p>
                                                                 <p className="font-medium text-text-on-light dark:text-text-on-dark">
                                                                     {new Date(resident.registrationDate).toLocaleDateString('tr-TR')}
                                                                 </p>
@@ -691,10 +1256,10 @@ export default function ResidentViewPage() {
                                         <div className="border-b border-gray-200 dark:border-gray-700 px-6 pt-6">
                                             <nav className="flex space-x-4" aria-label="Tabs">
                                                 {[
-                                                    { label: `Aile Üyeleri (${familyMembers.length})`, key: "family" },
-                                                    { label: `Belgeler (${[nationalIdDoc.url, ownershipDoc.url].filter(Boolean).length})`, key: "documents" },
-                                                    { label: `Talepler (${residentTickets.length})`, key: "requests" },
-                                                    { label: `Aktivite (${qrAuditLogs.length})`, key: "activity" }
+                                                    { label: `${t.familyMembers} (${familyMembers.length})`, key: "family" },
+                                                    { label: `${t.documents} (${[nationalIdDoc.url, ownershipDoc.url].filter(Boolean).length})`, key: "documents" },
+                                                    { label: `${t.requests} (${residentTickets.length})`, key: "requests" },
+                                                    { label: `${t.activity} (${qrAuditLogs.length})`, key: "activity" }
                                                 ].map((tab, idx) => (
                                                     <button
                                                         key={tab.key}
@@ -716,14 +1281,14 @@ export default function ResidentViewPage() {
                                             {activeTab === "family" && (
                                                 <div>
                                                     <div className="flex justify-between items-center mb-6">
-                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Aile Üyeleri</h4>
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">{t.familyMembersTitle}</h4>
                                                         <Button
                                                             variant="primary"
                                                             icon={Plus}
                                                             onClick={() => setShowAddFamilyModal(true)}
                                                             disabled={familyMembersSaving}
                                                         >
-                                                            Aile Üyesi Ekle
+                                                            {t.addFamilyMember}
                                                         </Button>
                                                     </div>
 
@@ -745,13 +1310,13 @@ export default function ResidentViewPage() {
                                                         <div className="text-center py-8">
                                                             <AlertCircle className="h-12 w-12 text-primary-red mx-auto mb-4" />
                                                             <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                                Aile üyeleri yüklenemedi
+                                                                {t.familyMembersLoading}
                                                             </h3>
                                                             <p className="text-sm text-text-light-muted dark:text-text-muted mb-4">
                                                                 {familyMembersError}
                                                             </p>
                                                             <Button variant="secondary" size="sm" onClick={refreshFamilyMembers}>
-                                                                Tekrar Dene
+                                                                {t.tryAgain}
                                                             </Button>
                                                         </div>
                                                     ) : familyMembers.length > 0 ? (
@@ -759,12 +1324,12 @@ export default function ResidentViewPage() {
                                                             <table className="w-full">
                                                                 <thead>
                                                                     <tr className="border-b border-gray-200 dark:border-gray-700">
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Foto</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Ad Soyad</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">İlişki</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Yaş</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Telefon</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">İşlem</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.photo}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.name}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.relationship}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.age}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.phone}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.action}</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -782,7 +1347,19 @@ export default function ResidentViewPage() {
                                                                             </td>
                                                                             <td className="py-4 px-4">
                                                                                 <span className="text-text-light-secondary dark:text-text-secondary">
-                                                                                    {member.relationship}
+                                                                                    {member.relationship === 'SPOUSE' ? t.spouse :
+                                                                                     member.relationship === 'CHILD' ? t.child :
+                                                                                     member.relationship === 'MOTHER' ? t.mother :
+                                                                                     member.relationship === 'FATHER' ? t.father :
+                                                                                     member.relationship === 'SIBLING' ? t.sibling :
+                                                                                     member.relationship === 'PARENT' ? t.parent :
+                                                                                     member.relationship === 'GRANDPARENT' ? t.grandparent :
+                                                                                     member.relationship === 'GRANDCHILD' ? t.grandchild :
+                                                                                     member.relationship === 'UNCLE_AUNT' ? t.uncleAunt :
+                                                                                     member.relationship === 'NEPHEW_NIECE' ? t.nephewNiece :
+                                                                                     member.relationship === 'COUSIN' ? t.cousin :
+                                                                                     member.relationship === 'OTHER' ? t.other :
+                                                                                     member.relationship}
                                                                                 </span>
                                                                             </td>
                                                                             <td className="py-4 px-4">
@@ -792,7 +1369,7 @@ export default function ResidentViewPage() {
                                                                                     </span>
                                                                                     {member.isMinor && (
                                                                                         <Badge variant="soft" color="secondary" className="text-xs">
-                                                                                            Reşit Değil
+                                                                                            {t.minor}
                                                                                         </Badge>
                                                                                     )}
                                                                                 </div>
@@ -818,10 +1395,10 @@ export default function ResidentViewPage() {
                                                         <div className="text-center py-8">
                                                             <User className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
                                                             <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                                Henüz aile üyesi eklenmemiş
+                                                                {t.noFamilyMembers}
                                                             </h3>
                                                             <p className="text-sm text-text-light-muted dark:text-text-muted">
-                                                                Bu sakin için aile üyesi bilgilerini ekleyebilirsiniz.
+                                                                {t.noFamilyMembersDesc}
                                                             </p>
                                                         </div>
                                                     )}
@@ -830,7 +1407,7 @@ export default function ResidentViewPage() {
                                             {activeTab === "documents" && (
                                                 <div>
                                                     <div className="mb-6">
-                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Belgeler</h4>
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">{t.documentsTitle}</h4>
                                                     </div>
                                                     <div className="space-y-6">
                                                         {/* National ID Document */}
@@ -838,12 +1415,12 @@ export default function ResidentViewPage() {
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-3">
                                                                     <IdCard className="h-5 w-5 text-primary-gold" />
-                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Kimlik Belgesi</h5>
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">{t.identityDocument}</h5>
                                                                     {/* Status indicator */}
                                                                     {nationalIdDoc.url ? (
-                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title="Yüklü"></span>
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
                                                                     ) : (
-                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title="Eksik"></span>
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
                                                                     )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
@@ -865,7 +1442,7 @@ export default function ResidentViewPage() {
                                                                             }}
                                                                             disabled={nationalIdDoc.loading}
                                                                         >
-                                                                            Yükle
+                                                                            {t.upload}
                                                                         </Button>
                                                                     )}
                                                                     <Button
@@ -874,7 +1451,7 @@ export default function ResidentViewPage() {
                                                                         disabled={!nationalIdDoc.url}
                                                                         onClick={() => nationalIdDoc.url && window.open(nationalIdDoc.url, '_blank')}
                                                                     >
-                                                                        Görüntüle
+                                                                        {t.view}
                                                                     </Button>
                                                                     {nationalIdDoc.loading && (
                                                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
@@ -887,12 +1464,12 @@ export default function ResidentViewPage() {
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-3">
                                                                     <FileText className="h-5 w-5 text-primary-gold" />
-                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Tapu / Mülkiyet Belgesi</h5>
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">{t.ownershipDocument}</h5>
                                                                     {/* Status indicator */}
                                                                     {ownershipDoc.url ? (
-                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title="Yüklü"></span>
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
                                                                     ) : (
-                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title="Eksik"></span>
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
                                                                     )}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
@@ -914,7 +1491,7 @@ export default function ResidentViewPage() {
                                                                             }}
                                                                             disabled={ownershipDoc.loading}
                                                                         >
-                                                                            Yükle
+                                                                            {t.upload}
                                                                         </Button>
                                                                     )}
                                                                     <Button
@@ -923,7 +1500,7 @@ export default function ResidentViewPage() {
                                                                         disabled={!ownershipDoc.url}
                                                                         onClick={() => ownershipDoc.url && window.open(ownershipDoc.url, '_blank')}
                                                                     >
-                                                                        Görüntüle
+                                                                        {t.view}
                                                                     </Button>
                                                                     {ownershipDoc.loading && (
                                                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-gold"></div>
@@ -938,7 +1515,7 @@ export default function ResidentViewPage() {
                                                 <div>
                                                     <div className="flex justify-between items-center mb-6">
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">
-                                                            Talep Listesi
+                                                            {t.requestsTitle}
                                                         </h4>
                                                         <Button
                                                             variant="primary"
@@ -946,7 +1523,7 @@ export default function ResidentViewPage() {
                                                             icon={Plus}
                                                             onClick={handleCreateTicket}
                                                         >
-                                                            Yeni Talep
+                                                            {t.newRequest}
                                                         </Button>
                                                     </div>
 
@@ -967,13 +1544,13 @@ export default function ResidentViewPage() {
                                                         <div className="text-center py-8">
                                                             <AlertCircle className="h-12 w-12 text-primary-red mx-auto mb-4" />
                                                             <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                                Talepler yüklenemedi
+                                                                {t.requestsLoading}
                                                             </h3>
                                                             <p className="text-sm text-text-light-muted dark:text-text-muted mb-4">
                                                                 {ticketsError}
                                                             </p>
                                                             <Button variant="secondary" size="sm" onClick={refreshTickets}>
-                                                                Tekrar Dene
+                                                                {t.tryAgain}
                                                             </Button>
                                                         </div>
                                                     ) : residentTickets.length > 0 ? (
@@ -1009,10 +1586,10 @@ export default function ResidentViewPage() {
                                                                                                     'secondary'
                                                                                 }
                                                                             >
-                                                                                {ticket.status === 'OPEN' ? 'Açık' :
-                                                                                    ticket.status === 'IN_PROGRESS' ? 'İşlemde' :
-                                                                                        ticket.status === 'RESOLVED' ? 'Çözüldü' :
-                                                                                            ticket.status === 'CLOSED' ? 'Kapatıldı' :
+                                                                                {ticket.status === 'OPEN' ? t.open :
+                                                                                    ticket.status === 'IN_PROGRESS' ? t.inProgress :
+                                                                                        ticket.status === 'RESOLVED' ? t.resolved :
+                                                                                            ticket.status === 'CLOSED' ? t.closed :
                                                                                                 ticket.status}
                                                                             </Badge>
                                                                             <ExternalLink className="h-4 w-4 text-text-light-muted dark:text-text-muted" />
@@ -1032,13 +1609,13 @@ export default function ResidentViewPage() {
                                                                         <div className="flex items-center gap-4">
                                                                             <span className="flex items-center gap-1">
                                                                                 <Building className="h-3 w-3" />
-                                                                                {ticket.property?.name || ticket.property?.propertyNumber || 'Konut Belirtilmemiş'}
+                                                                                {ticket.property?.name || ticket.property?.propertyNumber || t.propertyNotSpecified}
                                                                             </span>
                                                                             <Badge variant="outline" color="secondary" className="text-xs">
-                                                                                {ticket.type === 'FAULT_REPAIR' ? 'Arıza/Tamir' :
-                                                                                    ticket.type === 'COMPLAINT' ? 'Şikayet' :
-                                                                                        ticket.type === 'REQUEST' ? 'Talep' :
-                                                                                            ticket.type === 'MAINTENANCE' ? 'Bakım' :
+                                                                                {ticket.type === 'FAULT_REPAIR' ? t.faultRepair :
+                                                                                    ticket.type === 'COMPLAINT' ? t.complaint :
+                                                                                        ticket.type === 'REQUEST' ? t.request :
+                                                                                            ticket.type === 'MAINTENANCE' ? t.maintenance :
                                                                                                 ticket.type}
                                                                             </Badge>
                                                                         </div>
@@ -1054,10 +1631,10 @@ export default function ResidentViewPage() {
                                                         <div className="text-center py-8">
                                                             <Wrench className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
                                                             <h3 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                                Henüz talep bulunmuyor
+                                                                {t.noRequests}
                                                             </h3>
                                                             <p className="text-sm text-text-light-muted dark:text-text-muted">
-                                                                Bu sakin için henüz bir hizmet talebi oluşturulmamış.
+                                                                {t.noRequestsDesc}
                                                             </p>
                                                         </div>
                                                     )}
@@ -1066,23 +1643,23 @@ export default function ResidentViewPage() {
                                             {activeTab === "activity" && (
                                                 <div>
                                                     <div className="mb-6">
-                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">QR Kod Aktivite Günlüğü</h4>
+                                                        <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">{t.activityTitle}</h4>
                                                     </div>
                                                     {qrAuditLoading ? (
-                                                        <div className="text-center py-8">Yükleniyor...</div>
+                                                        <div className="text-center py-8">{t.activityLoading}</div>
                                                     ) : qrAuditError ? (
                                                         <div className="text-center py-8 text-primary-red">{qrAuditError}</div>
                                                     ) : qrAuditLogs.length === 0 ? (
-                                                        <div className="text-center py-8 text-text-light-muted dark:text-text-muted">Henüz QR kod aktivitesi yok.</div>
+                                                        <div className="text-center py-8 text-text-light-muted dark:text-text-muted">{t.noActivity}</div>
                                                     ) : (
                                                         <div className="overflow-x-auto">
                                                             <table className="w-full">
                                                                 <thead>
                                                                     <tr className="border-b border-gray-200 dark:border-gray-700">
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Tarih</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Aksiyon</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">Tip</th>
-                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">QR Kod ID</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.date}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.action}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.type}</th>
+                                                                        <th className="text-left py-3 px-4 text-xs font-medium text-text-light-muted dark:text-text-muted uppercase tracking-wide">{t.qrCodeId}</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -1112,14 +1689,14 @@ export default function ResidentViewPage() {
                                     <div className="p-6">
                                         <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                             <Home className="h-5 w-5 text-primary-gold" />
-                                            Konut Bilgileri
+                                            {t.propertyInfo}
                                         </h3>
                                         <div className="grid grid-cols-2 gap-4 mb-4">
                                             {/* Konut Adı Başlık + Kart */}
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <Tag className="h-5 w-5 text-primary-gold" />
-                                                    <span className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Konut Adı</span>
+                                                    <span className="text-base font-semibold text-text-on-light dark:text-text-on-dark">{t.propertyName}</span>
                                                 </div>
                                                 <Card className="bg-background-light-soft dark:bg-background-soft rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center min-h-[80px]">
                                                     {propertyLoading ? (
@@ -1129,7 +1706,7 @@ export default function ResidentViewPage() {
                                                     ) : propertyInfo ? (
                                                         <span className="text-2xl font-bold text-primary-gold">{propertyInfo.name || '-'}</span>
                                                     ) : (
-                                                        <span className="text-text-light-muted dark:text-text-muted text-sm">Konut bilgisi bulunamadı.</span>
+                                                        <span className="text-text-light-muted dark:text-text-muted text-sm">{t.propertyInfoNotFound}</span>
                                                     )}
                                                 </Card>
                                             </div>
@@ -1137,7 +1714,7 @@ export default function ResidentViewPage() {
                                             <div>
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <CreditCard className="h-5 w-5 text-primary-red" />
-                                                    <span className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Borç</span>
+                                                    <span className="text-base font-semibold text-text-on-light dark:text-text-on-dark">{t.debt}</span>
                                                 </div>
                                                 <Card className="bg-background-light-soft dark:bg-background-soft rounded-2xl shadow-lg p-6 flex flex-col items-center justify-center min-h-[80px]">
                                                     {debtLoading ? (
@@ -1183,7 +1760,7 @@ export default function ResidentViewPage() {
                                     <div className="p-6">
                                         <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                             <Phone className="h-5 w-5 text-primary-gold" />
-                                            İletişim Bilgileri
+                                            {t.contactInfo}
                                         </h3>
 
                                         <div className="grid grid-cols-1 gap-6">
@@ -1193,9 +1770,9 @@ export default function ResidentViewPage() {
                                                         <Phone className="h-5 w-5 text-primary-gold" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">Cep Telefonu</p>
+                                                        <p className="text-sm text-text-light-muted dark:text-text-muted">{t.mobilePhone}</p>
                                                         <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                            {resident?.contact.formattedPhone || 'Belirtilmemiş'}
+                                                            {resident?.contact.formattedPhone || t.unspecified}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1206,7 +1783,7 @@ export default function ResidentViewPage() {
                                                             <Mail className="h-5 w-5 text-primary-gold" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm text-text-light-muted dark:text-text-muted">E-posta</p>
+                                                            <p className="text-sm text-text-light-muted dark:text-text-muted">{t.email}</p>
                                                             <p className="font-medium text-text-on-light dark:text-text-on-dark">
                                                                 {resident.contact.email}
                                                             </p>
@@ -1224,7 +1801,7 @@ export default function ResidentViewPage() {
                                                             <Calendar className="h-5 w-5 text-primary-gold" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm text-text-light-muted dark:text-text-muted">Son Aktivite</p>
+                                                            <p className="text-sm text-text-light-muted dark:text-text-muted">{t.lastActivity}</p>
                                                             <p className="font-medium text-text-on-light dark:text-text-on-dark">
                                                                 {new Date(resident.lastActivity).toLocaleDateString('tr-TR')}
                                                             </p>
@@ -1241,7 +1818,7 @@ export default function ResidentViewPage() {
                                         <div className="p-6">
                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                                 <FileText className="h-5 w-5 text-primary-gold" />
-                                                Notlar
+                                                {t.notes}
                                             </h3>
                                             <p className="text-sm text-text-light-secondary dark:text-text-secondary">
                                                 {resident.notes}
@@ -1259,7 +1836,7 @@ export default function ResidentViewPage() {
             <Modal
                 isOpen={showAddFamilyModal}
                 onClose={() => setShowAddFamilyModal(false)}
-                title="Aile Üyesi Ekle"
+                title={t.addFamilyMemberTitle}
                 icon={User}
                 size="lg"
             >
@@ -1267,10 +1844,10 @@ export default function ResidentViewPage() {
                     {/* Ulusal kimlik numarası - En üstte tek başına */}
                     <div>
                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                            Ulusal kimlik numarası / Pasaport numarası *
+                            {t.nationalIdPassport} *
                         </label>
                         <Input
-                            placeholder="12345678901 veya AA1234567"
+                            placeholder={t.nationalIdPassportPlaceholder}
                             value={familyFormData.identityNumber}
                             onChange={(e: any) => setFamilyFormData({ ...familyFormData, identityNumber: e.target.value })}
                         />
@@ -1279,20 +1856,20 @@ export default function ResidentViewPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                Ad *
+                                {t.firstName} *
                             </label>
                             <Input
-                                placeholder="Ayşe"
+                                placeholder={t.firstNamePlaceholder}
                                 value={familyFormData.firstName}
                                 onChange={(e: any) => setFamilyFormData({ ...familyFormData, firstName: e.target.value })}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                Soyad *
+                                {t.lastName} *
                             </label>
                             <Input
-                                placeholder="Yılmaz"
+                                placeholder={t.lastNamePlaceholder}
                                 value={familyFormData.lastName}
                                 onChange={(e: any) => setFamilyFormData({ ...familyFormData, lastName: e.target.value })}
                             />
@@ -1302,34 +1879,34 @@ export default function ResidentViewPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                Yakınlık derecesi *
+                                {t.relationshipDegree} *
                             </label>
                             <Select
                                 value={familyFormData.relationship}
                                 onChange={(e: any) => setFamilyFormData({ ...familyFormData, relationship: e.target.value })}
                                 options={[
-                                    { value: '', label: 'Seçiniz' },
-                                    { value: 'SPOUSE', label: 'Eş' },
-                                    { value: 'CHILD', label: 'Çocuk' },
-                                    { value: 'MOTHER', label: 'Anne' },
-                                    { value: 'FATHER', label: 'Baba' },
-                                    { value: 'SIBLING', label: 'Kardeş' },
-                                    { value: 'PARENT', label: 'Ebeveyn' },
-                                    { value: 'GRANDPARENT', label: 'Büyükbaba/Büyükanne' },
-                                    { value: 'GRANDCHILD', label: 'Torun' },
-                                    { value: 'UNCLE_AUNT', label: 'Amca/Teyze/Dayı/Hala' },
-                                    { value: 'NEPHEW_NIECE', label: 'Yeğen' },
-                                    { value: 'COUSIN', label: 'Kuzen' },
-                                    { value: 'OTHER', label: 'Diğer' }
+                                    { value: '', label: t.select },
+                                    { value: 'SPOUSE', label: t.spouse },
+                                    { value: 'CHILD', label: t.child },
+                                    { value: 'MOTHER', label: t.mother },
+                                    { value: 'FATHER', label: t.father },
+                                    { value: 'SIBLING', label: t.sibling },
+                                    { value: 'PARENT', label: t.parent },
+                                    { value: 'GRANDPARENT', label: t.grandparent },
+                                    { value: 'GRANDCHILD', label: t.grandchild },
+                                    { value: 'UNCLE_AUNT', label: t.uncleAunt },
+                                    { value: 'NEPHEW_NIECE', label: t.nephewNiece },
+                                    { value: 'COUSIN', label: t.cousin },
+                                    { value: 'OTHER', label: t.other }
                                 ]}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                Telefon *
+                                {t.phone} *
                             </label>
                             <Input
-                                placeholder="0555 123 4567"
+                                placeholder={t.phonePlaceholder}
                                 value={familyFormData.phone}
                                 onChange={(e: any) => setFamilyFormData({ ...familyFormData, phone: e.target.value })}
                             />
@@ -1339,28 +1916,28 @@ export default function ResidentViewPage() {
                     {/* Divider */}
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                         <h5 className="text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-4">
-                            Ek Bilgiler (Opsiyonel)
+                            {t.additionalInfo}
                         </h5>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                    Cinsiyet
-                                </label>
+                                                            <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                {t.gender}
+                            </label>
                                 <Select
                                     value={familyFormData.gender}
                                     onChange={(e: any) => setFamilyFormData({ ...familyFormData, gender: e.target.value })}
                                     options={[
-                                        { value: '', label: 'Seçiniz' },
-                                        { value: 'MALE', label: 'Erkek' },
-                                        { value: 'FEMALE', label: 'Kadın' },
-                                        { value: 'OTHER', label: 'Diğer' }
+                                        { value: '', label: t.select },
+                                        { value: 'MALE', label: t.male },
+                                        { value: 'FEMALE', label: t.female },
+                                        { value: 'OTHER', label: t.other }
                                     ]}
                                 />
                             </div>
                             <div>
                                 <DatePicker
-                                    label="Doğum Tarihi"
+                                    label={t.birthDate}
                                     value={familyFormData.birthDate}
                                     onChange={(e: any) => setFamilyFormData({ ...familyFormData, birthDate: e.target.value })}
                                     maxDate={new Date().toISOString().split('T')[0]}
@@ -1373,17 +1950,17 @@ export default function ResidentViewPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                    Doğum Yeri
+                                    {t.birthPlace}
                                 </label>
                                 <Input
-                                    placeholder="İstanbul, Türkiye"
+                                    placeholder={t.birthPlacePlaceholder}
                                     value={familyFormData.birthPlace}
                                     onChange={(e: any) => setFamilyFormData({ ...familyFormData, birthPlace: e.target.value })}
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                    Kan Grubu
+                                    {t.bloodType}
                                 </label>
                                 <Select
                                     value={familyFormData.bloodType}
@@ -1409,7 +1986,7 @@ export default function ResidentViewPage() {
                             variant="secondary"
                             onClick={() => setShowAddFamilyModal(false)}
                         >
-                            İptal
+                            {t.cancel}
                         </Button>
                         <Button
                             variant="primary"
@@ -1428,7 +2005,7 @@ export default function ResidentViewPage() {
                             }
                             isLoading={familyMembersSaving}
                         >
-                            {familyMembersSaving ? 'Ekleniyor...' : 'Aile Üyesi Ekle'}
+                            {familyMembersSaving ? t.adding : t.addFamilyMember}
                         </Button>
                     </div>
                 </div>
@@ -1472,7 +2049,7 @@ export default function ResidentViewPage() {
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-4">
                                 <h4 className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
-                                    {uploadDocumentType === 'national_id' ? 'Kimlik Belgesi' : 'Tapu / Mülkiyet Belgesi'}
+                                    {uploadDocumentType === 'national_id' ? t.identityDocument : t.ownershipDocument}
                                 </h4>
                                 <button
                                     onClick={() => {
@@ -1502,12 +2079,12 @@ export default function ResidentViewPage() {
                                                 // Belgeyi yükle
                                                 if (uploadDocumentType === 'national_id') {
                                                     uploadNationalIdDocument(file)
-                                                        .then(() => toast.success('Kimlik belgesi yüklendi'))
-                                                        .catch((err: any) => toast.error(err?.message || 'Yükleme başarısız'));
+                                                        .then(() => toast.success(`${t.identityDocument} ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
                                                 } else if (uploadDocumentType === 'ownership_document') {
                                                     uploadOwnershipDocument(file)
-                                                        .then(() => toast.success('Mülkiyet belgesi yüklendi'))
-                                                        .catch((err: any) => toast.error(err?.message || 'Yükleme başarısız'));
+                                                        .then(() => toast.success(`${t.ownershipDocument} ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
                                                 }
                                                 setShowUploadPopup(false);
                                                 setUploadDocumentType(null);
@@ -1518,11 +2095,11 @@ export default function ResidentViewPage() {
                                     <div className="space-y-2">
                                         <Upload className="mx-auto h-8 w-8 text-text-light-secondary dark:text-text-secondary" />
                                         <div className="text-xs text-text-on-light dark:text-text-on-dark">
-                                            <span className="font-medium">Dosya seçin</span>
-                                            <span className="text-text-light-secondary dark:text-text-secondary"> veya sürükleyin</span>
+                                            <span className="font-medium">{t.selectFile}</span>
+                                            <span className="text-text-light-secondary dark:text-text-secondary"> {t.orDrag}</span>
                                         </div>
                                         <p className="text-xs text-text-light-secondary dark:text-text-secondary">
-                                            JPEG, PNG, GIF, PDF, DOC, DOCX, XLS, XLSX, TXT • Max 10MB
+                                            {t.fileTypes}
                                         </p>
                                     </div>
                                 </div>

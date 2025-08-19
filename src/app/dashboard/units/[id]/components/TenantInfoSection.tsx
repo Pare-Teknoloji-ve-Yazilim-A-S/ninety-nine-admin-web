@@ -24,6 +24,88 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    edit: 'Düzenle',
+    cancel: 'İptal',
+    save: 'Kaydet',
+    remove: 'Kaldır',
+    updateSuccess: 'Kiracı bilgileri güncellendi',
+    updateError: 'Güncelleme başarısız oldu',
+    // Modal and form
+    editTenantInfo: 'Kiracı Bilgilerini Düzenle',
+    firstName: 'Ad',
+    lastName: 'Soyad',
+    phone: 'Telefon',
+    email: 'E-posta',
+    tenant: 'Kiracı',
+    addTenant: 'Kiracı Ekle',
+    noTenantInfo: 'Henüz kiracı bilgisi eklenmemiş',
+    // Lease status
+    expired: 'Süresi Dolmuş',
+    expiringSoon: 'Süresi Yakında Doluyor',
+    active: 'Aktif',
+    // Not rented state
+    notRented: 'Bu konut şu anda kiralık değil',
+    clickToAddTenant: 'Kiracı eklemek için yukarıdaki butona tıklayın',
+    // Section title
+    tenantInfoTitle: 'Kiracı Bilgileri'
+  },
+  en: {
+    edit: 'Edit',
+    cancel: 'Cancel',
+    save: 'Save',
+    remove: 'Remove',
+    updateSuccess: 'Tenant information updated',
+    updateError: 'Update failed',
+    // Modal and form
+    editTenantInfo: 'Edit Tenant Information',
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    phone: 'Phone',
+    email: 'Email',
+    tenant: 'Tenant',
+    addTenant: 'Add Tenant',
+    noTenantInfo: 'No tenant information added yet',
+    // Lease status
+    expired: 'Expired',
+    expiringSoon: 'Expiring Soon',
+    active: 'Active',
+    // Not rented state
+    notRented: 'This unit is not currently rented',
+    clickToAddTenant: 'Click the button above to add a tenant',
+    // Section title
+    tenantInfoTitle: 'Tenant Information'
+  },
+  ar: {
+    edit: 'تعديل',
+    cancel: 'إلغاء',
+    save: 'حفظ',
+    remove: 'إزالة',
+    updateSuccess: 'تم تحديث معلومات المستأجر',
+    updateError: 'فشل التحديث',
+    // Modal and form
+    editTenantInfo: 'تعديل معلومات المستأجر',
+    firstName: 'الاسم الأول',
+    lastName: 'اسم العائلة',
+    phone: 'الهاتف',
+    email: 'البريد الإلكتروني',
+    tenant: 'المستأجر',
+    addTenant: 'إضافة مستأجر',
+    noTenantInfo: 'لم يتم إضافة معلومات المستأجر بعد',
+    // Lease status
+    expired: 'منتهي الصلاحية',
+    expiringSoon: 'ينتهي قريباً',
+    active: 'نشط',
+    // Not rented state
+    notRented: 'هذه الوحدة غير مستأجرة حالياً',
+    clickToAddTenant: 'انقر على الزر أعلاه لإضافة مستأجر',
+    // Section title
+    tenantInfoTitle: 'معلومات المستأجر'
+  }
+};
+
 
 interface TenantInfoSectionProps {
   tenantInfo?: TenantInfo;
@@ -45,6 +127,7 @@ export default function TenantInfoSection({
   canEdit = true 
 }: TenantInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -53,11 +136,28 @@ export default function TenantInfoSection({
     tenantEmail: tenantInfo?.data.tenantEmail?.value || ''
   });
 
-
-
-
   const [saving, setSaving] = useState(false);
   const toast = useToast();
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
+  // Helper function to translate section title
+  const getTranslatedTitle = (title: string): string => {
+    const titleMap: { [key: string]: string } = {
+      'Kiracı Bilgileri': t.tenantInfoTitle
+    };
+    
+    return titleMap[title] || title;
+  };
 
   const handleEdit = () => {
     setShowEditModal(true);
@@ -92,9 +192,9 @@ export default function TenantInfoSection({
         tenantEmail: formData.tenantEmail
       });
       setShowEditModal(false);
-      toast.success('Kiracı bilgileri güncellendi');
+      toast.success(t.updateSuccess);
     } catch (error) {
-      toast.error('Güncelleme başarısız oldu');
+      toast.error(t.updateError);
     } finally {
       setSaving(false);
     }
@@ -124,11 +224,11 @@ export default function TenantInfoSection({
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return <Badge variant="soft" color="red">Süresi Dolmuş</Badge>;
+      return <Badge variant="soft" color="red">{t.expired}</Badge>;
     } else if (diffDays <= 30) {
-      return <Badge variant="soft" color="gold">Süresi Yakında Doluyor</Badge>;
+      return <Badge variant="soft" color="gold">{t.expiringSoon}</Badge>;
     } else {
-      return <Badge variant="soft" color="primary">Aktif</Badge>;
+      return <Badge variant="soft" color="primary">{t.active}</Badge>;
     }
   };
 
@@ -140,21 +240,21 @@ export default function TenantInfoSection({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark flex items-center gap-2">
               <Home className="h-5 w-5 text-primary-gold" />
-              Kiracı Bilgileri
+              {t.tenantInfoTitle}
             </h3>
             {canEdit && onAddTenant && (
               <Button variant="primary" size="sm" icon={UserPlus} onClick={onAddTenant}>
-                Kiracı Ekle
+                {t.addTenant}
               </Button>
             )}
           </div>
           <div className="text-center py-8">
             <Home className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
             <p className="text-text-light-muted dark:text-text-muted">
-              Bu konut şu anda kiralık değil
+              {t.notRented}
             </p>
             <p className="text-sm text-text-light-muted dark:text-text-muted mt-1">
-              Kiracı eklemek için yukarıdaki butona tıklayın
+              {t.clickToAddTenant}
             </p>
           </div>
         </div>
@@ -167,11 +267,11 @@ export default function TenantInfoSection({
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark flex items-center gap-2">
-                <Home className="h-5 w-5 text-primary-gold" />
-                {tenantInfo.title}
-              </h3>
+                         <div className="flex items-center gap-3">
+               <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark flex items-center gap-2">
+                 <Home className="h-5 w-5 text-primary-gold" />
+                 {getTranslatedTitle(tenantInfo.title)}
+               </h3>
             </div>
             {canEdit && (
               <div className="flex gap-2">
@@ -182,7 +282,7 @@ export default function TenantInfoSection({
                   onClick={handleRemoveTenant}
                   disabled={loading}
                 >
-                  Kaldır
+                  {t.remove}
                 </Button>
                 <Button
                   variant="ghost"
@@ -191,7 +291,7 @@ export default function TenantInfoSection({
                   onClick={handleEdit}
                   disabled={loading}
                 >
-                  Düzenle
+                  {t.edit}
                 </Button>
               </div>
             )}
@@ -214,7 +314,7 @@ export default function TenantInfoSection({
                   {tenantInfo.data.tenantName?.value}
                 </h4>
                 <Badge variant="soft" color="primary" className="mt-1">
-                  Kiracı
+                  {t.tenant}
                 </Badge>
               </div>
 
@@ -254,7 +354,7 @@ export default function TenantInfoSection({
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Kiracı Bilgilerini Düzenle"
+        title={t.editTenantInfo}
         icon={Home}
         size="lg"
       >
@@ -262,23 +362,23 @@ export default function TenantInfoSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                Ad *
+                {t.firstName} *
               </label>
               <Input
                 value={formData.firstName}
                 onChange={(e: any) => setFormData({ ...formData, firstName: e.target.value })}
-                placeholder="Ad"
+                placeholder={t.firstName}
                 disabled={saving}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                Soyad *
+                {t.lastName} *
               </label>
               <Input
                 value={formData.lastName}
                 onChange={(e: any) => setFormData({ ...formData, lastName: e.target.value })}
-                placeholder="Soyad"
+                placeholder={t.lastName}
                 disabled={saving}
               />
             </div>
@@ -287,26 +387,26 @@ export default function TenantInfoSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                Telefon *
+                {t.phone} *
               </label>
               <Input
                 type="tel"
                 value={formData.tenantPhone}
                 onChange={(e: any) => setFormData({ ...formData, tenantPhone: e.target.value })}
-                                      placeholder="Telefon numarası"
+                                      placeholder={t.phone}
                 disabled={saving}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                E-posta
+                {t.email}
               </label>
               <Input
                 type="email"
                 value={formData.tenantEmail}
                 onChange={(e: any) => setFormData({ ...formData, tenantEmail: e.target.value })}
-                placeholder="ornek@email.com"
+                placeholder={t.email}
                 disabled={saving}
               />
             </div>
@@ -318,7 +418,7 @@ export default function TenantInfoSection({
               onClick={() => setShowEditModal(false)}
               disabled={saving}
             >
-              İptal
+              {t.cancel}
             </Button>
             <Button 
               variant="primary" 
@@ -327,7 +427,7 @@ export default function TenantInfoSection({
               isLoading={saving}
               disabled={!formData.firstName || !formData.lastName || !formData.tenantPhone}
             >
-              Kaydet
+              {t.save}
             </Button>
           </div>
         </div>

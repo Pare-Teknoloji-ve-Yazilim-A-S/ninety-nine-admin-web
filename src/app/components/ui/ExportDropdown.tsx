@@ -4,6 +4,40 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Download, FileText, FileSpreadsheet, FileType2, Code, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    download: 'İndir',
+    downloadPDF: 'PDF İndir',
+    downloadCSV: 'CSV İndir',
+    downloadJSON: 'JSON İndir',
+    downloadPDFDesc: 'Sakin listesini PDF formatında indir',
+    downloadCSVDesc: 'Sakin listesini CSV formatında indir',
+    downloadJSONDesc: 'Sakin listesini JSON formatında indir',
+    filteredDataIncluded: 'Filtreli veriler dahil edilir'
+  },
+  en: {
+    download: 'Download',
+    downloadPDF: 'Download PDF',
+    downloadCSV: 'Download CSV',
+    downloadJSON: 'Download JSON',
+    downloadPDFDesc: 'Download residents list in PDF format',
+    downloadCSVDesc: 'Download residents list in CSV format',
+    downloadJSONDesc: 'Download residents list in JSON format',
+    filteredDataIncluded: 'Filtered data is included'
+  },
+  ar: {
+    download: 'تحميل',
+    downloadPDF: 'تحميل PDF',
+    downloadCSV: 'تحميل CSV',
+    downloadJSON: 'تحميل JSON',
+    downloadPDFDesc: 'تحميل قائمة السكان بصيغة PDF',
+    downloadCSVDesc: 'تحميل قائمة السكان بصيغة CSV',
+    downloadJSONDesc: 'تحميل قائمة السكان بصيغة JSON',
+    filteredDataIncluded: 'البيانات المفلترة مشمولة'
+  }
+};
+
 interface ExportOption {
     id: string;
     label: string;
@@ -36,13 +70,25 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
     const [loadingOption, setLoadingOption] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
+    // Dil tercihini localStorage'dan al
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
     const exportOptions: ExportOption[] = [
         ...(onExportPDF
             ? [{
                 id: 'pdf',
-                label: 'PDF İndir',
+                label: t.downloadPDF,
                 icon: FileText,
-                description: 'Sakin listesini PDF formatında indir',
+                description: t.downloadPDFDesc,
                 format: 'pdf' as const,
                 onClick: async () => {
                     setLoadingOption('pdf');
@@ -54,9 +100,9 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
             : []),
         {
             id: 'csv',
-            label: 'CSV İndir',
+            label: t.downloadCSV,
             icon: FileType2,
-            description: 'Sakin listesini CSV formatında indir',
+            description: t.downloadCSVDesc,
             format: 'csv' as const,
             onClick: async () => {
                 setLoadingOption('csv');
@@ -68,9 +114,9 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
         ...(onExportJSON
             ? [{
                 id: 'json',
-                label: 'JSON İndir',
+                label: t.downloadJSON,
                 icon: Code,
-                description: 'Sakin listesini JSON formatında indir',
+                description: t.downloadJSONDesc,
                 format: 'json' as const,
                 onClick: async () => {
                     setLoadingOption('json');
@@ -144,7 +190,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
                 )}
             >
                 <Download className="w-4 h-4" />
-                İndir
+                {t.download}
                 <svg
                     className={cn(
                         'w-4 h-4 transition-transform duration-200',
@@ -199,7 +245,7 @@ const ExportDropdown: React.FC<ExportDropdownProps> = ({
                     <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex items-center gap-2 text-xs text-text-light-muted dark:text-text-muted">
                             <CheckCircle className="w-3 h-3" />
-                            <span>Filtreli veriler dahil edilir</span>
+                            <span>{t.filteredDataIncluded}</span>
                         </div>
                     </div>
                 </div>

@@ -141,6 +141,7 @@ export const generateStatsCardsDataFromCounts = ({
   ownersCount,
   loading,
   error,
+  translations,
 }: {
   goldCount: number;
   totalCount: number;
@@ -149,46 +150,53 @@ export const generateStatsCardsDataFromCounts = ({
   ownersCount: number;
   loading: boolean;
   error: string | null;
+  translations: {
+    totalResidents: string;
+    owner: string;
+    tenant: string;
+    pendingApproval: string;
+    goldMember: string;
+  };
 }): StatsData[] => {
   if (loading || error) {
     return [
-      { title: 'Toplam Sakin', value: '---', color: STATS_CONFIG.colors.PRIMARY, icon: STATS_CONFIG.icons.USERS },
-      { title: 'Malik', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.SUCCESS, icon: STATS_CONFIG.icons.HOME },
-      { title: 'Kiracı', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.INFO, icon: STATS_CONFIG.icons.USERS },
-      { title: 'Onay Bekleyen', value: '---', color: STATS_CONFIG.colors.INFO, icon: STATS_CONFIG.icons.USERS },
-      { title: 'Gold Üye', value: '---', subtitle: '%0', color: STATS_CONFIG.colors.GOLD, icon: STATS_CONFIG.icons.USERS },
+      { title: translations.totalResidents, value: '---', color: STATS_CONFIG.colors.PRIMARY, icon: STATS_CONFIG.icons.USERS },
+      { title: translations.owner, value: '---', subtitle: '%0', color: STATS_CONFIG.colors.SUCCESS, icon: STATS_CONFIG.icons.HOME },
+      { title: translations.tenant, value: '---', subtitle: '%0', color: STATS_CONFIG.colors.INFO, icon: STATS_CONFIG.icons.USERS },
+      { title: translations.pendingApproval, value: '---', color: STATS_CONFIG.colors.INFO, icon: STATS_CONFIG.icons.USERS },
+      { title: translations.goldMember, value: '---', subtitle: '%0', color: STATS_CONFIG.colors.GOLD, icon: STATS_CONFIG.icons.USERS },
     ];
   }
   return [
     {
-      title: 'Toplam Sakin',
+      title: translations.totalResidents,
       value: totalCount.toLocaleString('tr-TR'),
       color: STATS_CONFIG.colors.PRIMARY,
       icon: STATS_CONFIG.icons.USERS,
     },
     {
-      title: 'Malik',
+      title: translations.owner,
       value: ownersCount.toLocaleString('tr-TR'),
       subtitle: totalCount > 0 ? `%${Math.round((ownersCount / totalCount) * 100)}` : '%0',
       color: STATS_CONFIG.colors.SUCCESS,
       icon: STATS_CONFIG.icons.HOME,
     },
     {
-      title: 'Kiracı',
+      title: translations.tenant,
       value: tenantsCount.toLocaleString('tr-TR'),
       subtitle: totalCount > 0 ? `%${Math.round((tenantsCount / totalCount) * 100)}` : '%0',
       color: STATS_CONFIG.colors.INFO,
       icon: STATS_CONFIG.icons.USERS,
     },
     {
-      title: 'Onay Bekleyen',
+      title: translations.pendingApproval,
       value: activeCount.toLocaleString('tr-TR'),
       subtitle: totalCount > 0 ? `%${Math.round((activeCount / totalCount) * 100)}` : '%0',
       color: STATS_CONFIG.colors.WARNING,
       icon: STATS_CONFIG.icons.USERS,
     },
     {
-      title: 'Gold Üye',
+      title: translations.goldMember,
       value: goldCount.toLocaleString('tr-TR'),
       subtitle: totalCount > 0 ? `%${Math.round((goldCount / totalCount) * 100)}` : '%0',
       color: STATS_CONFIG.colors.GOLD,

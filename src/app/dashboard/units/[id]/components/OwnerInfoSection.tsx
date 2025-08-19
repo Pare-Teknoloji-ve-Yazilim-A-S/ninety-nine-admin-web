@@ -12,6 +12,94 @@ import { User, Phone, Mail, Edit, Save, X, IdCard, UserPlus, UserX } from 'lucid
 import { useToast } from '@/hooks/useToast';
 import { adminResidentService } from '@/services/admin-resident.service';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    edit: 'Düzenle',
+    cancel: 'İptal',
+    save: 'Kaydet',
+    remove: 'Kaldır',
+    updateSuccess: 'Malik bilgileri başarıyla güncellendi!',
+    updateError: 'Güncelleme başarısız oldu',
+    noChanges: 'Hiçbir değişiklik yapılmadı',
+    formErrors: 'Lütfen form hatalarını düzeltin',
+    tcKimlikError: 'TC Kimlik No 11 haneli olmalı ve 0 ile başlayamaz',
+    emailRequired: 'Kullanıcıyı güncellemek için email adresi gereklidir',
+    userNotFound: 'Belirtilen email adresiyle kullanıcı bulunamadı. Önce kullanıcıyı sistemde oluşturun.',
+    // Ownership types
+    owner: 'Malik',
+    coOwner: 'Ortak Malik',
+    representative: 'Temsilci',
+    // Modal and form
+    editOwnerInfo: 'Malik Bilgilerini Düzenle',
+    firstName: 'Ad',
+    lastName: 'Soyad',
+    phone: 'Telefon',
+    email: 'E-posta',
+    nationalId: 'TC Kimlik No',
+    ownershipType: 'Mülkiyet Tipi',
+    emailRequiredNote: 'Kullanıcıyı güncellemek için email adresi gereklidir',
+    // Section title
+    ownerInfoTitle: 'Malik Bilgileri'
+  },
+  en: {
+    edit: 'Edit',
+    cancel: 'Cancel',
+    save: 'Save',
+    remove: 'Remove',
+    updateSuccess: 'Owner information updated successfully!',
+    updateError: 'Update failed',
+    noChanges: 'No changes were made',
+    formErrors: 'Please fix form errors',
+    tcKimlikError: 'TC Identity Number must be 11 digits and cannot start with 0',
+    emailRequired: 'Email address is required to update user',
+    userNotFound: 'User not found with the specified email address. Please create the user in the system first.',
+    // Ownership types
+    owner: 'Owner',
+    coOwner: 'Co-Owner',
+    representative: 'Representative',
+    // Modal and form
+    editOwnerInfo: 'Edit Owner Information',
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    phone: 'Phone',
+    email: 'Email',
+    nationalId: 'TC Identity Number',
+    ownershipType: 'Ownership Type',
+    emailRequiredNote: 'Email address is required to update user',
+    // Section title
+    ownerInfoTitle: 'Owner Information'
+  },
+  ar: {
+    edit: 'تعديل',
+    cancel: 'إلغاء',
+    save: 'حفظ',
+    remove: 'إزالة',
+    updateSuccess: 'تم تحديث معلومات المالك بنجاح!',
+    updateError: 'فشل التحديث',
+    noChanges: 'لم يتم إجراء أي تغييرات',
+    formErrors: 'يرجى إصلاح أخطاء النموذج',
+    tcKimlikError: 'رقم الهوية يجب أن يكون 11 رقم ولا يمكن أن يبدأ بـ 0',
+    emailRequired: 'عنوان البريد الإلكتروني مطلوب لتحديث المستخدم',
+    userNotFound: 'لم يتم العثور على المستخدم بعنوان البريد الإلكتروني المحدد. يرجى إنشاء المستخدم في النظام أولاً.',
+    // Ownership types
+    owner: 'مالك',
+    coOwner: 'مالك مشترك',
+    representative: 'ممثل',
+    // Modal and form
+    editOwnerInfo: 'تعديل معلومات المالك',
+    firstName: 'الاسم الأول',
+    lastName: 'اسم العائلة',
+    phone: 'الهاتف',
+    email: 'البريد الإلكتروني',
+    nationalId: 'رقم الهوية',
+    ownershipType: 'نوع الملكية',
+    emailRequiredNote: 'عنوان البريد الإلكتروني مطلوب لتحديث المستخدم',
+    // Section title
+    ownerInfoTitle: 'معلومات المالك'
+  }
+};
+
 interface OwnerInfoSectionProps {
   ownerInfo: OwnerInfo;
   onUpdate?: (data: UpdateOwnerInfoDto) => Promise<void>;
@@ -38,6 +126,7 @@ export default function OwnerInfoSection({
   propertyId
 }: OwnerInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -48,10 +137,29 @@ export default function OwnerInfoSection({
     ownershipType: ownerInfo.data.ownershipType.value
   });
 
-
   const [saving, setSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const toast = useToast();
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
+  // Helper function to translate section title
+  const getTranslatedTitle = (title: string): string => {
+    const titleMap: { [key: string]: string } = {
+      'Malik Bilgileri': t.ownerInfoTitle
+    };
+    
+    return titleMap[title] || title;
+  };
 
   const handleEdit = () => {
     // Eğer malik yoksa, AddOwnerModal'ı aç
@@ -215,14 +323,14 @@ export default function OwnerInfoSection({
     try {
       // Validation hatalarını kontrol et
       if (Object.keys(validationErrors).length > 0) {
-        toast.error('Lütfen form hatalarını düzeltin');
+        toast.error(t.formErrors);
         setSaving(false);
         return;
       }
 
       // TC Kimlik validasyonu sadece
       if (formData.nationalId && !validateTcKimlik(formData.nationalId)) {
-        toast.error('TC Kimlik No 11 haneli olmalı ve 0 ile başlayamaz');
+        toast.error(t.tcKimlikError);
         setSaving(false);
         return;
       }
@@ -232,14 +340,14 @@ export default function OwnerInfoSection({
       // Eğer residentId yoksa email ile kullanıcıyı bul
       if (!targetResidentId) {
         if (!formData.email || !formData.email.trim()) {
-          toast.error('Kullanıcıyı güncellemek için email adresi gereklidir');
+          toast.error(t.emailRequired);
           setSaving(false);
           return;
         }
         
         targetResidentId = await findResidentByEmail(formData.email);
         if (!targetResidentId) {
-          toast.error('Belirtilen email adresiyle kullanıcı bulunamadı. Önce kullanıcıyı sistemde oluşturun.');
+          toast.error(t.userNotFound);
           setSaving(false);
           return;
         }
@@ -283,7 +391,7 @@ export default function OwnerInfoSection({
 
       // En az bir alan dolu olmalı
       if (Object.keys(updateData).length === 0) {
-        toast.success('Hiçbir değişiklik yapılmadı');
+        toast.success(t.noChanges);
         setShowEditModal(false);
         setSaving(false);
         return;
@@ -296,7 +404,7 @@ export default function OwnerInfoSection({
 
       // Başarı durumunda
       setShowEditModal(false);
-      toast.success('Malik bilgileri başarıyla güncellendi!');
+      toast.success(t.updateSuccess);
 
       // Eğer onUpdate prop'u varsa onu da çağır (sayfa yenileme için)
       if (onUpdate) {
@@ -327,7 +435,7 @@ export default function OwnerInfoSection({
       } else {
         toast.error(
           errorMessage ||
-          'Malik bilgileri güncellenirken bir hata oluştu'
+          t.updateError
         );
       }
     } finally {
@@ -374,21 +482,21 @@ export default function OwnerInfoSection({
     return (
       <Card>
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark flex items-center gap-2">
-              <User className="h-5 w-5 text-primary-gold" />
-              {ownerInfo.title}
-            </h3>
+                     <div className="flex items-center justify-between mb-4">
+             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark flex items-center gap-2">
+               <User className="h-5 w-5 text-primary-gold" />
+               {getTranslatedTitle(ownerInfo.title)}
+             </h3>
             {canEdit && (
               <Button variant="primary" size="sm" icon={Edit} onClick={handleEdit}>
-                Malik Ekle
+                {t.owner} Ekle
               </Button>
             )}
           </div>
           <div className="text-center py-8">
             <User className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
             <p className="text-text-light-muted dark:text-text-muted">
-              Henüz malik bilgisi eklenmemiş
+              Henüz {t.owner.toLowerCase()} bilgisi eklenmemiş
             </p>
           </div>
         </div>
@@ -400,11 +508,11 @@ export default function OwnerInfoSection({
     <>
       <Card>
         <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark flex items-center gap-2">
-              <User className="h-5 w-5 text-primary-gold" />
-              {ownerInfo.title}
-            </h3>
+                     <div className="flex items-center justify-between mb-6">
+             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark flex items-center gap-2">
+               <User className="h-5 w-5 text-primary-gold" />
+               {getTranslatedTitle(ownerInfo.title)}
+             </h3>
             {canEdit && (
               <div className="flex gap-2">
                 <Button
@@ -414,7 +522,7 @@ export default function OwnerInfoSection({
                   onClick={onRemove}
                   disabled={loading}
                 >
-                  Kaldır
+                  {t.remove}
                 </Button>
                 <Button
                   variant="ghost"
@@ -423,7 +531,7 @@ export default function OwnerInfoSection({
                   onClick={handleEdit}
                   disabled={loading}
                 >
-                  Düzenle
+                  {t.edit}
                 </Button>
               </div>
             )}
@@ -500,7 +608,7 @@ export default function OwnerInfoSection({
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Malik Bilgilerini Düzenle"
+        title={t.editOwnerInfo}
         icon={User}
         size="lg"
       >
@@ -509,23 +617,23 @@ export default function OwnerInfoSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                Ad *
+                {t.firstName} *
               </label>
               <Input
                 value={formData.firstName}
                 onChange={(e: any) => handleFieldChange('firstName', e.target.value)}
-                placeholder="Ad"
+                placeholder={t.firstName}
                 disabled={saving}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                Soyad *
+                {t.lastName} *
               </label>
               <Input
                 value={formData.lastName}
                 onChange={(e: any) => handleFieldChange('lastName', e.target.value)}
-                placeholder="Soyad"
+                placeholder={t.lastName}
                 disabled={saving}
               />
             </div>
@@ -564,7 +672,7 @@ export default function OwnerInfoSection({
               />
               {!residentId && (
                 <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
-                  Kullanıcıyı güncellemek için email adresi gereklidir
+                  {t.emailRequiredNote}
                 </p>
               )}
             </div>
@@ -608,7 +716,7 @@ export default function OwnerInfoSection({
               onClick={() => setShowEditModal(false)}
               disabled={saving}
             >
-              İptal
+              {t.cancel}
             </Button>
             <Button 
               variant="primary" 
@@ -622,7 +730,7 @@ export default function OwnerInfoSection({
                 (!formData.firstName.trim() && !formData.lastName.trim() && !formData.phone.trim() && !formData.email.trim() && !formData.nationalId.trim())
               }
             >
-              Kaydet
+              {t.save}
             </Button>
           </div>
 

@@ -15,15 +15,52 @@ interface FinancialChartProps {
   subtitle?: string;
 }
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    title: 'Aidat Tahsilat Trendi',
+    subtitle: 'Yıllık görünüm',
+    monthLabels: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+    seriesName: 'Tahsilat (DUES • PAID)',
+    months: 'Ay'
+  },
+  en: {
+    title: 'Dues Collection Trend',
+    subtitle: 'Annual view',
+    monthLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    seriesName: 'Collection (DUES • PAID)',
+    months: 'Months'
+  },
+  ar: {
+    title: 'اتجاه تحصيل الرسوم',
+    subtitle: 'عرض سنوي',
+    monthLabels: ['ينا', 'فبر', 'مار', 'أبر', 'ماي', 'يون', 'يول', 'أغس', 'سبت', 'أكت', 'نوف', 'ديس'],
+    seriesName: 'التحصيل (DUES • PAID)',
+    months: 'أشهر'
+  }
+};
+
 export default function FinancialChart({
-  title = 'Aidat Tahsilat Trendi',
-  subtitle = 'Yıllık görünüm',
+  title,
+  subtitle
 }: FinancialChartProps) {
   const currentYear = new Date().getFullYear();
   const minYear = currentYear - 5;
   const [year, setYear] = useState<number>(currentYear);
   const [monthlyTotals, setMonthlyTotals] = useState<number[]>(Array(12).fill(0));
   const [loading, setLoading] = useState<boolean>(false);
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
 
   useEffect(() => {
     let mounted = true;
@@ -54,7 +91,7 @@ export default function FinancialChart({
   const gray300 = '#D6D3D1';
   const textSecondary = '#78716C';
 
-  const monthLabels = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  const monthLabels = t.monthLabels;
 
   const options: ApexOptions = useMemo(() => ({
     chart: {
@@ -106,13 +143,13 @@ export default function FinancialChart({
   }), [gray300, monthLabels, textSecondary, gold, gray200]);
 
   const series = useMemo(() => (
-    [ { name: `${year} Tahsilat (DUES • PAID)`, data: monthlyTotals } ]
-  ), [year, monthlyTotals]);
+    [ { name: `${year} ${t.seriesName}`, data: monthlyTotals } ]
+  ), [year, monthlyTotals, t.seriesName]);
 
   return (
     <Card
-      title={title}
-      subtitle={`${year} • 12 Ay`}
+      title={title || t.title}
+      subtitle={`${year} • 12 ${t.months}`}
       icon={TrendingUp}
       headerAction={(
         <div className="flex items-center gap-2">

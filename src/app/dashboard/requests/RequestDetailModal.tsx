@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from '@/app/components/ui/Modal';
 import Badge from '@/app/components/ui/Badge';
 import Button from '@/app/components/ui/Button';
@@ -7,21 +7,217 @@ import EmptyState from '@/app/components/ui/EmptyState';
 import { AlertCircle, RotateCcw, CheckCircle, Calendar, User, Wrench, Flag, Paperclip, MessageCircle, PauseCircle, Image, File, Download, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Ticket } from '@/services/ticket.service';
 import { ticketService } from '@/services/ticket.service';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { handleModalAction } from '@/lib/handleModalAction';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Modal title
+    modalTitle: 'Talep Detayı',
+    
+    // Tab labels
+    detail: 'Detay',
+    visual: 'Görsel',
+    
+    // Status labels
+    open: 'Açık',
+    inProgress: 'İşlemde',
+    waiting: 'Beklemede',
+    completed: 'Tamamlandı',
+    scheduled: 'Planlandı',
+    
+    // Priority labels
+    low: 'Düşük',
+    medium: 'Orta',
+    high: 'Yüksek',
+    
+    // Action button labels
+    startProgress: 'İşleme Al',
+    markWaiting: 'Beklemeye Al',
+    complete: 'Tamamlandı',
+    close: 'Kapat',
+    cancel: 'İptal Et',
+    
+    // Toast labels
+    request: 'Talep',
+    approval: 'Onay',
+    reject: 'Reddet',
+    
+    // Header labels
+    requestNumber: 'Talep No:',
+    dueDate: 'Son Tarih:',
+    noDescription: 'Açıklama yok.',
+    
+    // Info grid labels
+    requestType: 'Talep Tipi',
+    resident: 'Sakin',
+    apartment: 'Daire',
+    createdAt: 'Oluşturulma',
+    noType: 'Tip Yok',
+    noData: '--',
+    
+    // Comments section
+    comments: 'Yorumlar',
+    loadingComments: 'Yorumlar yükleniyor...',
+    noComments: 'Henüz yorum yok.',
+    user: 'Kullanıcı',
+    addComment: 'Yorum ekle...',
+    send: 'Gönder',
+    
+    // Attachments section
+    attachments: 'Ekler',
+    loading: 'Yükleniyor...',
+    noAttachments: 'Görsel ek bulunamadı',
+    noAttachmentsDesc: 'Bu talebe ait herhangi bir ek dosya yüklenmemiş.',
+    file: 'Dosya',
+    image: 'Resim',
+    close: 'Kapat',
+    previous: 'Önceki',
+    next: 'Sonraki'
+  },
+  en: {
+    // Modal title
+    modalTitle: 'Request Detail',
+    
+    // Tab labels
+    detail: 'Detail',
+    visual: 'Visual',
+    
+    // Status labels
+    open: 'Open',
+    inProgress: 'In Progress',
+    waiting: 'Waiting',
+    completed: 'Completed',
+    scheduled: 'Scheduled',
+    
+    // Priority labels
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    
+    // Action button labels
+    startProgress: 'Start Progress',
+    markWaiting: 'Mark Waiting',
+    complete: 'Complete',
+    close: 'Close',
+    cancel: 'Cancel',
+    
+    // Toast labels
+    request: 'Request',
+    approval: 'Approval',
+    reject: 'Reject',
+    
+    // Header labels
+    requestNumber: 'Request No:',
+    dueDate: 'Due Date:',
+    noDescription: 'No description.',
+    
+    // Info grid labels
+    requestType: 'Request Type',
+    resident: 'Resident',
+    apartment: 'Apartment',
+    createdAt: 'Created At',
+    noType: 'No Type',
+    noData: '--',
+    
+    // Comments section
+    comments: 'Comments',
+    loadingComments: 'Loading comments...',
+    noComments: 'No comments yet.',
+    user: 'User',
+    addComment: 'Add comment...',
+    send: 'Send',
+    
+    // Attachments section
+    attachments: 'Attachments',
+    loading: 'Loading...',
+    noAttachments: 'No visual attachments found',
+    noAttachmentsDesc: 'No attachment files have been uploaded for this request.',
+    file: 'File',
+    image: 'Image',
+    close: 'Close',
+    previous: 'Previous',
+    next: 'Next'
+  },
+  ar: {
+    // Modal title
+    modalTitle: 'تفاصيل الطلب',
+    
+    // Tab labels
+    detail: 'التفاصيل',
+    visual: 'البصري',
+    
+    // Status labels
+    open: 'مفتوح',
+    inProgress: 'قيد التنفيذ',
+    waiting: 'في الانتظار',
+    completed: 'مكتمل',
+    scheduled: 'مجدول',
+    
+    // Priority labels
+    low: 'منخفض',
+    medium: 'متوسط',
+    high: 'عالي',
+    
+    // Action button labels
+    startProgress: 'بدء التقدم',
+    markWaiting: 'وضع في الانتظار',
+    complete: 'إكمال',
+    close: 'إغلاق',
+    cancel: 'إلغاء',
+    
+    // Toast labels
+    request: 'طلب',
+    approval: 'موافقة',
+    reject: 'رفض',
+    
+    // Header labels
+    requestNumber: 'رقم الطلب:',
+    dueDate: 'تاريخ الاستحقاق:',
+    noDescription: 'لا يوجد وصف.',
+    
+    // Info grid labels
+    requestType: 'نوع الطلب',
+    resident: 'المقيم',
+    apartment: 'الشقة',
+    createdAt: 'تاريخ الإنشاء',
+    noType: 'لا يوجد نوع',
+    noData: '--',
+    
+    // Comments section
+    comments: 'التعليقات',
+    loadingComments: 'جاري تحميل التعليقات...',
+    noComments: 'لا توجد تعليقات بعد.',
+    user: 'المستخدم',
+    addComment: 'أضف تعليق...',
+    send: 'إرسال',
+    
+    // Attachments section
+    attachments: 'المرفقات',
+    loading: 'جاري التحميل...',
+    noAttachments: 'لم يتم العثور على مرفقات بصرية',
+    noAttachmentsDesc: 'لم يتم رفع أي ملفات مرفقة لهذا الطلب.',
+    file: 'ملف',
+    image: 'صورة',
+    close: 'إغلاق',
+    previous: 'السابق',
+    next: 'التالي'
+  }
+};
+
 const statusConfig = {
-  OPEN: { label: 'Açık', color: 'info', icon: AlertCircle },
-  IN_PROGRESS: { label: 'İşlemde', color: 'success', icon: RotateCcw },
-  WAITING: { label: 'Beklemede', color: 'warning', icon: PauseCircle },
-  COMPLETED: { label: 'Tamamlandı', color: 'success', icon: CheckCircle },
-  SCHEDULED: { label: 'Planlandı', color: 'primary', icon: Calendar },
+  OPEN: { label: 'open', color: 'info', icon: AlertCircle },
+  IN_PROGRESS: { label: 'inProgress', color: 'success', icon: RotateCcw },
+  WAITING: { label: 'waiting', color: 'warning', icon: PauseCircle },
+  COMPLETED: { label: 'completed', color: 'success', icon: CheckCircle },
+  SCHEDULED: { label: 'scheduled', color: 'primary', icon: Calendar },
 };
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
-  LOW: { label: 'Düşük', color: 'secondary' },
-  MEDIUM: { label: 'Orta', color: 'warning' },
-  HIGH: { label: 'Yüksek', color: 'red' },
+  LOW: { label: 'low', color: 'secondary' },
+  MEDIUM: { label: 'medium', color: 'warning' },
+  HIGH: { label: 'high', color: 'red' },
 };
 
 interface RequestDetailModalProps {
@@ -38,6 +234,18 @@ interface RequestDetailModalProps {
 }
 
 const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, item, onActionComplete, toast }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [currentItem, setCurrentItem] = useState<Ticket | null>(item);
   const [comments, setComments] = useState<any[]>([]);
@@ -143,33 +351,33 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   
   const actionButtons = [
     status === 'OPEN' && {
-      label: 'İşleme Al',
+      label: t.startProgress,
       action: 'start-progress',
-      toastLabel: 'Talep',
+      toastLabel: t.request,
       variant: 'primary',
     },
     status === 'IN_PROGRESS' && {
-      label: 'Beklemeye Al',
+      label: t.markWaiting,
       action: 'mark-waiting',
-      toastLabel: 'Talep',
+      toastLabel: t.request,
       variant: 'secondary',
     },
     (status === 'IN_PROGRESS' || status === 'OPEN') && {
-      label: 'Tamamlandı',
+      label: t.complete,
       action: 'resolve',
-      toastLabel: 'Onay',
+      toastLabel: t.approval,
       variant: 'success',
     },
     (status === 'IN_PROGRESS' || status === 'OPEN') && {
-      label: 'Kapat',
+      label: t.close,
       action: 'close',
-      toastLabel: 'Talep',
+      toastLabel: t.request,
       variant: 'warning',
     },
     (status !== 'COMPLETED' && status !== 'CLOSED' && status !== 'CANCELLED') && {
-      label: 'İptal Et',
+      label: t.cancel,
       action: 'cancel',
-      toastLabel: 'Reddet',
+      toastLabel: t.reject,
       variant: 'danger',
     },
   ].filter(Boolean);
@@ -197,13 +405,13 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   };
 
   return (
-    <Modal isOpen={open} onClose={onClose} title="Talep Detayı" size="lg" variant="glass" scrollable>
+    <Modal isOpen={open} onClose={onClose} title={t.modalTitle} size="lg" variant="glass" scrollable>
       <div className="flex flex-col h-[70vh]">
         <div className="px-1">
           <Tabs
             items={[
-              { id: 'detay', label: 'Detay' },
-              { id: 'gorsel', label: 'Görsel' },
+              { id: 'detay', label: t.detail },
+              { id: 'gorsel', label: t.visual },
             ]}
             value={activeTab}
             onValueChange={(v) => setActiveTab(v as 'detay' | 'gorsel')}
@@ -220,16 +428,16 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-4">
                 <div className="flex items-center gap-3">
                   <StatusIcon className={`h-6 w-6 text-semantic-${statusInfo.color}-500`} />
-                  <Badge variant="soft" color={statusInfo.color as any}>{statusInfo.label}</Badge>
-                  <span className="text-xs text-text-light-secondary dark:text-text-secondary ml-2">Talep No: <span className="font-semibold">{(currentItem as any).ticketNumber || (currentItem as any).requestId || (currentItem as any).id}</span></span>
+                  <Badge variant="soft" color={statusInfo.color as any}>{t[statusInfo.label as keyof typeof t]}</Badge>
+                  <span className="text-xs text-text-light-secondary dark:text-text-secondary ml-2">{t.requestNumber} <span className="font-semibold">{(currentItem as any).ticketNumber || (currentItem as any).requestId || (currentItem as any).id}</span></span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Flag className="h-4 w-4 text-primary-gold" />
-                  <Badge variant="soft" color={priorityInfo.color as any}>{priorityInfo.label}</Badge>
+                  <Badge variant="soft" color={priorityInfo.color as any}>{t[priorityInfo.label as keyof typeof t]}</Badge>
                   {currentItem.dueDate && (
                     <>
                       <Calendar className="h-4 w-4 text-primary-gold ml-4" />
-                      <span className="text-xs text-text-light-secondary dark:text-text-secondary">Son Tarih: <span className="font-semibold">{new Date(currentItem.dueDate).toLocaleDateString('tr-TR')}</span></span>
+                      <span className="text-xs text-text-light-secondary dark:text-text-secondary">{t.dueDate} <span className="font-semibold">{new Date(currentItem.dueDate).toLocaleDateString('tr-TR')}</span></span>
                     </>
                   )}
                 </div>
@@ -238,47 +446,47 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               {/* Title & Description */}
               <div>
                 <h3 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-2 leading-tight">{currentItem.title}</h3>
-                <p className="text-base text-text-light-secondary dark:text-text-secondary mb-2 leading-relaxed whitespace-pre-line">{currentItem.description || 'Açıklama yok.'}</p>
+                <p className="text-base text-text-light-secondary dark:text-text-secondary mb-2 leading-relaxed whitespace-pre-line">{currentItem.description || t.noDescription}</p>
               </div>
 
               {/* Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Talep Tipi</div>
+                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">{t.requestType}</div>
                   <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                     <Wrench className="h-4 w-4" />
-                    <span>{(currentItem as any).type || (currentItem as any).category?.label || (currentItem as any).category || 'Tip Yok'}</span>
+                    <span>{(currentItem as any).type || (currentItem as any).category?.label || (currentItem as any).category || t.noType}</span>
                   </div>
                 </div>
                 <div>
-                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Sakin</div>
+                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">{t.resident}</div>
                   <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                     <User className="h-4 w-4" />
                     <span>{((currentItem as any).creator?.firstName && (currentItem as any).creator?.lastName)
                       ? `${(currentItem as any).creator.firstName} ${(currentItem as any).creator.lastName}`
-                      : (currentItem as any).apartment?.owner || '--'}</span>
+                      : (currentItem as any).apartment?.owner || t.noData}</span>
                   </div>
                   <div className="text-xs text-text-soft">
-                    {(currentItem as any).creator?.property?.ownershipType || '--'}
+                    {(currentItem as any).creator?.property?.ownershipType || t.noData}
                   </div>
                 </div>
                 <div>
-                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Daire</div>
+                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">{t.apartment}</div>
                   <div className="text-sm text-text-light-secondary dark:text-text-secondary">
                     {(currentItem as any).property?.name 
                       || (currentItem as any).property?.propertyNumber 
                       || (currentItem as any).apartment?.number 
-                      || '--'}
+                      || t.noData}
                   </div>
                 </div>
                 <div>
-                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">Oluşturulma</div>
+                  <div className="font-medium text-text-on-light dark:text-text-on-dark mb-1">{t.createdAt}</div>
                   <div className="text-sm text-text-light-secondary dark:text-text-secondary">
                     {(currentItem as any).createdAt
                       ? new Date((currentItem as any).createdAt).toLocaleString('tr-TR')
                       : (currentItem as any).createdDate
                         ? new Date((currentItem as any).createdDate).toLocaleString('tr-TR')
-                        : '--'}
+                        : t.noData}
                   </div>
                 </div>
               </div>
@@ -287,12 +495,12 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               <div className="mt-4">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageCircle className="h-5 w-5 text-primary-gold" />
-                  <span className="font-semibold text-text-on-light dark:text-text-on-dark">Yorumlar</span>
+                  <span className="font-semibold text-text-on-light dark:text-text-on-dark">{t.comments}</span>
                 </div>
                 {commentsLoading ? (
-                  <div className="text-sm text-text-light-secondary">Yorumlar yükleniyor...</div>
+                  <div className="text-sm text-text-light-secondary">{t.loadingComments}</div>
                 ) : comments.length === 0 ? (
-                  <div className="text-sm text-text-light-secondary">Henüz yorum yok.</div>
+                  <div className="text-sm text-text-light-secondary">{t.noComments}</div>
                 ) : (
                   <div className="max-h-64 overflow-y-auto pr-1">
                     <ul className="space-y-4">
@@ -303,7 +511,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
                             <span className="font-medium text-text-on-light dark:text-text-on-dark">
                               {(comment.user?.firstName || comment.user?.lastName)
                                 ? `${comment.user.firstName || ''} ${comment.user.lastName || ''}`.trim()
-                                : (comment.author?.name || comment.authorName || 'Kullanıcı')}
+                                : (comment.author?.name || comment.authorName || t.user)}
                             </span>
                             <span className="text-xs text-text-light-secondary ml-2">{comment.createdAt ? new Date(comment.createdAt).toLocaleString('tr-TR') : ''}</span>
                           </div>
@@ -322,10 +530,10 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
             <div className="mt-2">
               <div className="flex items-center gap-2 mb-2">
                 <Paperclip className="h-5 w-5 text-primary-gold" />
-                <span className="font-semibold text-text-on-light dark:text-text-on-dark">Ekler</span>
+                <span className="font-semibold text-text-on-light dark:text-text-on-dark">{t.attachments}</span>
               </div>
               {attachmentsLoading ? (
-                <div className="text-sm text-text-light-secondary">Yükleniyor...</div>
+                <div className="text-sm text-text-light-secondary">{t.loading}</div>
               ) : (attachments && attachments.length > 0) ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {attachments.map((att: any) => {
@@ -356,7 +564,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
                           >
                             <img 
                               src={displayUrl} 
-                              alt={att.fileName || 'Resim'} 
+                              alt={att.fileName || t.image} 
                               className="w-full h-48 object-cover transition-transform group-hover:scale-105"
                             />
                             <div className="pointer-events-none absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
@@ -373,7 +581,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
                             <div className="flex items-center gap-2">
                               {isImage ? <Image className="h-4 w-4 text-primary-gold" /> : <File className="h-4 w-4 text-gray-500" />}
                               <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark truncate">
-                                {att.fileName || att.name || 'Dosya'}
+                                {att.fileName || att.name || t.file}
                               </span>
                             </div>
                             <a 
@@ -403,8 +611,8 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               ) : (
                 <EmptyState
                   icon="file"
-                  title="Görsel ek bulunamadı"
-                  description="Bu talebe ait herhangi bir ek dosya yüklenmemiş."
+                  title={t.noAttachments}
+                  description={t.noAttachmentsDesc}
                   size="md"
                   className="bg-transparent"
                 />
@@ -420,7 +628,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
             <input
               type="text"
               className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-background-light-soft dark:bg-background-soft px-3 py-2 text-sm text-on-dark placeholder:text-text-soft focus:outline-none focus:ring-2 focus:ring-primary-gold/30"
-              placeholder="Yorum ekle..."
+              placeholder={t.addComment}
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
               disabled={postingComment}
@@ -433,7 +641,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               isLoading={postingComment}
               disabled={postingComment || !newComment.trim()}
             >
-              Gönder
+              {t.send}
             </Button>
           </div>
         )}
@@ -461,7 +669,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
           <button
             onClick={() => setSelectedImageIndex(null)}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
-            aria-label="Kapat"
+            aria-label={t.close}
           >
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -480,7 +688,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               });
             }}
             className="absolute left-4 md:left-8 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
-            aria-label="Önceki"
+            aria-label={t.previous}
           >
             <ChevronLeft className="w-8 h-8" />
           </button>)}
@@ -492,7 +700,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
             return (
               <img
                 src={url}
-                alt={current?.fileName || 'Görsel'}
+                alt={current?.fileName || t.image}
                 className="w-auto h-auto max-h-[88vh] max-w-[92vw] object-contain rounded-xl shadow-2xl"
               />
             );
@@ -510,7 +718,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
               });
             }}
             className="absolute right-4 md:right-8 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition"
-            aria-label="Sonraki"
+            aria-label={t.next}
           >
             <ChevronRight className="w-8 h-8" />
           </button>)}

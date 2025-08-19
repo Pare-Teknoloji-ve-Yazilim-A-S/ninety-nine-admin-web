@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card, { CardTitle } from '@/app/components/ui/Card';
 import {
     Home,
@@ -36,43 +36,36 @@ interface TopMetricsGridProps {
     expiringAnnouncementsLoading?: boolean;
 }
 
-const defaultMetrics: MetricData[] = [
-    {
-        title: 'Toplam Konut',
-        value: '2,500',
-        icon: Home,
-        color: 'primary',
-        trend: null
+// Dil çevirileri
+const translations = {
+    tr: {
+        totalProperties: 'Toplam Konut',
+        occupiedProperties: 'Dolu Konutlar',
+        occupancy: 'doluluk',
+        openRequests: 'Açık Talepler',
+        expiringAnnouncements: 'Süresi Dolacak Duyurular',
+        within1Day: '1 gün içinde'
     },
-    {
-        title: 'Dolu Konutlar',
-        value: '2,350',
-        subtitle: '%94 doluluk',
-        icon: Users,
-        color: 'gold',
-        trend: null
+    en: {
+        totalProperties: 'Total Properties',
+        occupiedProperties: 'Occupied Properties',
+        occupancy: 'occupancy',
+        openRequests: 'Open Requests',
+        expiringAnnouncements: 'Expiring Announcements',
+        within1Day: 'within 1 day'
     },
-
-    {
-        title: 'Açık Talepler',
-        value: '47',
-        subtitle: '↓ %8',
-        icon: AlertTriangle,
-        color: 'red',
-        trend: 'down'
-    },
-    {
-        title: 'Süresi Dolacak Duyurular',
-        value: '1',
-        subtitle: '1 gün içinde',
-        icon: Clock,
-        color: 'gold',
-        trend: null
+    ar: {
+        totalProperties: 'إجمالي العقارات',
+        occupiedProperties: 'العقارات المشغولة',
+        occupancy: 'معدل الإشغال',
+        openRequests: 'الطلبات المفتوحة',
+        expiringAnnouncements: 'الإعلانات المنتهية الصلاحية',
+        within1Day: 'خلال يوم واحد'
     }
-];
+};
 
 export default function TopMetricsGrid({ 
-    metrics = defaultMetrics, 
+    metrics = [], 
     totalProperties, 
     assignedProperties, 
     loading = false,
@@ -81,27 +74,39 @@ export default function TopMetricsGrid({
     expiringAnnouncementsCount,
     expiringAnnouncementsLoading = false
 }: TopMetricsGridProps) {
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+    // Dil tercihini localStorage'dan al
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
     // Create dynamic metrics based on real data
     const dynamicMetrics: MetricData[] = [
         {
-            title: 'Toplam Konut',
+            title: t.totalProperties,
             value: loading ? '...' : totalProperties?.toLocaleString() || '0',
             icon: Home,
             color: 'primary',
             trend: null
         },
         {
-            title: 'Dolu Konutlar',
+            title: t.occupiedProperties,
             value: loading ? '...' : assignedProperties?.toLocaleString() || '0',
             subtitle: (totalProperties && assignedProperties) ? 
-                `%${Math.round((assignedProperties / totalProperties) * 100)} doluluk` : undefined,
+                `%${Math.round((assignedProperties / totalProperties) * 100)} ${t.occupancy}` : undefined,
             icon: Users,
             color: 'gold',
             trend: null
         },
-
         {
-            title: 'Açık Talepler',
+            title: t.openRequests,
             value: ticketStatsLoading ? '...' : ticketStats?.currentMonthCount?.toString() || '0',
             subtitle: ticketStats ? 
                 `${ticketStats.changeDirection === 'increase' ? '↑' : '↓'} %${ticketStats.percentageChange}` : 
@@ -111,9 +116,9 @@ export default function TopMetricsGrid({
             trend: ticketStats?.changeDirection === 'increase' ? 'up' : 'down'
         },
         {
-            title: 'Süresi Dolacak Duyurular',
+            title: t.expiringAnnouncements,
             value: expiringAnnouncementsLoading ? '...' : (expiringAnnouncementsCount ?? 0).toString(),
-            subtitle: '1 gün içinde',
+            subtitle: t.within1Day,
             icon: Clock,
             color: 'gold',
             trend: null

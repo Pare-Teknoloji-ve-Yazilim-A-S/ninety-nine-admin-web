@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Card from '@/app/components/ui/Card';
 import Badge from '@/app/components/ui/Badge';
@@ -16,6 +16,55 @@ interface MaintenanceRequestsProps {
     error?: string | null;
     totalCount?: number;
 }
+
+// Dil çevirileri
+const translations = {
+    tr: {
+        title: 'Bakım & Arıza Talepleri',
+        subtitle: 'Aktif servis talepleri',
+        open: 'Açık',
+        inProgress: 'Devam Ediyor',
+        waiting: 'Bekliyor',
+        resolved: 'Çözüldü',
+        closed: 'Kapalı',
+        urgent: 'Acil',
+        high: 'Yüksek',
+        medium: 'Normal',
+        low: 'Düşük',
+        unknown: 'Bilinmiyor',
+        viewAll: 'Tümünü Görüntüle'
+    },
+    en: {
+        title: 'Maintenance & Repair Requests',
+        subtitle: 'Active service requests',
+        open: 'Open',
+        inProgress: 'In Progress',
+        waiting: 'Waiting',
+        resolved: 'Resolved',
+        closed: 'Closed',
+        urgent: 'Urgent',
+        high: 'High',
+        medium: 'Medium',
+        low: 'Low',
+        unknown: 'Unknown',
+        viewAll: 'View All'
+    },
+    ar: {
+        title: 'طلبات الصيانة والإصلاح',
+        subtitle: 'طلبات الخدمة النشطة',
+        open: 'مفتوح',
+        inProgress: 'قيد التنفيذ',
+        waiting: 'في الانتظار',
+        resolved: 'تم الحل',
+        closed: 'مغلق',
+        urgent: 'عاجل',
+        high: 'عالي',
+        medium: 'متوسط',
+        low: 'منخفض',
+        unknown: 'غير معروف',
+        viewAll: 'عرض الكل'
+    }
+};
 
 // Helper function to get priority color
 const getPriorityColor = (priority: string) => {
@@ -48,51 +97,63 @@ const getStatusColor = (status: string) => {
     }
 };
 
-// Helper function to get status label
-const getStatusLabel = (status: string) => {
-    switch (status?.toUpperCase()) {
-        case 'OPEN':
-            return 'Açık';
-        case 'IN_PROGRESS':
-            return 'Devam Ediyor';
-        case 'WAITING':
-            return 'Bekliyor';
-        case 'RESOLVED':
-            return 'Çözüldü';
-        case 'CLOSED':
-            return 'Kapalı';
-        default:
-            return status || 'Bilinmiyor';
-    }
-};
-
-// Helper function to get priority label
-const getPriorityLabel = (priority: string) => {
-    switch (priority?.toUpperCase()) {
-        case 'URGENT':
-            return 'Acil';
-        case 'HIGH':
-            return 'Yüksek';
-        case 'MEDIUM':
-            return 'Normal';
-        case 'LOW':
-            return 'Düşük';
-        default:
-            return priority || 'Bilinmiyor';
-    }
-};
-
 export default function MaintenanceRequests({
     requests = [],
-    title = "Bakım & Arıza Talepleri",
-    subtitle = "Aktif servis talepleri",
+    title,
+    subtitle,
     loading = false,
     error = null,
     totalCount = 0
 }: MaintenanceRequestsProps) {
     const router = useRouter();
     const [currentPage, setCurrentPage] = useState(1);
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
     const itemsPerPage = 5;
+
+    // Dil tercihini localStorage'dan al
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
+    // Helper function to get status label
+    const getStatusLabel = (status: string) => {
+        switch (status?.toUpperCase()) {
+            case 'OPEN':
+                return t.open;
+            case 'IN_PROGRESS':
+                return t.inProgress;
+            case 'WAITING':
+                return t.waiting;
+            case 'RESOLVED':
+                return t.resolved;
+            case 'CLOSED':
+                return t.closed;
+            default:
+                return status || t.unknown;
+        }
+    };
+
+    // Helper function to get priority label
+    const getPriorityLabel = (priority: string) => {
+        switch (priority?.toUpperCase()) {
+            case 'URGENT':
+                return t.urgent;
+            case 'HIGH':
+                return t.high;
+            case 'MEDIUM':
+                return t.medium;
+            case 'LOW':
+                return t.low;
+            default:
+                return priority || t.unknown;
+        }
+    };
 
     // Calculate pagination
     const totalPages = Math.ceil(requests.length / itemsPerPage);
@@ -112,7 +173,7 @@ export default function MaintenanceRequests({
         setCurrentPage(prev => Math.min(prev + 1, totalPages));
     };
     return (
-        <Card title={title} subtitle={`${subtitle} (${totalCount} toplam)`}>
+        <Card title={title || t.title} subtitle={`${subtitle || t.subtitle} (${totalCount} toplam)`}>
             {loading && (
                 <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
@@ -138,7 +199,7 @@ export default function MaintenanceRequests({
 
             {!loading && !error && requests.length === 0 && (
                 <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                    <p>Henüz bakım talebi bulunmuyor.</p>
+                    <p>{currentLanguage === 'tr' ? 'Henüz bakım talebi bulunmuyor.' : 'No maintenance requests found yet.'}</p>
                 </div>
             )}
 
@@ -157,7 +218,7 @@ export default function MaintenanceRequests({
                                         {request.title}
                                     </p>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        {request.property?.name || request.property?.propertyNumber || 'Bilinmeyen Konut'} - {getPriorityLabel(request.priority)} öncelik
+                                        {request.property?.name || request.property?.propertyNumber || (currentLanguage === 'tr' ? 'Bilinmeyen Konut' : 'Unknown Property')} - {getPriorityLabel(request.priority)} {currentLanguage === 'tr' ? 'öncelik' : 'priority'}
                                     </p>
                                 </div>
                             </div>
@@ -175,7 +236,7 @@ export default function MaintenanceRequests({
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                                Sayfa {currentPage} / {totalPages} ({requests.length} toplam)
+                                {currentLanguage === 'tr' ? 'Sayfa' : 'Page'} {currentPage} / {totalPages} ({requests.length} {currentLanguage === 'tr' ? 'toplam' : 'total'})
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Button
@@ -209,7 +270,7 @@ export default function MaintenanceRequests({
                                 onClick={handleViewAll}
                                 className="w-full text-primary-gold hover:text-primary-gold/80 hover:bg-primary-gold/10"
                             >
-                                Tümünü Görüntüle ({totalCount - requests.length} daha)
+                                {t.viewAll} ({totalCount - requests.length} {currentLanguage === 'tr' ? 'daha' : 'more'})
                                 <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </div>

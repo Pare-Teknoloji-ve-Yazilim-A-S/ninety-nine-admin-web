@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
@@ -7,6 +7,67 @@ import Badge from '@/app/components/ui/Badge';
 import { BasicInfo, UpdateBasicInfoDto } from '@/services/types/unit-detail.types';
 import { Edit, Save, X, Home } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    edit: 'Düzenle',
+    cancel: 'İptal',
+    save: 'Kaydet',
+    occupied: 'Dolu',
+    available: 'Müsait',
+    updateSuccess: 'Konut bilgileri güncellendi',
+    updateError: 'Güncelleme başarısız oldu',
+    floor: 'Kat',
+    // Field labels
+    apartmentNumber: 'Daire No',
+    block: 'Blok',
+    floorLabel: 'Kat',
+    propertyType: 'Mülk Tipi',
+    apartmentType: 'Daire Tipi',
+    area: 'Alan (m²)',
+    status: 'Durum',
+    basicInfoTitle: 'Konut Temel Bilgileri'
+  },
+  en: {
+    edit: 'Edit',
+    cancel: 'Cancel',
+    save: 'Save',
+    occupied: 'Occupied',
+    available: 'Available',
+    updateSuccess: 'Unit information updated',
+    updateError: 'Update failed',
+    floor: 'Floor',
+    // Field labels
+    apartmentNumber: 'Apartment No',
+    block: 'Block',
+    floorLabel: 'Floor',
+    propertyType: 'Property Type',
+    apartmentType: 'Apartment Type',
+    area: 'Area (m²)',
+    status: 'Status',
+    basicInfoTitle: 'Basic Unit Information'
+  },
+  ar: {
+    edit: 'تعديل',
+    cancel: 'إلغاء',
+    save: 'حفظ',
+    occupied: 'مشغول',
+    available: 'متاح',
+    updateSuccess: 'تم تحديث معلومات الوحدة',
+    updateError: 'فشل التحديث',
+    floor: 'طابق',
+    // Field labels
+    apartmentNumber: 'رقم الشقة',
+    block: 'كتلة',
+    floorLabel: 'طابق',
+    propertyType: 'نوع العقار',
+    apartmentType: 'نوع الشقة',
+    area: 'المساحة (م²)',
+    status: 'الحالة',
+    basicInfoTitle: 'بيانات أساسية للوحدة'
+  }
+};
 
 interface BasicInfoSectionProps {
   basicInfo: BasicInfo;
@@ -22,6 +83,7 @@ export default function BasicInfoSection({
   canEdit = true 
 }: BasicInfoSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
   const [formData, setFormData] = useState({
     apartmentNumber: basicInfo.data.apartmentNumber.value,
     block: basicInfo.data.block.value,
@@ -33,6 +95,41 @@ export default function BasicInfoSection({
   });
   const [saving, setSaving] = useState(false);
   const toast = useToast();
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
+  // Helper function to translate field labels
+  const getTranslatedLabel = (fieldName: string): string => {
+    const labelMap: { [key: string]: string } = {
+      'Daire No': t.apartmentNumber,
+      'Blok': t.block,
+      'Kat': t.floorLabel,
+      'Mülk Tipi': t.propertyType,
+      'Daire Tipi': t.apartmentType,
+      'Alan (m²)': t.area,
+      'Durum': t.status
+    };
+    
+    return labelMap[fieldName] || fieldName;
+  };
+
+  // Helper function to translate section title
+  const getTranslatedTitle = (title: string): string => {
+    const titleMap: { [key: string]: string } = {
+      'Konut Temel Bilgileri': t.basicInfoTitle
+    };
+    
+    return titleMap[title] || title;
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -75,9 +172,9 @@ export default function BasicInfoSection({
         status: formData.status as 'occupied' | 'available'
       });
       setIsEditing(false);
-      toast.success('Konut bilgileri güncellendi');
+      toast.success(t.updateSuccess);
     } catch (error) {
-      toast.error('Güncelleme başarısız oldu');
+      toast.error(t.updateError);
     } finally {
       setSaving(false);
     }
@@ -94,8 +191,8 @@ export default function BasicInfoSection({
   const getStatusLabel = (status: string): string => {
     // Direct mapping for simplicity
     switch (status) {
-      case 'occupied': return 'Dolu';
-      case 'available': return 'Müsait';
+      case 'occupied': return t.occupied;
+      case 'available': return t.available;
       default:
         // Fallback to options if available
         const option = basicInfo.data.status.options.find(opt => 
@@ -114,7 +211,7 @@ export default function BasicInfoSection({
               <Home className="h-5 w-5 text-primary-gold" />
             </div>
             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-              {basicInfo.title}
+              {getTranslatedTitle(basicInfo.title)}
             </h3>
             {!isEditing && (
               <Badge variant="soft" color={getStatusColor(basicInfo.data.status.value)}>
@@ -130,7 +227,7 @@ export default function BasicInfoSection({
               onClick={handleEdit}
               disabled={loading}
             >
-              Düzenle
+              {t.edit}
             </Button>
           )}
           {isEditing && (
@@ -142,7 +239,7 @@ export default function BasicInfoSection({
                 onClick={handleCancel}
                 disabled={saving}
               >
-                İptal
+                {t.cancel}
               </Button>
               <Button
                 variant="primary"
@@ -151,7 +248,7 @@ export default function BasicInfoSection({
                 onClick={handleSave}
                 isLoading={saving}
               >
-                Kaydet
+                {t.save}
               </Button>
             </div>
           )}
@@ -161,7 +258,7 @@ export default function BasicInfoSection({
           {/* Apartment Number */}
           <div>
             <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
-              {basicInfo.data.apartmentNumber.label}
+              {getTranslatedLabel(basicInfo.data.apartmentNumber.label)}
               {basicInfo.data.apartmentNumber.required && <span className="text-primary-red ml-1">*</span>}
             </label>
             {isEditing ? (
@@ -181,16 +278,14 @@ export default function BasicInfoSection({
           {/* Block */}
           <div>
             <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
-              {basicInfo.data.block.label}
+              {getTranslatedLabel(basicInfo.data.block.label)}
               {basicInfo.data.block.required && <span className="text-primary-red ml-1">*</span>}
             </label>
             {isEditing ? (
-              <Select
+              <Input
                 value={formData.block}
                 onChange={(e: any) => setFormData({ ...formData, block: e.target.value })}
-                options={basicInfo.data.block.options.map(opt => 
-                  typeof opt === 'string' ? { value: opt, label: opt } : opt
-                )}
+                placeholder="Örn: A Blok"
                 disabled={saving}
               />
             ) : (
@@ -203,7 +298,7 @@ export default function BasicInfoSection({
           {/* Floor */}
           <div>
             <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
-              {basicInfo.data.floor.label}
+              {getTranslatedLabel(basicInfo.data.floor.label)}
               {basicInfo.data.floor.required && <span className="text-primary-red ml-1">*</span>}
             </label>
             {isEditing ? (
@@ -217,7 +312,7 @@ export default function BasicInfoSection({
               />
             ) : (
               <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                {basicInfo.data.floor.value}. Kat
+                {basicInfo.data.floor.value}. {t.floor}
               </p>
             )}
           </div>
@@ -226,7 +321,7 @@ export default function BasicInfoSection({
           {basicInfo.data.propertyType && (
             <div>
               <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
-                {basicInfo.data.propertyType.label}
+                {getTranslatedLabel(basicInfo.data.propertyType.label)}
                 {basicInfo.data.propertyType.required && <span className="text-primary-red ml-1">*</span>}
               </label>
               {isEditing ? (
@@ -254,7 +349,7 @@ export default function BasicInfoSection({
           {/* Apartment Type */}
           <div>
             <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
-              {basicInfo.data.apartmentType.label}
+              {getTranslatedLabel(basicInfo.data.apartmentType.label)}
               {basicInfo.data.apartmentType.required && <span className="text-primary-red ml-1">*</span>}
             </label>
             {isEditing ? (
@@ -276,7 +371,7 @@ export default function BasicInfoSection({
           {/* Area */}
           <div>
             <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
-              {basicInfo.data.area.label}
+              {getTranslatedLabel(basicInfo.data.area.label)}
               {basicInfo.data.area.required && <span className="text-primary-red ml-1">*</span>}
             </label>
             {isEditing ? (
@@ -298,7 +393,7 @@ export default function BasicInfoSection({
           {/* Status */}
           <div>
             <label className="block text-sm font-medium text-text-light-muted dark:text-text-muted mb-2">
-              {basicInfo.data.status.label}
+              {getTranslatedLabel(basicInfo.data.status.label)}
               {basicInfo.data.status.required && <span className="text-primary-red ml-1">*</span>}
             </label>
             {isEditing ? (

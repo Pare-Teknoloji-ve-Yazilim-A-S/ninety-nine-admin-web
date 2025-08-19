@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Skeleton from '@/app/components/ui/Skeleton';
 import { TicketSummary } from '../hooks/useTicketSummary';
@@ -10,6 +10,43 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Stats labels
+    openRequests: 'Açık Talepler',
+    inProgress: 'İşlemde',
+    pending: 'Bekleyen',
+    resolved: 'Çözülen',
+    overdue: 'Geciken',
+    
+    // Error messages
+    dataLoadError: 'Veri yüklenemedi'
+  },
+  en: {
+    // Stats labels
+    openRequests: 'Open Requests',
+    inProgress: 'In Progress',
+    pending: 'Pending',
+    resolved: 'Resolved',
+    overdue: 'Overdue',
+    
+    // Error messages
+    dataLoadError: 'Failed to load data'
+  },
+  ar: {
+    // Stats labels
+    openRequests: 'الطلبات المفتوحة',
+    inProgress: 'قيد التنفيذ',
+    pending: 'في الانتظار',
+    resolved: 'تم الحل',
+    overdue: 'متأخر',
+    
+    // Error messages
+    dataLoadError: 'فشل في تحميل البيانات'
+  }
+};
+
 interface RequestsQuickStatsProps {
   summary: TicketSummary | null;
   loading: boolean;
@@ -19,6 +56,18 @@ export default function RequestsQuickStats({
   summary,
   loading = false
 }: RequestsQuickStatsProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   console.log('🔍 RequestsQuickStats render:', { 
     summary, 
     loading,
@@ -55,7 +104,7 @@ export default function RequestsQuickStats({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-6">
         <Card className="p-6 col-span-full">
           <div className="text-center text-text-light-muted dark:text-text-muted">
-            Veri yüklenemedi
+            {t.dataLoadError}
           </div>
         </Card>
       </div>
@@ -65,35 +114,35 @@ export default function RequestsQuickStats({
   // Ticket summary kartları
   const stats = [
     {
-      label: 'Açık Talepler',
+      label: t.openRequests,
       value: summary.openTickets,
       icon: <Clock className="h-6 w-6" />,
       color: '#3B82F6', // Blue
       bgColor: '#DBEAFE'
     },
     {
-      label: 'İşlemde',
+      label: t.inProgress,
       value: summary.inProgressTickets,
       icon: <AlertTriangle className="h-6 w-6" />,
       color: '#F59E0B', // Amber
       bgColor: '#FEF3C7'
     },
     {
-      label: 'Bekleyen',
+      label: t.pending,
       value: summary.waitingTickets,
       icon: <Calendar className="h-6 w-6" />,
       color: '#8B5CF6', // Purple
       bgColor: '#EDE9FE'
     },
     {
-      label: 'Çözülen',
+      label: t.resolved,
       value: summary.resolvedTickets,
       icon: <CheckCircle className="h-6 w-6" />,
       color: '#10B981', // Green
       bgColor: '#D1FAE5'
     },
     {
-      label: 'Geciken',
+      label: t.overdue,
       value: summary.overdueTickets,
       icon: <AlertCircle className="h-6 w-6" />,
       color: '#DC2626', // Red

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -59,95 +59,98 @@ interface SubMenuItemProps {
     href: string;
 }
 
-const menuItems: MenuItemProps[] = [
-    {
-        title: 'Dashboard',
-        icon: BarChart3,
-        href: '/dashboard'
+// Dil çevirileri
+const translations = {
+    tr: {
+        dashboard: 'Dashboard',
+        unitManagement: 'Konut Yönetimi',
+        residentManagement: 'Sakin Yönetimi',
+        serviceRequestManagement: 'Hizmet/Talep Yönetimi',
+        financialOperations: 'Finansal İşlemler',
+        staffManagement: 'Personel Yönetimi',
+        announcements: 'Duyurular',
+        settings: 'Ayarlar',
+        profile: 'Profil',
+        logout: 'Çıkış',
+        adminUser: 'Admin Kullanıcısı',
+        manager: 'Yönetici'
     },
-    {
-        title: 'Konut Yönetimi',
-        icon: Building,
-        href: '/dashboard/units'
+    en: {
+        dashboard: 'Dashboard',
+        unitManagement: 'Unit Management',
+        residentManagement: 'Resident Management',
+        serviceRequestManagement: 'Service/Request Management',
+        financialOperations: 'Financial Operations',
+        staffManagement: 'Staff Management',
+        announcements: 'Announcements',
+        settings: 'Settings',
+        profile: 'Profile',
+        logout: 'Logout',
+        adminUser: 'Admin User',
+        manager: 'Manager'
     },
-    {
-        title: 'Sakin Yönetimi',
-        icon: User,
-        href: '/dashboard/residents'
-    },
-    {
-        title: 'Hizmet/Talep Yönetimi',
-        icon: Wrench,
-        href: '/dashboard/requests'
-    },
-    {
-        title: 'Finansal İşlemler',
-        icon: DollarSign,
-        href: '/dashboard/financial'
-    },
-    {
-        title: 'Personel Yönetimi',
-        icon: UserCheck,
-        href: '/dashboard/staff'
-    },
-    {
-        title: 'Duyurular',
-        icon: Megaphone,
-        href: '/dashboard/announcements'
-    },
-    // İlanlar menü öğesi kaldırıldı
-    {
-        title: 'Ayarlar',
-        icon: Settings,
-        href: '/dashboard/settings'
+    ar: {
+        dashboard: 'لوحة التحكم',
+        unitManagement: 'إدارة الوحدات',
+        residentManagement: 'إدارة السكان',
+        serviceRequestManagement: 'إدارة الخدمات/الطلبات',
+        financialOperations: 'العمليات المالية',
+        staffManagement: 'إدارة الموظفين',
+        announcements: 'الإعلانات',
+        settings: 'الإعدادات',
+        profile: 'الملف الشخصي',
+        logout: 'تسجيل الخروج',
+        adminUser: 'مستخدم الإدارة',
+        manager: 'مدير'
     }
-    // {
-    //     title: 'Finansal İşlemler',
-    //     icon: DollarSign,
-    //     children: [
-    //         { title: 'Aidat Takibi', icon: CreditCard, href: '/dashboard/financial/dues' },
-    //         { title: 'Ödeme Geçmişi', icon: History, href: '/dashboard/financial/payments' },
-    //         { title: 'Borç Raporları', icon: FileText, href: '/dashboard/financial/debts' },
-    //         { title: 'Fatura Yönetimi', icon: Receipt, href: '/dashboard/financial/bills' }
-    //     ]
-    // },
-    // {
-    //     title: 'Duyurular',
-    //     icon: Megaphone,
-    //     children: [
-    //         { title: 'Aktif Duyurular', icon: Bell, href: '/dashboard/announcements' },
-    //         { title: 'Yeni Duyuru', icon: Plus, href: '/dashboard/announcements/create' },
-    //         { title: 'Duyuru Arşivi', icon: Archive, href: '/dashboard/announcements/archive' }
-    //     ]
-    // },
-    // {
-    //     title: 'Hizmet Talepleri',
-    //     icon: Wrench,
-    //     children: [
-    //         { title: 'Açık Talepler', icon: AlertCircle, href: '/dashboard/requests' },
-    //         { title: 'İşlem Bekleyenler', icon: Clock, href: '/dashboard/requests/waiting' },
-    //         { title: 'Tamamlananlar', icon: CheckCircle, href: '/dashboard/requests/resolved' }
-    //     ]
-    // },
-    // {
-    //     title: 'Raporlar',
-    //     icon: TrendingUp,
-    //     children: [
-    //         { title: 'Mali Raporlar', icon: FileBarChart, href: '/dashboard/reports/financial' },
-    //         { title: 'Doluluk Raporları', icon: PieChart, href: '/dashboard/reports/occupancy' },
-    //         { title: 'Hizmet Raporları', icon: Activity, href: '/dashboard/reports/services' }
-    //     ]
-    // },
-    // {
-    //     title: 'Ayarlar',
-    //     icon: Settings,
-    //     children: [
-    //         { title: 'Site Bilgileri', icon: Info, href: '/settings/website-info' },
-    //         { title: 'Kullanıcı Yönetimi', icon: Shield, href: '/settings/user-management' },
-    //         { title: 'Sistem Ayarları', icon: Cog, href: '/settings/system-settings' }
-    //     ]
-    // }
-];
+};
+
+const getMenuItems = (currentLanguage: string): MenuItemProps[] => {
+    const t = translations[currentLanguage as keyof typeof translations];
+    
+    return [
+        {
+            title: t.dashboard,
+            icon: BarChart3,
+            href: '/dashboard'
+        },
+        {
+            title: t.unitManagement,
+            icon: Building,
+            href: '/dashboard/units'
+        },
+        {
+            title: t.residentManagement,
+            icon: User,
+            href: '/dashboard/residents'
+        },
+        {
+            title: t.serviceRequestManagement,
+            icon: Wrench,
+            href: '/dashboard/requests'
+        },
+        {
+            title: t.financialOperations,
+            icon: DollarSign,
+            href: '/dashboard/financial'
+        },
+        {
+            title: t.staffManagement,
+            icon: UserCheck,
+            href: '/dashboard/staff'
+        },
+        {
+            title: t.announcements,
+            icon: Megaphone,
+            href: '/dashboard/announcements'
+        },
+        {
+            title: t.settings,
+            icon: Settings,
+            href: '/dashboard/settings'
+        }
+    ];
+};
 
 function MenuItem({ title, icon: Icon, href, children, isOpen, onToggle }: MenuItemProps) {
     const pathname = usePathname();
@@ -251,6 +254,19 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const [openMenus, setOpenMenus] = useState<Set<string>>(new Set(['Dashboard']));
     const { user, logout } = useAuth();
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+    // Dil tercihini localStorage'dan al
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Menü öğelerini dil bazlı al
+    const menuItems = getMenuItems(currentLanguage);
+    const t = translations[currentLanguage as keyof typeof translations];
 
     const handleLogout = async () => {
         try {
@@ -337,10 +353,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             {/* User Info */}
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-text-on-light dark:text-text-on-dark truncate">
-                                    {`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Admin Kullanıcısı'}
+                                    {`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || t.adminUser}
                                 </p>
                                 <p className="text-xs text-text-light-muted dark:text-text-muted truncate">
-                                    {user?.role?.name || 'Yönetici'}
+                                    {user?.role?.name || t.manager}
                                 </p>
                             </div>
 
@@ -359,14 +375,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                 className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-primary-gold/10 dark:bg-primary-gold/20 text-primary-gold hover:bg-primary-gold/20 dark:hover:bg-primary-gold/30 transition-colors"
                             >
                                 <User className="h-3 w-3" />
-                                Profil
+                                {t.profile}
                             </Link>
                             <button
                                 onClick={handleLogout}
                                 className="flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg text-text-light-secondary dark:text-text-secondary hover:bg-hover-light-cream dark:hover:bg-hover-gold-bg hover:text-primary-red transition-colors"
                             >
                                 <LogOut className="h-3 w-3" />
-                                Çıkış
+                                {t.logout}
                             </button>
                         </div>
                     </div>

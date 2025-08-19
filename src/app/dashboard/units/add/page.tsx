@@ -24,6 +24,245 @@ import {
     Plus,
     Minus
 } from 'lucide-react';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    title: 'Yeni Konut Ekle',
+    welcome: 'Konut ekleme formu',
+    home: 'Ana Sayfa',
+    units: 'Konutlar',
+    addUnit: 'Yeni Konut Ekle',
+    back: 'Geri Dön',
+    cancel: 'İptal',
+    save: 'Kaydet',
+    success: 'Başarılı!',
+    unitSaved: 'Konut başarıyla kaydedildi!',
+    whatNext: 'Şimdi ne yapmak istersiniz?',
+    addNewUnit: 'Yeni Konut Ekle',
+    backToList: 'Konut Listesine Dön',
+    infoTitle: 'Temel bilgileri girerek konutu kaydedin, detayları sonra ekleyin',
+    infoDescription: 'Konut kaydedildikten sonra detay sayfasından tüm bilgileri ekleyebilir ve düzenleyebilirsiniz.',
+    requiredInfo: 'ZORUNLU BİLGİLER',
+    basicInfo: 'Temel Bilgiler',
+    locationArea: 'Konum ve Alan',
+    roomInfo: 'Oda Bilgileri',
+    features: 'Özellikler',
+    amenities: 'Olanaklar',
+    technicalFeatures: 'Teknik Özellikler',
+    specialFeatures: 'Özel Özellikler',
+    customAmenities: 'Özel Olanaklar',
+    unitName: 'Konut Adı',
+    unitNumber: 'Konut Numarası',
+    unitType: 'Konut Tipi',
+    unitStatus: 'Konut Durumu',
+    propertyGroup: 'Konut Grubu',
+    blockNumber: 'Blok Numarası',
+    floorNumber: 'Kat Numarası',
+    area: 'Alan (m²)',
+    villaFloorCount: 'Villa Kat Sayısı',
+    bedrooms: 'Yatak Odası',
+    bathrooms: 'Banyo',
+    living: 'Salon',
+    kitchen: 'Mutfak',
+    pool: 'Havuz',
+    smartHome: 'Akıllı Ev',
+    gym: 'Spor Salonu',
+    spa: 'Spa',
+    garden: 'Bahçe',
+    generator: 'Jeneratör',
+    solarPanel: 'Güneş Paneli',
+    securitySystem: 'Güvenlik Sistemi',
+    seaView: 'Deniz Manzarası',
+    beachAccess: 'Plaj Erişimi',
+    vipLocation: 'VIP Konum',
+    privateElevator: 'Özel Asansör',
+    addCustomAmenity: 'Özel olanak ekle',
+    saveUnit: 'Konutu Kaydet',
+    selectOption: 'Seçiniz',
+    residence: 'Konut',
+    villa: 'Villa',
+    commercial: 'Ticari',
+    office: 'Ofis',
+    empty: 'Boş',
+    forSale: 'Satılık',
+    forRent: 'Kiralık',
+    occupied: 'Dolu',
+    ownerOccupied: 'Malik Dolu',
+    tenantOccupied: 'Kiracı Dolu',
+    guestOccupied: 'Misafir Dolu',
+    underMaintenance: 'Bakımda',
+    reserved: 'Rezerve',
+    legalIssue: 'Yasal Sorun',
+    underConstruction: 'İnşaat Halinde',
+    emergencyLock: 'Acil Kilit',
+    other: 'Diğer',
+    required: 'zorunludur',
+    areaValidation: 'Alan 0-999999 arasında olmalıdır',
+    floorValidation: 'Kat numarası 0-999 arasında olmalıdır',
+    villaFloorValidation: 'Villa kat sayısı 1-50 arasında olmalıdır',
+    unitCreationError: 'Konut oluşturulamadı',
+    unitCreationFailed: 'Konut oluşturulurken bir hata oluştu',
+    unitNumberLabel: 'Konut No'
+  },
+  en: {
+    title: 'Add New Unit',
+    welcome: 'Unit addition form',
+    home: 'Home',
+    units: 'Units',
+    addUnit: 'Add New Unit',
+    back: 'Go Back',
+    cancel: 'Cancel',
+    save: 'Save',
+    success: 'Success!',
+    unitSaved: 'Unit saved successfully!',
+    whatNext: 'What would you like to do now?',
+    addNewUnit: 'Add New Unit',
+    backToList: 'Back to Unit List',
+    infoTitle: 'Save the unit by entering basic information, add details later',
+    infoDescription: 'After the unit is saved, you can add and edit all information from the detail page.',
+    requiredInfo: 'REQUIRED INFORMATION',
+    basicInfo: 'Basic Information',
+    locationArea: 'Location and Area',
+    roomInfo: 'Room Information',
+    features: 'Features',
+    amenities: 'Amenities',
+    technicalFeatures: 'Technical Features',
+    specialFeatures: 'Special Features',
+    customAmenities: 'Custom Amenities',
+    unitName: 'Unit Name',
+    unitNumber: 'Unit Number',
+    unitType: 'Unit Type',
+    unitStatus: 'Unit Status',
+    propertyGroup: 'Property Group',
+    blockNumber: 'Block Number',
+    floorNumber: 'Floor Number',
+    area: 'Area (m²)',
+    villaFloorCount: 'Villa Floor Count',
+    bedrooms: 'Bedrooms',
+    bathrooms: 'Bathrooms',
+    living: 'Living Room',
+    kitchen: 'Kitchen',
+    pool: 'Pool',
+    smartHome: 'Smart Home',
+    gym: 'Gym',
+    spa: 'Spa',
+    garden: 'Garden',
+    generator: 'Generator',
+    solarPanel: 'Solar Panel',
+    securitySystem: 'Security System',
+    seaView: 'Sea View',
+    beachAccess: 'Beach Access',
+    vipLocation: 'VIP Location',
+    privateElevator: 'Private Elevator',
+    addCustomAmenity: 'Add custom amenity',
+    saveUnit: 'Save Unit',
+    selectOption: 'Select',
+    residence: 'Residence',
+    villa: 'Villa',
+    commercial: 'Commercial',
+    office: 'Office',
+    empty: 'Empty',
+    forSale: 'For Sale',
+    forRent: 'For Rent',
+    occupied: 'Occupied',
+    ownerOccupied: 'Owner Occupied',
+    tenantOccupied: 'Tenant Occupied',
+    guestOccupied: 'Guest Occupied',
+    underMaintenance: 'Under Maintenance',
+    reserved: 'Reserved',
+    legalIssue: 'Legal Issue',
+    underConstruction: 'Under Construction',
+    emergencyLock: 'Emergency Lock',
+    other: 'Other',
+    required: 'is required',
+    areaValidation: 'Area must be between 0-999999',
+    floorValidation: 'Floor number must be between 0-999',
+    villaFloorValidation: 'Villa floor count must be between 1-50',
+    unitCreationError: 'Unit could not be created',
+    unitCreationFailed: 'An error occurred while creating the unit',
+    unitNumberLabel: 'Unit No'
+  },
+  ar: {
+    title: 'إضافة وحدة جديدة',
+    welcome: 'نموذج إضافة الوحدة',
+    home: 'الرئيسية',
+    units: 'الوحدات',
+    addUnit: 'إضافة وحدة جديدة',
+    back: 'العودة',
+    cancel: 'إلغاء',
+    save: 'حفظ',
+    success: 'نجح!',
+    unitSaved: 'تم حفظ الوحدة بنجاح!',
+    whatNext: 'ماذا تريد أن تفعل الآن؟',
+    addNewUnit: 'إضافة وحدة جديدة',
+    backToList: 'العودة إلى قائمة الوحدات',
+    infoTitle: 'احفظ الوحدة بإدخال المعلومات الأساسية، أضف التفاصيل لاحقاً',
+    infoDescription: 'بعد حفظ الوحدة، يمكنك إضافة وتحرير جميع المعلومات من صفحة التفاصيل.',
+    requiredInfo: 'المعلومات المطلوبة',
+    basicInfo: 'المعلومات الأساسية',
+    locationArea: 'الموقع والمساحة',
+    roomInfo: 'معلومات الغرف',
+    features: 'الميزات',
+    amenities: 'المرافق',
+    technicalFeatures: 'الميزات التقنية',
+    specialFeatures: 'الميزات الخاصة',
+    customAmenities: 'المرافق المخصصة',
+    unitName: 'اسم الوحدة',
+    unitNumber: 'رقم الوحدة',
+    unitType: 'نوع الوحدة',
+    unitStatus: 'حالة الوحدة',
+    propertyGroup: 'مجموعة العقار',
+    blockNumber: 'رقم الكتلة',
+    floorNumber: 'رقم الطابق',
+    area: 'المساحة (م²)',
+    villaFloorCount: 'عدد طوابق الفيلا',
+    bedrooms: 'غرف النوم',
+    bathrooms: 'الحمامات',
+    living: 'غرفة المعيشة',
+    kitchen: 'المطبخ',
+    pool: 'المسبح',
+    smartHome: 'المنزل الذكي',
+    gym: 'صالة رياضية',
+    spa: 'سبا',
+    garden: 'الحديقة',
+    generator: 'مولد',
+    solarPanel: 'لوحة شمسية',
+    securitySystem: 'نظام الأمان',
+    seaView: 'إطلالة على البحر',
+    beachAccess: 'الوصول للشاطئ',
+    vipLocation: 'موقع VIP',
+    privateElevator: 'مصعد خاص',
+    addCustomAmenity: 'إضافة مرفق مخصص',
+    saveUnit: 'حفظ الوحدة',
+    selectOption: 'اختر',
+    residence: 'سكني',
+    villa: 'فيلا',
+    commercial: 'تجاري',
+    office: 'مكتب',
+    empty: 'فارغ',
+    forSale: 'للبيع',
+    forRent: 'للإيجار',
+    occupied: 'مشغول',
+    ownerOccupied: 'مالك مشغول',
+    tenantOccupied: 'مستأجر مشغول',
+    guestOccupied: 'ضيف مشغول',
+    underMaintenance: 'تحت الصيانة',
+    reserved: 'محجوز',
+    legalIssue: 'مشكلة قانونية',
+    underConstruction: 'قيد الإنشاء',
+    emergencyLock: 'قفل طوارئ',
+    other: 'أخرى',
+    required: 'مطلوب',
+    areaValidation: 'يجب أن تكون المساحة بين 0-999999',
+    floorValidation: 'يجب أن يكون رقم الطابق بين 0-999',
+    villaFloorValidation: 'يجب أن يكون عدد طوابق الفيلا بين 1-50',
+    unitCreationError: 'لا يمكن إنشاء الوحدة',
+    unitCreationFailed: 'حدث خطأ أثناء إنشاء الوحدة',
+    unitNumberLabel: 'رقم الوحدة'
+  }
+};
 
 interface PropertyFormData {
     // Zorunlu alanlar
@@ -77,6 +316,18 @@ interface PropertyFormData {
 export default function AddPropertyPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+    // Dil tercihini localStorage'dan al
+    React.useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
     const [formData, setFormData] = useState<PropertyFormData>({
         name: '',
         propertyNumber: '',
@@ -126,9 +377,9 @@ export default function AddPropertyPage() {
 
     // Breadcrumb for add property page
     const breadcrumbItems = [
-        { label: 'Ana Sayfa', href: '/dashboard' },
-        { label: 'Konutlar', href: '/dashboard/units' },
-        { label: 'Yeni Konut Ekle', active: true }
+        { label: t.home, href: '/dashboard' },
+        { label: t.units, href: '/dashboard/units' },
+        { label: t.addUnit, active: true }
     ];
 
     // Handle input changes
@@ -190,34 +441,34 @@ export default function AddPropertyPage() {
 
         // Zorunlu alanlar
         if (!formData.name.trim()) {
-            newErrors.name = 'Konut adı zorunludur';
+            newErrors.name = `${t.unitName} ${t.required}`;
         }
 
         if (!formData.propertyNumber.trim()) {
-            newErrors.propertyNumber = 'Konut numarası zorunludur';
+            newErrors.propertyNumber = `${t.unitNumber} ${t.required}`;
         }
 
         if (!formData.type) {
-            newErrors.type = 'Konut tipi zorunludur';
+            newErrors.type = `${t.unitType} ${t.required}`;
         }
 
         if (!formData.status) {
-            newErrors.status = 'Konut durumu zorunludur';
+            newErrors.status = `${t.unitStatus} ${t.required}`;
         }
 
         // Alan validasyonu
         if (formData.area !== '' && (formData.area < 0 || formData.area > 999999)) {
-            newErrors.area = 'Alan 0-999999 arasında olmalıdır';
+            newErrors.area = t.areaValidation;
         }
 
         // Kat validasyonu
         if (formData.floor !== '' && (formData.floor < 0 || formData.floor > 999)) {
-            newErrors.floor = 'Kat numarası 0-999 arasında olmalıdır';
+            newErrors.floor = t.floorValidation;
         }
 
         // Villa kat sayısı validasyonu
         if (formData.floorCount !== '' && (formData.floorCount < 1 || formData.floorCount > 50)) {
-            newErrors.floorCount = 'Villa kat sayısı 1-50 arasında olmalıdır';
+            newErrors.floorCount = t.villaFloorValidation;
         }
 
         setErrors(newErrors);
@@ -302,7 +553,7 @@ export default function AddPropertyPage() {
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    const errorMessage = errorData.message || 'Konut oluşturulamadı';
+                    const errorMessage = errorData.message || t.unitCreationError;
                     console.error('Property creation failed:', errorData);
                     throw new Error(errorMessage);
                 }
@@ -313,7 +564,7 @@ export default function AddPropertyPage() {
                 setShowSuccess(true);
             } catch (error: any) {
                 console.error('Error in handleSubmit:', error);
-                const errorMessage = error.message || 'Konut oluşturulurken bir hata oluştu';
+                const errorMessage = error.message || t.unitCreationFailed;
                 setErrors({ submit: errorMessage });
             }
         }
@@ -326,7 +577,7 @@ export default function AddPropertyPage() {
                 <div className="min-h-screen bg-background-primary">
                     <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
                     <div className="lg:ml-72">
-                        <DashboardHeader title="Başarılı!" breadcrumbItems={breadcrumbItems} />
+                        <DashboardHeader title={t.success} breadcrumbItems={breadcrumbItems} />
                         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                             <Card className="text-center">
                                 <div className="p-8">
@@ -334,28 +585,28 @@ export default function AddPropertyPage() {
                                         <Check className="h-8 w-8 text-semantic-success-500" />
                                     </div>
                                     <h2 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-2">
-                                        Konut başarıyla kaydedildi!
+                                        {t.unitSaved}
                                     </h2>
                                     <p className="text-text-light-secondary dark:text-text-secondary mb-2">
                                         {formData.name}
                                     </p>
                                     <p className="text-sm text-text-light-muted dark:text-text-muted mb-6">
-                                        Konut No: {formData.propertyNumber}
+                                        {t.unitNumberLabel}: {formData.propertyNumber}
                                     </p>
 
                                     <div className="bg-background-light-soft dark:bg-background-soft rounded-lg p-4 mb-6">
                                         <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                            Şimdi ne yapmak istersiniz?
+                                            {t.whatNext}
                                         </p>
                                     </div>
 
                                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                         <Button variant="secondary" onClick={() => setShowSuccess(false)}>
-                                            Yeni Konut Ekle
+                                            {t.addNewUnit}
                                         </Button>
                                         <Link href="/dashboard/units">
                                             <Button variant="secondary">
-                                                Konut Listesine Dön
+                                                {t.backToList}
                                             </Button>
                                         </Link>
                                     </div>
@@ -374,27 +625,40 @@ export default function AddPropertyPage() {
                 <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
                 <div className="lg:ml-72">
                     <DashboardHeader
-                        title="Yeni Konut Ekle"
+                        title={t.title}
                         breadcrumbItems={breadcrumbItems}
                     />
 
                     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        {/* Header with Language Switcher */}
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark">
+                                    {t.title}
+                                </h1>
+                                <p className="mt-2 text-text-light-secondary dark:text-text-secondary">
+                                    {t.welcome}
+                                </p>
+                            </div>
+                            <LanguageSwitcher />
+                        </div>
+
                         {/* Page Header Actions */}
                         <div className="flex justify-between items-center mb-6">
                             <Link href="/dashboard/units">
                                 <Button variant="ghost" icon={ArrowLeft}>
-                                    Geri Dön
+                                    {t.back}
                                 </Button>
                             </Link>
 
                             <div className="flex gap-3">
                                 <Link href="/dashboard/units">
                                     <Button variant="secondary">
-                                        İptal
+                                        {t.cancel}
                                     </Button>
                                 </Link>
                                 <Button variant="primary" onClick={handleSubmit}>
-                                    Kaydet
+                                    {t.save}
                                 </Button>
                             </div>
                         </div>
@@ -405,10 +669,10 @@ export default function AddPropertyPage() {
                                 <Info className="h-5 w-5 text-primary-gold mt-0.5" />
                                 <div>
                                     <p className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                        Temel bilgileri girerek konutu kaydedin, detayları sonra ekleyin
+                                        {t.infoTitle}
                                     </p>
                                     <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
-                                        Konut kaydedildikten sonra detay sayfasından tüm bilgileri ekleyebilir ve düzenleyebilirsiniz.
+                                        {t.infoDescription}
                                     </p>
                                 </div>
                             </div>
@@ -424,7 +688,7 @@ export default function AddPropertyPage() {
                                         <div className="p-6">
                                             <div className="text-center mb-6">
                                                 <h2 className="text-xl font-bold text-text-on-light dark:text-text-on-dark">
-                                                    ZORUNLU BİLGİLER
+                                                    {t.requiredInfo}
                                                 </h2>
                                                 <div className="w-24 h-1 bg-primary-gold rounded mx-auto mt-2"></div>
                                             </div>
@@ -434,14 +698,14 @@ export default function AddPropertyPage() {
                                                 <div>
                                                     <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                                         <Building className="h-5 w-5 text-primary-gold" />
-                                                        Temel Bilgiler
+                                                        {t.basicInfo}
                                                     </h3>
                                                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                             {/* Konut Adı */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Konut Adı *
+                                                                    {t.unitName} *
                                                                 </label>
                                                                 <input
                                                                     type="text"
@@ -458,7 +722,7 @@ export default function AddPropertyPage() {
                                                             {/* Konut Numarası */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Konut Numarası *
+                                                                    {t.unitNumber} *
                                                                 </label>
                                                                 <input
                                                                     type="text"
@@ -477,18 +741,18 @@ export default function AddPropertyPage() {
                                                             {/* Konut Tipi */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Konut Tipi *
+                                                                    {t.unitType} *
                                                                 </label>
                                                                 <select
                                                                     className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.type ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'}`}
                                                                     value={formData.type}
                                                                     onChange={(e) => handleInputChange('type', e.target.value)}
                                                                 >
-                                                                    <option value="">Seçiniz</option>
-                                                                    <option value="RESIDENCE">Konut</option>
-                                                                    <option value="VILLA">Villa</option>
-                                                                    <option value="COMMERCIAL">Ticari</option>
-                                                                    <option value="OFFICE">Ofis</option>
+                                                                    <option value="">{t.selectOption}</option>
+                                                                    <option value="RESIDENCE">{t.residence}</option>
+                                                                    <option value="VILLA">{t.villa}</option>
+                                                                    <option value="COMMERCIAL">{t.commercial}</option>
+                                                                    <option value="OFFICE">{t.office}</option>
                                                                 </select>
                                                                 {errors.type && (
                                                                     <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.type}</p>
@@ -498,31 +762,31 @@ export default function AddPropertyPage() {
                                                             {/* Konut Durumu */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Konut Durumu *
+                                                                    {t.unitStatus} *
                                                                 </label>
                                                                 <select
                                                                     className={`w-full px-3 py-2 border rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold ${errors.status ? 'border-red-300 dark:border-red-600' : 'border-gray-200 dark:border-gray-700'}`}
                                                                     value={formData.status}
                                                                     onChange={(e) => handleInputChange('status', e.target.value)}
                                                                 >
-                                                                    <option value="">Seçiniz</option>
-                                                                    <optgroup label="Boş">
-                                                                        <option value="AVAILABLE">Boş</option>
-                                                                        <option value="FOR_SALE">Satılık</option>
-                                                                        <option value="FOR_RENT">Kiralık</option>
+                                                                    <option value="">{t.selectOption}</option>
+                                                                    <optgroup label={t.empty}>
+                                                                        <option value="AVAILABLE">{t.empty}</option>
+                                                                        <option value="FOR_SALE">{t.forSale}</option>
+                                                                        <option value="FOR_RENT">{t.forRent}</option>
                                                                     </optgroup>
-                                                                    <optgroup label="Dolu">
-                                                                        <option value="OCCUPIED">Dolu</option>
-                                                                        <option value="OWNER_OCCUPIED">Malik Dolu</option>
-                                                                        <option value="TENANT_OCCUPIED">Kiracı Dolu</option>
-                                                                        <option value="GUEST_OCCUPIED">Misafir Dolu</option>
+                                                                    <optgroup label={t.occupied}>
+                                                                        <option value="OCCUPIED">{t.occupied}</option>
+                                                                        <option value="OWNER_OCCUPIED">{t.ownerOccupied}</option>
+                                                                        <option value="TENANT_OCCUPIED">{t.tenantOccupied}</option>
+                                                                        <option value="GUEST_OCCUPIED">{t.guestOccupied}</option>
                                                                     </optgroup>
-                                                                    <optgroup label="Diğer">
-                                                                        <option value="UNDER_MAINTENANCE">Bakımda</option>
-                                                                        <option value="RESERVED">Rezerve</option>
-                                                                        <option value="LEGAL_ISSUE">Yasal Sorun</option>
-                                                                        <option value="UNDER_CONSTRUCTION">İnşaat Halinde</option>
-                                                                        <option value="EMERGENCY_LOCK">Acil Kilit</option>
+                                                                    <optgroup label={t.other}>
+                                                                        <option value="UNDER_MAINTENANCE">{t.underMaintenance}</option>
+                                                                        <option value="RESERVED">{t.reserved}</option>
+                                                                        <option value="LEGAL_ISSUE">{t.legalIssue}</option>
+                                                                        <option value="UNDER_CONSTRUCTION">{t.underConstruction}</option>
+                                                                        <option value="EMERGENCY_LOCK">{t.emergencyLock}</option>
                                                                     </optgroup>
                                                                 </select>
                                                                 {errors.status && (
@@ -537,14 +801,14 @@ export default function AddPropertyPage() {
                                                 <div>
                                                     <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                                         <MapPin className="h-5 w-5 text-primary-gold" />
-                                                        Konum ve Alan
+                                                        {t.locationArea}
                                                     </h3>
                                                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                             {/* Property Group */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Konut Grubu
+                                                                    {t.propertyGroup}
                                                                 </label>
                                                                 <input
                                                                     type="text"
@@ -558,7 +822,7 @@ export default function AddPropertyPage() {
                                                             {/* Blok Numarası */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Blok Numarası
+                                                                    {t.blockNumber}
                                                                 </label>
                                                                 <input
                                                                     type="text"
@@ -572,7 +836,7 @@ export default function AddPropertyPage() {
                                                             {/* Kat Numarası */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Kat Numarası
+                                                                    {t.floorNumber}
                                                                 </label>
                                                                 <input
                                                                     type="number"
@@ -591,7 +855,7 @@ export default function AddPropertyPage() {
                                                             {/* Alan */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Alan (m²)
+                                                                    {t.area}
                                                                 </label>
                                                                 <input
                                                                     type="number"
@@ -609,7 +873,7 @@ export default function AddPropertyPage() {
                                                             {/* Villa Kat Sayısı */}
                                                             <div>
                                                                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                                                    Villa Kat Sayısı
+                                                                    {t.villaFloorCount}
                                                                 </label>
                                                                 <input
                                                                     type="number"
@@ -637,13 +901,13 @@ export default function AddPropertyPage() {
                                         <div className="p-6">
                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                                 <Home className="h-5 w-5 text-primary-gold" />
-                                                Oda Bilgileri
+                                                {t.roomInfo}
                                             </h3>
                                             <div className="space-y-4">
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                                                            Yatak Odası
+                                                            {t.bedrooms}
                                                         </label>
                                                         <input
                                                             type="number"
@@ -655,7 +919,7 @@ export default function AddPropertyPage() {
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                                                            Banyo
+                                                            {t.bathrooms}
                                                         </label>
                                                         <input
                                                             type="number"
@@ -667,7 +931,7 @@ export default function AddPropertyPage() {
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                                                            Salon
+                                                            {t.living}
                                                         </label>
                                                         <input
                                                             type="number"
@@ -679,7 +943,7 @@ export default function AddPropertyPage() {
                                                     </div>
                                                     <div>
                                                         <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                                                            Mutfak
+                                                            {t.kitchen}
                                                         </label>
                                                         <input
                                                             type="number"
@@ -699,13 +963,13 @@ export default function AddPropertyPage() {
                                         <div className="p-6">
                                             <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-4 flex items-center gap-2">
                                                 <Settings className="h-5 w-5 text-primary-gold" />
-                                                Özellikler
+                                                {t.features}
                                             </h3>
                                             <div className="space-y-4">
                                                 {/* Amenities */}
                                                 <div>
                                                     <h4 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                        Olanaklar
+                                                        {t.amenities}
                                                     </h4>
                                                     <div className="space-y-2">
                                                         <label className="flex items-center gap-2">
@@ -715,7 +979,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'amenities', 'pool', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Havuz</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.pool}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -724,7 +988,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'amenities', 'smartHome', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Akıllı Ev</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.smartHome}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -733,7 +997,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'amenities', 'gym', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Spor Salonu</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.gym}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -742,7 +1006,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'amenities', 'spa', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Spa</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.spa}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -751,7 +1015,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'amenities', 'garden', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Bahçe</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.garden}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -759,7 +1023,7 @@ export default function AddPropertyPage() {
                                                 {/* Technical */}
                                                 <div>
                                                     <h4 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                        Teknik Özellikler
+                                                        {t.technicalFeatures}
                                                     </h4>
                                                     <div className="space-y-2">
                                                         <label className="flex items-center gap-2">
@@ -769,7 +1033,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'technical', 'generator', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Jeneratör</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.generator}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -778,7 +1042,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'technical', 'solarPanel', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Güneş Paneli</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.solarPanel}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -787,7 +1051,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'technical', 'securitySystem', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Güvenlik Sistemi</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.securitySystem}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -795,7 +1059,7 @@ export default function AddPropertyPage() {
                                                 {/* Special */}
                                                 <div>
                                                     <h4 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                        Özel Özellikler
+                                                        {t.specialFeatures}
                                                     </h4>
                                                     <div className="space-y-2">
                                                         <label className="flex items-center gap-2">
@@ -805,7 +1069,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'special', 'seaView', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Deniz Manzarası</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.seaView}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -814,7 +1078,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'special', 'beachAccess', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Plaj Erişimi</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.beachAccess}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -823,7 +1087,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'special', 'vipLocation', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">VIP Konum</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.vipLocation}</span>
                                                         </label>
                                                         <label className="flex items-center gap-2">
                                                             <input
@@ -832,7 +1096,7 @@ export default function AddPropertyPage() {
                                                                 onChange={(e) => handleNestedChange('features', 'special', 'privateElevator', e.target.checked)}
                                                                 className="rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                                                             />
-                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">Özel Asansör</span>
+                                                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">{t.privateElevator}</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -840,14 +1104,14 @@ export default function AddPropertyPage() {
                                                 {/* Custom Amenities */}
                                                 <div>
                                                     <h4 className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                                        Özel Olanaklar
+                                                        {t.customAmenities}
                                                     </h4>
                                                     <div className="space-y-2">
                                                         <div className="flex gap-2">
                                                             <input
                                                                 type="text"
                                                                 className="flex-1 px-2 py-1 border rounded bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold/30 focus:border-primary-gold border-gray-200 dark:border-gray-700"
-                                                                placeholder="Özel olanak ekle"
+                                                                placeholder={t.addCustomAmenity}
                                                                 value={customAmenity}
                                                                 onChange={(e) => setCustomAmenity(e.target.value)}
                                                                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomAmenity())}
@@ -892,7 +1156,7 @@ export default function AddPropertyPage() {
                             <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                                 <div className="flex flex-col items-center gap-2">
                                     <Button variant="primary" size="lg" type="submit" className="px-12">
-                                        Konutu Kaydet
+                                        {t.saveUnit}
                                     </Button>
                                     {errors.submit && (
                                         <p className="text-sm text-red-600 dark:text-red-400 mt-2">{errors.submit}</p>

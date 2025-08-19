@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import { Plus, DollarSign, Users, Settings, LucideIcon } from 'lucide-react';
@@ -19,11 +19,42 @@ interface QuickActionsProps {
     subtitle?: string;
 }
 
+// Dil çevirileri
+const translations = {
+    tr: {
+        title: 'Hızlı İşlemler',
+        subtitle: 'Sık kullanılan eylemler',
+        createRequest: 'Talep Oluştur'
+    },
+    en: {
+        title: 'Quick Actions',
+        subtitle: 'Frequently used actions',
+        createRequest: 'Create Request'
+    },
+    ar: {
+        title: 'الإجراءات السريعة',
+        subtitle: 'الإجراءات المستخدمة بكثرة',
+        createRequest: 'إنشاء طلب'
+    }
+};
+
 export default function QuickActions({
-    title = "Hızlı İşlemler",
-    subtitle = "Sık kullanılan eylemler"
+    title,
+    subtitle
 }: QuickActionsProps) {
     const [isCreateTicketModalOpen, setIsCreateTicketModalOpen] = useState(false);
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+    // Dil tercihini localStorage'dan al
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
 
     const defaultActions: QuickAction[] = [
         // {
@@ -40,7 +71,7 @@ export default function QuickActions({
         // },
 
         {
-            label: 'Talep Oluştur',
+            label: t.createRequest,
             icon: Settings,
             variant: 'secondary',
             onClick: () => setIsCreateTicketModalOpen(true)
@@ -54,7 +85,7 @@ export default function QuickActions({
 
     return (
         <>
-            <Card title={title} subtitle={subtitle}>
+            <Card title={title || t.title} subtitle={subtitle || t.subtitle}>
                 <div className="space-y-3">
                     {defaultActions.map((action, index) => (
                         <Button

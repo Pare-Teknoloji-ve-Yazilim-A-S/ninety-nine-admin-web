@@ -58,6 +58,179 @@ import { useUnitsData } from '@/hooks/useUnitsData';
 import { useUnitsFilters } from '@/hooks/useUnitsFilters';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    title: 'Daire/Villa Listesi',
+    welcome: 'Konut yönetimi',
+    home: 'Ana Sayfa',
+    units: 'Konutlar',
+    unitsList: 'Daire/Villa Listesi',
+    totalUnits: 'Konut',
+    occupied: 'Dolu',
+    vacant: 'Boş',
+    maintenance: 'Bakımda',
+    occupancyRate: 'Doluluk Oranı',
+    refresh: 'Yenile',
+    newUnit: 'Yeni Konut',
+    apartmentUnit: 'Apartman Dairesi',
+    villa: 'Villa',
+    availableUnit: 'Müsait Konut',
+    searchPlaceholder: 'Blok, daire no, sakin adı, telefon veya özellik ile ara...',
+    filters: 'Filtreler',
+    table: 'Tablo',
+    card: 'Kart',
+    unit: 'Konut',
+    type: 'Tip',
+    area: 'm²',
+    resident: 'Sakin',
+    status: 'Durum',
+    debt: 'Borç',
+    lastPayment: 'Son Ödeme',
+    available: 'Boş',
+    occupied: 'Dolu',
+    underMaintenance: 'Bakımda',
+    reserved: 'Rezerve',
+    clean: 'Temiz',
+    hasDebt: 'Var',
+    overdue: 'Gecikmiş',
+    tenant: 'Kiracı',
+    owner: 'Malik',
+    empty: 'Boş',
+    detail: 'Detay',
+    unitType: 'Konut Tipi',
+    residence: 'Daire',
+    villa: 'Villa',
+    commercial: 'Ticari',
+    unitStatus: 'Durum',
+    bulkEdit: 'Toplu Düzenle',
+    bulkExport: 'Dışa Aktar',
+    bulkDelete: 'Toplu Sil',
+    deleteUnit: 'Konutu Sil',
+    deleteConfirm: 'Bu konutu silmek istediğinizden emin misiniz?',
+    deleteWarning: 'kalıcı olarak silinecektir. Bu işlem geri alınamaz.',
+    delete: 'Sil',
+    cancel: 'İptal',
+    noUnitsFound: 'Henüz konut kaydı bulunmuyor.',
+    unpaidBills: 'Ödenmemiş Faturalar Var',
+    block: 'Blok',
+    floor: 'kat'
+  },
+  en: {
+    title: 'Units List',
+    welcome: 'Property management',
+    home: 'Home',
+    units: 'Units',
+    unitsList: 'Units List',
+    totalUnits: 'Units',
+    occupied: 'Occupied',
+    vacant: 'Vacant',
+    maintenance: 'Maintenance',
+    occupancyRate: 'Occupancy Rate',
+    refresh: 'Refresh',
+    newUnit: 'New Unit',
+    apartmentUnit: 'Apartment Unit',
+    villa: 'Villa',
+    availableUnit: 'Available Unit',
+    searchPlaceholder: 'Search by block, unit number, resident name, phone or feature...',
+    filters: 'Filters',
+    table: 'Table',
+    card: 'Card',
+    unit: 'Unit',
+    type: 'Type',
+    area: 'm²',
+    resident: 'Resident',
+    status: 'Status',
+    debt: 'Debt',
+    lastPayment: 'Last Payment',
+    available: 'Available',
+    occupied: 'Occupied',
+    underMaintenance: 'Under Maintenance',
+    reserved: 'Reserved',
+    clean: 'Clean',
+    hasDebt: 'Has Debt',
+    overdue: 'Overdue',
+    tenant: 'Tenant',
+    owner: 'Owner',
+    empty: 'Empty',
+    detail: 'Detail',
+    unitType: 'Unit Type',
+    residence: 'Residence',
+    villa: 'Villa',
+    commercial: 'Commercial',
+    unitStatus: 'Status',
+    bulkEdit: 'Bulk Edit',
+    bulkExport: 'Export',
+    bulkDelete: 'Bulk Delete',
+    deleteUnit: 'Delete Unit',
+    deleteConfirm: 'Are you sure you want to delete this unit?',
+    deleteWarning: 'will be permanently deleted. This action cannot be undone.',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    noUnitsFound: 'No units found yet.',
+    unpaidBills: 'Unpaid Bills',
+    block: 'Block',
+    floor: 'floor'
+  },
+  ar: {
+    title: 'قائمة الوحدات',
+    welcome: 'إدارة العقارات',
+    home: 'الرئيسية',
+    units: 'الوحدات',
+    unitsList: 'قائمة الوحدات',
+    totalUnits: 'وحدة',
+    occupied: 'مشغول',
+    vacant: 'شاغر',
+    maintenance: 'صيانة',
+    occupancyRate: 'معدل الإشغال',
+    refresh: 'تحديث',
+    newUnit: 'وحدة جديدة',
+    apartmentUnit: 'وحدة شقة',
+    villa: 'فيلا',
+    availableUnit: 'وحدة متاحة',
+    searchPlaceholder: 'البحث بالكتلة، رقم الوحدة، اسم المقيم، الهاتف أو الميزة...',
+    filters: 'المرشحات',
+    table: 'جدول',
+    card: 'بطاقة',
+    unit: 'وحدة',
+    type: 'النوع',
+    area: 'م²',
+    resident: 'المقيم',
+    status: 'الحالة',
+    debt: 'الدين',
+    lastPayment: 'آخر دفعة',
+    available: 'متاح',
+    occupied: 'مشغول',
+    underMaintenance: 'تحت الصيانة',
+    reserved: 'محجوز',
+    clean: 'نظيف',
+    hasDebt: 'لديه دين',
+    overdue: 'متأخر',
+    tenant: 'مستأجر',
+    owner: 'مالك',
+    empty: 'فارغ',
+    detail: 'تفاصيل',
+    unitType: 'نوع الوحدة',
+    residence: 'سكني',
+    villa: 'فيلا',
+    commercial: 'تجاري',
+    unitStatus: 'الحالة',
+    bulkEdit: 'تعديل جماعي',
+    bulkExport: 'تصدير',
+    bulkDelete: 'حذف جماعي',
+    deleteUnit: 'حذف الوحدة',
+    deleteConfirm: 'هل أنت متأكد من حذف هذه الوحدة؟',
+    deleteWarning: 'سيتم حذفه نهائياً. لا يمكن التراجع عن هذا الإجراء.',
+    delete: 'حذف',
+    cancel: 'إلغاء',
+    noUnitsFound: 'لم يتم العثور على وحدات بعد.',
+    unpaidBills: 'فواتير غير مدفوعة',
+    block: 'كتلة',
+    floor: 'طابق'
+  }
+};
 
 export default function UnitsListPage() {
     // UI State
@@ -75,6 +248,18 @@ export default function UnitsListPage() {
         orderColumn: 'name',
         orderBy: 'ASC'
     });
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+
+    // Dil tercihini localStorage'dan al
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
 
     // API Data State
     // Initialize hooks
@@ -104,12 +289,10 @@ export default function UnitsListPage() {
         }
     });
 
-
-
     const breadcrumbItems = [
-        { label: 'Ana Sayfa', href: '/dashboard' },
-        { label: 'Konutlar', href: '/dashboard/units' },
-        { label: 'Daire/Villa Listesi', active: true }
+        { label: t.home, href: '/dashboard' },
+        { label: t.units, href: '/dashboard/units' },
+        { label: t.unitsList, active: true }
     ];
 
     // Statistics calculations from API data - MEMOIZED
@@ -180,32 +363,32 @@ export default function UnitsListPage() {
 
     // Status configuration - MEMOIZED
     const statusConfig = useMemo(() => ({
-        AVAILABLE: { label: 'Boş', color: 'info', icon: AlertCircle },
-        OCCUPIED: { label: 'Dolu', color: 'success', icon: CheckCircle },
-        UNDER_MAINTENANCE: { label: 'Bakımda', color: 'warning', icon: RotateCcw },
-        RESERVED: { label: 'Rezerve', color: 'primary', icon: Calendar }
-    }), []);
+        AVAILABLE: { label: t.available, color: 'info', icon: AlertCircle },
+        OCCUPIED: { label: t.occupied, color: 'success', icon: CheckCircle },
+        UNDER_MAINTENANCE: { label: t.underMaintenance, color: 'warning', icon: RotateCcw },
+        RESERVED: { label: t.reserved, color: 'primary', icon: Calendar }
+    }), [t]);
 
     // Table columns configuration - MEMOIZED
     const tableColumns = useMemo(() => [
         {
             key: 'property',
-            header: 'Konut',
+            header: t.unit,
             render: (_value: any, unit: Property) => (
                 <div>
                     <div className="font-medium text-text-on-light dark:text-text-on-dark">
                         {unit?.propertyNumber || unit?.name || 'N/A'}
                     </div>
                     <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                        {unit?.blockNumber && `Blok ${unit.blockNumber}`}
-                        {unit?.floor && ` • ${unit.floor}. kat`}
+                        {unit?.blockNumber && `${t.block} ${unit.blockNumber}`}
+                        {unit?.floor && ` • ${unit.floor}. ${t.floor}`}
                     </div>
                 </div>
             ),
         },
         {
             key: 'type',
-            header: 'Tip',
+            header: t.type,
             render: (_value: any, unit: Property) => (
                 <Badge variant="soft" color="secondary">
                     {unit?.type ? unitsService.getTypeInfo(unit.type).label : 'N/A'}
@@ -214,12 +397,12 @@ export default function UnitsListPage() {
         },
         {
             key: 'area',
-            header: 'm²',
+            header: t.area,
             render: (_value: any, unit: Property) => unit?.area || '--',
         },
         {
             key: 'resident',
-            header: 'Sakin',
+            header: t.resident,
             render: (_value: any, unit: Property) => {
                 const currentResident = unit?.tenant || unit?.owner;
                 if (currentResident) {
@@ -229,21 +412,21 @@ export default function UnitsListPage() {
                                 {currentResident.firstName} {currentResident.lastName}
                             </div>
                             <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                {unit?.tenant ? 'Kiracı' : 'Malik'}
+                                {unit?.tenant ? t.tenant : t.owner}
                             </div>
                         </div>
                     );
                 }
                 return (
                     <span className="text-text-light-muted dark:text-text-muted">
-                        Boş
+                        {t.empty}
                     </span>
                 );
             },
         },
         {
             key: 'status',
-            header: 'Durum',
+            header: t.status,
             render: (_value: any, unit: Property) => {
                 const statusInfo = statusConfig[unit?.status as keyof typeof statusConfig];
                 if (!statusInfo) {
@@ -262,7 +445,7 @@ export default function UnitsListPage() {
         },
         {
             key: 'debt',
-            header: 'Borç',
+            header: t.debt,
             render: (_value: any, unit: Property) => {
                 // Use debtStatus if available, otherwise fallback to bills check
                 if (unit.debtStatus) {
@@ -273,13 +456,13 @@ export default function UnitsListPage() {
                             </span>
                             {unit.debtStatus.overdueBills > 0 && (
                                 <Badge variant="soft" color="red" className="text-xs">
-                                    {unit.debtStatus.overdueBills} Gecikmiş
+                                    {unit.debtStatus.overdueBills} {t.overdue}
                                 </Badge>
                             )}
                         </div>
                     ) : (
                         <span className="text-semantic-success-500">
-                            Temiz
+                            {t.clean}
                         </span>
                     );
                 }
@@ -287,18 +470,18 @@ export default function UnitsListPage() {
                 // Fallback to bills check (for backward compatibility)
                 return unit?.bills && unit.bills.length > 0 ? (
                     <span className="text-primary-red font-medium">
-                        Var
+                        {t.hasDebt}
                     </span>
                 ) : (
                     <span className="text-semantic-success-500">
-                        Temiz
+                        {t.clean}
                     </span>
                 );
             },
         },
         {
             key: 'lastPayment',
-            header: 'Son Ödeme',
+            header: t.lastPayment,
             render: (_value: any, unit: Property) => {
                 if (unit.debtStatus?.lastPaymentDate) {
                     return new Date(unit.debtStatus.lastPaymentDate).toLocaleDateString('tr-TR');
@@ -306,7 +489,7 @@ export default function UnitsListPage() {
                 return '--';
             },
         },
-    ], [statusConfig]);
+    ], [statusConfig, t]);
 
     // UnitActionMenu - MEMOIZED - Simplified to only show detail view
     const UnitActionMenu: React.FC<{ unit: Property; onAction: (action: string, unit: Property) => void }> = React.memo(({ unit, onAction }) => {
@@ -321,7 +504,7 @@ export default function UnitsListPage() {
                     className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
                     onClick={handleDetailView}
                     type="button"
-                    title="Detay"
+                    title={t.detail}
                 >
                     <MoreVertical className="w-5 h-5" />
                 </button>
@@ -331,7 +514,7 @@ export default function UnitsListPage() {
 
     const UnitActionMenuWrapper: React.FC<{ row: Property }> = useMemo(() =>
         ({ row }) => <UnitActionMenu unit={row} onAction={handleUnitAction} />
-        , [handleUnitAction]);
+        , [handleUnitAction, t]);
 
     // Unit card renderer for grid view - MEMOIZED
     const renderUnitCard = useCallback((unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Property }>) => {
@@ -385,7 +568,7 @@ export default function UnitsListPage() {
                     {unit?.blockNumber && (
                         <div className="flex items-center gap-2 text-sm text-text-light-secondary dark:text-text-secondary">
                             <Building className="h-4 w-4" />
-                            <span>Blok {unit.blockNumber}</span>
+                            <span>{t.block} {unit.blockNumber}</span>
                         </div>
                     )}
                     {currentResident && (
@@ -399,13 +582,13 @@ export default function UnitsListPage() {
                 {unit?.bills && unit.bills.length > 0 && (
                     <div className="mb-4 p-2 bg-primary-red/10 dark:bg-primary-red/20 rounded-lg">
                         <div className="text-sm text-primary-red font-medium">
-                            Ödenmemiş Faturalar Var
+                            {t.unpaidBills}
                         </div>
                     </div>
                 )}
             </ui.Card>
         );
-    }, [statusConfig]);
+    }, [statusConfig, t]);
 
     const handleExport = useCallback(() => {
         console.log('Export triggered');
@@ -449,8 +632,6 @@ export default function UnitsListPage() {
         setSelectedUnits(selectedProperties);
     }, [dataHook.properties]);
 
-
-
     // Filter handlers - FIXED
     const handleApplyFilters = useCallback((newFilters: any) => {
         React.startTransition(() => {
@@ -487,63 +668,26 @@ export default function UnitsListPage() {
     const unitFilterGroups = useMemo(() => [
         {
             id: 'type',
-            label: 'Konut Tipi',
+            label: t.unitType,
             type: 'select' as const,
             options: [
-
-                { id: 'RESIDENCE', label: 'Daire', value: 'RESIDENCE' },
-                { id: 'VILLA', label: 'Villa', value: 'VILLA' },
-                { id: 'COMMERCIAL', label: 'Ticari', value: 'COMMERCIAL' },
+                { id: 'RESIDENCE', label: t.residence, value: 'RESIDENCE' },
+                { id: 'VILLA', label: t.villa, value: 'VILLA' },
+                { id: 'COMMERCIAL', label: t.commercial, value: 'COMMERCIAL' },
             ],
         },
         {
             id: 'status',
-            label: 'Durum',
+            label: t.unitStatus,
             type: 'select' as const,
             options: [
-
-                { id: 'OCCUPIED', label: 'Dolu', value: 'OCCUPIED' },
-                { id: 'AVAILABLE', label: 'Boş', value: 'AVAILABLE' },
-                { id: 'UNDER_MAINTENANCE', label: 'Bakımda', value: 'UNDER_MAINTENANCE' },
-                { id: 'RESERVED', label: 'Rezerve', value: 'RESERVED' },
+                { id: 'OCCUPIED', label: t.occupied, value: 'OCCUPIED' },
+                { id: 'AVAILABLE', label: t.available, value: 'AVAILABLE' },
+                { id: 'UNDER_MAINTENANCE', label: t.underMaintenance, value: 'UNDER_MAINTENANCE' },
+                { id: 'RESERVED', label: t.reserved, value: 'RESERVED' },
             ],
         },
-        // {
-        //     id: 'blockNumber',
-        //     label: 'Blok',
-        //     type: 'select' as const,
-        //     options: [
-
-        //         { id: 'A', label: 'A Blok', value: 'A' },
-        //         { id: 'B', label: 'B Blok', value: 'B' },
-        //         { id: 'C', label: 'C Blok', value: 'C' },
-        //         { id: 'D', label: 'D Blok', value: 'D' },
-        //         { id: 'Villa', label: 'Villa', value: 'Villa' },
-        //     ],
-        // },
-        // {
-        //     id: 'rooms',
-        //     label: 'Oda Sayısı',
-        //     type: 'select' as const,
-        //     options: [
-
-        //         { id: '1+1', label: '1+1', value: '1+1' },
-        //         { id: '2+1', label: '2+1', value: '2+1' },
-        //         { id: '3+1', label: '3+1', value: '3+1' },
-        //         { id: '4+1', label: '4+1', value: '4+1' },
-        //     ],
-        // },
-        // {
-        //     id: 'debtStatus',
-        //     label: 'Borç Durumu',
-        //     type: 'select' as const,
-        //     options: [
-
-        //         { id: 'clean', label: 'Temiz Hesap', value: 'clean' },
-        //         { id: 'indebted', label: 'Borçlu', value: 'indebted' },
-        //     ],
-        // },
-    ], []);
+    ], [t]);
 
     // Grid UI - MEMOIZED
     const gridUI = useMemo(() => ({
@@ -573,7 +717,7 @@ export default function UnitsListPage() {
                 <div className="lg:ml-72">
                     {/* Header */}
                     <DashboardHeader
-                        title="Daire/Villa Listesi"
+                        title={t.title}
                         breadcrumbItems={breadcrumbItems}
                     />
 
@@ -583,35 +727,37 @@ export default function UnitsListPage() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                             <div>
                                 <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
-                                    Konut Listesi <span className="text-primary-gold">({unitStats.totalUnits.toLocaleString()} Konut)
+                                    {t.title} <span className="text-primary-gold">({unitStats.totalUnits.toLocaleString()} {t.totalUnits})
                                     </span>
                                 </h2>
                                 <p className="text-text-light-secondary dark:text-text-secondary">
-                                    Dolu: {unitStats.occupiedUnits} ({unitStats.occupancyRate}%) | Boş: {unitStats.vacantUnits} | Bakımda: {unitStats.maintenanceUnits}
+                                    {t.occupied}: {unitStats.occupiedUnits} ({unitStats.occupancyRate}%) | {t.vacant}: {unitStats.vacantUnits} | {t.maintenance}: {unitStats.maintenanceUnits}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
-                                    Yenile
+                                    {t.refresh}
                                 </Button>
-                                {/*
-                                <ExportDropdown
-                                    onExportPDF={exportActionHandlers.handleExportPDF}
-                                    onExportExcel={exportActionHandlers.handleExportExcel}
-                                    onExportCSV={exportActionHandlers.handleExportCSV}
-                                    onExportJSON={exportActionHandlers.handleExportJSON}
-                                    variant="secondary"
-                                    size="md"
-                                />
-                                */}
                                 <Link href="/dashboard/units/add">
                                     <Button variant="primary" size="md" icon={Plus}>
-                                        Yeni Konut
+                                        {t.newUnit}
                                     </Button>
                                 </Link>
                             </div>
                         </div>
 
+                        {/* Header with Language Switcher */}
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark">
+                                    {t.title}
+                                </h1>
+                                <p className="mt-2 text-text-light-secondary dark:text-text-secondary">
+                                    {t.welcome}
+                                </p>
+                            </div>
+                            <LanguageSwitcher />
+                        </div>
 
 {/* Quick Stats Cards */}
 {dataHook.error && (
@@ -624,7 +770,7 @@ export default function UnitsListPage() {
                         <div className="mb-8">
                             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
                                 <StatsCard
-                                    title="Apartman Dairesi"
+                                    title={t.apartmentUnit}
                                     value={unitStats.apartmentUnits}
                                     icon={Building}
                                     color="primary"
@@ -632,7 +778,7 @@ export default function UnitsListPage() {
                                     size="md"
                                 />
                                 <StatsCard
-                                    title="Villa"
+                                    title={t.villa}
                                     value={unitStats.villaUnits}
                                     icon={Home}
                                     color="success"
@@ -640,7 +786,7 @@ export default function UnitsListPage() {
                                     size="md"
                                 />
                                 <StatsCard
-                                    title="Müsait Konut"
+                                    title={t.availableUnit}
                                     value={unitStats.vacantUnits}
                                     icon={Store}
                                     color="info"
@@ -650,7 +796,6 @@ export default function UnitsListPage() {
                             </div>
                         </div> 
 
-
                         {/* Search and Filters */}
                         <Card className="mb-6">
                             <div className="p-6">
@@ -658,7 +803,7 @@ export default function UnitsListPage() {
                                     {/* Search Bar */}
                                     <div className="flex-1">
                                         <SearchBar
-                                            placeholder="Blok, daire no, sakin adı, telefon veya özellik ile ara..."
+                                            placeholder={t.searchPlaceholder}
                                             value={searchInput}
                                             onChange={handleSearchInputChange}
                                             onSearch={handleSearchSubmit}
@@ -673,12 +818,12 @@ export default function UnitsListPage() {
                                             icon={Filter}
                                             onClick={() => setShowFilters(true)}
                                         >
-                                            Filtreler
+                                            {t.filters}
                                         </Button>
                                         <ViewToggle
                                             options={[
-                                                { id: 'table', label: 'Tablo', icon: List },
-                                                { id: 'grid', label: 'Kart', icon: Grid3X3 }
+                                                { id: 'table', label: t.table, icon: List },
+                                                { id: 'grid', label: t.card, icon: Grid3X3 }
                                             ]}
                                             activeView={viewMode}
                                             onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
@@ -728,7 +873,7 @@ export default function UnitsListPage() {
                                             bulkActions={[
                                                 {
                                                     id: 'bulk-edit',
-                                                    label: 'Toplu Düzenle',
+                                                    label: t.bulkEdit,
                                                     icon: Edit,
                                                     onClick: (selectedItems: Property[]) => {
                                                         console.log('Toplu düzenleme:', selectedItems.map(item => item.id));
@@ -737,7 +882,7 @@ export default function UnitsListPage() {
                                                 },
                                                 {
                                                     id: 'bulk-export',
-                                                    label: 'Dışa Aktar',
+                                                    label: t.bulkExport,
                                                     icon: Download,
                                                     onClick: (selectedItems: Property[]) => {
                                                         console.log('Seçili konutları dışa aktar:', selectedItems.map(item => item.id));
@@ -746,7 +891,7 @@ export default function UnitsListPage() {
                                                 },
                                                 {
                                                     id: 'bulk-delete',
-                                                    label: 'Toplu Sil',
+                                                    label: t.bulkDelete,
                                                     icon: Trash2,
                                                     variant: 'danger' as const,
                                                     onClick: (selectedItems: Property[]) => {
@@ -767,7 +912,7 @@ export default function UnitsListPage() {
                                                 onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
                                                 preventScroll: true, // Prevent auto-scroll to top
                                             }}
-                                            emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                            emptyStateMessage={t.noUnitsFound}
                                             selectable={true}
                                             showPagination={true}
                                             ActionMenuComponent={UnitActionMenuWrapper}
@@ -791,7 +936,7 @@ export default function UnitsListPage() {
                                             bulkActions={[
                                                 {
                                                     id: 'bulk-edit',
-                                                    label: 'Toplu Düzenle',
+                                                    label: t.bulkEdit,
                                                     icon: Edit,
                                                     onClick: (selectedItems: Property[]) => {
                                                         console.log('Toplu düzenleme:', selectedItems.map(item => item.id));
@@ -800,7 +945,7 @@ export default function UnitsListPage() {
                                                 },
                                                 {
                                                     id: 'bulk-export',
-                                                    label: 'Dışa Aktar',
+                                                    label: t.bulkExport,
                                                     icon: Download,
                                                     onClick: (selectedItems: Property[]) => {
                                                         console.log('Seçili konutları dışa aktar:', selectedItems.map(item => item.id));
@@ -809,7 +954,7 @@ export default function UnitsListPage() {
                                                 },
                                                 {
                                                     id: 'bulk-delete',
-                                                    label: 'Toplu Sil',
+                                                    label: t.bulkDelete,
                                                     icon: Trash2,
                                                     variant: 'danger' as const,
                                                     onClick: (selectedItems: Property[]) => {
@@ -831,7 +976,7 @@ export default function UnitsListPage() {
                                                 onRecordsPerPageChange: filtersHook.handleRecordsPerPageChange,
                                                 preventScroll: true, // Prevent auto-scroll to top
                                             }}
-                                            emptyStateMessage="Henüz konut kaydı bulunmuyor."
+                                            emptyStateMessage={t.noUnitsFound}
                                             ui={gridUI}
                                             ActionMenu={UnitActionMenuWrapper}
                                             renderCard={renderUnitCard}
@@ -851,18 +996,18 @@ export default function UnitsListPage() {
                     isOpen={confirmationDialog.isOpen}
                     onClose={hideConfirmation}
                     onConfirm={confirmDelete}
-                    title="Konutu Sil"
+                    title={t.deleteUnit}
                     description={
                         confirmationDialog.unit 
-                            ? `"${confirmationDialog.unit.propertyNumber || confirmationDialog.unit.name || 'Konut'}" kalıcı olarak silinecektir. Bu işlem geri alınamaz.`
-                            : "Bu konutu silmek istediğinizden emin misiniz?"
+                            ? `"${confirmationDialog.unit.propertyNumber || confirmationDialog.unit.name || t.unit}" ${t.deleteWarning}`
+                            : t.deleteConfirm
                     }
-                    confirmText="Sil"
-                    cancelText="İptal"
+                    confirmText={t.delete}
+                    cancelText={t.cancel}
                     variant="danger"
                     loading={isDeleting}
                     itemName={confirmationDialog.unit?.propertyNumber || confirmationDialog.unit?.name}
-                    itemType="konut"
+                    itemType={t.unit}
                 />
             </div>
         </ProtectedRoute>

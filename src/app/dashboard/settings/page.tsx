@@ -6,6 +6,7 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import { unitPricesService } from '@/services/unit-prices.service';
 import enumsService from '@/services/enums.service';
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
 // Breadcrumb Items
 const BREADCRUMB_ITEMS = [
@@ -665,6 +666,7 @@ export default function DashboardSettingsPage() {
                 </p>
               </div>
               <div className="flex gap-3">
+                <LanguageSwitcher />
                 <button
                   onClick={() => window.location.href = '/dashboard/settings/device-settings'}
                   className="inline-flex items-center px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
