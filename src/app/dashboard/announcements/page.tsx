@@ -42,10 +42,10 @@ import { createBulkActionHandlers } from './actions/bulk-actions';
 import { createAnnouncementActionHandlers } from './actions/announcement-actions';
 import { getTableColumns } from './components/table-columns';
 import {
-    VIEW_OPTIONS,
-    BREADCRUMB_ITEMS,
-    ANNOUNCEMENT_FILTER_GROUPS,
-    STATS_CONFIG
+    getViewOptions,
+    getBreadcrumbItems,
+    getAnnouncementFilterGroups,
+    getStatsConfig
 } from './constants';
 import {
     getAnnouncementTypeLabel,
@@ -56,6 +56,142 @@ import {
     isAnnouncementExpiringSoon,
     getDaysUntilExpiry
 } from '@/services/types/announcement.types';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles
+    pageTitle: 'Duyuru Listesi',
+    
+    // Labels
+    total: 'toplam',
+    filtered: 'filtrelenmiş',
+    lastUpdate: 'Son güncelleme:',
+    refresh: 'Yenile',
+    newAnnouncement: 'Yeni Duyuru',
+    filters: 'Filtreler',
+    searchPlaceholder: 'Başlık, içerik ile ara...',
+    
+    // Status badges
+    expired: 'Süresi Dolmuş',
+    daysLeft: 'gün kaldı',
+    views: 'görüntüleme',
+    
+    // Empty states
+    noResultsFound: 'araması için sonuç bulunamadı.',
+    noAnnouncementsYet: 'Henüz duyuru kaydı bulunmuyor.',
+    
+    // Modal titles
+    deleteAnnouncement: 'Duyuru Silme',
+    bulkDelete: 'Toplu Silme İşlemi',
+    bulkDeleteDescription: 'duyuru kalıcı olarak silinecektir. Bu işlem geri alınamaz.',
+    deleteAll: 'Hepsini Sil',
+    announcement: 'duyuru',
+    announcements: 'duyurular',
+    
+    // Event modal
+    events: 'Etkinlikleri',
+    noEventsFound: 'Bu gün için kayıtlı etkinlik bulunamadı.',
+    eventAnnouncement: 'Duyuru',
+    publish: 'Yayın:',
+    time: 'Saat:',
+    emergency: 'Acil',
+    pinned: 'Sabit',
+    close: 'Kapat',
+    filterDay: 'Günü filtrele',
+    
+    // Tooltips
+    detail: 'Detay'
+  },
+  en: {
+    // Page titles
+    pageTitle: 'Announcements List',
+    
+    // Labels
+    total: 'total',
+    filtered: 'filtered',
+    lastUpdate: 'Last update:',
+    refresh: 'Refresh',
+    newAnnouncement: 'New Announcement',
+    filters: 'Filters',
+    searchPlaceholder: 'Search by title, content...',
+    
+    // Status badges
+    expired: 'Expired',
+    daysLeft: 'days left',
+    views: 'views',
+    
+    // Empty states
+    noResultsFound: 'search returned no results.',
+    noAnnouncementsYet: 'No announcements found yet.',
+    
+    // Modal titles
+    deleteAnnouncement: 'Delete Announcement',
+    bulkDelete: 'Bulk Delete Operation',
+    bulkDeleteDescription: 'announcements will be permanently deleted. This action cannot be undone.',
+    deleteAll: 'Delete All',
+    announcement: 'announcement',
+    announcements: 'announcements',
+    
+    // Event modal
+    events: 'Events',
+    noEventsFound: 'No events found for this day.',
+    eventAnnouncement: 'Announcement',
+    publish: 'Publish:',
+    time: 'Time:',
+    emergency: 'Emergency',
+    pinned: 'Pinned',
+    close: 'Close',
+    filterDay: 'Filter by day',
+    
+    // Tooltips
+    detail: 'Detail'
+  },
+  ar: {
+    // Page titles
+    pageTitle: 'قائمة الإعلانات',
+    
+    // Labels
+    total: 'إجمالي',
+    filtered: 'مفلتر',
+    lastUpdate: 'آخر تحديث:',
+    refresh: 'تحديث',
+    newAnnouncement: 'إعلان جديد',
+    filters: 'المرشحات',
+    searchPlaceholder: 'البحث بالعنوان والمحتوى...',
+    
+    // Status badges
+    expired: 'منتهي الصلاحية',
+    daysLeft: 'أيام متبقية',
+    views: 'مشاهدات',
+    
+    // Empty states
+    noResultsFound: 'البحث لم يعط نتائج.',
+    noAnnouncementsYet: 'لم يتم العثور على إعلانات بعد.',
+    
+    // Modal titles
+    deleteAnnouncement: 'حذف الإعلان',
+    bulkDelete: 'عملية الحذف المجمع',
+    bulkDeleteDescription: 'سيتم حذف الإعلانات نهائياً. لا يمكن التراجع عن هذا الإجراء.',
+    deleteAll: 'حذف الكل',
+    announcement: 'إعلان',
+    announcements: 'إعلانات',
+    
+    // Event modal
+    events: 'الأحداث',
+    noEventsFound: 'لم يتم العثور على أحداث لهذا اليوم.',
+    eventAnnouncement: 'إعلان',
+    publish: 'النشر:',
+    time: 'الوقت:',
+    emergency: 'طارئ',
+    pinned: 'مثبت',
+    close: 'إغلاق',
+    filterDay: 'تصفية حسب اليوم',
+    
+    // Tooltips
+    detail: 'التفاصيل'
+  }
+};
 
 /**
  * Main Announcements Page Component
@@ -77,6 +213,18 @@ import {
  * 9. Pagination
  */
 export default function AnnouncementsPage() {
+    // Dil tercihini localStorage'dan al
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
     const router = useRouter();
     const { toasts, removeToast } = useToast();
 
@@ -193,7 +341,7 @@ export default function AnnouncementsPage() {
     const statsData = useMemo(() => {
         if (!statsHook.stats) return [];
         
-        return STATS_CONFIG.filter(cfg => cfg.key !== 'draft' && cfg.key !== '__removed_draft__').map(config => {
+        return getStatsConfig(currentLanguage).filter(cfg => cfg.key !== 'draft' && cfg.key !== '__removed_draft__').map(config => {
             const statValue = statsHook.stats![config.key as keyof typeof statsHook.stats];
             // Handle both simple numbers and nested objects
             const value = typeof statValue === 'object' ? 0 : (statValue || 0);
@@ -208,7 +356,7 @@ export default function AnnouncementsPage() {
                 loading: statsHook.loading
             };
         });
-    }, [statsHook.stats, statsHook.loading]);
+    }, [statsHook.stats, statsHook.loading, currentLanguage]);
 
     // Handle delete confirmation
     const handleDeleteConfirmation = useCallback(async () => {
@@ -372,12 +520,12 @@ export default function AnnouncementsPage() {
                         </ui.Badge>
                         {isExpired && (
                             <ui.Badge variant="danger" size="sm">
-                                Süresi Dolmuş
+                                {t.expired}
                             </ui.Badge>
                         )}
                         {isExpiringSoon && !isExpired && (
                             <ui.Badge variant="warning" size="sm">
-                                {daysUntilExpiry} gün kaldı
+                                {daysUntilExpiry} {t.daysLeft}
                             </ui.Badge>
                         )}
                     </div>
@@ -398,7 +546,7 @@ export default function AnnouncementsPage() {
                         </div>
                         <div className="flex items-center gap-1">
                             <MessageSquare className="w-3 h-3" />
-                            <span>{((announcement as any).viewCount || 0)} görüntüleme</span>
+                            <span>{((announcement as any).viewCount || 0)} {t.views}</span>
                         </div>
                     </div>
                 </div>
@@ -433,7 +581,7 @@ export default function AnnouncementsPage() {
                 className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
                 onClick={() => handleAnnouncementAction('view', row)}
                 type="button"
-                title="Detay"
+                title={t.detail}
             >
                 <ChevronRight className="w-5 h-5" />
             </button>
@@ -453,8 +601,8 @@ export default function AnnouncementsPage() {
                 <div className="flex-1 flex flex-col overflow-hidden lg:ml-72">
                     {/* Header */}
                     <DashboardHeader
-                        title="Duyuru Listesi"
-                        breadcrumbItems={BREADCRUMB_ITEMS}
+                        title={t.pageTitle}
+                        breadcrumbItems={getBreadcrumbItems(currentLanguage)}
                     />
 
                     {/* Main Content */}
@@ -465,22 +613,22 @@ export default function AnnouncementsPage() {
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                                 <div>
                                     <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
-                                        Duyurular <span className="text-primary-gold">
-                                            ({dataHook.totalRecords.toLocaleString()} {filtersHook.searchQuery ? 'filtrelenmiş' : 'toplam'})
+                                        {t.announcements} <span className="text-primary-gold">
+                                            ({dataHook.totalRecords.toLocaleString()} {filtersHook.searchQuery ? t.filtered : t.total})
                                         </span>
                                     </h1>
                                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                        Son güncelleme: {dataHook.lastUpdated.toLocaleTimeString('tr-TR')}
+                                        {t.lastUpdate} {dataHook.lastUpdated.toLocaleTimeString('tr-TR')}
                                     </p>
                                 </div>
 
                                 <div className="flex gap-3">
                                     <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
-                                        Yenile
+                                        {t.refresh}
                                     </Button>
                                     {/* Export button removed as requested */}
                                     <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewAnnouncement}>
-                                        Yeni Duyuru
+                                        {t.newAnnouncement}
                                     </Button>
                                 </div>
                             </div>
@@ -509,7 +657,7 @@ export default function AnnouncementsPage() {
                                         {/* Search Bar */}
                                         <div className="flex-1">
                                             <SearchBar
-                                                placeholder="Başlık, içerik ile ara..."
+                                                placeholder={t.searchPlaceholder}
                                                 value={searchInput}
                                                 onChange={handleSearchInputChange}
                                                 onSearch={handleSearchSubmit}
@@ -528,7 +676,7 @@ export default function AnnouncementsPage() {
                                                     icon={Filter}
                                                     onClick={filtersHook.handleOpenDrawer}
                                                 >
-                                                    Filtreler
+                                                    {t.filters}
                                                 </Button>
                                                 {Object.keys(filtersHook.filters).length > 0 && (
                                                     <span className="absolute -top-2 -right-2 bg-primary-gold text-primary-dark-gray text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
@@ -537,7 +685,7 @@ export default function AnnouncementsPage() {
                                                 )}
                                             </div>
                                             <ViewToggle
-                                                options={VIEW_OPTIONS}
+                                                options={getViewOptions(currentLanguage)}
                                                 activeView={filtersHook.selectedView}
                                                 onViewChange={(viewId) => filtersHook.handleViewChange(viewId as 'table' | 'grid')}
                                                 size="sm"
@@ -579,8 +727,8 @@ export default function AnnouncementsPage() {
                                     }}
                                     emptyStateMessage={
                                         filtersHook.searchQuery ?
-                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
-                                            'Henüz duyuru kaydı bulunmuyor.'
+                                            `"${filtersHook.searchQuery}" ${t.searchPlaceholder} ${t.noResultsFound}` :
+                                            t.noAnnouncementsYet
                                     }
                                     ActionMenuComponent={AnnouncementActionMenuWrapper}
                                 />
@@ -612,8 +760,8 @@ export default function AnnouncementsPage() {
                                     }}
                                     emptyStateMessage={
                                         filtersHook.searchQuery ?
-                                            `"${filtersHook.searchQuery}" araması için sonuç bulunamadı.` :
-                                            'Henüz duyuru kaydı bulunmuyor.'
+                                            `"${filtersHook.searchQuery}" ${t.searchPlaceholder} ${t.noResultsFound}` :
+                                            t.noAnnouncementsYet
                                     }
                                     ui={{
                                         Card,
@@ -655,7 +803,7 @@ export default function AnnouncementsPage() {
                         filtersHook.showFilterPanel && !filtersHook.drawerClosing ? 'translate-x-0' : 'translate-x-full'
                     }`}>
                         <FilterPanel
-                            filterGroups={ANNOUNCEMENT_FILTER_GROUPS}
+                            filterGroups={getAnnouncementFilterGroups(currentLanguage)}
                             onApplyFilters={filtersHook.handleFiltersApply}
                             onResetFilters={filtersHook.handleFiltersReset}
                             onClose={filtersHook.handleCloseDrawer}
@@ -669,11 +817,11 @@ export default function AnnouncementsPage() {
                     isOpen={confirmationState.isOpen}
                     onClose={() => setConfirmationState({ isOpen: false, announcement: null, loading: false })}
                     onConfirm={handleDeleteConfirmation}
-                    title="Duyuru Silme"
+                    title={t.deleteAnnouncement}
                     variant="danger"
                     loading={confirmationState.loading}
                     itemName={confirmationState.announcement?.title}
-                    itemType="duyuru"
+                    itemType={t.announcement}
                 />
 
                 {/* Bulk Delete Confirmation Modal */}
@@ -681,12 +829,12 @@ export default function AnnouncementsPage() {
                     isOpen={bulkDeleteState.isOpen}
                     onClose={() => setBulkDeleteState({ isOpen: false, announcements: [], loading: false })}
                     onConfirm={handleBulkDeleteConfirmation}
-                    title="Toplu Silme İşlemi"
-                    description={`${bulkDeleteState.announcements.length} duyuru kalıcı olarak silinecektir. Bu işlem geri alınamaz.`}
-                    confirmText="Hepsini Sil"
+                    title={t.bulkDelete}
+                    description={`${bulkDeleteState.announcements.length} ${t.announcement} ${t.bulkDeleteDescription}`}
+                    confirmText={t.deleteAll}
                     variant="danger"
                     loading={bulkDeleteState.loading}
-                    itemType="duyurular"
+                    itemType={t.announcements}
                 />
 
                 {/* Toast Container */}
@@ -696,12 +844,12 @@ export default function AnnouncementsPage() {
                 <Modal
                   isOpen={eventModalOpen}
                   onClose={() => setEventModalOpen(false)}
-                  title={`${eventModalDate ? new Date(eventModalDate).toLocaleDateString('tr-TR') : ''} Etkinlikleri`}
+                  title={`${eventModalDate ? new Date(eventModalDate).toLocaleDateString('tr-TR') : ''} ${t.events}`}
                   size="md"
                 >
                   <div className="space-y-3">
                     {eventModalItems.length === 0 && (
-                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">Bu gün için kayıtlı etkinlik bulunamadı.</p>
+                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">{t.noEventsFound}</p>
                     )}
                     {eventModalItems.map((it, idx) => (
                       <div key={(it.id as string) || idx}
@@ -709,30 +857,30 @@ export default function AnnouncementsPage() {
                         <div className="flex items-start justify-between">
                           <div className="pr-4">
                             <p className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
-                              {it.title || 'Duyuru'}
+                              {it.title || t.eventAnnouncement}
                             </p>
                             {it.description && (
                               <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1 line-clamp-3">{it.description}</p>
                             )}
                             <div className="mt-2 flex items-center gap-4 text-xs text-text-light-secondary dark:text-text-secondary">
-                              <span>Yayın: {eventModalDate ? new Date(eventModalDate).toLocaleDateString('tr-TR') : '-'}</span>
-                              {it.time && <span>Saat: {it.time}</span>}
+                              <span>{t.publish} {eventModalDate ? new Date(eventModalDate).toLocaleDateString('tr-TR') : '-'}</span>
+                              {it.time && <span>{t.time} {it.time}</span>}
                               {/* expiryDate is not available in CalendarEventDetail; kept only publish date per requirement */}
                             </div>
                           </div>
                           <div className="flex items-center gap-2 whitespace-nowrap">
                             {it.isEmergency && (
-                              <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-red/15 text-primary-red">Acil</span>
+                              <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-red/15 text-primary-red">{t.emergency}</span>
                             )}
                             {it.isPinned && (
-                              <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-gold/20 text-primary-gold">Sabit</span>
+                              <span className="inline-flex items-center text-xs px-2 py-1 rounded bg-primary-gold/20 text-primary-gold">{t.pinned}</span>
                             )}
                           </div>
                         </div>
                       </div>
                     ))}
                     <div className="flex justify-end gap-2 pt-2">
-                      <Button variant="outline" size="sm" onClick={() => setEventModalOpen(false)}>Kapat</Button>
+                      <Button variant="outline" size="sm" onClick={() => setEventModalOpen(false)}>{t.close}</Button>
                       {eventModalDate && (
                         <Button
                           variant="primary"
@@ -742,7 +890,7 @@ export default function AnnouncementsPage() {
                             setEventModalOpen(false)
                           }}
                         >
-                          Günü filtrele
+                          {t.filterDay}
                         </Button>
                       )}
                     </div>

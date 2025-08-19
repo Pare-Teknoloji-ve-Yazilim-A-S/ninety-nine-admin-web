@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -15,6 +15,52 @@ import ImportFileInput from './components/ImportFileInput'
 import { useStaffPageViewModel } from './hooks/useStaffPageViewModel'
 import type { CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.types'
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles
+    pageTitle: 'Personel Yönetimi',
+    staffManagement: 'Personel Yönetimi',
+    
+    // Breadcrumb
+    home: 'Ana Sayfa',
+    
+    // Labels
+    people: 'kişi',
+    
+    // Comments
+    pageDescription: 'Personel Yönetimi sayfası: Listeleme, arama, filtreleme, sayfalandırma, Personel oluşturma/düzenleme (modal), Toplu işlemler (aktif/pasif/sil), Dışa aktarma / içe aktarma, Hızlı filtreler ve gelişmiş filtre çekmecesi'
+  },
+  en: {
+    // Page titles
+    pageTitle: 'Staff Management',
+    staffManagement: 'Staff Management',
+    
+    // Breadcrumb
+    home: 'Home',
+    
+    // Labels
+    people: 'people',
+    
+    // Comments
+    pageDescription: 'Staff Management page: Listing, search, filtering, pagination, Staff creation/editing (modal), Bulk operations (active/inactive/delete), Export / import, Quick filters and advanced filter drawer'
+  },
+  ar: {
+    // Page titles
+    pageTitle: 'إدارة الموظفين',
+    staffManagement: 'إدارة الموظفين',
+    
+    // Breadcrumb
+    home: 'الرئيسية',
+    
+    // Labels
+    people: 'شخص',
+    
+    // Comments
+    pageDescription: 'صفحة إدارة الموظفين: القوائم، البحث، التصفية، الترقيم، إنشاء/تعديل الموظفين (نافذة منبثقة)، العمليات المجمعة (نشط/غير نشط/حذف)، التصدير/الاستيراد، المرشحات السريعة ودرج المرشحات المتقدم'
+  }
+};
+
 /**
  * Personel Yönetimi sayfası:
  * - Listeleme, arama, filtreleme, sayfalandırma
@@ -25,6 +71,18 @@ import type { CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.type
  */
 
 function StaffPage () {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { ui, data, refs, actions } = useStaffPageViewModel()
 
@@ -33,12 +91,12 @@ function StaffPage () {
     : Array.isArray(data.staff)
       ? data.staff.length
       : 0
-  const totalCountLabel = `${totalCount.toLocaleString()} kişi`
+  const totalCountLabel = `${totalCount.toLocaleString()} ${t.people}`
 
   // Breadcrumb items
   const breadcrumbItems = [
-    { label: 'Ana Sayfa', href: '/dashboard' },
-    { label: 'Personel Yönetimi', active: true }
+    { label: t.home, href: '/dashboard' },
+    { label: t.staffManagement, active: true }
   ];
 
   return (
@@ -48,14 +106,14 @@ function StaffPage () {
         
         <div className="lg:ml-72">
           <DashboardHeader
-            title="Personel Yönetimi"
+            title={t.pageTitle}
             breadcrumbItems={breadcrumbItems}
           />
 
           <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
             <div className="space-y-6 text-on-light dark:text-on-dark max-w-full">
               <PageHeader
-                title="Personel Yönetimi"
+                title={t.pageTitle}
                 totalLabel={totalCountLabel}
                 summary={data.statsSummary}
                 onCreateNew={actions.openCreate}

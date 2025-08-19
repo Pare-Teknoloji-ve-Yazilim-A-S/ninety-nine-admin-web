@@ -28,7 +28,7 @@ const translations = {
     dueDate: 'Vade',
     
     // Badges and labels
-    urgent: 'Acil',
+    urgentLabel: 'Acil',
     block: 'Blok',
     unassigned: 'Atanmamış',
     overdue: 'Gecikmiş',
@@ -73,7 +73,7 @@ const translations = {
     dueDate: 'Due Date',
     
     // Badges and labels
-    urgent: 'Urgent',
+    urgentLabel: 'Urgent',
     block: 'Block',
     unassigned: 'Unassigned',
     overdue: 'Overdue',
@@ -118,7 +118,7 @@ const translations = {
     dueDate: 'تاريخ الاستحقاق',
     
     // Badges and labels
-    urgent: 'عاجل',
+    urgentLabel: 'عاجل',
     block: 'البلوك',
     unassigned: 'غير محدد',
     overdue: 'متأخر',
@@ -340,7 +340,7 @@ export const getTableColumns = (
                     </p>
                     {row.isUrgent && (
                         <Badge variant="solid" color="red" className="text-xs mt-1">
-                            {t.urgent}
+                            {t.urgentLabel}
                         </Badge>
                     )}
                 </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import { 
@@ -19,6 +19,127 @@ import { useRouter } from 'next/navigation';
 import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../hooks/useTransactionDetail';
 import { billingService, paymentService } from '@/services';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Card header
+    actions: 'İşlemler',
+    availableActions: 'Bu işlem için mevcut aksiyonlar',
+    
+    // Buttons
+    edit: 'Düzenle',
+    markAsPaid: 'Ödendi Olarak İşaretle',
+    downloadReceipt: 'Makbuz İndir',
+    printReceipt: 'Makbuz Yazdır',
+    emailReceipt: 'E-posta Gönder',
+    refresh: 'Yenile',
+    more: 'Daha Fazla',
+    less: 'Daha Az',
+    transactionHistory: 'İşlem Geçmişi',
+    delete: 'Sil',
+    
+    // Status info
+    lastUpdate: 'Son Güncelleme:',
+    transactionType: 'İşlem Türü:',
+    bill: 'Fatura',
+    payment: 'Ödeme',
+    
+    // Warning messages
+    completedTransactionWarning: 'Bu işlem tamamlandığı için düzenlenemez veya silinemez.',
+    
+    // Confirmation messages
+    deleteConfirmation: 'Bu işlemi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+    markAsPaidConfirmation: 'Bu faturayı ödendi olarak işaretlemek istediğinizden emin misiniz?',
+    
+    // Error messages
+    deleteError: 'İşlem silinirken bir hata oluştu. Lütfen tekrar deneyin.',
+    updateError: 'Fatura güncellenirken bir hata oluştu. Lütfen tekrar deneyin.',
+    
+    // Feature messages
+    printFeature: 'Makbuz yazdırma özelliği yakında aktif olacak.',
+    downloadFeature: 'Makbuz indirme özelliği yakında aktif olacak.',
+    emailFeature: 'E-posta gönderme özelliği yakında aktif olacak.'
+  },
+  en: {
+    // Card header
+    actions: 'Actions',
+    availableActions: 'Available actions for this transaction',
+    
+    // Buttons
+    edit: 'Edit',
+    markAsPaid: 'Mark as Paid',
+    downloadReceipt: 'Download Receipt',
+    printReceipt: 'Print Receipt',
+    emailReceipt: 'Email Receipt',
+    refresh: 'Refresh',
+    more: 'More',
+    less: 'Less',
+    transactionHistory: 'Transaction History',
+    delete: 'Delete',
+    
+    // Status info
+    lastUpdate: 'Last Update:',
+    transactionType: 'Transaction Type:',
+    bill: 'Bill',
+    payment: 'Payment',
+    
+    // Warning messages
+    completedTransactionWarning: 'This transaction cannot be edited or deleted as it is completed.',
+    
+    // Confirmation messages
+    deleteConfirmation: 'Are you sure you want to delete this transaction? This action cannot be undone.',
+    markAsPaidConfirmation: 'Are you sure you want to mark this bill as paid?',
+    
+    // Error messages
+    deleteError: 'An error occurred while deleting the transaction. Please try again.',
+    updateError: 'An error occurred while updating the bill. Please try again.',
+    
+    // Feature messages
+    printFeature: 'Print receipt feature will be available soon.',
+    downloadFeature: 'Download receipt feature will be available soon.',
+    emailFeature: 'Email receipt feature will be available soon.'
+  },
+  ar: {
+    // Card header
+    actions: 'الإجراءات',
+    availableActions: 'الإجراءات المتاحة لهذه المعاملة',
+    
+    // Buttons
+    edit: 'تعديل',
+    markAsPaid: 'تحديد كمدفوع',
+    downloadReceipt: 'تحميل الإيصال',
+    printReceipt: 'طباعة الإيصال',
+    emailReceipt: 'إرسال الإيصال بالبريد',
+    refresh: 'تحديث',
+    more: 'المزيد',
+    less: 'أقل',
+    transactionHistory: 'تاريخ المعاملة',
+    delete: 'حذف',
+    
+    // Status info
+    lastUpdate: 'آخر تحديث:',
+    transactionType: 'نوع المعاملة:',
+    bill: 'فاتورة',
+    payment: 'دفع',
+    
+    // Warning messages
+    completedTransactionWarning: 'لا يمكن تعديل أو حذف هذه المعاملة لأنها مكتملة.',
+    
+    // Confirmation messages
+    deleteConfirmation: 'هل أنت متأكد من أنك تريد حذف هذه المعاملة؟ لا يمكن التراجع عن هذا الإجراء.',
+    markAsPaidConfirmation: 'هل أنت متأكد من أنك تريد تحديد هذه الفاتورة كمدفوع؟',
+    
+    // Error messages
+    deleteError: 'حدث خطأ أثناء حذف المعاملة. يرجى المحاولة مرة أخرى.',
+    updateError: 'حدث خطأ أثناء تحديث الفاتورة. يرجى المحاولة مرة أخرى.',
+    
+    // Feature messages
+    printFeature: 'ميزة طباعة الإيصال ستكون متاحة قريباً.',
+    downloadFeature: 'ميزة تحميل الإيصال ستكون متاحة قريباً.',
+    emailFeature: 'ميزة إرسال الإيصال بالبريد ستكون متاحة قريباً.'
+  }
+};
+
 interface TransactionActionsProps {
   transaction: TransactionDetail;
   onUpdate: () => void;
@@ -28,6 +149,18 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
   transaction,
   onUpdate 
 }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
@@ -65,7 +198,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
 
   // Handle delete action
   const handleDelete = async () => {
-    if (!confirm('Bu işlemi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+    if (!confirm(t.deleteConfirmation)) {
       return;
     }
 
@@ -81,7 +214,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
       router.push('/dashboard/financial');
     } catch (error) {
       console.error('Error deleting transaction:', error);
-      alert('İşlem silinirken bir hata oluştu. Lütfen tekrar deneyin.');
+      alert(t.deleteError);
     } finally {
       setIsSubmitting(false);
     }
@@ -91,7 +224,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
   const handleMarkAsPaid = async () => {
     if (!isBillTransaction(transaction)) return;
 
-    if (!confirm('Bu faturayı ödendi olarak işaretlemek istediğinizden emin misiniz?')) {
+    if (!confirm(t.markAsPaidConfirmation)) {
       return;
     }
 
@@ -101,7 +234,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
       onUpdate(); // Refresh the transaction data
     } catch (error) {
       console.error('Error marking bill as paid:', error);
-      alert('Fatura güncellenirken bir hata oluştu. Lütfen tekrar deneyin.');
+      alert(t.updateError);
     } finally {
       setIsSubmitting(false);
     }
@@ -111,21 +244,21 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
   const handlePrintReceipt = () => {
     // In a real app, this would generate and print a receipt
     console.log('Printing receipt for transaction:', transaction.id);
-    alert('Makbuz yazdırma özelliği yakında aktif olacak.');
+    alert(t.printFeature);
   };
 
   // Handle download receipt
   const handleDownloadReceipt = () => {
     // In a real app, this would generate and download a PDF receipt
     console.log('Downloading receipt for transaction:', transaction.id);
-    alert('Makbuz indirme özelliği yakında aktif olacak.');
+    alert(t.downloadFeature);
   };
 
   // Handle email receipt
   const handleEmailReceipt = () => {
     // In a real app, this would send receipt via email
     console.log('Emailing receipt for transaction:', transaction.id);
-    alert('E-posta gönderme özelliği yakında aktif olacak.');
+    alert(t.emailFeature);
   };
 
   return (
@@ -136,10 +269,10 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            İşlemler
+            {t.actions}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Bu işlem için mevcut aksiyonlar
+            {t.availableActions}
           </p>
         </div>
       </div>
@@ -156,7 +289,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               disabled={isSubmitting}
               className="w-full justify-start"
             >
-              Düzenle
+              {t.edit}
             </Button>
           )}
 
@@ -170,7 +303,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               isLoading={isSubmitting}
               className="w-full justify-start bg-green-600 hover:bg-green-700"
             >
-              Ödendi Olarak İşaretle
+              {t.markAsPaid}
             </Button>
           )}
 
@@ -182,7 +315,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
             disabled={isSubmitting}
             className="w-full justify-start"
           >
-            Makbuz İndir
+            {t.downloadReceipt}
           </Button>
         </div>
 
@@ -197,7 +330,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               disabled={isSubmitting}
               className="w-full justify-start"
             >
-              Makbuz Yazdır
+              {t.printReceipt}
             </Button>
 
             <Button
@@ -208,7 +341,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               disabled={isSubmitting}
               className="w-full justify-start"
             >
-              E-posta Gönder
+              {t.emailReceipt}
             </Button>
 
             <Button
@@ -219,7 +352,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               disabled={isSubmitting}
               className="w-full justify-start"
             >
-              Yenile
+              {t.refresh}
             </Button>
           </div>
         </div>
@@ -233,7 +366,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
             onClick={() => setShowMoreActions(!showMoreActions)}
             className="w-full justify-center text-gray-500 dark:text-gray-400"
           >
-            {showMoreActions ? 'Daha Az' : 'Daha Fazla'}
+            {showMoreActions ? t.less : t.more}
           </Button>
 
           {showMoreActions && (
@@ -246,7 +379,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
                 disabled={isSubmitting}
                 className="w-full justify-start text-gray-600 dark:text-gray-400"
               >
-                İşlem Geçmişi
+                {t.transactionHistory}
               </Button>
 
               {canDelete() && (
@@ -259,7 +392,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
                   isLoading={isSubmitting}
                   className="w-full justify-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                 >
-                  Sil
+                  {t.delete}
                 </Button>
               )}
             </div>
@@ -271,15 +404,15 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
       <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex justify-between">
-            <span>Son Güncelleme:</span>
+            <span>{t.lastUpdate}</span>
             <span>
               {new Date(transaction.data.updatedAt || transaction.data.createdAt).toLocaleDateString('tr-TR')}
             </span>
           </div>
           <div className="flex justify-between">
-            <span>İşlem Türü:</span>
+            <span>{t.transactionType}</span>
             <span>
-              {isBillTransaction(transaction) ? 'Fatura' : 'Ödeme'}
+              {isBillTransaction(transaction) ? t.bill : t.payment}
             </span>
           </div>
         </div>
@@ -291,7 +424,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
           <div className="flex items-center gap-2">
             <XCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             <div className="text-sm text-amber-800 dark:text-amber-200">
-              Bu işlem tamamlandığı için düzenlenemez veya silinemez.
+              {t.completedTransactionWarning}
             </div>
           </div>
         </div>

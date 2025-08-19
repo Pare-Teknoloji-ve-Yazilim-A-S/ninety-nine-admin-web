@@ -29,7 +29,7 @@ import {
   EmploymentType
 } from '@/services/types/staff.types'
 import { Department, Position } from '@/services/types/department.types'
-import { STAFF_STATUS_CONFIG, EMPLOYMENT_TYPE_CONFIG } from '@/services/types/ui.types'
+import { getStaffStatusConfig, getEmploymentTypeConfig } from '@/services/types/ui.types'
 import {
   User,
   Phone,
@@ -39,22 +39,230 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// Form validation schema
-const staffFormSchema = z.object({
-  firstName: z.string().min(1, 'Ad gereklidir'),
-  lastName: z.string().min(1, 'Soyad gereklidir'),
-  email: z.string().email('Geçerli bir e-posta adresi giriniz'),
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Form titles
+    editStaff: 'Personel Düzenle',
+    addNewStaff: 'Yeni Personel Ekle',
+    
+    // Section titles
+    personalInfo: 'Kişisel Bilgiler',
+    employmentInfo: 'İstihdam Bilgileri',
+    emergencyContact: 'Acil Durum İletişim',
+    
+    // Form labels
+    profilePhoto: 'Profil Fotoğrafı',
+    firstName: 'Ad',
+    lastName: 'Soyad',
+    email: 'E-posta',
+    phone: 'Telefon',
+    dateOfBirth: 'Doğum Tarihi',
+    nationalId: 'TC Kimlik No',
+    address: 'Adres',
+    department: 'Departman',
+    position: 'Pozisyon',
+    manager: 'Yönetici',
+    status: 'Durum',
+    employmentType: 'İstihdam Türü',
+    startDate: 'İşe Başlama Tarihi',
+    salary: 'Maaş (TL)',
+    notes: 'Notlar',
+    emergencyContactName: 'Ad Soyad',
+    emergencyContactPhone: 'Telefon',
+    emergencyContactRelation: 'Yakınlık',
+    
+    // Placeholders
+    firstNamePlaceholder: 'Ad',
+    lastNamePlaceholder: 'Soyad',
+    emailPlaceholder: 'ornek@email.com',
+    phonePlaceholder: '+90 555 123 45 67',
+    nationalIdPlaceholder: '12345678901',
+    addressPlaceholder: 'Tam adres',
+    departmentPlaceholder: 'Departman seçiniz',
+    positionPlaceholder: 'Pozisyon seçiniz',
+    managerPlaceholder: 'Yönetici seçiniz',
+    statusPlaceholder: 'Durum seçiniz',
+    employmentTypePlaceholder: 'İstihdam türü seçiniz',
+    salaryPlaceholder: '0',
+    emergencyContactNamePlaceholder: 'Acil durum kişisi',
+    emergencyContactPhonePlaceholder: '+90 555 123 45 67',
+    emergencyContactRelationPlaceholder: 'Eş, kardeş, anne, baba vb.',
+    notesPlaceholder: 'Ek bilgiler ve notlar',
+    
+    // Buttons
+    upload: 'Yükle',
+    remove: 'Kaldır',
+    cancel: 'İptal',
+    save: 'Kaydet',
+    update: 'Güncelle',
+    saving: 'Kaydediliyor...',
+    
+    // Options
+    noManager: 'Yönetici yok',
+    
+    // Validation messages
+    firstNameRequired: 'Ad gereklidir',
+    lastNameRequired: 'Soyad gereklidir',
+    validEmail: 'Geçerli bir e-posta adresi giriniz',
+    departmentRequired: 'Departman seçiniz',
+    startDateRequired: 'İşe başlama tarihi gereklidir',
+    salaryMin: 'Maaş 0\'dan büyük olmalıdır'
+  },
+  en: {
+    // Form titles
+    editStaff: 'Edit Staff',
+    addNewStaff: 'Add New Staff',
+    
+    // Section titles
+    personalInfo: 'Personal Information',
+    employmentInfo: 'Employment Information',
+    emergencyContact: 'Emergency Contact',
+    
+    // Form labels
+    profilePhoto: 'Profile Photo',
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    email: 'Email',
+    phone: 'Phone',
+    dateOfBirth: 'Date of Birth',
+    nationalId: 'National ID',
+    address: 'Address',
+    department: 'Department',
+    position: 'Position',
+    manager: 'Manager',
+    status: 'Status',
+    employmentType: 'Employment Type',
+    startDate: 'Start Date',
+    salary: 'Salary (TL)',
+    notes: 'Notes',
+    emergencyContactName: 'Full Name',
+    emergencyContactPhone: 'Phone',
+    emergencyContactRelation: 'Relationship',
+    
+    // Placeholders
+    firstNamePlaceholder: 'First Name',
+    lastNamePlaceholder: 'Last Name',
+    emailPlaceholder: 'example@email.com',
+    phonePlaceholder: '+90 555 123 45 67',
+    nationalIdPlaceholder: '12345678901',
+    addressPlaceholder: 'Full address',
+    departmentPlaceholder: 'Select department',
+    positionPlaceholder: 'Select position',
+    managerPlaceholder: 'Select manager',
+    statusPlaceholder: 'Select status',
+    employmentTypePlaceholder: 'Select employment type',
+    salaryPlaceholder: '0',
+    emergencyContactNamePlaceholder: 'Emergency contact person',
+    emergencyContactPhonePlaceholder: '+90 555 123 45 67',
+    emergencyContactRelationPlaceholder: 'Spouse, sibling, parent, etc.',
+    notesPlaceholder: 'Additional information and notes',
+    
+    // Buttons
+    upload: 'Upload',
+    remove: 'Remove',
+    cancel: 'Cancel',
+    save: 'Save',
+    update: 'Update',
+    saving: 'Saving...',
+    
+    // Options
+    noManager: 'No Manager',
+    
+    // Validation messages
+    firstNameRequired: 'First name is required',
+    lastNameRequired: 'Last name is required',
+    validEmail: 'Please enter a valid email address',
+    departmentRequired: 'Please select a department',
+    startDateRequired: 'Start date is required',
+    salaryMin: 'Salary must be greater than 0'
+  },
+  ar: {
+    // Form titles
+    editStaff: 'تعديل الموظف',
+    addNewStaff: 'إضافة موظف جديد',
+    
+    // Section titles
+    personalInfo: 'المعلومات الشخصية',
+    employmentInfo: 'معلومات التوظيف',
+    emergencyContact: 'جهة الاتصال في الطوارئ',
+    
+    // Form labels
+    profilePhoto: 'صورة الملف الشخصي',
+    firstName: 'الاسم الأول',
+    lastName: 'اسم العائلة',
+    email: 'البريد الإلكتروني',
+    phone: 'الهاتف',
+    dateOfBirth: 'تاريخ الميلاد',
+    nationalId: 'رقم الهوية الوطنية',
+    address: 'العنوان',
+    department: 'القسم',
+    position: 'المنصب',
+    manager: 'المدير',
+    status: 'الحالة',
+    employmentType: 'نوع التوظيف',
+    startDate: 'تاريخ البدء',
+    salary: 'الراتب (TL)',
+    notes: 'ملاحظات',
+    emergencyContactName: 'الاسم الكامل',
+    emergencyContactPhone: 'الهاتف',
+    emergencyContactRelation: 'العلاقة',
+    
+    // Placeholders
+    firstNamePlaceholder: 'الاسم الأول',
+    lastNamePlaceholder: 'اسم العائلة',
+    emailPlaceholder: 'example@email.com',
+    phonePlaceholder: '+90 555 123 45 67',
+    nationalIdPlaceholder: '12345678901',
+    addressPlaceholder: 'العنوان الكامل',
+    departmentPlaceholder: 'اختر القسم',
+    positionPlaceholder: 'اختر المنصب',
+    managerPlaceholder: 'اختر المدير',
+    statusPlaceholder: 'اختر الحالة',
+    employmentTypePlaceholder: 'اختر نوع التوظيف',
+    salaryPlaceholder: '0',
+    emergencyContactNamePlaceholder: 'شخص الاتصال في الطوارئ',
+    emergencyContactPhonePlaceholder: '+90 555 123 45 67',
+    emergencyContactRelationPlaceholder: 'زوج، شقيق، والد، إلخ',
+    notesPlaceholder: 'معلومات إضافية وملاحظات',
+    
+    // Buttons
+    upload: 'رفع',
+    remove: 'إزالة',
+    cancel: 'إلغاء',
+    save: 'حفظ',
+    update: 'تحديث',
+    saving: 'جاري الحفظ...',
+    
+    // Options
+    noManager: 'لا يوجد مدير',
+    
+    // Validation messages
+    firstNameRequired: 'الاسم الأول مطلوب',
+    lastNameRequired: 'اسم العائلة مطلوب',
+    validEmail: 'يرجى إدخال عنوان بريد إلكتروني صحيح',
+    departmentRequired: 'يرجى اختيار قسم',
+    startDateRequired: 'تاريخ البدء مطلوب',
+    salaryMin: 'يجب أن يكون الراتب أكبر من 0'
+  }
+};
+
+// Form validation schema - will be created dynamically based on language
+const createStaffFormSchema = (t: any) => z.object({
+  firstName: z.string().min(1, t.firstNameRequired),
+  lastName: z.string().min(1, t.lastNameRequired),
+  email: z.string().email(t.validEmail),
   phone: z.string().optional(),
   address: z.string().optional(),
   dateOfBirth: z.string().optional(),
   nationalId: z.string().optional(),
-  department: z.string().min(1, 'Departman seçiniz'), // Department enum code
+  department: z.string().min(1, t.departmentRequired), // Department enum code
   positionTitle: z.string().optional(), // Position enum/title
   managerId: z.string().optional(),
   status: z.nativeEnum(StaffStatus),
   employmentType: z.nativeEnum(EmploymentType),
-  startDate: z.string().min(1, 'İşe başlama tarihi gereklidir'),
-  salary: z.number().min(0, 'Maaş 0\'dan büyük olmalıdır').optional(),
+  startDate: z.string().min(1, t.startDateRequired),
+  salary: z.number().min(0, t.salaryMin).optional(),
   notes: z.string().optional(),
   // Emergency contact
   emergencyContactName: z.string().optional(),
@@ -62,7 +270,7 @@ const staffFormSchema = z.object({
   emergencyContactRelation: z.string().optional()
 })
 
-type StaffFormData = z.infer<typeof staffFormSchema>
+type StaffFormData = z.infer<ReturnType<typeof createStaffFormSchema>>
 
 interface StaffFormProps {
   staff?: Staff
@@ -90,6 +298,22 @@ export function StaffForm({
   departmentOptions,
   positionOptions
 }: StaffFormProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+  
+  // i18n config'leri al
+  const staffStatusConfig = getStaffStatusConfig(currentLanguage);
+  const employmentTypeConfig = getEmploymentTypeConfig(currentLanguage);
+
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(staff?.avatar || null)
   const [filteredPositions, setFilteredPositions] = useState<Position[]>(positions)
@@ -98,6 +322,8 @@ export function StaffForm({
 
   const isEditing = !!staff
 
+  const staffFormSchema = createStaffFormSchema(t);
+  
   const form = useForm<StaffFormData>({
     resolver: zodResolver(staffFormSchema),
     defaultValues: {
@@ -221,7 +447,7 @@ export function StaffForm({
     <Card className={cn('w-full max-w-4xl mx-auto', className)}>
       <div>
         <h2 className="text-xl font-semibold mb-4">
-          {isEditing ? 'Personel Düzenle' : 'Yeni Personel Ekle'}
+          {isEditing ? t.editStaff : t.addNewStaff}
         </h2>
       </div>
 
@@ -242,7 +468,7 @@ export function StaffForm({
               />
               
               <div className="space-y-2">
-                <Label htmlFor="avatar">Profil Fotoğrafı</Label>
+                <Label htmlFor="avatar">{t.profilePhoto}</Label>
                 <div className="flex items-center space-x-2">
                   <Button
                     type="button"
@@ -251,7 +477,7 @@ export function StaffForm({
                     onClick={() => document.getElementById('avatar')?.click()}
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Yükle
+                    {t.upload}
                   </Button>
                   {avatarPreview && (
                     <Button
@@ -261,7 +487,7 @@ export function StaffForm({
                       onClick={removeAvatar}
                     >
                       <X className="h-4 w-4 mr-2" />
-                      Kaldır
+                      {t.remove}
                     </Button>
                   )}
                 </div>
@@ -281,7 +507,7 @@ export function StaffForm({
             <div className="space-y-4">
               <h3 className="text-lg font-medium flex items-center">
                 <User className="h-5 w-5 mr-2" />
-                Kişisel Bilgiler
+                {t.personalInfo}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -290,9 +516,9 @@ export function StaffForm({
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ad *</FormLabel>
+                      <FormLabel>{t.firstName} *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ad" {...field} />
+                        <Input placeholder={t.firstNamePlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -304,9 +530,9 @@ export function StaffForm({
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Soyad *</FormLabel>
+                      <FormLabel>{t.lastName} *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Soyad" {...field} />
+                        <Input placeholder={t.lastNamePlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -318,9 +544,9 @@ export function StaffForm({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>E-posta *</FormLabel>
+                      <FormLabel>{t.email} *</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="ornek@email.com" {...field} />
+                        <Input type="email" placeholder={t.emailPlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -332,9 +558,9 @@ export function StaffForm({
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefon</FormLabel>
+                      <FormLabel>{t.phone}</FormLabel>
                       <FormControl>
-                        <Input placeholder="+90 555 123 45 67" {...field} />
+                        <Input placeholder={t.phonePlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -346,7 +572,7 @@ export function StaffForm({
                   name="dateOfBirth"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Doğum Tarihi</FormLabel>
+                      <FormLabel>{t.dateOfBirth}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -360,9 +586,9 @@ export function StaffForm({
                   name="nationalId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>TC Kimlik No</FormLabel>
+                      <FormLabel>{t.nationalId}</FormLabel>
                       <FormControl>
-                        <Input placeholder="12345678901" {...field} />
+                        <Input placeholder={t.nationalIdPlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -375,10 +601,10 @@ export function StaffForm({
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                      <FormLabel>Adres</FormLabel>
+                      <FormLabel>{t.address}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Tam adres" 
+                          placeholder={t.addressPlaceholder} 
                           value={field.value || ''}
                           onChange={field.onChange}
                         />
@@ -395,7 +621,7 @@ export function StaffForm({
             <div className="space-y-4">
               <h3 className="text-lg font-medium flex items-center">
                 <Briefcase className="h-5 w-5 mr-2" />
-                İstihdam Bilgileri
+                {t.employmentInfo}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -405,13 +631,13 @@ export function StaffForm({
                   render={({ field }) => (
                     <FormItem>
                       <SearchableDropdown
-                        label="Departman *"
+                        label={t.department}
                         value={field.value || ''}
                         onChange={field.onChange}
                         options={(departmentOptions && departmentOptions.length > 0)
                           ? departmentOptions
                           : (departments.map(d => ({ value: d.code, label: d.name, description: d.code })) as SearchableOption[])}
-                        placeholder="Departman seçiniz"
+                        placeholder={t.departmentPlaceholder}
                         searchable={false}
                         showSelectedSummary={false}
                       />
@@ -426,13 +652,13 @@ export function StaffForm({
                   render={({ field }) => (
                     <FormItem>
                       <SearchableDropdown
-                        label="Pozisyon *"
+                        label={t.position}
                         value={field.value || ''}
                         onChange={field.onChange}
                         options={(positionOptions && positionOptions.length > 0)
                           ? positionOptions
                           : (filteredPositions.map(p => ({ value: p.code || p.title, label: p.title, description: p.department?.name })) as SearchableOption[])}
-                        placeholder="Pozisyon seçiniz"
+                        placeholder={t.positionPlaceholder}
                         searchable={false}
                         showSelectedSummary={false}
                       />
@@ -447,13 +673,13 @@ export function StaffForm({
                   render={({ field }) => (
                     <FormItem>
                       <SearchableDropdown
-                        label="Yönetici"
+                        label={t.manager}
                         value={field.value || ''}
                         onChange={field.onChange}
-                        options={[{ value: '', label: 'Yönetici yok' }, ...filteredManagers.map(m => ({ value: m.id.toString(), label: `${m.firstName} ${m.lastName}`, description: m.position?.title }))] as SearchableOption[]}
-                        placeholder="Yönetici seçiniz"
+                        options={[{ value: '', label: t.noManager }, ...filteredManagers.map(m => ({ value: m.id.toString(), label: `${m.firstName} ${m.lastName}`, description: m.position?.title }))] as SearchableOption[]}
+                        placeholder={t.managerPlaceholder}
                         allowEmpty
-                        emptyLabel="Yönetici yok"
+                        emptyLabel={t.noManager}
                         searchable={false}
                         showSelectedSummary={false}
                       />
@@ -468,11 +694,11 @@ export function StaffForm({
                   render={({ field }) => (
                     <FormItem>
                       <SearchableDropdown
-                        label="Durum *"
+                        label={t.status}
                         value={field.value}
                         onChange={field.onChange}
-                        options={Object.entries(STAFF_STATUS_CONFIG || {}).map(([key, cfg]) => ({ value: key, label: cfg.label })) as SearchableOption[]}
-                        placeholder="Durum seçiniz"
+                        options={Object.entries(staffStatusConfig || {}).map(([key, cfg]) => ({ value: key, label: cfg.label })) as SearchableOption[]}
+                        placeholder={t.statusPlaceholder}
                         searchable={false}
                         showSelectedSummary={false}
                       />
@@ -487,11 +713,11 @@ export function StaffForm({
                   render={({ field }) => (
                     <FormItem>
                       <SearchableDropdown
-                        label="İstihdam Türü *"
+                        label={t.employmentType}
                         value={field.value}
                         onChange={field.onChange}
-                        options={Object.entries(EMPLOYMENT_TYPE_CONFIG || {}).map(([key, cfg]) => ({ value: key, label: cfg.label })) as SearchableOption[]}
-                        placeholder="İstihdam türü seçiniz"
+                        options={Object.entries(employmentTypeConfig || {}).map(([key, cfg]) => ({ value: key, label: cfg.label })) as SearchableOption[]}
+                        placeholder={t.employmentTypePlaceholder}
                         searchable={false}
                         showSelectedSummary={false}
                       />
@@ -505,7 +731,7 @@ export function StaffForm({
                   name="startDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>İşe Başlama Tarihi *</FormLabel>
+                      <FormLabel>{t.startDate} *</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -519,11 +745,11 @@ export function StaffForm({
                   name="salary"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Maaş (TL)</FormLabel>
+                      <FormLabel>{t.salary} (TL)</FormLabel>
                       <FormControl>
                         <Input
                           type="text"
-                          placeholder="0"
+                          placeholder={t.salaryPlaceholder}
                           inputMode="decimal"
                           value={salaryInput}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -570,7 +796,7 @@ export function StaffForm({
             <div className="space-y-4">
               <h3 className="text-lg font-medium flex items-center">
                 <Phone className="h-5 w-5 mr-2" />
-                Acil Durum İletişim
+                {t.emergencyContact}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -579,9 +805,9 @@ export function StaffForm({
                   name="emergencyContactName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ad Soyad</FormLabel>
+                      <FormLabel>{t.emergencyContactName}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Acil durum kişisi" {...field} />
+                        <Input placeholder={t.emergencyContactNamePlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -593,9 +819,9 @@ export function StaffForm({
                   name="emergencyContactPhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefon</FormLabel>
+                      <FormLabel>{t.emergencyContactPhone}</FormLabel>
                       <FormControl>
-                        <Input placeholder="+90 555 123 45 67" {...field} />
+                        <Input placeholder={t.emergencyContactPhonePlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -607,9 +833,9 @@ export function StaffForm({
                   name="emergencyContactRelation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Yakınlık</FormLabel>
+                      <FormLabel>{t.emergencyContactRelation}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Eş, kardeş, anne, baba vb." {...field} />
+                        <Input placeholder={t.emergencyContactRelationPlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -626,10 +852,10 @@ export function StaffForm({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notlar</FormLabel>
+                  <FormLabel>{t.notes}</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Ek bilgiler ve notlar" 
+                      placeholder={t.notesPlaceholder} 
                       className="min-h-[100px]"
                       value={field.value || ''}
                       onChange={field.onChange}
@@ -644,11 +870,11 @@ export function StaffForm({
             <div className="flex items-center justify-end space-x-4 pt-4">
               {onCancel && (
                 <Button type="button" variant="outline" onClick={onCancel}>
-                  İptal
+                  {t.cancel}
                 </Button>
               )}
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Kaydediliyor...' : (isEditing ? 'Güncelle' : 'Kaydet')}
+                {isLoading ? t.saving : (isEditing ? t.update : t.save)}
               </Button>
             </div>
           </form>

@@ -107,7 +107,7 @@ const translations = {
     relationship: 'İlişki',
     age: 'Yaş',
     phone: 'Telefon',
-    action: 'İşlem',
+    actionColumn: 'İşlem',
     minor: 'Reşit Değil',
     
     // Documents section
@@ -265,7 +265,7 @@ const translations = {
     relationship: 'Relationship',
     age: 'Age',
     phone: 'Phone',
-    action: 'Action',
+    actionColumn: 'Action',
     minor: 'Minor',
     
     // Documents section
@@ -423,7 +423,7 @@ const translations = {
     relationship: 'العلاقة',
     age: 'العمر',
     phone: 'الهاتف',
-    action: 'الإجراء',
+    actionColumn: 'الإجراء',
     minor: 'قاصر',
     
     // Documents section
@@ -1233,7 +1233,7 @@ export default function ResidentViewPage() {
                                                             <div>
                                                                 <p className="text-text-light-muted dark:text-text-muted">{t.membershipLevel}</p>
                                                                 <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                                                    {getTranslatedMembershipTier(resident.membershipTier)}
+                                                                    {getTranslatedMembershipTier(resident.membershipTier || 'STANDARD')}
                                                                 </p>
                                                             </div>
                                                             <div>

@@ -1,10 +1,24 @@
 'use client'
 
+import React, { useState, useEffect } from 'react';
 import Drawer from '@/app/components/ui/Drawer'
 import StaffFilters from '@/components/staff/StaffFilters'
 import type { StaffFilterParams } from '@/services/types/staff.types'
 import type { Department, Position } from '@/services/types/department.types'
 import type { QuickFilter, SavedFilter } from '@/services/types/ui.types'
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    filters: 'Filtreler'
+  },
+  en: {
+    filters: 'Filters'
+  },
+  ar: {
+    filters: 'المرشحات'
+  }
+};
 
 interface FilterDrawerProps {
   open: boolean
@@ -39,8 +53,20 @@ export default function FilterDrawer({
   onImportFilters,
   onReset,
 }: FilterDrawerProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   return (
-    <Drawer isOpen={open} onClose={onClose} title="Filtreler" size="lg" position="right">
+    <Drawer isOpen={open} onClose={onClose} title={t.filters} size="lg" position="right">
       <StaffFilters
         filters={filters}
         departments={departments}

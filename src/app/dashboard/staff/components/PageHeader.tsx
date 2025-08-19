@@ -1,7 +1,24 @@
 'use client'
 
+import React, { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button'
 import { Plus, RefreshCw } from 'lucide-react'
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    refresh: 'Yenile',
+    addNewStaff: 'Yeni Personel Ekle'
+  },
+  en: {
+    refresh: 'Refresh',
+    addNewStaff: 'Add New Staff'
+  },
+  ar: {
+    refresh: 'تحديث',
+    addNewStaff: 'إضافة موظف جديد'
+  }
+};
 
 interface PageHeaderProps {
   title: string
@@ -18,6 +35,18 @@ export default function PageHeader({
   onRefresh,
   onCreateNew,
 }: PageHeaderProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
@@ -31,13 +60,13 @@ export default function PageHeader({
       <div className="flex gap-3">
         {onRefresh && (
           <Button variant="ghost" size="md" icon={RefreshCw} onClick={onRefresh}>
-            Yenile
+            {t.refresh}
           </Button>
         )}
 
         {onCreateNew && (
           <Button variant="primary" size="md" icon={Plus} onClick={onCreateNew}>
-            Yeni Personel Ekle
+            {t.addNewStaff}
           </Button>
         )}
       </div>

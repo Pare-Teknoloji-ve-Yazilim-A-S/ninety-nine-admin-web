@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   FileText,
@@ -9,6 +9,61 @@ import {
 } from 'lucide-react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page header
+    selectTransactionType: 'Yeni İşlem Türü Seçin',
+    selectTransactionTypeDesc: 'Oluşturmak istediğiniz işlem türünü seçin',
+    
+    // Transaction types
+    createBill: 'Fatura Oluştur',
+    createBillDesc: 'Aidat, bakım, fayda veya ceza faturası oluşturun',
+    recordPayment: 'Ödeme Kaydet',
+    recordPaymentDesc: 'Mevcut bir faturaya ödeme kaydedin',
+    
+    // Button
+    continue: 'Devam Et',
+    
+    // Footer
+    manageFinancialTransactions: 'Bu sayfadan finansal işlemlerinizi kolayca yönetebilirsiniz.'
+  },
+  en: {
+    // Page header
+    selectTransactionType: 'Select New Transaction Type',
+    selectTransactionTypeDesc: 'Select the type of transaction you want to create',
+    
+    // Transaction types
+    createBill: 'Create Bill',
+    createBillDesc: 'Create dues, maintenance, utility or penalty bills',
+    recordPayment: 'Record Payment',
+    recordPaymentDesc: 'Record payment for an existing bill',
+    
+    // Button
+    continue: 'Continue',
+    
+    // Footer
+    manageFinancialTransactions: 'You can easily manage your financial transactions from this page.'
+  },
+  ar: {
+    // Page header
+    selectTransactionType: 'اختر نوع المعاملة الجديدة',
+    selectTransactionTypeDesc: 'اختر نوع المعاملة التي تريد إنشاءها',
+    
+    // Transaction types
+    createBill: 'إنشاء فاتورة',
+    createBillDesc: 'إنشاء فواتير رسوم أو صيانة أو مرافق أو غرامات',
+    recordPayment: 'تسجيل دفعة',
+    recordPaymentDesc: 'تسجيل دفعة لفاتورة موجودة',
+    
+    // Button
+    continue: 'استمر',
+    
+    // Footer
+    manageFinancialTransactions: 'يمكنك إدارة معاملاتك المالية بسهولة من هذه الصفحة.'
+  }
+};
 
 interface TransactionTypeOption {
   id: 'bill' | 'payment';
@@ -19,33 +74,42 @@ interface TransactionTypeOption {
   route: string;
 }
 
-const transactionTypes: TransactionTypeOption[] = [
-  {
-    id: 'bill',
-    title: 'Fatura Oluştur',
-    description: 'Aidat, bakım, fayda veya ceza faturası oluşturun',
-    icon: FileText,
-    color: 'bg-primary-gold/10 text-primary-gold',
-    route: '/dashboard/financial/create/bill'
-  },
-  {
-    id: 'payment',
-    title: 'Ödeme Kaydet',
-    description: 'Mevcut bir faturaya ödeme kaydedin',
-    icon: CreditCard,
-    color: 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400',
-    route: '/dashboard/financial/create/payment'
-  }
-];
-
-interface TransactionTypeSelectorProps {
-  onTypeSelect?: (type: 'bill' | 'payment') => void;
-}
-
 const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
   onTypeSelect
 }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const router = useRouter();
+
+  // Transaction types with translations
+  const transactionTypes: TransactionTypeOption[] = [
+    {
+      id: 'bill',
+      title: t.createBill,
+      description: t.createBillDesc,
+      icon: FileText,
+      color: 'bg-primary-gold/10 text-primary-gold',
+      route: '/dashboard/financial/create/bill'
+    },
+    {
+      id: 'payment',
+      title: t.recordPayment,
+      description: t.recordPaymentDesc,
+      icon: CreditCard,
+      color: 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400',
+      route: '/dashboard/financial/create/payment'
+    }
+  ];
 
   const handleTypeSelect = (option: TransactionTypeOption) => {
     if (onTypeSelect) {
@@ -59,10 +123,10 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Yeni İşlem Türü Seçin
+          {t.selectTransactionType}
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          Oluşturmak istediğiniz işlem türünü seçin
+          {t.selectTransactionTypeDesc}
         </p>
       </div>
 
@@ -100,7 +164,7 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
                     handleTypeSelect(option);
                   }}
                 >
-                  Devam Et
+                  {t.continue}
                 </Button>
               </div>
             </Card>
@@ -110,11 +174,15 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
 
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Bu sayfadan finansal işlemlerinizi kolayca yönetebilirsiniz.
+          {t.manageFinancialTransactions}
         </p>
       </div>
     </div>
   );
 };
+
+interface TransactionTypeSelectorProps {
+  onTypeSelect?: (type: 'bill' | 'payment') => void;
+}
 
 export default TransactionTypeSelector;

@@ -8,13 +8,440 @@ import { unitPricesService } from '@/services/unit-prices.service';
 import enumsService from '@/services/enums.service';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 
-// Breadcrumb Items
-const BREADCRUMB_ITEMS = [
-  { label: 'Ana Sayfa', href: '/dashboard' },
-  { label: 'Ayarlar', active: true }
-];
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles
+    pageTitle: 'Ayarlar',
+    
+    // Breadcrumb
+    home: 'Ana Sayfa',
+    settings: 'Ayarlar',
+    
+    // Section titles
+    securitySettings: 'Güvenlik Ayarları',
+    unitPrices: 'Birim Fiyatlar',
+    systemEnums: 'Sistem Enum Değerleri',
+    availableUnits: 'Kullanılabilir Birimler',
+    priceTypes: 'Fiyat Türleri ve Birim Fiyatlar',
+    
+    // Security settings
+    sessionTimeout: 'Oturum Zaman Aşımı',
+    passwordExpiry: 'Şifre Geçerlilik Süresi',
+    maxLoginAttempts: 'Maksimum Giriş Denemesi',
+    twoFactorAuth: 'İki Faktörlü Kimlik Doğrulama',
+    passwordMinLength: 'Minimum Şifre Uzunluğu',
+    passwordRequireUppercase: 'Büyük Harf Gereksinimi',
+    passwordRequireLowercase: 'Küçük Harf Gereksinimi',
+    passwordRequireNumbers: 'Sayı Gereksinimi',
+    passwordRequireSpecialChars: 'Özel Karakter Gereksinimi',
+    accountLockoutThreshold: 'Hesap Kilitleme Eşiği',
+    accountLockoutDuration: 'Hesap Kilitleme Süresi',
+    passwordHistoryCount: 'Şifre Geçmişi Sayısı',
+    
+    // Unit price labels
+    dues: 'Aidat',
+    electricity: 'Elektrik',
+    water: 'Su',
+    gas: 'Doğalgaz',
+    heating: 'Isıtma',
+    
+    // Unit price descriptions
+    duesDescription: 'Metrekare başına aidat ücreti',
+    electricityDescription: 'Kilowatt saat başına elektrik ücreti',
+    waterDescription: 'Metreküp başına su ücreti',
+    gasDescription: 'Metreküp başına doğalgaz ücreti',
+    heatingDescription: 'Metrekare başına ısıtma ücreti',
+    
+    // Units
+    squareMeter: 'Metrekare',
+    squareMeterDesc: 'Metrekare cinsinden',
+    kilowattHour: 'Kilowatt Saat',
+    kilowattHourDesc: 'Elektrik tüketimi için',
+    cubicMeter: 'Metreküp',
+    cubicMeterDesc: 'Su ve doğalgaz için',
+    piece: 'Adet',
+    pieceDesc: 'Adet bazında ücretlendirme',
+    
+    // Buttons
+    edit: 'Düzenle',
+    save: 'Kaydet',
+    cancel: 'İptal',
+    add: 'Ekle',
+    remove: 'Kaldır',
+    createPosition: 'Pozisyon Oluştur',
+    createEnumValues: 'Enum Değerlerini Ekle',
+    adding: 'Ekleniyor...',
+    
+    // Form labels
+    unitPrice: 'Birim Fiyat',
+    unit: 'Birim',
+    title: 'Başlık',
+    code: 'Kod',
+    description: 'Açıklama',
+    department: 'Departman',
+    level: 'Seviye',
+    salaryMin: 'Minimum Maaş',
+    salaryMax: 'Maksimum Maaş',
+    requirements: 'Gereksinimler',
+    responsibilities: 'Sorumluluklar',
+    isActive: 'Aktif',
+    sortOrder: 'Sıralama Numarası',
+    
+    // Placeholders
+    unitPricePlaceholder: '0.00',
+    titlePlaceholder: 'Pozisyon başlığı',
+    codePlaceholder: 'Pozisyon kodu',
+    descriptionPlaceholder: 'Pozisyon açıklaması',
+    levelPlaceholder: 'Seviye',
+    salaryMinPlaceholder: 'Minimum maaş',
+    salaryMaxPlaceholder: 'Maksimum maaş',
+    requirementPlaceholder: 'Gereksinim',
+    responsibilityPlaceholder: 'Sorumluluk',
+    enumCodePlaceholder: 'Enum değeri (örn: NEW_STATUS)',
+    sortOrderPlaceholder: '1',
+    
+    // Messages
+    loadingUnitPrices: 'Birim fiyatlar yükleniyor...',
+    loadingEnums: 'Enum değerleri yükleniyor...',
+    noEnumsFound: 'Enum değerleri bulunamadı.',
+    noUnitPricesFound: 'Birim fiyat bulunamadı.',
+    codeFormatInfo: 'Kod formatı: UPPER_CASE (örn: NEW_STATUS, PENDING_APPROVAL). Label otomatik olarak oluşturulacak.',
+    preview: 'Önizleme:',
+    categories: 'kategori',
+    
+    // System descriptions
+    systemEnumsDescription: 'Sistem genelindeki ayarları, entegrasyonları ve bakımı yapılandırın',
+    securitySettingsDescription: 'Uygulama için önceden tanımlı parametreleri kontrol edin ve güncelleyin.',
+    unitPricesDescription: 'Sistemde kullanılan birim fiyatlarını yapılandırın. Aidat, elektrik, su, doğalgaz ve ısıtma fiyatlarını belirleyin.',
+    
+    // Device settings
+    deviceSettings: 'Cihaz Ayarları',
+    
+    // Position form
+    selectLevel: 'Seviye Seçin',
+    junior: 'Junior',
+    midLevel: 'Mid-Level',
+    senior: 'Senior',
+    lead: 'Lead',
+    manager: 'Manager',
+    director: 'Director',
+    activePosition: 'Aktif Pozisyon',
+    creatingPosition: 'Oluşturuluyor...',
+    
+    // Enum form
+    module: 'Modül',
+    category: 'Kategori',
+    enumValues: 'Enum Değerleri',
+    
+    // Enum categories
+    staffSettings: 'Personel Ayarları',
+    propertySettings: 'Mülk Ayarları',
+    ticketSettings: 'Talep Ayarları',
+    billingSettings: 'Faturalama Ayarları',
+    userSettings: 'Kullanıcı Ayarları',
+    paymentSettings: 'Ödeme Ayarları',
+    announcementSettings: 'Duyuru Ayarları',
+    qrCodeSettings: 'QR Kod Ayarları',
+    familyMemberSettings: 'Aile Üyesi Ayarları',
+    userPropertySettings: 'Kullanıcı Mülk Ayarları',
+    roleSettings: 'Rol Ayarları'
+  },
+  en: {
+    // Page titles
+    pageTitle: 'Settings',
+    
+    // Breadcrumb
+    home: 'Home',
+    settings: 'Settings',
+    
+    // Section titles
+    securitySettings: 'Security Settings',
+    unitPrices: 'Unit Prices',
+    systemEnums: 'System Enum Values',
+    availableUnits: 'Available Units',
+    priceTypes: 'Price Types and Unit Prices',
+    
+    // Security settings
+    sessionTimeout: 'Session Timeout',
+    passwordExpiry: 'Password Expiry',
+    maxLoginAttempts: 'Max Login Attempts',
+    twoFactorAuth: 'Two Factor Authentication',
+    passwordMinLength: 'Password Min Length',
+    passwordRequireUppercase: 'Require Uppercase',
+    passwordRequireLowercase: 'Require Lowercase',
+    passwordRequireNumbers: 'Require Numbers',
+    passwordRequireSpecialChars: 'Require Special Characters',
+    accountLockoutThreshold: 'Account Lockout Threshold',
+    accountLockoutDuration: 'Account Lockout Duration',
+    passwordHistoryCount: 'Password History Count',
+    
+    // Unit price labels
+    dues: 'Dues',
+    electricity: 'Electricity',
+    water: 'Water',
+    gas: 'Gas',
+    heating: 'Heating',
+    
+    // Unit price descriptions
+    duesDescription: 'Dues per square meter',
+    electricityDescription: 'Electricity per kilowatt hour',
+    waterDescription: 'Water per cubic meter',
+    gasDescription: 'Gas per cubic meter',
+    heatingDescription: 'Heating per square meter',
+    
+    // Units
+    squareMeter: 'Square Meter',
+    squareMeterDesc: 'In square meters',
+    kilowattHour: 'Kilowatt Hour',
+    kilowattHourDesc: 'For electricity consumption',
+    cubicMeter: 'Cubic Meter',
+    cubicMeterDesc: 'For water and gas',
+    piece: 'Piece',
+    pieceDesc: 'Per piece pricing',
+    
+    // Buttons
+    edit: 'Edit',
+    save: 'Save',
+    cancel: 'Cancel',
+    add: 'Add',
+    remove: 'Remove',
+    createPosition: 'Create Position',
+    createEnumValues: 'Add Enum Values',
+    adding: 'Adding...',
+    
+    // Form labels
+    unitPrice: 'Unit Price',
+    unit: 'Unit',
+    title: 'Title',
+    code: 'Code',
+    description: 'Description',
+    department: 'Department',
+    level: 'Level',
+    salaryMin: 'Min Salary',
+    salaryMax: 'Max Salary',
+    requirements: 'Requirements',
+    responsibilities: 'Responsibilities',
+    isActive: 'Active',
+    sortOrder: 'Sort Order',
+    
+    // Placeholders
+    unitPricePlaceholder: '0.00',
+    titlePlaceholder: 'Position title',
+    codePlaceholder: 'Position code',
+    descriptionPlaceholder: 'Position description',
+    levelPlaceholder: 'Level',
+    salaryMinPlaceholder: 'Min salary',
+    salaryMaxPlaceholder: 'Max salary',
+    requirementPlaceholder: 'Requirement',
+    responsibilityPlaceholder: 'Responsibility',
+    enumCodePlaceholder: 'Enum value (e.g.: NEW_STATUS)',
+    sortOrderPlaceholder: '1',
+    
+    // Messages
+    loadingUnitPrices: 'Loading unit prices...',
+    loadingEnums: 'Loading enum values...',
+    noEnumsFound: 'No enum values found.',
+    noUnitPricesFound: 'No unit prices found.',
+    codeFormatInfo: 'Code format: UPPER_CASE (e.g.: NEW_STATUS, PENDING_APPROVAL). Label will be generated automatically.',
+    preview: 'Preview:',
+    categories: 'categories',
+    
+    // System descriptions
+    systemEnumsDescription: 'Configure system-wide settings, integrations and maintenance',
+    securitySettingsDescription: 'Check and update predefined parameters for the application.',
+    unitPricesDescription: 'Configure unit prices used in the system. Set prices for dues, electricity, water, gas and heating.',
+    
+    // Device settings
+    deviceSettings: 'Device Settings',
+    
+    // Position form
+    selectLevel: 'Select Level',
+    junior: 'Junior',
+    midLevel: 'Mid-Level',
+    senior: 'Senior',
+    lead: 'Lead',
+    manager: 'Manager',
+    director: 'Director',
+    activePosition: 'Active Position',
+    creatingPosition: 'Creating...',
+    
+    // Enum form
+    module: 'Module',
+    category: 'Category',
+    enumValues: 'Enum Values',
+    
+    // Enum categories
+    staffSettings: 'Staff Settings',
+    propertySettings: 'Property Settings',
+    ticketSettings: 'Ticket Settings',
+    billingSettings: 'Billing Settings',
+    userSettings: 'User Settings',
+    paymentSettings: 'Payment Settings',
+    announcementSettings: 'Announcement Settings',
+    qrCodeSettings: 'QR Code Settings',
+    familyMemberSettings: 'Family Member Settings',
+    userPropertySettings: 'User Property Settings',
+    roleSettings: 'Role Settings'
+  },
+  ar: {
+    // Page titles
+    pageTitle: 'الإعدادات',
+    
+    // Breadcrumb
+    home: 'الرئيسية',
+    settings: 'الإعدادات',
+    
+    // Section titles
+    securitySettings: 'إعدادات الأمان',
+    unitPrices: 'أسعار الوحدات',
+    systemEnums: 'قيم التعداد النظامية',
+    availableUnits: 'الوحدات المتاحة',
+    priceTypes: 'أنواع الأسعار وأسعار الوحدات',
+    
+    // Security settings
+    sessionTimeout: 'انتهاء صلاحية الجلسة',
+    passwordExpiry: 'انتهاء صلاحية كلمة المرور',
+    maxLoginAttempts: 'الحد الأقصى لمحاولات تسجيل الدخول',
+    twoFactorAuth: 'المصادقة الثنائية',
+    passwordMinLength: 'الحد الأدنى لطول كلمة المرور',
+    passwordRequireUppercase: 'تتطلب أحرف كبيرة',
+    passwordRequireLowercase: 'تتطلب أحرف صغيرة',
+    passwordRequireNumbers: 'تتطلب أرقام',
+    passwordRequireSpecialChars: 'تتطلب أحرف خاصة',
+    accountLockoutThreshold: 'عتبة قفل الحساب',
+    accountLockoutDuration: 'مدة قفل الحساب',
+    passwordHistoryCount: 'عدد تاريخ كلمة المرور',
+    
+    // Unit price labels
+    dues: 'الرسوم',
+    electricity: 'الكهرباء',
+    water: 'الماء',
+    gas: 'الغاز',
+    heating: 'التدفئة',
+    
+    // Unit price descriptions
+    duesDescription: 'الرسوم لكل متر مربع',
+    electricityDescription: 'الكهرباء لكل كيلوواط ساعة',
+    waterDescription: 'الماء لكل متر مكعب',
+    gasDescription: 'الغاز لكل متر مكعب',
+    heatingDescription: 'التدفئة لكل متر مربع',
+    
+    // Units
+    squareMeter: 'متر مربع',
+    squareMeterDesc: 'بالمتر المربع',
+    kilowattHour: 'كيلوواط ساعة',
+    kilowattHourDesc: 'لاستهلاك الكهرباء',
+    cubicMeter: 'متر مكعب',
+    cubicMeterDesc: 'للماء والغاز',
+    piece: 'قطعة',
+    pieceDesc: 'التسعير لكل قطعة',
+    
+    // Buttons
+    edit: 'تعديل',
+    save: 'حفظ',
+    cancel: 'إلغاء',
+    add: 'إضافة',
+    remove: 'إزالة',
+    createPosition: 'إنشاء منصب',
+    createEnumValues: 'إضافة قيم التعداد',
+    adding: 'جاري الإضافة...',
+    
+    // Form labels
+    unitPrice: 'سعر الوحدة',
+    unit: 'الوحدة',
+    title: 'العنوان',
+    code: 'الرمز',
+    description: 'الوصف',
+    department: 'القسم',
+    level: 'المستوى',
+    salaryMin: 'الحد الأدنى للراتب',
+    salaryMax: 'الحد الأقصى للراتب',
+    requirements: 'المتطلبات',
+    responsibilities: 'المسؤوليات',
+    isActive: 'نشط',
+    sortOrder: 'ترتيب الفرز',
+    
+    // Placeholders
+    unitPricePlaceholder: '0.00',
+    titlePlaceholder: 'عنوان المنصب',
+    codePlaceholder: 'رمز المنصب',
+    descriptionPlaceholder: 'وصف المنصب',
+    levelPlaceholder: 'المستوى',
+    salaryMinPlaceholder: 'الحد الأدنى للراتب',
+    salaryMaxPlaceholder: 'الحد الأقصى للراتب',
+    requirementPlaceholder: 'المتطلب',
+    responsibilityPlaceholder: 'المسؤولية',
+    enumCodePlaceholder: 'قيمة التعداد (مثال: NEW_STATUS)',
+    sortOrderPlaceholder: '1',
+    
+    // Messages
+    loadingUnitPrices: 'جاري تحميل أسعار الوحدات...',
+    loadingEnums: 'جاري تحميل قيم التعداد...',
+    noEnumsFound: 'لم يتم العثور على قيم التعداد.',
+    noUnitPricesFound: 'لم يتم العثور على أسعار الوحدات.',
+    codeFormatInfo: 'تنسيق الرمز: UPPER_CASE (مثال: NEW_STATUS, PENDING_APPROVAL). سيتم إنشاء التسمية تلقائياً.',
+    preview: 'معاينة:',
+    categories: 'فئات',
+    
+    // System descriptions
+    systemEnumsDescription: 'تكوين الإعدادات النظامية والتفاعلات والصيانة',
+    securitySettingsDescription: 'تحقق من المعاملات المحددة مسبقاً وتحديثها للتطبيق.',
+    unitPricesDescription: 'تكوين أسعار الوحدات المستخدمة في النظام. تعيين الأسعار للرسوم والكهرباء والماء والغاز والتدفئة.',
+    
+    // Device settings
+    deviceSettings: 'إعدادات الجهاز',
+    
+    // Position form
+    selectLevel: 'اختر المستوى',
+    junior: 'مبتدئ',
+    midLevel: 'متوسط المستوى',
+    senior: 'خبير',
+    lead: 'قائد',
+    manager: 'مدير',
+    director: 'مدير تنفيذي',
+    activePosition: 'منصب نشط',
+    creatingPosition: 'جاري الإنشاء...',
+    
+    // Enum form
+    module: 'الوحدة',
+    category: 'الفئة',
+    enumValues: 'قيم التعداد',
+    
+    // Enum categories
+    staffSettings: 'إعدادات الموظفين',
+    propertySettings: 'إعدادات العقارات',
+    ticketSettings: 'إعدادات الطلبات',
+    billingSettings: 'إعدادات الفواتير',
+    userSettings: 'إعدادات المستخدمين',
+    paymentSettings: 'إعدادات الدفع',
+    announcementSettings: 'إعدادات الإعلانات',
+    qrCodeSettings: 'إعدادات رمز QR',
+    familyMemberSettings: 'إعدادات أفراد العائلة',
+    userPropertySettings: 'إعدادات عقارات المستخدم',
+    roleSettings: 'إعدادات الأدوار'
+  }
+};
 
 export default function DashboardSettingsPage() {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
+  // Breadcrumb Items
+  const breadcrumbItems = [
+    { label: t.home, href: '/dashboard' },
+    { label: t.settings, active: true }
+  ];
+
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [securityCardOpen, setSecurityCardOpen] = useState<boolean>(false);
   const [unitPriceCardOpen, setUnitPriceCardOpen] = useState<boolean>(false);
@@ -107,10 +534,10 @@ export default function DashboardSettingsPage() {
   }>>([]);
 
   const units = [
-    { value: 'm²', label: 'Metrekare', description: 'Metrekare cinsinden' },
-    { value: 'kWh', label: 'Kilowatt Saat', description: 'Elektrik tüketimi için' },
-    { value: 'm³', label: 'Metreküp', description: 'Su ve doğalgaz için' },
-    { value: 'piece', label: 'Adet', description: 'Adet bazında ücretlendirme' }
+    { value: 'm²', label: t.squareMeter, description: t.squareMeterDesc },
+    { value: 'kWh', label: t.kilowattHour, description: t.kilowattHourDesc },
+    { value: 'm³', label: t.cubicMeter, description: t.cubicMeterDesc },
+    { value: 'piece', label: t.piece, description: t.pieceDesc }
   ];
 
   // Load appEnums from localStorage on component mount
@@ -166,19 +593,19 @@ export default function DashboardSettingsPage() {
           setUnitPriceSettings(transformedSettings);
           // Create price type options with proper structure
           const priceTypeLabels: Record<string, string> = {
-            DUES: 'Aidat',
-            ELECTRICITY: 'Elektrik',
-            WATER: 'Su',
-            GAS: 'Doğalgaz',
-            HEATING: 'Isıtma'
+            DUES: t.dues,
+            ELECTRICITY: t.electricity,
+            WATER: t.water,
+            GAS: t.gas,
+            HEATING: t.heating
           };
           
           const priceTypeDescriptions: Record<string, string> = {
-            DUES: 'Metrekare başına aidat ücreti',
-            ELECTRICITY: 'Kilowatt saat başına elektrik ücreti',
-            WATER: 'Metreküp başına su ücreti',
-            GAS: 'Metreküp başına doğalgaz ücreti',
-            HEATING: 'Metrekare başına ısıtma ücreti'
+            DUES: t.duesDescription,
+            ELECTRICITY: t.electricityDescription,
+            WATER: t.waterDescription,
+            GAS: t.gasDescription,
+            HEATING: t.heatingDescription
           };
           
           const mappedPriceTypes = response.map(unitPrice => ({
@@ -649,8 +1076,8 @@ export default function DashboardSettingsPage() {
         <div className="lg:ml-72">
           {/* Header */}
           <DashboardHeader 
-            title="Ayarlar" 
-            breadcrumbItems={BREADCRUMB_ITEMS}
+            title={t.pageTitle} 
+            breadcrumbItems={breadcrumbItems}
           />
           
           {/* Main Content */}
@@ -659,10 +1086,10 @@ export default function DashboardSettingsPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-2">
-                  Sistem Ayarları
+                  {t.systemEnums}
                 </h2>
                 <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                  Sistem genelindeki ayarları, entegrasyonları ve bakımı yapılandırın
+                  {t.systemEnumsDescription}
                 </p>
               </div>
               <div className="flex gap-3">
@@ -674,7 +1101,7 @@ export default function DashboardSettingsPage() {
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  Cihaz Ayarları
+                  {t.deviceSettings}
                 </button>
               </div>
             </div>
@@ -689,10 +1116,10 @@ export default function DashboardSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-                      Parametre Ayarları
+                      {t.securitySettings}
                     </h2>
                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                    Uygulama için önceden tanımlı parametreleri kontrol edin ve güncelleyin.
+                    {t.securitySettingsDescription}
                     </p>
                   </div>
                   <div className="w-6 h-6 transition-transform duration-200">
@@ -711,7 +1138,7 @@ export default function DashboardSettingsPage() {
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold mx-auto mb-4"></div>
                         <p className="text-text-light-secondary dark:text-text-secondary">
-                          Enum değerleri yükleniyor...
+                          {t.loadingEnums}
                         </p>
                       </div>
                     ) : enumsData ? (
@@ -726,10 +1153,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Personel Ayarları
+                                  {t.staffSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.staff).length} kategori
+                                  {Object.keys(enumsData.staff).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -757,7 +1184,7 @@ export default function DashboardSettingsPage() {
                                           onClick={() => openEnumModal('staff', category)}
                                           className="text-xs bg-primary-gold text-white px-2 py-1 rounded hover:bg-primary-gold/80 transition-colors"
                                         >
-                                          + Ekle
+                                          {t.add}
                                         </button>
                                       </div>
                                       <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -790,10 +1217,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Konut Ayarları
+                                  {t.propertySettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.properties).length} kategori
+                                  {Object.keys(enumsData.properties).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -821,7 +1248,7 @@ export default function DashboardSettingsPage() {
                                           onClick={() => openEnumModal('properties', category)}
                                           className="text-xs bg-primary-gold text-white px-2 py-1 rounded hover:bg-primary-gold/80 transition-colors"
                                         >
-                                          + Ekle
+                                          {t.add}
                                         </button>
                                       </div>
                                       <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -854,10 +1281,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Talep Ayarları
+                                  {t.ticketSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.tickets).length} kategori
+                                  {Object.keys(enumsData.tickets).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -885,7 +1312,7 @@ export default function DashboardSettingsPage() {
                                           onClick={() => openEnumModal('tickets', category)}
                                           className="text-xs bg-primary-gold text-white px-2 py-1 rounded hover:bg-primary-gold/80 transition-colors"
                                         >
-                                          + Ekle
+                                          {t.add}
                                         </button>
                                       </div>
                                       <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -918,10 +1345,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Fatura Ayarları
+                                  {t.billingSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.billing).length} kategori
+                                  {Object.keys(enumsData.billing).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -974,10 +1401,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Kullanıcı Ayarları
+                                  {t.userSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.users).length} kategori
+                                  {Object.keys(enumsData.users).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -1030,10 +1457,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Ödeme Ayarları
+                                  {t.paymentSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.payment).length} kategori
+                                  {Object.keys(enumsData.payment).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -1086,10 +1513,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Duyuru Ayarları
+                                  {t.announcementSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.announcements).length} kategori
+                                  {Object.keys(enumsData.announcements).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -1142,10 +1569,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  QR Kod Ayarları
+                                  {t.qrCodeSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.qrcode).length} kategori
+                                  {Object.keys(enumsData.qrcode).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -1198,10 +1625,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Aile Üyesi Ayarları
+                                  {t.familyMemberSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.familyMembers).length} kategori
+                                  {Object.keys(enumsData.familyMembers).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -1254,10 +1681,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Kullanıcı Konut Ayarları
+                                  {t.userPropertySettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.userProperties).length} kategori
+                                  {Object.keys(enumsData.userProperties).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -1310,10 +1737,10 @@ export default function DashboardSettingsPage() {
                               <div className="flex items-center">
                                 <span className="w-2 h-2 bg-primary-gold rounded-full mr-3"></span>
                                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
-                                  Rol Ayarları
+                                  {t.roleSettings}
                                 </h3>
                                 <span className="ml-3 text-sm text-text-light-muted dark:text-text-muted bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                                  {Object.keys(enumsData.roles).length} kategori
+                                  {Object.keys(enumsData.roles).length} {t.categories}
                                 </span>
                               </div>
                               <svg
@@ -1359,7 +1786,7 @@ export default function DashboardSettingsPage() {
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-text-light-secondary dark:text-text-secondary">
-                          Enum değerleri bulunamadı.
+                          {t.noEnumsFound}
                         </p>
                       </div>
                     )}
@@ -1378,10 +1805,10 @@ export default function DashboardSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-                      Birim Fiyat Ayarları
+                      {t.unitPrices}
                     </h2>
                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                      Sistemde kullanılan birim fiyatlarını yapılandırın. Aidat, elektrik, su, doğalgaz ve ısıtma fiyatlarını belirleyin.
+                      {t.unitPricesDescription}
                     </p>
                   </div>
                   <div className="w-6 h-6 transition-transform duration-200">
@@ -1399,7 +1826,7 @@ export default function DashboardSettingsPage() {
                     {/* Units Reference Section - Now First */}
                     <div>
                       <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-4">
-                        Kullanılabilir Birimler
+                        {t.availableUnits}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {units.map((unit) => (
@@ -1421,11 +1848,11 @@ export default function DashboardSettingsPage() {
                     {/* Price Types Section - Now Second */}
                     <div className="border-t border-gray-200 dark:border-gray-600 pt-6">
                       <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-4">
-                        Fiyat Türleri ve Birim Fiyatlar
+                        {t.priceTypes}
                       </h3>
                       
                       {(() => {
-                        console.log('�� Render debug:', {
+                        console.log(' Render debug:', {
                           unitPricesLoading,
                           priceTypesLength: priceTypes.length,
                           priceTypes: priceTypes,
@@ -1437,7 +1864,7 @@ export default function DashboardSettingsPage() {
                             <div className="text-center py-8">
                               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold mx-auto mb-4"></div>
                               <p className="text-text-light-secondary dark:text-text-secondary">
-                                Birim fiyatlar yükleniyor...
+                                {t.loadingUnitPrices}
                               </p>
                             </div>
                           );
@@ -1459,14 +1886,14 @@ export default function DashboardSettingsPage() {
                                       onClick={() => startEditing(type.value)}
                                       className="px-3 py-1 text-xs bg-primary-gold text-white rounded-md hover:bg-primary-gold/90 transition-colors"
                                     >
-                                      Düzenle
+                                      {t.edit}
                                     </button>
                                   </div>
                                   
                                   <div className="grid grid-cols-2 gap-3">
                                     <div>
                                       <label className="block text-xs font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                                        Birim Fiyat
+                                        {t.unitPrice}
                                       </label>
                                       {editingPriceType === type.value ? (
                                         <div className="space-y-2">
@@ -1476,20 +1903,20 @@ export default function DashboardSettingsPage() {
                                             value={editPrice}
                                             onChange={(e) => setEditPrice(e.target.value)}
                                             className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-600 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                                            placeholder="0.00"
+                                            placeholder={t.unitPricePlaceholder}
                                           />
                                           <div className="flex gap-2">
                                             <button
                                               onClick={() => savePrice(type.value)}
                                               className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
                                             >
-                                              Kaydet
+                                              {t.save}
                                             </button>
                                             <button
                                               onClick={cancelEditing}
                                               className="px-2 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
                                             >
-                                              İptal
+                                              {t.cancel}
                                             </button>
                                           </div>
                                         </div>
@@ -1501,7 +1928,7 @@ export default function DashboardSettingsPage() {
                                     </div>
                                     <div>
                                       <label className="block text-xs font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                                        Birim
+                                        {t.unit}
                                       </label>
                                       <div className="w-full p-2 text-sm bg-gray-100 dark:bg-gray-600 rounded-md text-text-on-light dark:text-text-on-dark border border-gray-300 dark:border-gray-600">
                                         {unitPriceSettings[type.value as keyof typeof unitPriceSettings]?.unit || type.defaultUnit}
@@ -1516,7 +1943,7 @@ export default function DashboardSettingsPage() {
                           return (
                             <div className="text-center py-8">
                               <p className="text-text-light-secondary dark:text-text-secondary">
-                                Birim fiyat bulunamadı.
+                                {t.noUnitPricesFound}
                               </p>
                             </div>
                           );
@@ -1537,7 +1964,7 @@ export default function DashboardSettingsPage() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark">
-                Yeni Pozisyon Oluştur
+                {t.createPosition}
               </h2>
               <button
                 onClick={closePositionModal}
@@ -1554,84 +1981,84 @@ export default function DashboardSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                    Pozisyon Başlığı *
+                    {t.title} *
                   </label>
                   <input
                     type="text"
                     value={positionFormData.title}
                     onChange={(e) => handlePositionFormChange('title', e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                    placeholder="Örn: Yazılım Geliştirici"
+                    placeholder={t.titlePlaceholder}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                    Pozisyon Kodu *
+                    {t.code} *
                   </label>
                   <input
                     type="text"
                     value={positionFormData.code}
                     onChange={(e) => handlePositionFormChange('code', e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                    placeholder="Örn: DEV_001"
+                    placeholder={t.codePlaceholder}
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                  Açıklama
+                  {t.description}
                 </label>
                 <textarea
                   value={positionFormData.description}
                   onChange={(e) => handlePositionFormChange('description', e.target.value)}
                   rows={3}
                   className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                  placeholder="Pozisyon hakkında açıklama..."
+                  placeholder={t.descriptionPlaceholder}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                    Seviye *
+                    {t.level} *
                   </label>
                   <select
                     value={positionFormData.level}
                     onChange={(e) => handlePositionFormChange('level', e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
                   >
-                    <option value="">Seviye Seçin</option>
-                    <option value="JUNIOR">Junior</option>
-                    <option value="MID">Mid-Level</option>
-                    <option value="SENIOR">Senior</option>
-                    <option value="LEAD">Lead</option>
-                    <option value="MANAGER">Manager</option>
-                    <option value="DIRECTOR">Director</option>
+                    <option value="">{t.selectLevel}</option>
+                    <option value="JUNIOR">{t.junior}</option>
+                    <option value="MID">{t.midLevel}</option>
+                    <option value="SENIOR">{t.senior}</option>
+                    <option value="LEAD">{t.lead}</option>
+                    <option value="MANAGER">{t.manager}</option>
+                    <option value="DIRECTOR">{t.director}</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                    Minimum Maaş
+                    {t.salaryMin}
                   </label>
                   <input
                     type="number"
                     value={positionFormData.salaryMin}
                     onChange={(e) => handlePositionFormChange('salaryMin', e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                    placeholder="0"
+                    placeholder={t.salaryMinPlaceholder}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                    Maksimum Maaş
+                    {t.salaryMax}
                   </label>
                   <input
                     type="number"
                     value={positionFormData.salaryMax}
                     onChange={(e) => handlePositionFormChange('salaryMax', e.target.value)}
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                    placeholder="0"
+                    placeholder={t.salaryMaxPlaceholder}
                   />
                 </div>
               </div>
@@ -1640,14 +2067,14 @@ export default function DashboardSettingsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                    Gereksinimler
+                    {t.requirements}
                   </label>
                   <button
                     type="button"
                     onClick={addRequirement}
                     className="text-xs bg-primary-gold text-white px-2 py-1 rounded hover:bg-primary-gold/80 transition-colors"
                   >
-                    + Ekle
+                    {t.add}
                   </button>
                 </div>
                 <div className="space-y-2">
@@ -1658,7 +2085,7 @@ export default function DashboardSettingsPage() {
                         value={req}
                         onChange={(e) => updateRequirement(index, e.target.value)}
                         className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                        placeholder="Gereksinim..."
+                        placeholder={t.requirementPlaceholder}
                       />
                       {positionFormData.requirements.length > 1 && (
                         <button
@@ -1680,14 +2107,14 @@ export default function DashboardSettingsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                    Sorumluluklar
+                    {t.responsibilities}
                   </label>
                   <button
                     type="button"
                     onClick={addResponsibility}
                     className="text-xs bg-primary-gold text-white px-2 py-1 rounded hover:bg-primary-gold/80 transition-colors"
                   >
-                    + Ekle
+                    {t.add}
                   </button>
                 </div>
                 <div className="space-y-2">
@@ -1698,7 +2125,7 @@ export default function DashboardSettingsPage() {
                         value={resp}
                         onChange={(e) => updateResponsibility(index, e.target.value)}
                         className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                        placeholder="Sorumluluk..."
+                        placeholder={t.responsibilityPlaceholder}
                       />
                       {positionFormData.responsibilities.length > 1 && (
                         <button
@@ -1725,7 +2152,7 @@ export default function DashboardSettingsPage() {
                   className="w-4 h-4 rounded border-gray-300 text-primary-gold focus:ring-primary-gold"
                 />
                 <label htmlFor="isActive" className="ml-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                  Aktif Pozisyon
+                  {t.activePosition}
                 </label>
               </div>
             </div>
@@ -1735,7 +2162,7 @@ export default function DashboardSettingsPage() {
                 onClick={closePositionModal}
                 className="px-4 py-2 text-sm font-medium text-text-light-secondary dark:text-text-secondary bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                İptal
+                {t.cancel}
               </button>
               <button
                 onClick={createPosition}
@@ -1745,10 +2172,10 @@ export default function DashboardSettingsPage() {
                 {positionLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Oluşturuluyor...
+                    {t.creatingPosition}
                   </div>
                 ) : (
-                  'Pozisyon Oluştur'
+                  t.createPosition
                 )}
               </button>
             </div>
@@ -1763,7 +2190,7 @@ export default function DashboardSettingsPage() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-                  Enum Değeri Ekle
+                  {t.createEnumValues}
                 </h3>
                 <button
                   onClick={closeEnumModal}
@@ -1779,10 +2206,10 @@ export default function DashboardSettingsPage() {
                 {/* Module and Category Info */}
                 <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
                   <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                    <span className="font-medium">Modül:</span> {selectedModule}
+                    <span className="font-medium">{t.module}:</span> {selectedModule}
                   </div>
                   <div className="text-sm text-text-light-secondary dark:text-text-secondary">
-                    <span className="font-medium">Kategori:</span> {selectedCategory}
+                    <span className="font-medium">{t.category}:</span> {selectedCategory}
                   </div>
                 </div>
 
@@ -1790,18 +2217,18 @@ export default function DashboardSettingsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary">
-                      Enum Değerleri
+                      {t.enumValues}
                     </label>
                     <button
                       type="button"
                       onClick={addEnumCode}
                       className="text-xs bg-primary-gold text-white px-2 py-1 rounded hover:bg-primary-gold/80 transition-colors"
                     >
-                      + Ekle
+                      {t.add}
                     </button>
                   </div>
                   <p className="text-xs text-text-light-muted dark:text-text-muted mb-3">
-                    Kod formatı: UPPER_CASE (örn: NEW_STATUS, PENDING_APPROVAL). Label otomatik olarak oluşturulacak.
+                    {t.codeFormatInfo}
                   </p>
                   <div className="space-y-2">
                     {enumFormData.codes.map((code, index) => (
@@ -1811,7 +2238,7 @@ export default function DashboardSettingsPage() {
                           value={code}
                           onChange={(e) => updateEnumCode(index, e.target.value)}
                           className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                          placeholder="Enum değeri (örn: NEW_STATUS)"
+                          placeholder={t.enumCodePlaceholder}
                         />
                         {enumFormData.codes.length > 1 && (
                           <button
@@ -1831,7 +2258,7 @@ export default function DashboardSettingsPage() {
                   {enumFormData.codes.filter(code => code.trim() !== '').length > 0 && (
                     <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <p className="text-xs font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                        Önizleme:
+                        {t.preview}:
                       </p>
                       <div className="space-y-1">
                         {enumFormData.codes.filter(code => code.trim() !== '').map((code, index) => (
@@ -1848,14 +2275,14 @@ export default function DashboardSettingsPage() {
                 {/* Sort Order */}
                 <div>
                   <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                    Sıralama Numarası
+                    {t.sortOrder}
                   </label>
                   <input
                     type="number"
                     value={enumFormData.sortOrder}
                     onChange={(e) => handleEnumFormChange('sortOrder', parseInt(e.target.value) || 1)}
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-colors"
-                    placeholder="1"
+                    placeholder={t.sortOrderPlaceholder}
                     min="1"
                   />
                 </div>
@@ -1873,7 +2300,7 @@ export default function DashboardSettingsPage() {
                   onClick={closeEnumModal}
                   className="px-4 py-2 text-sm font-medium text-text-light-secondary dark:text-text-secondary bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
-                  İptal
+                  {t.cancel}
                 </button>
                 <button
                   onClick={createEnumValues}
@@ -1883,10 +2310,10 @@ export default function DashboardSettingsPage() {
                   {enumLoading ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Ekleniyor...
+                      {t.adding}
                     </div>
                   ) : (
-                    'Enum Değerlerini Ekle'
+                    t.createEnumValues
                   )}
                 </button>
               </div>

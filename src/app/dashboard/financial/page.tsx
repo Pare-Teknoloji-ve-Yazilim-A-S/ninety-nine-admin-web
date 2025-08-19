@@ -52,7 +52,254 @@ import { useFinancialList } from './hooks/useFinancialList';
 import billingService from '@/services/billing.service';
 import { unitPricesService, UnitPrice } from '@/services/unit-prices.service';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles
+    pageTitle: 'Finansal İşlemler',
+    financialTransactions: 'Finansal İşlemler',
+    
+    // Breadcrumb
+    home: 'Ana Sayfa',
+    
+    // Page header
+    totalRevenue: 'Toplam Gelir',
+    pendingHeader: 'Bekleyen',
+    overdueHeader: 'Gecikmiş',
+    refresh: 'Yenile',
+    newTransaction: 'Yeni İşlem',
+    
+    // Stats cards
+    totalRevenueCard: 'Toplam Gelir',
+    pendingPayments: 'Bekleyen Ödemeler',
+    overduePayments: 'Vadesi Geçen Ödemeler',
+    unitPrices: 'Birim Fiyatları',
+    
+    // Table headers
+    title: 'Başlık',
+    apartment: 'Daire',
+    resident: 'Sakin',
+    transactionType: 'İşlem Türü',
+    amount: 'Tutar',
+    status: 'Durum',
+    transactionDate: 'İşlem Tarihi',
+    
+    // Resident types
+    owner: 'Malik',
+    tenant: 'Kiracı',
+    
+    // Transaction types
+    dues: 'Aidat',
+    utility: 'Fatura',
+    maintenance: 'Bakım',
+    penalty: 'Ceza',
+    other: 'Diğer',
+    
+    // Payment statuses
+    pending: 'Bekliyor',
+    partiallyPaid: 'Kısmi Ödendi',
+    paid: 'Ödendi',
+    overdue: 'Gecikmiş',
+    cancelled: 'İptal',
+    
+    // Filter labels
+    transactionTypeFilter: 'İşlem Türü',
+    statusFilter: 'Durum',
+    paymentMethodFilter: 'Ödeme Yöntemi',
+    all: 'Tümü',
+    
+    // Search and filters
+    searchPlaceholder: 'Başlık, açıklama veya belge no ile ara...',
+    filters: 'Filtreler',
+    table: 'Tablo',
+    grid: 'Kart',
+    
+    // Loading and empty states
+    loading: 'Yükleniyor...',
+    noPriceFound: 'Fiyat bulunamadı',
+    activePrices: 'aktif fiyat',
+    noTransactions: 'Henüz finansal işlem kaydı bulunmuyor.',
+    
+    // Action menu
+    goToDetail: 'Detaya git',
+    
+    // Card view
+    floor: 'Kat',
+    penaltyCard: 'ceza',
+    daysOverdue: 'gün gecikmiş',
+    
+    // Currency
+    iqd: 'IQD'
+  },
+  en: {
+    // Page titles
+    pageTitle: 'Financial Transactions',
+    financialTransactions: 'Financial Transactions',
+    
+    // Breadcrumb
+    home: 'Home',
+    
+    // Page header
+    totalRevenue: 'Total Revenue',
+    pendingHeader: 'Pending',
+    overdueHeader: 'Overdue',
+    refresh: 'Refresh',
+    newTransaction: 'New Transaction',
+    
+    // Stats cards
+    totalRevenueCard: 'Total Revenue',
+    pendingPayments: 'Pending Payments',
+    overduePayments: 'Overdue Payments',
+    unitPrices: 'Unit Prices',
+    
+    // Table headers
+    title: 'Title',
+    apartment: 'Apartment',
+    resident: 'Resident',
+    transactionType: 'Transaction Type',
+    amount: 'Amount',
+    status: 'Status',
+    transactionDate: 'Transaction Date',
+    
+    // Resident types
+    owner: 'Owner',
+    tenant: 'Tenant',
+    
+    // Transaction types
+    dues: 'Dues',
+    utility: 'Utility',
+    maintenance: 'Maintenance',
+    penalty: 'Penalty',
+    other: 'Other',
+    
+    // Payment statuses
+    pending: 'Pending',
+    partiallyPaid: 'Partially Paid',
+    paid: 'Paid',
+    overdue: 'Overdue',
+    cancelled: 'Cancelled',
+    
+    // Filter labels
+    transactionTypeFilter: 'Transaction Type',
+    statusFilter: 'Status',
+    paymentMethodFilter: 'Payment Method',
+    all: 'All',
+    
+    // Search and filters
+    searchPlaceholder: 'Search by title, description or document number...',
+    filters: 'Filters',
+    table: 'Table',
+    grid: 'Grid',
+    
+    // Loading and empty states
+    loading: 'Loading...',
+    noPriceFound: 'No price found',
+    activePrices: 'active prices',
+    noTransactions: 'No financial transaction records found yet.',
+    
+    // Action menu
+    goToDetail: 'Go to detail',
+    
+    // Card view
+    floor: 'Floor',
+    penaltyCard: 'penalty',
+    daysOverdue: 'days overdue',
+    
+    // Currency
+    iqd: 'IQD'
+  },
+  ar: {
+    // Page titles
+    pageTitle: 'المعاملات المالية',
+    financialTransactions: 'المعاملات المالية',
+    
+    // Breadcrumb
+    home: 'الرئيسية',
+    
+    // Page header
+    totalRevenue: 'إجمالي الإيرادات',
+    pendingHeader: 'في الانتظار',
+    overdueHeader: 'متأخر',
+    refresh: 'تحديث',
+    newTransaction: 'معاملة جديدة',
+    
+    // Stats cards
+    totalRevenueCard: 'إجمالي الإيرادات',
+    pendingPayments: 'المدفوعات المعلقة',
+    overduePayments: 'المدفوعات المتأخرة',
+    unitPrices: 'أسعار الوحدات',
+    
+    // Table headers
+    title: 'العنوان',
+    apartment: 'الشقة',
+    resident: 'المقيم',
+    transactionType: 'نوع المعاملة',
+    amount: 'المبلغ',
+    status: 'الحالة',
+    transactionDate: 'تاريخ المعاملة',
+    
+    // Resident types
+    owner: 'المالك',
+    tenant: 'المستأجر',
+    
+    // Transaction types
+    dues: 'الرسوم',
+    utility: 'المرافق',
+    maintenance: 'الصيانة',
+    penalty: 'الغرامة',
+    other: 'أخرى',
+    
+    // Payment statuses
+    pending: 'في الانتظار',
+    partiallyPaid: 'مدفوع جزئياً',
+    paid: 'مدفوع',
+    overdue: 'متأخر',
+    cancelled: 'ملغي',
+    
+    // Filter labels
+    transactionTypeFilter: 'نوع المعاملة',
+    statusFilter: 'الحالة',
+    paymentMethodFilter: 'طريقة الدفع',
+    all: 'الكل',
+    
+    // Search and filters
+    searchPlaceholder: 'البحث بالعنوان أو الوصف أو رقم المستند...',
+    filters: 'المرشحات',
+    table: 'جدول',
+    grid: 'شبكة',
+    
+    // Loading and empty states
+    loading: 'جاري التحميل...',
+    noPriceFound: 'لم يتم العثور على سعر',
+    activePrices: 'أسعار نشطة',
+    noTransactions: 'لم يتم العثور على سجلات معاملات مالية بعد.',
+    
+    // Action menu
+    goToDetail: 'الذهاب إلى التفاصيل',
+    
+    // Card view
+    floor: 'الطابق',
+    penaltyCard: 'غرامة',
+    daysOverdue: 'أيام متأخرة',
+    
+    // Currency
+    iqd: 'دينار عراقي'
+  }
+};
+
 export default function FinancialListPage() {
+    // Dil tercihini localStorage'dan al
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [searchInput, setSearchInput] = useState('');
@@ -80,8 +327,8 @@ export default function FinancialListPage() {
 
     // Breadcrumb items
     const breadcrumbItems = [
-        { label: 'Ana Sayfa', href: '/dashboard' },
-        { label: 'Finansal İşlemler', active: true }
+        { label: t.home, href: '/dashboard' },
+        { label: t.pageTitle, active: true }
     ];
 
     // Format currency
@@ -91,7 +338,7 @@ export default function FinancialListPage() {
 
     // Format unit prices for display
     const formatUnitPrices = useCallback((prices: UnitPrice[]) => {
-        if (prices.length === 0) return 'Yükleniyor...';
+        if (prices.length === 0) return t.loading;
         
         const duesPrice = prices.find(p => p.priceType === 'DUES');
         const electricityPrice = prices.find(p => p.priceType === 'ELECTRICITY');
@@ -100,10 +347,10 @@ export default function FinancialListPage() {
         
         const activePrices = [duesPrice, electricityPrice, waterPrice, gasPrice].filter(Boolean);
         
-        if (activePrices.length === 0) return 'Fiyat bulunamadı';
+        if (activePrices.length === 0) return t.noPriceFound;
         
-        return `${activePrices.length} aktif fiyat`;
-    }, []);
+        return `${activePrices.length} ${t.activePrices}`;
+    }, [t]);
 
     // Financial statistics from data
     const financialStats = useMemo(() => {
@@ -236,11 +483,55 @@ export default function FinancialListPage() {
         }
     }, [router]);
 
+    // Helper functions to translate backend values
+    const getTranslatedTransactionType = useCallback((transactionType: any) => {
+        if (!transactionType || !transactionType.label) return '';
+        
+        const typeLabel = transactionType.label.toLowerCase();
+        
+        // Handle both enum values and direct Turkish strings
+        if (typeLabel === 'dues' || typeLabel === 'aidat') {
+            return t.dues;
+        } else if (typeLabel === 'utility' || typeLabel === 'fatura') {
+            return t.utility;
+        } else if (typeLabel === 'maintenance' || typeLabel === 'bakım') {
+            return t.maintenance;
+        } else if (typeLabel === 'penalty' || typeLabel === 'ceza') {
+            return t.penalty;
+        } else if (typeLabel === 'other' || typeLabel === 'diğer') {
+            return t.other;
+        }
+        
+        return transactionType.label; // Return original if no match
+    }, [t]);
+
+    const getTranslatedStatus = useCallback((status: any) => {
+        if (!status) return '';
+        
+        // Handle both object format (status.label) and direct string format
+        const statusLabel = (status.label || status).toLowerCase();
+        
+        // Handle both enum values and direct Turkish strings
+        if (statusLabel === 'paid' || statusLabel === 'ödendi') {
+            return t.paid;
+        } else if (statusLabel === 'pending' || statusLabel === 'bekliyor') {
+            return t.pending;
+        } else if (statusLabel === 'partially_paid' || statusLabel === 'kısmi ödendi') {
+            return t.partiallyPaid;
+        } else if (statusLabel === 'overdue' || statusLabel === 'gecikmiş') {
+            return t.overdue;
+        } else if (statusLabel === 'cancelled' || statusLabel === 'iptal' || statusLabel === 'canceled') {
+            return t.cancelled;
+        }
+        
+        return status.label || status; // Return original if no match
+    }, [t]);
+
     // Table columns configuration
     const tableColumns = useMemo(() => [
         {
             key: 'title',
-            header: 'Title',
+            header: t.title,
             render: (_value: any, transaction: any) => (
                 <button
                     onClick={() => handleTransactionAction('view', transaction)}
@@ -252,7 +543,7 @@ export default function FinancialListPage() {
         },
         {
             key: 'apartment',
-            header: 'Daire',
+            header: t.apartment,
             render: (_value: any, transaction: any) => (
                 <div className="font-medium text-gray-900 dark:text-white">
                     {transaction.apartment.number}
@@ -261,7 +552,7 @@ export default function FinancialListPage() {
         },
         {
             key: 'resident',
-            header: 'Sakin',
+            header: t.resident,
             render: (_value: any, transaction: any) => (
                 <div className="flex items-center gap-3">
                     <Avatar
@@ -274,7 +565,7 @@ export default function FinancialListPage() {
                             {transaction.resident.name}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {transaction.resident.type === 'owner' ? 'Malik' : 'Kiracı'}
+                            {transaction.resident.type === 'owner' ? t.owner : t.tenant}
                         </div>
                     </div>
                 </div>
@@ -282,25 +573,25 @@ export default function FinancialListPage() {
         },
         {
             key: 'transactionType',
-            header: 'İşlem Türü',
+            header: t.transactionType,
             render: (_value: any, transaction: any) => (
                 <Badge variant="soft" className="flex items-center gap-1">
                     <span>{transaction.transactionType.icon}</span>
-                    {transaction.transactionType.label}
+                    {getTranslatedTransactionType(transaction.transactionType)}
                 </Badge>
             ),
         },
         {
             key: 'amount',
-            header: 'Tutar',
+            header: t.amount,
             render: (_value: any, transaction: any) => (
                 <div className="text-right">
                     <div className="font-semibold text-gray-900 dark:text-white">
-                        {formatCurrency(transaction.amount.amount)} IQD
+                        {formatCurrency(transaction.amount.amount)} {t.iqd}
                     </div>
                     {transaction.penalty && transaction.penalty.amount > 0 && (
                         <div className="text-sm text-red-600 dark:text-red-400">
-                            +{formatCurrency(transaction.penalty.amount)} ceza
+                            +{formatCurrency(transaction.penalty.amount)} {t.penalty}
                         </div>
                     )}
                 </div>
@@ -308,7 +599,7 @@ export default function FinancialListPage() {
         },
         {
             key: 'status',
-            header: 'Durum',
+            header: t.status,
             render: (_value: any, transaction: any) => (
                 <div className="flex items-center gap-2">
                     <Badge 
@@ -318,7 +609,7 @@ export default function FinancialListPage() {
                             transaction.status.id === 'overdue' ? 'danger' : 'info'
                         }
                     >
-                        {transaction.status.label}
+                        {getTranslatedStatus(transaction.status)}
                     </Badge>
                     {transaction.isOverdue && (
                         <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
@@ -331,7 +622,7 @@ export default function FinancialListPage() {
         },
         {
             key: 'transactionDate',
-            header: 'İşlem Tarihi',
+            header: t.transactionDate,
             render: (_value: any, transaction: any) => (
                 <div>
                     <div className="text-gray-900 dark:text-white">
@@ -343,7 +634,7 @@ export default function FinancialListPage() {
                 </div>
             ),
         },
-    ], [handleTransactionAction, formatCurrency]);
+    ], [handleTransactionAction, formatCurrency, t, getTranslatedTransactionType, getTranslatedStatus]);
 
     // Transaction Action Menu
     const TransactionActionMenu: React.FC<{ transaction: any; onAction: (action: string, transaction: any) => void }> = React.memo(({ transaction, onAction }) => {
@@ -358,7 +649,7 @@ export default function FinancialListPage() {
                     className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
                     onClick={handleGoDetail}
                     type="button"
-                    title="Detaya git"
+                    title={t.goToDetail}
                 >
                     {/* Replace 3-dot with > icon */}
                     <span className="text-xl leading-none">›</span>
@@ -369,7 +660,7 @@ export default function FinancialListPage() {
 
     const TransactionActionMenuWrapper: React.FC<{ row: any }> = useMemo(() =>
         ({ row }) => <TransactionActionMenu transaction={row} onAction={handleTransactionAction} />
-        , [handleTransactionAction]);
+        , [handleTransactionAction, t.goToDetail]);
 
     // Card renderer for grid view
     const renderTransactionCard = useCallback((transaction: any, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: any }>) => {
@@ -402,7 +693,7 @@ export default function FinancialListPage() {
                                 transaction.status.id === 'overdue' ? 'danger' : 'secondary'
                             }
                         >
-                            {transaction.status.label}
+                            {getTranslatedStatus(transaction.status)}
                         </ui.Badge>
                         {ActionMenu && <ActionMenu row={transaction} />}
                     </div>
@@ -411,7 +702,7 @@ export default function FinancialListPage() {
                 <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <Home className="h-4 w-4" />
-                        <span>{transaction.apartment.number} - {transaction.apartment.floor}. Kat</span>
+                        <span>{transaction.apartment.number} - {transaction.apartment.floor}. {t.floor}</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <User className="h-4 w-4" />
@@ -419,17 +710,17 @@ export default function FinancialListPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                         <span>{transaction.transactionType.icon}</span>
-                        <span>{transaction.transactionType.label} - {transaction.serviceType.label}</span>
+                        <span>{getTranslatedTransactionType(transaction.transactionType)} - {transaction.serviceType.label}</span>
                     </div>
                 </div>
 
                 <div className="text-right mb-3">
                     <p className="text-xl font-bold text-gray-900 dark:text-white">
-                        {formatCurrency(transaction.amount.amount)} IQD
+                        {formatCurrency(transaction.amount.amount)} {t.iqd}
                     </p>
                     {transaction.penalty && transaction.penalty.amount > 0 && (
                         <p className="text-sm text-red-600 dark:text-red-400">
-                            +{formatCurrency(transaction.penalty.amount)} IQD ceza
+                            +{formatCurrency(transaction.penalty.amount)} {t.iqd} {t.penalty}
                         </p>
                     )}
                 </div>
@@ -437,12 +728,12 @@ export default function FinancialListPage() {
                 {transaction.isOverdue && (
                     <div className="flex items-center gap-1 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-full text-sm">
                         <AlertTriangle className="h-3 w-3" />
-                        <span>{transaction.daysOverdue} gün gecikmiş</span>
+                        <span>{transaction.daysOverdue} {t.daysOverdue}</span>
                     </div>
                 )}
             </ui.Card>
         );
-    }, [formatCurrency]);
+    }, [formatCurrency, t, getTranslatedTransactionType, getTranslatedStatus]);
 
     // Search handlers
     const handleSearchInputChange = useCallback((value: string) => {
@@ -466,33 +757,33 @@ export default function FinancialListPage() {
     const filterGroups = useMemo(() => [
         {
             id: 'transactionType',
-            label: 'İşlem Türü',
+            label: t.transactionTypeFilter,
             type: 'select' as const,
             options: [
-                { id: 'all', label: 'Tümü', value: 'all' },
-                { id: 'DUES', label: 'Aidat', value: 'DUES' },
-                { id: 'UTILITY', label: 'Fatura', value: 'UTILITY' },
-                { id: 'MAINTENANCE', label: 'Bakım', value: 'MAINTENANCE' },
-                { id: 'PENALTY', label: 'Ceza', value: 'PENALTY' },
-                { id: 'OTHER', label: 'Diğer', value: 'OTHER' },
+                { id: 'all', label: t.all, value: 'all' },
+                { id: 'DUES', label: t.dues, value: 'DUES' },
+                { id: 'UTILITY', label: t.utility, value: 'UTILITY' },
+                { id: 'MAINTENANCE', label: t.maintenance, value: 'MAINTENANCE' },
+                { id: 'PENALTY', label: t.penalty, value: 'PENALTY' },
+                { id: 'OTHER', label: t.other, value: 'OTHER' },
             ],
         },
         {
             id: 'paymentStatus',
-            label: 'Durum',
+            label: t.statusFilter,
             type: 'select' as const,
             options: [
-                { id: 'all', label: 'Tümü', value: 'all' },
-                { id: 'PENDING', label: 'Bekliyor', value: 'PENDING' },
-                { id: 'PARTIALLY_PAID', label: 'Kısmi Ödendi', value: 'PARTIALLY_PAID' },
-                { id: 'PAID', label: 'Ödendi', value: 'PAID' },
-                { id: 'OVERDUE', label: 'Gecikmiş', value: 'OVERDUE' },
-                { id: 'CANCELLED', label: 'İptal', value: 'CANCELLED' },
+                { id: 'all', label: t.all, value: 'all' },
+                { id: 'PENDING', label: t.pending, value: 'PENDING' },
+                { id: 'PARTIALLY_PAID', label: t.partiallyPaid, value: 'PARTIALLY_PAID' },
+                { id: 'PAID', label: t.paid, value: 'PAID' },
+                { id: 'OVERDUE', label: t.overdue, value: 'OVERDUE' },
+                { id: 'CANCELLED', label: t.cancelled, value: 'CANCELLED' },
             ],
         },
         {
             id: 'paymentMethod',
-            label: 'Ödeme Yöntemi',
+            label: t.paymentMethodFilter,
             type: 'select' as const,
             options: data?.filters.paymentMethod.options.map(option => ({
                 id: option.value,
@@ -500,7 +791,7 @@ export default function FinancialListPage() {
                 value: option.value
             })) || [],
         },
-    ], [data]);
+    ], [data, t]);
 
     const handleApplyFilters = useCallback((newFilters: any) => {
         Object.keys(newFilters).forEach(key => {
@@ -542,7 +833,7 @@ export default function FinancialListPage() {
                 
                 <div className="lg:ml-72">
                     <DashboardHeader
-                        title="Finansal İşlemler"
+                        title={t.pageTitle}
                         breadcrumbItems={breadcrumbItems}
                     />
 
@@ -551,17 +842,17 @@ export default function FinancialListPage() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                             <div>
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-                                    Finansal İşlemler
+                                    {t.financialTransactions}
                                 </h2>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                    Toplam Gelir: {formatCurrency((paidSummary ?? financialStats.totalRevenue))} IQD | 
-                                    Bekleyen: {formatCurrency((pendingSummary ?? financialStats.totalPending))} IQD | 
-                                    Gecikmiş: {formatCurrency((overduePendingSummary ?? financialStats.totalOverdue))} IQD
+                                    {t.totalRevenue}: {formatCurrency((paidSummary ?? financialStats.totalRevenue))} {t.iqd} | 
+                                    {t.pendingHeader}: {formatCurrency((pendingSummary ?? financialStats.totalPending))} {t.iqd} | 
+                                    {t.overdueHeader}: {formatCurrency((overduePendingSummary ?? financialStats.totalOverdue))} {t.iqd}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={refetch}>
-                                    Yenile
+                                    {t.refresh}
                                 </Button>
                                 <Button 
                                     variant="primary" 
@@ -569,7 +860,7 @@ export default function FinancialListPage() {
                                     icon={Plus}
                                     onClick={handleNewTransactionClick}
                                 >
-                                    Yeni İşlem
+                                    {t.newTransaction}
                                 </Button>
                             </div>
                         </div>
@@ -578,24 +869,24 @@ export default function FinancialListPage() {
                         <div className="mb-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                                 <StatsCard
-                                    title="Toplam Gelir"
-                                    value={`${formatCurrency((paidSummary ?? financialStats.totalRevenue))} IQD`}
+                                    title={t.totalRevenueCard}
+                                    value={`${formatCurrency((paidSummary ?? financialStats.totalRevenue))} ${t.iqd}`}
                                     icon={DollarSign}
                                     color="success"
                                     loading={cardsLoading || paidSummary === null}
                                     size="md"
                                 />
                                 <StatsCard
-                                    title="Bekleyen Ödemeler"
-                                    value={`${formatCurrency((pendingSummary ?? financialStats.totalPending))} IQD`}
+                                    title={t.pendingPayments}
+                                    value={`${formatCurrency((pendingSummary ?? financialStats.totalPending))} ${t.iqd}`}
                                     icon={Receipt}
                                     color="warning"
                                     loading={cardsLoading || pendingSummary === null}
                                     size="md"
                                 />
                                 <StatsCard
-                                    title="Vadesi Geçen Ödemeler"
-                                    value={`${formatCurrency(overduePendingSummary ?? financialStats.totalOverdue)} IQD`}
+                                    title={t.overduePayments}
+                                    value={`${formatCurrency(overduePendingSummary ?? financialStats.totalOverdue)} ${t.iqd}`}
                                     icon={AlertTriangle}
                                     color="danger"
                                     loading={cardsLoading || overduePendingSummary === null}
@@ -603,7 +894,7 @@ export default function FinancialListPage() {
                                 />
                                 {/* Unit Prices Card - Temporarily commented out
                                 <StatsCard
-                                    title="Birim Fiyatları"
+                                    title={t.unitPrices}
                                     value={formatUnitPrices(unitPrices)}
                                     icon={Calculator}
                                     color="info"
@@ -620,7 +911,7 @@ export default function FinancialListPage() {
                                 <div className="flex flex-col lg:flex-row gap-4">
                                     <div className="flex-1">
                                         <SearchBar
-                                            placeholder="Başlık, açıklama veya belge no ile ara..."
+                                            placeholder={t.searchPlaceholder}
                                             value={searchInput}
                                             onChange={(v) => {
                                                 setSearchInput(v);
@@ -638,12 +929,12 @@ export default function FinancialListPage() {
                                             icon={Filter}
                                             onClick={() => setShowFilters(true)}
                                         >
-                                            Filtreler
+                                            {t.filters}
                                         </Button>
                                         <ViewToggle
                                             options={[
-                                                { id: 'table', label: 'Tablo', icon: List },
-                                                { id: 'grid', label: 'Kart', icon: Grid3X3 }
+                                                { id: 'table', label: t.table, icon: List },
+                                                { id: 'grid', label: t.grid, icon: Grid3X3 }
                                             ]}
                                             activeView={viewMode}
                                             onViewChange={(viewId) => setViewMode(viewId as typeof viewMode)}
@@ -710,7 +1001,7 @@ export default function FinancialListPage() {
                                                 recordsPerPageOptions: [10, 25, 50, 100],
                                                 preventScroll: true,
                                             }}
-                                        emptyStateMessage="Henüz finansal işlem kaydı bulunmuyor."
+                                        emptyStateMessage={t.noTransactions}
                                         selectable={true}
                                         showPagination={true}
                                         ActionMenuComponent={TransactionActionMenuWrapper}
@@ -733,7 +1024,7 @@ export default function FinancialListPage() {
                                             onPageChange: () => {},
                                             onRecordsPerPageChange: () => {},
                                         }}
-                                        emptyStateMessage="Henüz finansal işlem kaydı bulunmuyor."
+                                        emptyStateMessage={t.noTransactions}
                                         ui={gridUI}
                                         ActionMenu={TransactionActionMenuWrapper}
                                         renderCard={renderTransactionCard}

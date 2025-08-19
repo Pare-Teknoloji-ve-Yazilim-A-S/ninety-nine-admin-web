@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useState, useEffect } from 'react';
 import Modal from '@/app/components/ui/Modal'
 import { StaffForm } from '@/components/staff'
 import type { Staff, CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.types'
@@ -7,6 +8,22 @@ import type { Department, Position } from '@/services/types/department.types'
 import type { SearchableOption } from '@/app/components/ui/SearchableDropdown'
 import { DepartmentCode, PositionCode } from '@/services/types/organization.enums'
 import { enumsService } from '@/services/enums.service'
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    editStaff: 'Personel Düzenle',
+    addNewStaff: 'Yeni Personel Ekle'
+  },
+  en: {
+    editStaff: 'Edit Staff',
+    addNewStaff: 'Add New Staff'
+  },
+  ar: {
+    editStaff: 'تعديل الموظف',
+    addNewStaff: 'إضافة موظف جديد'
+  }
+};
 
 interface StaffFormModalProps {
   open: boolean
@@ -29,6 +46,18 @@ export default function StaffFormModal({
   onClose,
   isLoading,
 }: StaffFormModalProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const appEnums = (typeof window !== 'undefined') ? enumsService.getFromCache() : null
   // Build fallback enum-based options when API lists are empty
   const trDepartmentLabels: Record<string, string> = {
@@ -97,7 +126,7 @@ export default function StaffFormModal({
     <Modal
       isOpen={open}
       onClose={onClose}
-      title={editingStaff ? 'Personel Düzenle' : 'Yeni Personel Ekle'}
+      title={editingStaff ? t.editStaff : t.addNewStaff}
       size="xl"
       className="max-w-5xl"
     >

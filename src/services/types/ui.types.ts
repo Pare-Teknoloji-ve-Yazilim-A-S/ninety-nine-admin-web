@@ -281,6 +281,121 @@ export const EMPLOYMENT_TYPE_CONFIG: StatusConfig = {
   }
 }
 
+// i18n support for staff status and employment type configs
+export const getStaffStatusConfig = (language: string = 'tr') => {
+  const translations = {
+    tr: {
+      ACTIVE: 'Aktif',
+      INACTIVE: 'Pasif',
+      ON_LEAVE: 'İzinli',
+      TERMINATED: 'İşten Çıkarıldı',
+      SUSPENDED: 'Askıya Alındı'
+    },
+    en: {
+      ACTIVE: 'Active',
+      INACTIVE: 'Inactive',
+      ON_LEAVE: 'On Leave',
+      TERMINATED: 'Terminated',
+      SUSPENDED: 'Suspended'
+    },
+    ar: {
+      ACTIVE: 'نشط',
+      INACTIVE: 'غير نشط',
+      ON_LEAVE: 'في إجازة',
+      TERMINATED: 'مفصول',
+      SUSPENDED: 'معلق'
+    }
+  };
+
+  const t = translations[language as keyof typeof translations] || translations.tr;
+
+  return {
+    ACTIVE: {
+      label: t.ACTIVE,
+      variant: 'success',
+      className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    },
+    INACTIVE: {
+      label: t.INACTIVE,
+      variant: 'secondary',
+      className: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+    },
+    ON_LEAVE: {
+      label: t.ON_LEAVE,
+      variant: 'warning',
+      className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+    },
+    TERMINATED: {
+      label: t.TERMINATED,
+      variant: 'destructive',
+      className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+    },
+    SUSPENDED: {
+      label: t.SUSPENDED,
+      variant: 'destructive',
+      className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+    }
+  };
+};
+
+export const getEmploymentTypeConfig = (language: string = 'tr') => {
+  const translations = {
+    tr: {
+      FULL_TIME: 'Tam Zamanlı',
+      PART_TIME: 'Yarı Zamanlı',
+      CONTRACT: 'Sözleşmeli',
+      INTERN: 'Stajyer',
+      CONSULTANT: 'Danışman',
+      FREELANCE: 'Serbest Çalışan'
+    },
+    en: {
+      FULL_TIME: 'Full Time',
+      PART_TIME: 'Part Time',
+      CONTRACT: 'Contract',
+      INTERN: 'Intern',
+      CONSULTANT: 'Consultant',
+      FREELANCE: 'Freelance'
+    },
+    ar: {
+      FULL_TIME: 'دوام كامل',
+      PART_TIME: 'دوام جزئي',
+      CONTRACT: 'عقد',
+      INTERN: 'متدرب',
+      CONSULTANT: 'مستشار',
+      FREELANCE: 'مستقل'
+    }
+  };
+
+  const t = translations[language as keyof typeof translations] || translations.tr;
+
+  return {
+    FULL_TIME: {
+      label: t.FULL_TIME,
+      variant: 'default'
+    },
+    PART_TIME: {
+      label: t.PART_TIME,
+      variant: 'outline'
+    },
+    CONTRACT: {
+      label: t.CONTRACT,
+      variant: 'secondary'
+    },
+    INTERN: {
+      label: t.INTERN,
+      variant: 'outline'
+    },
+    CONSULTANT: {
+      label: t.CONSULTANT,
+      variant: 'secondary'
+    },
+    FREELANCE: {
+      label: t.FREELANCE,
+      variant: 'outline'
+    }
+  };
+};
+
 // Navigation and Breadcrumb Types
 export interface BreadcrumbItem {
   label: string

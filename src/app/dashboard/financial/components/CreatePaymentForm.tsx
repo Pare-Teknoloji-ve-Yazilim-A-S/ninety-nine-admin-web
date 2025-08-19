@@ -29,6 +29,91 @@ import type { ResponseBillDto } from '@/services/types/billing.types';
 import billingService from '@/services/billing.service';
 import { enumsService } from '@/services/enums.service';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Form header
+    recordPaymentDesc: 'Mevcut bir faturaya ödeme kaydedin',
+    
+    // Selected bills section
+    selectedBills: 'Seçilen Faturalar',
+    billsLoading: 'Faturalar yükleniyor...',
+    selectBillsFromCard: 'Üstteki karttan fatura seçiniz',
+    amount: 'Tutar:',
+    status: 'Durum:',
+    dueDate: 'Vade Tarihi:',
+    overdue: 'Gecikmiş',
+    pending: 'Bekliyor',
+    remove: 'Kaldır',
+    
+    // Form fields
+    paymentAmount: 'Ödeme Tutarı (IQD) *',
+    paymentDate: 'Ödeme Tarihi *',
+    paymentDateRequired: 'Ödeme tarihi gereklidir',
+    receiptNumber: 'Makbuz Numarası',
+    receiptNumberPlaceholder: 'Seçilen faturaların ID listesi',
+    
+    // Buttons
+    cancel: 'İptal',
+    recordPayment: 'Ödeme Kaydet',
+    recordingPayment: 'Ödeme Kaydediliyor...'
+  },
+  en: {
+    // Form header
+    recordPaymentDesc: 'Record payment for an existing bill',
+    
+    // Selected bills section
+    selectedBills: 'Selected Bills',
+    billsLoading: 'Loading bills...',
+    selectBillsFromCard: 'Select bills from the card above',
+    amount: 'Amount:',
+    status: 'Status:',
+    dueDate: 'Due Date:',
+    overdue: 'Overdue',
+    pending: 'Pending',
+    remove: 'Remove',
+    
+    // Form fields
+    paymentAmount: 'Payment Amount (IQD) *',
+    paymentDate: 'Payment Date *',
+    paymentDateRequired: 'Payment date is required',
+    receiptNumber: 'Receipt Number',
+    receiptNumberPlaceholder: 'Selected bills ID list',
+    
+    // Buttons
+    cancel: 'Cancel',
+    recordPayment: 'Record Payment',
+    recordingPayment: 'Recording Payment...'
+  },
+  ar: {
+    // Form header
+    recordPaymentDesc: 'تسجيل دفعة لفاتورة موجودة',
+    
+    // Selected bills section
+    selectedBills: 'الفواتير المحددة',
+    billsLoading: 'جاري تحميل الفواتير...',
+    selectBillsFromCard: 'اختر الفواتير من البطاقة أعلاه',
+    amount: 'المبلغ:',
+    status: 'الحالة:',
+    dueDate: 'تاريخ الاستحقاق:',
+    overdue: 'متأخر',
+    pending: 'معلق',
+    remove: 'إزالة',
+    
+    // Form fields
+    paymentAmount: 'مبلغ الدفع (دينار عراقي) *',
+    paymentDate: 'تاريخ الدفع *',
+    paymentDateRequired: 'تاريخ الدفع مطلوب',
+    receiptNumber: 'رقم الإيصال',
+    receiptNumberPlaceholder: 'قائمة معرفات الفواتير المحددة',
+    
+    // Buttons
+    cancel: 'إلغاء',
+    recordPayment: 'تسجيل الدفع',
+    recordingPayment: 'جاري تسجيل الدفع...'
+  }
+};
+
 interface CreatePaymentFormProps {
   onSuccess: (payment: any) => void;
   onCancel: () => void;
@@ -57,6 +142,18 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
   onClearBills,
   selectedPaymentMethod,
 }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bills, setBills] = useState<BillOption[]>([]);
   const [loadingBills, setLoadingBills] = useState(true);
@@ -156,18 +253,59 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
   };
 
   // Build dynamic options from localStorage (fallback to constants)
-  const dynamicPaymentMethodOptions = (appEnums?.data?.payment?.paymentMethod as string[] | undefined)
-    ? (appEnums!.data!.payment!.paymentMethod as string[]).map((code) => {
-        const enumValue = (PaymentMethod as any)[code] ?? code;
-        const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === String(enumValue));
-        return {
-          value: (PaymentMethod as any)[code] ?? (fallback?.value ?? enumValue),
-          label: fallback?.label ?? code,
-          icon: fallback?.icon ?? '💳',
-          description: fallback?.description ?? ''
-        };
-      })
-    : PAYMENT_METHOD_OPTIONS;
+  const dynamicPaymentMethodOptions = (() => {
+    const paymentMethodTranslations = {
+      tr: {
+        CASH: { label: 'Nakit', description: 'Nakit ödeme' },
+        CREDIT_CARD: { label: 'Kredi Kartı', description: 'Kredi kartı ile ödeme' },
+        BANK_TRANSFER: { label: 'Banka Havalesi/EFT', description: 'Banka havalesi/EFT ile ödeme' },
+        DIRECT_DEBIT: { label: 'Otomatik Ödeme Talimatı', description: 'Hesaptan otomatik tahsilat' },
+        ONLINE_PAYMENT: { label: 'Online Ödeme', description: 'İnternet üzerinden ödeme' },
+        MOBILE_PAYMENT: { label: 'Mobil Ödeme', description: 'Mobil uygulama ile ödeme' },
+        CHECK: { label: 'Çek', description: 'Çek ile ödeme' },
+        OTHER: { label: 'Diğer', description: 'Diğer ödeme yöntemi' }
+      },
+      en: {
+        CASH: { label: 'Cash', description: 'Cash payment' },
+        CREDIT_CARD: { label: 'Credit Card', description: 'Payment by credit card' },
+        BANK_TRANSFER: { label: 'Bank Transfer/EFT', description: 'Payment by bank transfer/EFT' },
+        DIRECT_DEBIT: { label: 'Direct Debit', description: 'Automatic deduction from account' },
+        ONLINE_PAYMENT: { label: 'Online Payment', description: 'Payment over the internet' },
+        MOBILE_PAYMENT: { label: 'Mobile Payment', description: 'Payment via mobile app' },
+        CHECK: { label: 'Check', description: 'Payment by check' },
+        OTHER: { label: 'Other', description: 'Other payment method' }
+      },
+      ar: {
+        CASH: { label: 'نقداً', description: 'دفع نقدي' },
+        CREDIT_CARD: { label: 'بطاقة ائتمان', description: 'الدفع ببطاقة الائتمان' },
+        BANK_TRANSFER: { label: 'تحويل بنكي/EFT', description: 'الدفع بالتحويل البنكي/EFT' },
+        DIRECT_DEBIT: { label: 'خصم مباشر', description: 'خصم تلقائي من الحساب' },
+        ONLINE_PAYMENT: { label: 'دفع إلكتروني', description: 'الدفع عبر الإنترنت' },
+        MOBILE_PAYMENT: { label: 'دفع محمول', description: 'الدفع عبر التطبيق المحمول' },
+        CHECK: { label: 'شيك', description: 'الدفع بشيك' },
+        OTHER: { label: 'أخرى', description: 'طريقة دفع أخرى' }
+      }
+    };
+
+    const baseOptions = (appEnums?.data?.payment?.paymentMethod as string[] | undefined)
+      ? (appEnums!.data!.payment!.paymentMethod as string[]).map((code) => {
+          const enumValue = (PaymentMethod as any)[code] ?? code;
+          const fallback = PAYMENT_METHOD_OPTIONS.find(o => String(o.value) === String(enumValue));
+          return {
+            value: (PaymentMethod as any)[code] ?? (fallback?.value ?? enumValue),
+            label: fallback?.label ?? code,
+            icon: fallback?.icon ?? '💳',
+            description: fallback?.description ?? ''
+          };
+        })
+      : PAYMENT_METHOD_OPTIONS;
+
+    return baseOptions.map(option => ({
+      ...option,
+      label: paymentMethodTranslations[currentLanguage as keyof typeof paymentMethodTranslations]?.[option.value as keyof typeof paymentMethodTranslations.tr]?.label || option.label,
+      description: paymentMethodTranslations[currentLanguage as keyof typeof paymentMethodTranslations]?.[option.value as keyof typeof paymentMethodTranslations.tr]?.description || option.description
+    }));
+  })();
 
   const getPaymentMethodIcon = (method: PaymentMethod) => {
     const option = dynamicPaymentMethodOptions.find(opt => opt.value === method);
@@ -189,10 +327,10 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Ödeme Kaydet
+            {t.recordPayment}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Mevcut bir faturaya ödeme kaydedin
+            {t.recordPaymentDesc}
           </p>
         </div>
       </div>
@@ -203,14 +341,14 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-text-on-light dark:text-text-on-dark" />
             <label className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-              Seçilen Faturalar
+              {t.selectedBills}
             </label>
           </div>
           {/* Payment method selection moved to parent card. We display current selection here. */}
           {loadingBills ? (
-            <div className="text-sm text-text-light-secondary dark:text-text-secondary">Faturalar yükleniyor...</div>
+            <div className="text-sm text-text-light-secondary dark:text-text-secondary">{t.billsLoading}</div>
           ) : bills.length === 0 ? (
-            <div className="text-sm text-text-light-secondary dark:text-text-secondary">Üstteki karttan fatura seçiniz</div>
+            <div className="text-sm text-text-light-secondary dark:text-text-secondary">{t.selectBillsFromCard}</div>
           ) : (
             <div className="space-y-2">
               {bills.map((b) => (
@@ -220,17 +358,17 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
                 >
                   <div className="space-y-1 text-sm">
                     <div className="flex gap-2">
-                      <span className="text-text-on-light dark:text-text-on-dark font-medium">Tutar:</span>
+                      <span className="text-text-on-light dark:text-text-on-dark font-medium">{t.amount}</span>
                       <span className="text-text-on-light dark:text-text-on-dark">{Number(b.amount).toLocaleString('tr-TR')} IQD</span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-text-on-light dark:text-text-on-dark font-medium">Durum:</span>
+                      <span className="text-text-on-light dark:text-text-on-dark font-medium">{t.status}</span>
                       <span className={b.status === 'OVERDUE' ? 'text-primary-red' : 'text-semantic-warning-600'}>
-                        {b.status === 'OVERDUE' ? 'Gecikmiş' : 'Bekliyor'}
+                        {b.status === 'OVERDUE' ? t.overdue : t.pending}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-text-on-light dark:text-text-on-dark font-medium">Vade Tarihi:</span>
+                      <span className="text-text-on-light dark:text-text-on-dark font-medium">{t.dueDate}</span>
                       <span className="text-text-on-light dark:text-text-on-dark">{new Date(b.dueDate).toLocaleDateString('tr-TR')}</span>
                     </div>
                   </div>
@@ -241,7 +379,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
                     icon={X}
                     onClick={() => onRemoveBill?.(b.id)}
                   >
-                    Kaldır
+                    {t.remove}
                   </Button>
                 </div>
               ))}
@@ -255,7 +393,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Ödeme Tutarı (IQD) *
+              {t.paymentAmount}
             </label>
             <Input
               type="text"
@@ -268,11 +406,11 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
 
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Ödeme Tarihi *
+              {t.paymentDate}
             </label>
             <Input
               type="date"
-              {...register('paymentDate', { required: 'Ödeme tarihi gereklidir' })}
+              {...register('paymentDate', { required: t.paymentDateRequired })}
               icon={Calendar}
               error={errors.paymentDate?.message}
               readOnly
@@ -285,11 +423,11 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
         {/* Receipt Number - auto-filled from selected bill IDs */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Makbuz Numarası
+            {t.receiptNumber}
           </label>
           <Input
             {...register('receiptNumber')}
-            placeholder="Seçilen faturaların ID listesi"
+            placeholder={t.receiptNumberPlaceholder}
             icon={Receipt}
             readOnly
             disabled
@@ -324,7 +462,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            İptal
+            {t.cancel}
           </Button>
           <Button
             type="submit"
@@ -334,7 +472,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
             icon={CreditCard}
             className="w-full sm:w-auto"
           >
-            {isSubmitting ? 'Ödeme Kaydediliyor...' : 'Ödeme Kaydet'}
+            {isSubmitting ? t.recordingPayment : t.recordPayment}
           </Button>
         </div>
       </form>

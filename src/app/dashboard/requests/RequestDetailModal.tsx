@@ -36,7 +36,7 @@ const translations = {
     startProgress: 'İşleme Al',
     markWaiting: 'Beklemeye Al',
     complete: 'Tamamlandı',
-    close: 'Kapat',
+    closeButton: 'Kapat',
     cancel: 'İptal Et',
     
     // Toast labels
@@ -100,7 +100,7 @@ const translations = {
     startProgress: 'Start Progress',
     markWaiting: 'Mark Waiting',
     complete: 'Complete',
-    close: 'Close',
+    closeButton: 'Close',
     cancel: 'Cancel',
     
     // Toast labels
@@ -164,7 +164,7 @@ const translations = {
     startProgress: 'بدء التقدم',
     markWaiting: 'وضع في الانتظار',
     complete: 'إكمال',
-    close: 'إغلاق',
+    closeButton: 'إغلاق',
     cancel: 'إلغاء',
     
     // Toast labels
@@ -369,7 +369,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
       variant: 'success',
     },
     (status === 'IN_PROGRESS' || status === 'OPEN') && {
-      label: t.close,
+      label: t.closeButton,
       action: 'close',
       toastLabel: t.request,
       variant: 'warning',

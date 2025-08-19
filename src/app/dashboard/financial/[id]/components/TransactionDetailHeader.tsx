@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Badge from '@/app/components/ui/Badge';
 import { 
@@ -17,6 +17,88 @@ import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../h
 import { BILL_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS } from '@/services/types/billing.types';
 import Avatar from '@/app/components/ui/Avatar';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Labels
+    transactionId: 'İşlem ID',
+    billAmount: 'Fatura Tutarı',
+    paymentAmount: 'Ödeme Tutarı',
+    creationDate: 'Oluşturulma Tarihi',
+    dueDate: 'Vade Tarihi',
+    paymentDate: 'Ödeme Tarihi',
+    documentNumber: 'Belge Numarası',
+    property: 'Mülk',
+    receiptNumber: 'Makbuz Numarası',
+    description: 'Açıklama',
+    notes: 'Notlar',
+    paymentWithMethod: 'Ödemesi',
+    
+    // Status labels
+    paid: 'Ödendi',
+    pending: 'Bekliyor',
+    overdue: 'Gecikmiş',
+    completed: 'Tamamlandı',
+    failed: 'Başarısız',
+    cancelled: 'İptal',
+    
+    // Property fallback
+    propertyId: 'Mülk ID:'
+  },
+  en: {
+    // Labels
+    transactionId: 'Transaction ID',
+    billAmount: 'Bill Amount',
+    paymentAmount: 'Payment Amount',
+    creationDate: 'Creation Date',
+    dueDate: 'Due Date',
+    paymentDate: 'Payment Date',
+    documentNumber: 'Document Number',
+    property: 'Property',
+    receiptNumber: 'Receipt Number',
+    description: 'Description',
+    notes: 'Notes',
+    paymentWithMethod: 'Payment',
+    
+    // Status labels
+    paid: 'Paid',
+    pending: 'Pending',
+    overdue: 'Overdue',
+    completed: 'Completed',
+    failed: 'Failed',
+    cancelled: 'Cancelled',
+    
+    // Property fallback
+    propertyId: 'Property ID:'
+  },
+  ar: {
+    // Labels
+    transactionId: 'معرف المعاملة',
+    billAmount: 'مبلغ الفاتورة',
+    paymentAmount: 'مبلغ الدفع',
+    creationDate: 'تاريخ الإنشاء',
+    dueDate: 'تاريخ الاستحقاق',
+    paymentDate: 'تاريخ الدفع',
+    documentNumber: 'رقم المستند',
+    property: 'العقار',
+    receiptNumber: 'رقم الإيصال',
+    description: 'الوصف',
+    notes: 'ملاحظات',
+    paymentWithMethod: 'دفع',
+    
+    // Status labels
+    paid: 'مدفوع',
+    pending: 'معلق',
+    overdue: 'متأخر',
+    completed: 'مكتمل',
+    failed: 'فشل',
+    cancelled: 'ملغي',
+    
+    // Property fallback
+    propertyId: 'معرف العقار:'
+  }
+};
+
 interface TransactionDetailHeaderProps {
   transaction: TransactionDetail;
 }
@@ -24,6 +106,18 @@ interface TransactionDetailHeaderProps {
 const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({ 
   transaction 
 }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   // Get status badge variant
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -63,18 +157,18 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case 'paid':
-        return 'Ödendi';
+        return t.paid;
       case 'pending':
-        return 'Bekliyor';
+        return t.pending;
       case 'overdue':
-        return 'Gecikmiş';
+        return t.overdue;
       case 'completed':
-        return 'Tamamlandı';
+        return t.completed;
       case 'failed':
-        return 'Başarısız';
+        return t.failed;
       case 'cancelled':
       case 'canceled':
-        return 'İptal';
+        return t.cancelled;
       default:
         return status;
     }
@@ -120,7 +214,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
               <div className="flex items-center gap-2">
                 <Hash className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  İşlem ID
+                  {t.transactionId}
                 </span>
               </div>
               <span className="font-mono text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
@@ -141,7 +235,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
               <div className="flex items-center gap-3">
                 {getPaymentMethodInfo(transaction.data.paymentMethod).icon}
                 <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {getPaymentMethodInfo(transaction.data.paymentMethod).label} Ödemesi
+                  {getPaymentMethodInfo(transaction.data.paymentMethod).label} {t.paymentWithMethod}
                 </span>
               </div>
             )}
@@ -165,7 +259,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
               {formatCurrency(Number(transaction.data.amount))} IQD
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {isBillTransaction(transaction) ? 'Fatura Tutarı' : 'Ödeme Tutarı'}
+              {isBillTransaction(transaction) ? t.billAmount : t.paymentAmount}
             </div>
           </div>
         </div>
@@ -179,7 +273,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
               <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               <div>
                 <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  Oluşturulma Tarihi
+                  {t.creationDate}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   {formatDate(transaction.data.createdAt)}
@@ -193,7 +287,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    Vade Tarihi
+                    {t.dueDate}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     {formatDate(transaction.data.dueDate)}
@@ -208,7 +302,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 <Calendar className="h-4 w-4 text-green-500" />
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    Ödeme Tarihi
+                    {t.paymentDate}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     {formatDate(transaction.data.paymentDate)}
@@ -223,7 +317,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    Belge Numarası
+                    {t.documentNumber}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     {transaction.data.documentNumber}
@@ -238,7 +332,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 <Hash className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    İşlem ID
+                    {t.transactionId}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     {transaction.data.transactionId}
@@ -256,16 +350,14 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 <Building className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    Mülk
+                    {t.property}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {transaction.data.property.name || `Mülk ID: ${transaction.data.property.id}`}
+                    {transaction.data.property.name || `${t.propertyId} ${transaction.data.property.id}`}
                   </div>
                 </div>
               </div>
             )}
-
-
 
             {/* Receipt Number for Payments */}
             {isPaymentTransaction(transaction) && transaction.data.receiptNumber && (
@@ -273,7 +365,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <div>
                   <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    Makbuz Numarası
+                    {t.receiptNumber}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
                     {transaction.data.receiptNumber}
@@ -288,7 +380,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
         {transaction.data.description && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-              Açıklama
+              {t.description}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
               {transaction.data.description}
@@ -300,7 +392,7 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
         {isPaymentTransaction(transaction) && transaction.data.notes && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-              Notlar
+              {t.notes}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
               {transaction.data.notes}

@@ -58,9 +58,8 @@ const translations = {
   tr: {
     // Page titles and headers
     pageTitle: 'Sakin Listesi',
-    residents: 'Sakinler',
     filtered: 'filtrelenmiş',
-    active: 'aktif',
+    activeHeader: 'aktif',
     lastUpdate: 'Son güncelleme:',
     newResident: 'Yeni Sakin',
     refresh: 'Yenile',
@@ -72,7 +71,7 @@ const translations = {
     noResidentsYet: 'Henüz sakin kaydı bulunmuyor.',
     
     // Status labels
-    status: 'Durum',
+    statusLabel: 'Durum',
     activeStatus: 'Aktif',
     pendingStatus: 'Beklemede',
     inactiveStatus: 'Pasif',
@@ -80,8 +79,8 @@ const translations = {
     
     // Resident types
     residentType: 'Sakin Tipi',
-    owner: 'Malik',
-    tenant: 'Kiracı',
+    ownerType: 'Malik',
+    tenantType: 'Kiracı',
     guest: 'Misafir',
     
     // Action buttons
@@ -97,9 +96,9 @@ const translations = {
     residents: 'sakinler',
     
          // Membership tiers
-     standard: 'Standart',
-     gold: 'Altın',
-     silver: 'Gümüş',
+     standardTier: 'Standart',
+     goldTier: 'Altın',
+     silverTier: 'Gümüş',
      
      // Stats card titles
      totalResidents: 'Toplam Sakin',
@@ -138,9 +137,8 @@ const translations = {
   en: {
     // Page titles and headers
     pageTitle: 'Residents List',
-    residents: 'Residents',
     filtered: 'filtered',
-    active: 'active',
+    activeHeader: 'active',
     lastUpdate: 'Last update:',
     newResident: 'New Resident',
     refresh: 'Refresh',
@@ -152,7 +150,7 @@ const translations = {
     noResidentsYet: 'No residents found yet.',
     
     // Status labels
-    status: 'Status',
+    statusLabel: 'Status',
     activeStatus: 'Active',
     pendingStatus: 'Pending',
     inactiveStatus: 'Inactive',
@@ -160,8 +158,8 @@ const translations = {
     
     // Resident types
     residentType: 'Resident Type',
-    owner: 'Owner',
-    tenant: 'Tenant',
+    ownerType: 'Owner',
+    tenantType: 'Tenant',
     guest: 'Guest',
     
     // Action buttons
@@ -177,9 +175,9 @@ const translations = {
     residents: 'residents',
     
          // Membership tiers
-     standard: 'Standard',
-     gold: 'Gold',
-     silver: 'Silver',
+     standardTier: 'Standard',
+     goldTier: 'Gold',
+     silverTier: 'Silver',
      
      // Stats card titles
      totalResidents: 'Total Residents',
@@ -218,9 +216,8 @@ const translations = {
   ar: {
     // Page titles and headers
     pageTitle: 'قائمة السكان',
-    residents: 'السكان',
     filtered: 'مفلتر',
-    active: 'نشط',
+    activeHeader: 'نشط',
     lastUpdate: 'آخر تحديث:',
     newResident: 'ساكن جديد',
     refresh: 'تحديث',
@@ -232,7 +229,7 @@ const translations = {
     noResidentsYet: 'لم يتم العثور على سكان بعد.',
     
     // Status labels
-    status: 'الحالة',
+    statusLabel: 'الحالة',
     activeStatus: 'نشط',
     pendingStatus: 'في الانتظار',
     inactiveStatus: 'غير نشط',
@@ -240,8 +237,8 @@ const translations = {
     
     // Resident types
     residentType: 'نوع الساكن',
-    owner: 'مالك',
-    tenant: 'مستأجر',
+    ownerType: 'مالك',
+    tenantType: 'مستأجر',
     guest: 'ضيف',
     
     // Action buttons
@@ -257,9 +254,9 @@ const translations = {
     residents: 'سكان',
     
          // Membership tiers
-     standard: 'قياسي',
-     gold: 'ذهبي',
-     silver: 'فضي',
+     standardTier: 'قياسي',
+     goldTier: 'ذهبي',
+     silverTier: 'فضي',
      
      // Stats card titles
      totalResidents: 'إجمالي السكان',
@@ -460,7 +457,19 @@ export default function ResidentsPage() {
         unspecified: t.unspecified,
         block: t.block,
         apartment: t.apartment,
-        unknown: t.unknown
+        unknown: t.unknown,
+        approved: t.approved,
+        rejected: t.rejected,
+        underReview: t.underReview,
+        active: t.active,
+        pending: t.pending,
+        inactive: t.inactive,
+        suspended: t.suspended,
+        standard: t.standardTier,
+        gold: t.goldTier,
+        silver: t.silverTier,
+        owner: t.ownerType,
+        tenant: t.tenantType
     });
 
     // Handle delete confirmation

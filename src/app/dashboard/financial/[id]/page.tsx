@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
@@ -23,7 +23,98 @@ import FinancialSummaryCard from './components/FinancialSummaryCard';
 import RelatedTransactionsTable from './components/RelatedTransactionsTable';
 import TransactionActions from './components/TransactionActions';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Page titles
+    transactionDetailLoading: 'İşlem Detayı Yükleniyor...',
+    transactionDetail: 'İşlem Detayı',
+    billDetail: 'Fatura Detayı',
+    paymentDetail: 'Ödeme Detayı',
+    
+    // Breadcrumbs
+    home: 'Ana Sayfa',
+    financialTransactions: 'Finansal İşlemler',
+    billDetailBreadcrumb: 'Fatura Detayı',
+    paymentDetailBreadcrumb: 'Ödeme Detayı',
+    transactionDetailBreadcrumb: 'İşlem Detayı',
+    
+    // Error states
+    transactionNotFound: 'İşlem Bulunamadı',
+    transactionDetailsFailed: 'İşlem Detayları Yüklenemedi',
+    transactionNotFoundDesc: 'Aradığınız finansal işlem bulunamadı veya silinmiş olabilir.',
+    goBack: 'Geri Dön',
+    tryAgain: 'Tekrar Dene',
+    returnToFinancial: 'Finansal İşlemlere Dön',
+    
+    // Payment method descriptions
+    paymentWithMethod: 'ile ödeme'
+  },
+  en: {
+    // Page titles
+    transactionDetailLoading: 'Loading Transaction Detail...',
+    transactionDetail: 'Transaction Detail',
+    billDetail: 'Bill Detail',
+    paymentDetail: 'Payment Detail',
+    
+    // Breadcrumbs
+    home: 'Home',
+    financialTransactions: 'Financial Transactions',
+    billDetailBreadcrumb: 'Bill Detail',
+    paymentDetailBreadcrumb: 'Payment Detail',
+    transactionDetailBreadcrumb: 'Transaction Detail',
+    
+    // Error states
+    transactionNotFound: 'Transaction Not Found',
+    transactionDetailsFailed: 'Failed to Load Transaction Details',
+    transactionNotFoundDesc: 'The financial transaction you are looking for could not be found or may have been deleted.',
+    goBack: 'Go Back',
+    tryAgain: 'Try Again',
+    returnToFinancial: 'Return to Financial Transactions',
+    
+    // Payment method descriptions
+    paymentWithMethod: 'payment with'
+  },
+  ar: {
+    // Page titles
+    transactionDetailLoading: 'جاري تحميل تفاصيل المعاملة...',
+    transactionDetail: 'تفاصيل المعاملة',
+    billDetail: 'تفاصيل الفاتورة',
+    paymentDetail: 'تفاصيل الدفع',
+    
+    // Breadcrumbs
+    home: 'الرئيسية',
+    financialTransactions: 'المعاملات المالية',
+    billDetailBreadcrumb: 'تفاصيل الفاتورة',
+    paymentDetailBreadcrumb: 'تفاصيل الدفع',
+    transactionDetailBreadcrumb: 'تفاصيل المعاملة',
+    
+    // Error states
+    transactionNotFound: 'المعاملة غير موجودة',
+    transactionDetailsFailed: 'فشل في تحميل تفاصيل المعاملة',
+    transactionNotFoundDesc: 'المعاملة المالية التي تبحث عنها غير موجودة أو قد تكون محذوفة.',
+    goBack: 'العودة',
+    tryAgain: 'حاول مرة أخرى',
+    returnToFinancial: 'العودة إلى المعاملات المالية',
+    
+    // Payment method descriptions
+    paymentWithMethod: 'دفع بـ'
+  }
+};
+
 export default function TransactionDetailPage() {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const params = useParams();
@@ -34,21 +125,21 @@ export default function TransactionDetailPage() {
   // Generate breadcrumbs
   const getBreadcrumbItems = () => {
     const baseItems = [
-      { label: 'Ana Sayfa', href: '/dashboard' },
-      { label: 'Finansal İşlemler', href: '/dashboard/financial' }
+      { label: t.home, href: '/dashboard' },
+      { label: t.financialTransactions, href: '/dashboard/financial' }
     ];
 
     if (transaction) {
-      const typeLabel = isBillTransaction(transaction) ? 'Fatura' : 'Ödeme';
+      const typeLabel = isBillTransaction(transaction) ? t.billDetailBreadcrumb : t.paymentDetailBreadcrumb;
       return [
         ...baseItems,
-        { label: `${typeLabel} Detayı`, active: true }
+        { label: typeLabel, active: true }
       ];
     }
 
     return [
       ...baseItems,
-      { label: 'İşlem Detayı', active: true }
+      { label: t.transactionDetailBreadcrumb, active: true }
     ];
   };
 
@@ -69,7 +160,7 @@ export default function TransactionDetailPage() {
           
           <div className="lg:ml-72">
             <DashboardHeader
-              title="İşlem Detayı Yükleniyor..."
+              title={t.transactionDetailLoading}
               breadcrumbItems={getBreadcrumbItems()}
             />
 
@@ -110,7 +201,7 @@ export default function TransactionDetailPage() {
           
           <div className="lg:ml-72">
             <DashboardHeader
-              title="İşlem Detayı"
+              title={t.transactionDetail}
               breadcrumbItems={getBreadcrumbItems()}
             />
 
@@ -126,7 +217,7 @@ export default function TransactionDetailPage() {
                 />
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    İşlem Bulunamadı
+                    {t.transactionNotFound}
                   </h1>
                 </div>
               </div>
@@ -134,7 +225,7 @@ export default function TransactionDetailPage() {
               <Card className="p-8">
                 <EmptyState
                   icon={<AlertCircle className="h-8 w-8" />}
-                  title="İşlem Detayları Yüklenemedi"
+                  title={t.transactionDetailsFailed}
                   description={error}
                   action={
                     <div className="flex gap-3">
@@ -143,7 +234,7 @@ export default function TransactionDetailPage() {
                         icon={ArrowLeft}
                         onClick={handleGoBack}
                       >
-                        Geri Dön
+                        {t.goBack}
                       </Button>
                       <Button 
                         variant="primary" 
@@ -151,7 +242,7 @@ export default function TransactionDetailPage() {
                         onClick={handleRefresh}
                         isLoading={isRefetching}
                       >
-                        Tekrar Dene
+                        {t.tryAgain}
                       </Button>
                     </div>
                   }
@@ -173,7 +264,7 @@ export default function TransactionDetailPage() {
           
           <div className="lg:ml-72">
             <DashboardHeader
-              title="İşlem Detayı"
+              title={t.transactionDetail}
               breadcrumbItems={getBreadcrumbItems()}
             />
 
@@ -181,15 +272,15 @@ export default function TransactionDetailPage() {
               <Card className="p-8">
                 <EmptyState
                   icon={<FileText className="h-8 w-8" />}
-                  title="İşlem Bulunamadı"
-                  description="Aradığınız finansal işlem bulunamadı veya silinmiş olabilir."
+                  title={t.transactionNotFound}
+                  description={t.transactionNotFoundDesc}
                   action={
                     <Button 
                       variant="primary" 
                       icon={ArrowLeft}
                       onClick={handleGoBack}
                     >
-                      Finansal İşlemlere Dön
+                      {t.returnToFinancial}
                     </Button>
                   }
                 />
@@ -209,7 +300,7 @@ export default function TransactionDetailPage() {
         
         <div className="lg:ml-72">
           <DashboardHeader
-            title={isBillTransaction(transaction) ? 'Fatura Detayı' : 'Ödeme Detayı'}
+            title={isBillTransaction(transaction) ? t.billDetail : t.paymentDetail}
             breadcrumbItems={getBreadcrumbItems()}
           />
 
@@ -241,12 +332,12 @@ export default function TransactionDetailPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {isBillTransaction(transaction) ? 'Fatura Detayı' : 'Ödeme Detayı'}
+                    {isBillTransaction(transaction) ? t.billDetail : t.paymentDetail}
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">
                     {isBillTransaction(transaction) 
                       ? transaction.data.title
-                      : `${(transaction.data as any).paymentMethod} ile ödeme`
+                      : `${t.paymentWithMethod} ${(transaction.data as any).paymentMethod}`
                     }
                   </p>
                 </div>

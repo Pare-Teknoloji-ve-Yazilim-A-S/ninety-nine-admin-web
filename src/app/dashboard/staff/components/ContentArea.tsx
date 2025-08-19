@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useState, useEffect } from 'react';
 import type { Staff } from '@/services/types/staff.types'
 import GenericListView from '@/app/components/templates/GenericListView'
 import GenericGridView from '@/app/components/templates/GenericGridView'
@@ -12,6 +13,22 @@ import Badge from '@/app/components/ui/Badge'
 import EmptyState from '@/app/components/ui/EmptyState'
 import Skeleton from '@/app/components/ui/Skeleton'
 import { getTableColumns } from './table-columns'
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    noStaffRecords: 'Henüz personel kaydı bulunmuyor.',
+    noRecordsFound: 'Kayıt bulunamadı.'
+  },
+  en: {
+    noStaffRecords: 'No staff records found yet.',
+    noRecordsFound: 'No records found.'
+  },
+  ar: {
+    noStaffRecords: 'لم يتم العثور على سجلات موظفين بعد.',
+    noRecordsFound: 'لم يتم العثور على سجلات.'
+  }
+};
 
 type ViewMode = 'table' | 'grid'
 
@@ -54,6 +71,18 @@ export default function ContentArea({
   onDelete,
   viewMode
 }: ContentAreaProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const columns = getTableColumns({ onView })
 
   const data = Array.isArray(staff) ? staff : []
@@ -78,7 +107,7 @@ export default function ContentArea({
             recordsPerPageOptions: [5, 10, 20, 30, 40, 50],
             preventScroll: true
           }}
-          emptyStateMessage={totalCount === 0 ? 'Henüz personel kaydı bulunmuyor.' : 'Kayıt bulunamadı.'}
+          emptyStateMessage={totalCount === 0 ? t.noStaffRecords : t.noRecordsFound}
           selectable
           showPagination
         />
@@ -99,7 +128,7 @@ export default function ContentArea({
             onRecordsPerPageChange: onPageSizeChange,
             preventScroll: true
           }}
-          emptyStateMessage={totalCount === 0 ? 'Henüz personel kaydı bulunmuyor.' : 'Kayıt bulunamadı.'}
+          emptyStateMessage={totalCount === 0 ? t.noStaffRecords : t.noRecordsFound}
           ui={{ Card, Button, Checkbox, TablePagination, Badge, EmptyState, Skeleton, BulkActionsBar }}
           renderCard={(item) => (
             <Card className="p-4 rounded-2xl">

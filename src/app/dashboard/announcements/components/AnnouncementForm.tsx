@@ -21,6 +21,193 @@ import {
 } from '@/services/types/announcement.types';
 import { enumsService } from '@/services/enums.service';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Section titles
+    basicInfo: 'Temel Bilgiler',
+    dateSettings: 'Tarih Ayarları',
+    additionalSettings: 'Ek Ayarlar',
+    image: 'Görsel',
+    
+    // Form labels
+    title: 'Başlık',
+    content: 'İçerik',
+    announcementType: 'Duyuru Tipi',
+    status: 'Durum',
+    publishDate: 'Yayınlanma Tarihi',
+    expiryDate: 'Bitiş Tarihi',
+    
+    // Placeholders
+    titlePlaceholder: 'Duyuru başlığını girin...',
+    contentPlaceholder: 'Duyuru içeriğini girin...',
+    publishDatePlaceholder: 'Yayınlanma tarihini seçin...',
+    expiryDatePlaceholder: 'Bitiş tarihini seçin...',
+    
+    // Help text
+    publishDateHelp: 'Boş bırakılırsa bugün olarak ayarlanır',
+    expiryDateHelp: 'Boş bırakılırsa bir sonraki güne ayarlanır',
+    
+    // Checkbox labels
+    pin: 'Sabitle',
+    pinDescription: 'Duyuru listesinin en üstünde gösterilir',
+    emergencyCheckbox: 'Acil Durum',
+    emergencyDescription: 'Acil durum duyurusu olarak işaretlenir',
+    
+    // File upload
+    uploadImages: 'Görsel(ler) Yükle',
+    uploadDescription: 'JPEG/PNG/GIF/WEBP, en fazla 10 dosya, 5MB/dosya',
+    
+    // Buttons
+    cancel: 'İptal',
+    createAnnouncement: 'Duyuru Oluştur',
+    saveChanges: 'Değişiklikleri Kaydet',
+    
+    // Validation messages
+    titleRequired: 'Başlık zorunludur',
+    titleMinLength: 'Başlık en az 3 karakter olmalıdır',
+    contentRequired: 'İçerik zorunludur',
+    contentMinLength: 'İçerik en az 10 karakter olmalıdır',
+    expiryDateError: 'Bitiş tarihi, yayınlanma tarihinden sonra olmalıdır',
+    
+    // Type labels
+    general: 'Genel',
+    maintenance: 'Bakım',
+    emergency: 'Acil Durum',
+    event: 'Etkinlik',
+    rule: 'Kural',
+    meeting: 'Toplantı',
+    other: 'Diğer',
+    
+    // Status labels
+    draft: 'Taslak',
+    published: 'Yayında',
+    archived: 'Arşiv'
+  },
+  en: {
+    // Section titles
+    basicInfo: 'Basic Information',
+    dateSettings: 'Date Settings',
+    additionalSettings: 'Additional Settings',
+    image: 'Image',
+    
+    // Form labels
+    title: 'Title',
+    content: 'Content',
+    announcementType: 'Announcement Type',
+    status: 'Status',
+    publishDate: 'Publish Date',
+    expiryDate: 'Expiry Date',
+    
+    // Placeholders
+    titlePlaceholder: 'Enter announcement title...',
+    contentPlaceholder: 'Enter announcement content...',
+    publishDatePlaceholder: 'Select publish date...',
+    expiryDatePlaceholder: 'Select expiry date...',
+    
+    // Help text
+    publishDateHelp: 'If left empty, will be set to today',
+    expiryDateHelp: 'If left empty, will be set to tomorrow',
+    
+    // Checkbox labels
+    pin: 'Pin',
+    pinDescription: 'Shows at the top of the announcement list',
+    emergencyCheckbox: 'Emergency',
+    emergencyDescription: 'Marked as emergency announcement',
+    
+    // File upload
+    uploadImages: 'Upload Image(s)',
+    uploadDescription: 'JPEG/PNG/GIF/WEBP, max 10 files, 5MB/file',
+    
+    // Buttons
+    cancel: 'Cancel',
+    createAnnouncement: 'Create Announcement',
+    saveChanges: 'Save Changes',
+    
+    // Validation messages
+    titleRequired: 'Title is required',
+    titleMinLength: 'Title must be at least 3 characters',
+    contentRequired: 'Content is required',
+    contentMinLength: 'Content must be at least 10 characters',
+    expiryDateError: 'Expiry date must be after publish date',
+    
+    // Type labels
+    general: 'General',
+    maintenance: 'Maintenance',
+    emergency: 'Emergency',
+    event: 'Event',
+    rule: 'Rule',
+    meeting: 'Meeting',
+    other: 'Other',
+    
+    // Status labels
+    draft: 'Draft',
+    published: 'Published',
+    archived: 'Archived'
+  },
+  ar: {
+    // Section titles
+    basicInfo: 'المعلومات الأساسية',
+    dateSettings: 'إعدادات التاريخ',
+    additionalSettings: 'إعدادات إضافية',
+    image: 'الصورة',
+    
+    // Form labels
+    title: 'العنوان',
+    content: 'المحتوى',
+    announcementType: 'نوع الإعلان',
+    status: 'الحالة',
+    publishDate: 'تاريخ النشر',
+    expiryDate: 'تاريخ الانتهاء',
+    
+    // Placeholders
+    titlePlaceholder: 'أدخل عنوان الإعلان...',
+    contentPlaceholder: 'أدخل محتوى الإعلان...',
+    publishDatePlaceholder: 'اختر تاريخ النشر...',
+    expiryDatePlaceholder: 'اختر تاريخ الانتهاء...',
+    
+    // Help text
+    publishDateHelp: 'إذا تركت فارغاً، سيتم تعيينه لليوم',
+    expiryDateHelp: 'إذا تركت فارغاً، سيتم تعيينه للغد',
+    
+    // Checkbox labels
+    pin: 'تثبيت',
+    pinDescription: 'يظهر في أعلى قائمة الإعلانات',
+    emergencyCheckbox: 'طوارئ',
+    emergencyDescription: 'محدد كإعلان طوارئ',
+    
+    // File upload
+    uploadImages: 'رفع صورة(ات)',
+    uploadDescription: 'JPEG/PNG/GIF/WEBP، أقصى 10 ملفات، 5MB/ملف',
+    
+    // Buttons
+    cancel: 'إلغاء',
+    createAnnouncement: 'إنشاء إعلان',
+    saveChanges: 'حفظ التغييرات',
+    
+    // Validation messages
+    titleRequired: 'العنوان مطلوب',
+    titleMinLength: 'يجب أن يكون العنوان 3 أحرف على الأقل',
+    contentRequired: 'المحتوى مطلوب',
+    contentMinLength: 'يجب أن يكون المحتوى 10 أحرف على الأقل',
+    expiryDateError: 'يجب أن يكون تاريخ الانتهاء بعد تاريخ النشر',
+    
+    // Type labels
+    general: 'عام',
+    maintenance: 'صيانة',
+    emergency: 'طوارئ',
+    event: 'حدث',
+    rule: 'قاعدة',
+    meeting: 'اجتماع',
+    other: 'آخر',
+    
+    // Status labels
+    draft: 'مسودة',
+    published: 'منشور',
+    archived: 'مؤرشف'
+  }
+};
+
 interface AnnouncementFormProps {
     initialData?: Partial<Announcement>;
     onSubmit: (data: AnnouncementFormData) => Promise<void>;
@@ -51,6 +238,18 @@ export default function AnnouncementForm({
     loading = false,
     mode
 }: AnnouncementFormProps) {
+    // Dil tercihini localStorage'dan al
+    const [currentLanguage, setCurrentLanguage] = useState('tr');
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('preferredLanguage');
+        if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
+        }
+    }, []);
+
+    // Çevirileri al
+    const t = translations[currentLanguage as keyof typeof translations];
+
     const [formData, setFormData] = useState<AnnouncementFormData>(defaultFormData);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [imagePreview, setImagePreview] = useState<string>('');
@@ -84,26 +283,26 @@ export default function AnnouncementForm({
         const newErrors: Record<string, string> = {};
 
         if (!formData.title.trim()) {
-            newErrors.title = 'Başlık zorunludur';
+            newErrors.title = t.titleRequired;
         } else if (formData.title.trim().length < 3) {
-            newErrors.title = 'Başlık en az 3 karakter olmalıdır';
+            newErrors.title = t.titleMinLength;
         }
 
         if (!formData.content.trim()) {
-            newErrors.content = 'İçerik zorunludur';
+            newErrors.content = t.contentRequired;
         } else if (formData.content.trim().length < 10) {
-            newErrors.content = 'İçerik en az 10 karakter olmalıdır';
+            newErrors.content = t.contentMinLength;
         }
 
         if (formData.publishDate && formData.expiryDate) {
             if (formData.publishDate >= formData.expiryDate) {
-                newErrors.expiryDate = 'Bitiş tarihi, yayınlanma tarihinden sonra olmalıdır';
+                newErrors.expiryDate = t.expiryDateError;
             }
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
-    }, [formData]);
+    }, [formData, t]);
 
     // Read enums from localStorage (no network if present)
     useEffect(() => {
@@ -183,20 +382,20 @@ export default function AnnouncementForm({
         }
     }, [formData, validateForm, onSubmit]);
 
-    // Label fallbacks in TR
+    // Label fallbacks based on current language
     const typeLabelMap: Record<string, string> = {
-        GENERAL: 'Genel',
-        MAINTENANCE: 'Bakım',
-        EMERGENCY: 'Acil Durum',
-        EVENT: 'Etkinlik',
-        RULE: 'Kural',
-        MEETING: 'Toplantı',
-        OTHER: 'Diğer'
+        GENERAL: t.general,
+        MAINTENANCE: t.maintenance,
+        EMERGENCY: t.emergency,
+        EVENT: t.event,
+        RULE: t.rule,
+        MEETING: t.meeting,
+        OTHER: t.other
     };
     const statusLabelMap: Record<string, string> = {
-        DRAFT: 'Taslak',
-        PUBLISHED: 'Yayında',
-        ARCHIVED: 'Arşiv'
+        DRAFT: t.draft,
+        PUBLISHED: t.published,
+        ARCHIVED: t.archived
     };
 
     // Type options for select (prefer localStorage enums)
@@ -217,18 +416,18 @@ export default function AnnouncementForm({
             <Card>
                 <div className="p-6">
                     <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
-                        Temel Bilgiler
+                        {t.basicInfo}
                     </h3>
                     
                     <div className="space-y-4">
                         {/* Title */}
                         <div>
                             <Input
-                                label="Başlık"
+                                label={t.title}
                                 value={formData.title}
                                 onChange={(e: any) => handleInputChange('title', e.target.value)}
                                 error={errors.title}
-                                placeholder="Duyuru başlığını girin..."
+                                placeholder={t.titlePlaceholder}
                                 required
                                 maxLength={200}
                             />
@@ -237,11 +436,11 @@ export default function AnnouncementForm({
                         {/* Content */}
                         <div>
                             <TextArea
-                                label="İçerik"
+                                label={t.content}
                                 value={formData.content}
                                 onChange={(value: string) => handleInputChange('content', value)}
                                 error={errors.content}
-                                placeholder="Duyuru içeriğini girin..."
+                                placeholder={t.contentPlaceholder}
                                 required
                                 rows={8}
                                 maxLength={5000}
@@ -252,7 +451,7 @@ export default function AnnouncementForm({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <Label htmlFor="type" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                    Duyuru Tipi *
+                                    {t.announcementType} *
                                 </Label>
                                 <Select
                                     value={formData.type}
@@ -263,7 +462,7 @@ export default function AnnouncementForm({
                             </div>
                             <div>
                                 <Label htmlFor="status" className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                                    Durum *
+                                    {t.status} *
                                 </Label>
                                 <Select
                                     value={formData.status}
@@ -281,34 +480,34 @@ export default function AnnouncementForm({
             <Card>
                 <div className="p-6">
                     <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
-                        Tarih Ayarları
+                        {t.dateSettings}
                     </h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Publish Date */}
                         <div>
                             <DatePicker
-                                label="Yayınlanma Tarihi"
+                                label={t.publishDate}
                                 value={formData.publishDate ? formData.publishDate.toISOString().split('T')[0] : ''}
                                 onChange={(e: any) => handleInputChange('publishDate', e.target.value ? new Date(e.target.value) : undefined)}
-                                placeholder="Yayınlanma tarihini seçin..."
+                                placeholder={t.publishDatePlaceholder}
                             />
                             <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1">
-                                Boş bırakılırsa bugün olarak ayarlanır
+                                {t.publishDateHelp}
                             </p>
                         </div>
 
                         {/* Expiry Date */}
                         <div>
                             <DatePicker
-                                label="Bitiş Tarihi"
+                                label={t.expiryDate}
                                 value={formData.expiryDate ? formData.expiryDate.toISOString().split('T')[0] : ''}
                                 onChange={(e: any) => handleInputChange('expiryDate', e.target.value ? new Date(e.target.value) : undefined)}
                                 error={errors.expiryDate}
-                                placeholder="Bitiş tarihini seçin..."
+                                placeholder={t.expiryDatePlaceholder}
                             />
                             <p className="text-xs text-text-light-secondary dark:text-text-secondary mt-1">
-                                Boş bırakılırsa bir sonraki güne ayarlanır
+                                {t.expiryDateHelp}
                             </p>
                         </div>
                     </div>
@@ -319,7 +518,7 @@ export default function AnnouncementForm({
             <Card>
                 <div className="p-6">
                     <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
-                        Ek Ayarlar
+                        {t.additionalSettings}
                     </h3>
                     
                     <div className="space-y-4">
@@ -334,10 +533,10 @@ export default function AnnouncementForm({
                                     <Pin className="w-5 h-5 text-primary-gold" />
                                     <div>
                                         <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                            Sabitle
+                                            {t.pin}
                                         </p>
                                         <p className="text-xs text-text-light-secondary dark:text-text-secondary">
-                                            Duyuru listesinin en üstünde gösterilir
+                                            {t.pinDescription}
                                         </p>
                                     </div>
                                 </div>
@@ -352,10 +551,10 @@ export default function AnnouncementForm({
                                     <AlertTriangle className="w-5 h-5 text-red-500" />
                                     <div>
                                         <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                                            Acil Durum
+                                            {t.emergencyCheckbox}
                                         </p>
                                         <p className="text-xs text-text-light-secondary dark:text-text-secondary">
-                                            Acil durum duyurusu olarak işaretlenir
+                                            {t.emergencyDescription}
                                         </p>
                                     </div>
                                 </div>
@@ -369,7 +568,7 @@ export default function AnnouncementForm({
             <Card>
                 <div className="p-6">
                     <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-6">
-                        Görsel
+                        {t.image}
                     </h3>
                     
                     <FileUpload
@@ -385,8 +584,8 @@ export default function AnnouncementForm({
                                 const files = fileList ? Array.from(fileList) : [];
                                 handleFilesChange(files, 'append');
                             }}
-                        title="Görsel(ler) Yükle"
-                        description="JPEG/PNG/GIF/WEBP, en fazla 10 dosya, 5MB/dosya"
+                        title={t.uploadImages}
+                        description={t.uploadDescription}
                     />
                 </div>
             </Card>
@@ -402,7 +601,7 @@ export default function AnnouncementForm({
                             onClick={onCancel}
                             disabled={loading}
                         >
-                            İptal
+                            {t.cancel}
                         </Button>
                         <Button
                             type="submit"
@@ -411,7 +610,7 @@ export default function AnnouncementForm({
                             icon={Save}
                             isLoading={loading}
                         >
-                            {mode === 'create' ? 'Duyuru Oluştur' : 'Değişiklikleri Kaydet'}
+                            {mode === 'create' ? t.createAnnouncement : t.saveChanges}
                         </Button>
                     </div>
                 </div>

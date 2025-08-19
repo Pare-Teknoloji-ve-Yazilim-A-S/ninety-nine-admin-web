@@ -71,7 +71,7 @@ const translations = {
     complaint: 'Şikayet',
     faultRepair: 'Arıza/Tamir',
     maintenance: 'Bakım',
-    cleaning: 'Temizlik',
+    cleaningType: 'Temizlik',
     suggestion: 'Öneri',
     other: 'Diğer',
     
@@ -155,7 +155,7 @@ const translations = {
     complaint: 'Complaint',
     faultRepair: 'Fault/Repair',
     maintenance: 'Maintenance',
-    cleaning: 'Cleaning',
+    cleaningType: 'Cleaning',
     suggestion: 'Suggestion',
     other: 'Other',
     
@@ -239,7 +239,7 @@ const translations = {
     complaint: 'شكوى',
     faultRepair: 'عطل/إصلاح',
     maintenance: 'صيانة',
-    cleaning: 'تنظيف',
+    cleaningType: 'تنظيف',
     suggestion: 'اقتراح',
     other: 'آخر',
     
@@ -324,7 +324,7 @@ export default function CreateTicketModal({
         { value: 'COMPLAINT', label: t.complaint },
         { value: 'FAULT_REPAIR', label: t.faultRepair },
         { value: 'MAINTENANCE', label: t.maintenance },
-        { value: 'CLEANING', label: t.cleaning },
+        { value: 'CLEANING', label: t.cleaningType },
         { value: 'SUGGESTION', label: t.suggestion },
         { value: 'OTHER', label: t.other }
     ];
@@ -353,7 +353,7 @@ export default function CreateTicketModal({
         { value: 'Elektrik', label: t.electrical },
         { value: 'Isıtma', label: t.heating },
         { value: 'Soğutma', label: t.cooling },
-        { value: 'Temizlik', label: t.cleaning },
+        { value: 'Temizlik', label: t.cleaningType },
         { value: 'Güvenlik', label: t.security },
         { value: 'Bahçe', label: t.garden },
         { value: 'Asansör', label: t.elevator },

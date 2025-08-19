@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Card from '@/app/components/ui/Card'
 import Button from '@/app/components/ui/Button'
 import Input from '@/app/components/ui/Input'
@@ -20,8 +20,8 @@ import {
 } from '@/services/types/staff.types'
 import { Department, Position } from '@/services/types/department.types'
 import {
-  STAFF_STATUS_CONFIG,
-  EMPLOYMENT_TYPE_CONFIG,
+  getStaffStatusConfig,
+  getEmploymentTypeConfig,
   FilterOption,
   QuickFilter,
   SavedFilter
@@ -41,6 +41,115 @@ import {
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
+
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Filter labels
+    employmentType: 'İstihdam Türü',
+    employmentStatus: 'Çalışma Durumu',
+    department: 'Departman',
+    all: 'Tümü',
+    
+    // Actions
+    saveFilter: 'Filtreyi Kaydet',
+    deleteFilter: 'Filtreyi Sil',
+    exportFilters: 'Filtreleri Dışa Aktar',
+    importFilters: 'Filtreleri İçe Aktar',
+    reset: 'Sıfırla',
+    clear: 'Temizle',
+    apply: 'Uygula',
+    cancel: 'İptal',
+    
+    // Placeholders
+    searchStaff: 'Personel ara...',
+    filterName: 'Filtre adı...',
+    selectDateRange: 'Tarih aralığı seçiniz',
+    min: 'Min',
+    max: 'Max',
+    
+    // Section titles
+    filters: 'Filtreler',
+    quickFilters: 'Hızlı Filtreler',
+    status: 'Durum',
+    position: 'Pozisyon',
+    startDate: 'İşe Başlama Tarihi',
+    salaryRange: 'Maaş Aralığı (TL)',
+    savedFilters: 'Kayıtlı Filtreler',
+    filterNameLabel: 'Filtre Adı',
+    advancedFilters: 'Gelişmiş Filtreler'
+  },
+  en: {
+    // Filter labels
+    employmentType: 'Employment Type',
+    employmentStatus: 'Employment Status',
+    department: 'Department',
+    all: 'All',
+    
+    // Actions
+    saveFilter: 'Save Filter',
+    deleteFilter: 'Delete Filter',
+    exportFilters: 'Export Filters',
+    importFilters: 'Import Filters',
+    reset: 'Reset',
+    clear: 'Clear',
+    apply: 'Apply',
+    cancel: 'Cancel',
+    
+    // Placeholders
+    searchStaff: 'Search staff...',
+    filterName: 'Filter name...',
+    selectDateRange: 'Select date range',
+    min: 'Min',
+    max: 'Max',
+    
+    // Section titles
+    filters: 'Filters',
+    quickFilters: 'Quick Filters',
+    status: 'Status',
+    position: 'Position',
+    startDate: 'Start Date',
+    salaryRange: 'Salary Range (TL)',
+    savedFilters: 'Saved Filters',
+    filterNameLabel: 'Filter Name',
+    advancedFilters: 'Advanced Filters'
+  },
+  ar: {
+    // Filter labels
+    employmentType: 'نوع التوظيف',
+    employmentStatus: 'حالة التوظيف',
+    department: 'القسم',
+    all: 'الكل',
+    
+    // Actions
+    saveFilter: 'حفظ المرشح',
+    deleteFilter: 'حذف المرشح',
+    exportFilters: 'تصدير المرشحات',
+    importFilters: 'استيراد المرشحات',
+    reset: 'إعادة تعيين',
+    clear: 'مسح',
+    apply: 'تطبيق',
+    cancel: 'إلغاء',
+    
+    // Placeholders
+    searchStaff: 'البحث في الموظفين...',
+    filterName: 'اسم المرشح...',
+    selectDateRange: 'اختر نطاق التاريخ',
+    min: 'الحد الأدنى',
+    max: 'الحد الأقصى',
+    
+    // Section titles
+    filters: 'المرشحات',
+    quickFilters: 'المرشحات السريعة',
+    status: 'الحالة',
+    position: 'المنصب',
+    startDate: 'تاريخ البدء',
+    salaryRange: 'نطاق الراتب (TL)',
+    savedFilters: 'المرشحات المحفوظة',
+    filterNameLabel: 'اسم المرشح',
+    advancedFilters: 'المرشحات المتقدمة'
+  }
+};
 
 interface StaffFiltersProps {
   filters: StaffFilterParams
@@ -73,6 +182,22 @@ export function StaffFilters({
   onReset,
   className
 }: StaffFiltersProps) {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+  
+  // i18n config'leri al
+  const staffStatusConfig = getStaffStatusConfig(currentLanguage);
+  const employmentTypeConfig = getEmploymentTypeConfig(currentLanguage);
+
   const [isExpanded, setIsExpanded] = useState(false)
   const [saveFilterName, setSaveFilterName] = useState('')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
@@ -100,7 +225,7 @@ export function StaffFilters({
       newValues = currentValues.filter(v => v !== value)
     }
     
-    updateFilter(key, newValues.length > 0 ? newValues : undefined)
+    updateFilter(key, newValues)
   }
 
   // Handle date range
@@ -150,7 +275,7 @@ export function StaffFilters({
         <div className="flex items-center justify-between">
           <h2 className="text-lg flex items-center font-semibold">
             <Filter className="h-5 w-5 mr-2" />
-            Filtreler
+            {t.filters}
             {activeFilterCount > 0 && (
               <Badge variant="secondary" className="ml-2">
                 {activeFilterCount}
@@ -166,18 +291,19 @@ export function StaffFilters({
               disabled={activeFilterCount === 0}
             >
               <RotateCcw className="h-4 w-4 mr-1" />
-              Temizle
+              {t.clear}
             </Button>
             
             <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <ChevronDown className={cn(
-                    "h-4 w-4 transition-transform",
-                    isExpanded && "rotate-180"
-                  )} />
-                </Button>
-              </CollapsibleTrigger>
+                          <CollapsibleTrigger asChild>
+              <Button variant="outline" size="sm">
+                <span>{t.advancedFilters}</span>
+                <ChevronDown className={cn(
+                  "h-4 w-4 transition-transform ml-2",
+                  isExpanded && "rotate-180"
+                )} />
+              </Button>
+            </CollapsibleTrigger>
             </Collapsible>
           </div>
         </div>
@@ -188,7 +314,7 @@ export function StaffFilters({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Personel ara..."
+            placeholder={t.searchStaff}
             value={filters.search || ''}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateFilter('search', e.target.value || undefined)}
             className="pl-10"
@@ -198,7 +324,7 @@ export function StaffFilters({
         {/* Quick Filters */}
         {quickFilters.length > 0 && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Hızlı Filtreler</Label>
+            <Label className="text-sm font-medium">{t.quickFilters}</Label>
             <div className="flex flex-wrap gap-2">
               {quickFilters.map((quickFilter) => (
                 <Button
@@ -224,9 +350,9 @@ export function StaffFilters({
 
             {/* Status Filter */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Durum</Label>
+              <Label className="text-sm font-medium">{t.status}</Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.entries(STAFF_STATUS_CONFIG).map(([status, config]) => (
+                {Object.entries(staffStatusConfig).map(([status, config]) => (
                   <div key={status} className="flex items-center space-x-2">
                     <Checkbox
                       id={`status-${status}`}
@@ -248,9 +374,9 @@ export function StaffFilters({
 
             {/* Employment Type Filter */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">İstihdam Türü</Label>
+              <Label className="text-sm font-medium">{t.employmentType}</Label>
               <div className="grid grid-cols-2 gap-2">
-                {Object.entries(EMPLOYMENT_TYPE_CONFIG).map(([type, config]) => (
+                {Object.entries(employmentTypeConfig).map(([type, config]) => (
                   <div key={type} className="flex items-center space-x-2">
                     <Checkbox
                       id={`employment-${type}`}
@@ -278,37 +404,37 @@ export function StaffFilters({
 
             {/* Employment Status (Admin) */}
             <RadioButton
-              label="Çalışma Durumu"
+              label={t.employmentStatus}
               name="employmentStatus"
               value={(filters.employmentStatus || [])[0] || ''}
               onChange={(e) => updateFilter('employmentStatus', e.currentTarget.value ? [e.currentTarget.value] : undefined)}
-              options={[{ value: '', label: 'Tümü' }, ...Object.entries(STAFF_STATUS_CONFIG).map(([key, cfg]) => ({ value: key, label: cfg.label }))]}
+              options={[{ value: '', label: t.all }, ...Object.entries(staffStatusConfig).map(([key, cfg]) => ({ value: key, label: cfg.label }))]}
               direction="vertical"
             />
 
             {/* Department Radio */}
             <RadioButton
-              label="Departman"
+              label={t.department}
               name="department"
               value={(filters.department || [])[0] || ''}
               onChange={(e) => updateFilter('department', e.currentTarget.value ? [e.currentTarget.value] : undefined)}
-              options={[{ value: '', label: 'Tümü' }, ...departments.map(d => ({ value: d.code || String(d.id), label: d.name }))]}
+              options={[{ value: '', label: t.all }, ...departments.map(d => ({ value: String(d.id), label: d.name }))]}
               direction="vertical"
             />
 
             {/* Position Radio */}
             <RadioButton
-              label="Pozisyon"
+              label={t.position}
               name="positionTitle"
               value={filters.positionTitle || ''}
               onChange={(e) => updateFilter('positionTitle', e.currentTarget.value || undefined)}
-              options={[{ value: '', label: 'Tümü' }, ...positions.map(p => ({ value: p.title, label: p.title }))]}
+              options={[{ value: '', label: t.all }, ...positions.map(p => ({ value: p.title, label: p.title }))]}
               direction="vertical"
             />
 
             {/* Hire Date Range */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">İşe Başlama Tarihi</Label>
+              <Label className="text-sm font-medium">{t.startDate}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -329,7 +455,7 @@ export function StaffFilters({
                         format(dateRange.from, "dd MMM yyyy", { locale: tr })
                       )
                     ) : (
-                      "Tarih aralığı seçiniz"
+                      t.selectDateRange
                     )}
                   </Button>
                 </PopoverTrigger>
@@ -345,11 +471,11 @@ export function StaffFilters({
 
             {/* Salary Range */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Maaş Aralığı (TL)</Label>
+              <Label className="text-sm font-medium">{t.salaryRange}</Label>
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   type="number"
-                  placeholder="Min"
+                  placeholder={t.min}
                   value={filters.salaryMin || ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     updateFilter('salaryMin', e.target.value ? parseFloat(e.target.value) : undefined)
@@ -357,7 +483,7 @@ export function StaffFilters({
                 />
                 <Input
                   type="number"
-                  placeholder="Max"
+                  placeholder={t.max}
                   value={filters.salaryMax || ''}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     updateFilter('salaryMax', e.target.value ? parseFloat(e.target.value) : undefined)
@@ -371,7 +497,7 @@ export function StaffFilters({
             {/* Saved Filters */}
             {savedFilters.length > 0 && (
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Kayıtlı Filtreler</Label>
+                <Label className="text-sm font-medium">{t.savedFilters}</Label>
                 <div className="space-y-2">
                   {savedFilters.map((savedFilter) => (
                     <div key={savedFilter.id} className="flex items-center justify-between p-2 border rounded">
@@ -387,7 +513,7 @@ export function StaffFilters({
                           size="sm"
                           onClick={() => onQuickFilterApply(savedFilter.id)}
                         >
-                          Uygula
+                          {t.apply}
                         </Button>
                         <Button
                           variant="ghost"
@@ -410,15 +536,15 @@ export function StaffFilters({
                   <PopoverTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Save className="h-4 w-4 mr-1" />
-                      Kaydet
+                      {t.saveFilter}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-80">
                     <div className="space-y-2">
-                      <Label htmlFor="filter-name">Filtre Adı</Label>
+                      <Label htmlFor="filter-name">{t.filterNameLabel}</Label>
                       <Input
                         id="filter-name"
-                        placeholder="Filtre adı..."
+                        placeholder={t.filterName}
                         value={saveFilterName}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSaveFilterName(e.target.value)}
                       />
@@ -428,14 +554,14 @@ export function StaffFilters({
                           size="sm"
                           onClick={() => setShowSaveDialog(false)}
                         >
-                          İptal
+                          {t.cancel}
                         </Button>
                         <Button
                           size="sm"
                           onClick={handleSaveFilter}
                           disabled={!saveFilterName.trim()}
                         >
-                          Kaydet
+                          {t.saveFilter}
                         </Button>
                       </div>
                     </div>
@@ -444,13 +570,13 @@ export function StaffFilters({
 
                 <Button variant="outline" size="sm" onClick={onExportFilters}>
                   <Download className="h-4 w-4 mr-1" />
-                  Dışa Aktar
+                  {t.exportFilters}
                 </Button>
 
                 <Button variant="outline" size="sm">
                   <label className="cursor-pointer">
                     <Upload className="h-4 w-4 mr-1" />
-                    İçe Aktar
+                    {t.importFilters}
                     <input
                       type="file"
                       accept=".json"

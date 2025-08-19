@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
-import {
-  StaffFilterParams,
-  StaffStatus,
-  EmploymentType
-} from '@/services/types/staff.types'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { StaffStatus, EmploymentType, StaffFilterParams } from '@/services/types/staff.types'
 import { Department, Position } from '@/services/types/department.types'
-import { FilterOption, FilterGroup, QuickFilter, SavedFilter } from '@/services/types/ui.types'
+import { FilterOption, QuickFilter, SavedFilter, FilterGroup } from '@/services/types/ui.types'
 import { staffService } from '@/services/staff.service'
 import { enumsService } from '@/services/enums.service'
+import { getStaffStatusConfig, getEmploymentTypeConfig } from '@/services/types/ui.types'
 
 interface UseStaffFiltersOptions {
   initialFilters?: StaffFilterParams
@@ -126,45 +123,39 @@ export function useStaffFilters(options: UseStaffFiltersOptions = {}): UseStaffF
 
   // Filter options
   const statusOptions: FilterOption<StaffStatus>[] = useMemo(() => {
-    const tr: Record<string, string> = {
-      ACTIVE: 'Aktif',
-      INACTIVE: 'Pasif',
-      ON_LEAVE: 'İzinli',
-      TERMINATED: 'İşten Çıkarıldı',
-      SUSPENDED: 'Askıya Alındı'
-    }
+    // Dil tercihini localStorage'dan al
+    const currentLanguage = typeof window !== 'undefined' ? localStorage.getItem('preferredLanguage') || 'tr' : 'tr';
+    const staffStatusConfig = getStaffStatusConfig(currentLanguage);
+    
     const codes = (appEnums?.staff?.staffStatus as string[] | undefined)
     if (codes && codes.length > 0) {
-      return codes.map((code) => ({ label: tr[code] || code, value: (StaffStatus as any)[code] ?? code })) as FilterOption<StaffStatus>[]
+      return codes.map((code) => ({ 
+        label: staffStatusConfig[code as StaffStatus]?.label || code, 
+        value: (StaffStatus as any)[code] ?? code 
+      })) as FilterOption<StaffStatus>[]
     }
-    return [
-      { label: 'Aktif', value: StaffStatus.ACTIVE },
-      { label: 'Pasif', value: StaffStatus.INACTIVE },
-      { label: 'İzinli', value: StaffStatus.ON_LEAVE },
-      { label: 'İşten Çıkarıldı', value: StaffStatus.TERMINATED },
-      { label: 'Askıya Alındı', value: StaffStatus.SUSPENDED }
-    ]
+    return Object.entries(staffStatusConfig).map(([key, config]) => ({
+      label: config.label,
+      value: key as StaffStatus
+    }))
   }, [appEnums])
 
   const employmentTypeOptions: FilterOption<EmploymentType>[] = useMemo(() => {
-    const tr: Record<string, string> = {
-      FULL_TIME: 'Tam Zamanlı',
-      PART_TIME: 'Yarı Zamanlı',
-      CONTRACT: 'Sözleşmeli',
-      INTERN: 'Stajyer',
-      CONSULTANT: 'Danışman'
-    }
+    // Dil tercihini localStorage'dan al
+    const currentLanguage = typeof window !== 'undefined' ? localStorage.getItem('preferredLanguage') || 'tr' : 'tr';
+    const employmentTypeConfig = getEmploymentTypeConfig(currentLanguage);
+    
     const codes = (appEnums?.staff?.employmentType as string[] | undefined)
     if (codes && codes.length > 0) {
-      return codes.map((code) => ({ label: tr[code] || code, value: (EmploymentType as any)[code] ?? code })) as FilterOption<EmploymentType>[]
+      return codes.map((code) => ({ 
+        label: employmentTypeConfig[code as EmploymentType]?.label || code, 
+        value: (EmploymentType as any)[code] ?? code 
+      })) as FilterOption<EmploymentType>[]
     }
-    return [
-      { label: 'Tam Zamanlı', value: EmploymentType.FULL_TIME },
-      { label: 'Yarı Zamanlı', value: EmploymentType.PART_TIME },
-      { label: 'Sözleşmeli', value: EmploymentType.CONTRACT },
-      { label: 'Stajyer', value: EmploymentType.INTERN },
-      { label: 'Danışman', value: EmploymentType.CONSULTANT }
-    ]
+    return Object.entries(employmentTypeConfig).map(([key, config]) => ({
+      label: config.label,
+      value: key as EmploymentType
+    }))
   }, [appEnums])
 
   const departmentOptions: FilterOption<string>[] = useMemo(() => 

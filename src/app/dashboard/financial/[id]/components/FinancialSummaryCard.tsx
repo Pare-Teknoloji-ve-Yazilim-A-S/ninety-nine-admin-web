@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Badge from '@/app/components/ui/Badge';
 import { 
@@ -17,6 +17,145 @@ import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../h
 import { PAYMENT_METHOD_OPTIONS } from '@/services/types/billing.types';
 import { enumsService } from '@/services/enums.service';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Card header
+    financialSummary: 'Finansal Özet',
+    billDetailsAndPaymentStatus: 'Fatura detayları ve ödeme durumu',
+    paymentDetails: 'Ödeme detayları',
+    
+    // Amount labels
+    billAmount: 'Fatura Tutarı',
+    paymentAmount: 'Ödeme Tutarı',
+    totalPaid: 'Toplam Ödenen',
+    paymentMethod: 'Ödeme Yöntemi',
+    
+    // Progress labels
+    paymentProgress: 'Ödeme İlerlemesi',
+    payment: 'ödeme',
+    completedProgress: 'tamamlandı',
+    paidAmount: 'Ödenen:',
+    remaining: 'Kalan:',
+    fullyPaid: '✓ Tamamen Ödendi',
+    
+    // Status labels
+    status: 'Durum',
+    paid: 'Ödendi',
+    completed: 'Tamamlandı',
+    pending: 'Bekliyor',
+    overdue: 'Gecikmiş',
+    daysOverdue: 'gün gecikme',
+    inProgress: 'İşlemde',
+    
+    // Bill information
+    billInformation: 'Fatura Bilgileri',
+    billType: 'Fatura Türü:',
+    creation: 'Oluşturulma:',
+    
+    // Bill types
+    dues: 'Aidat',
+    maintenance: 'Bakım',
+    utility: 'Fayda',
+    penalty: 'Ceza',
+    
+    // Payment details
+    paymentDetailsTitle: 'Ödeme Detayları',
+    paymentDate: 'Ödeme Tarihi:',
+    recordDate: 'Kayıt Tarihi:'
+  },
+  en: {
+    // Card header
+    financialSummary: 'Financial Summary',
+    billDetailsAndPaymentStatus: 'Bill details and payment status',
+    paymentDetails: 'Payment details',
+    
+    // Amount labels
+    billAmount: 'Bill Amount',
+    paymentAmount: 'Payment Amount',
+    totalPaid: 'Total Paid',
+    paymentMethod: 'Payment Method',
+    
+    // Progress labels
+    paymentProgress: 'Payment Progress',
+    payment: 'payment',
+    completedProgress: 'completed',
+    paidAmount: 'Paid:',
+    remaining: 'Remaining:',
+    fullyPaid: '✓ Fully Paid',
+    
+    // Status labels
+    status: 'Status',
+    paid: 'Paid',
+    completed: 'Completed',
+    pending: 'Pending',
+    overdue: 'Overdue',
+    daysOverdue: 'days overdue',
+    inProgress: 'In Progress',
+    
+    // Bill information
+    billInformation: 'Bill Information',
+    billType: 'Bill Type:',
+    creation: 'Created:',
+    
+    // Bill types
+    dues: 'Dues',
+    maintenance: 'Maintenance',
+    utility: 'Utility',
+    penalty: 'Penalty',
+    
+    // Payment details
+    paymentDetailsTitle: 'Payment Details',
+    paymentDate: 'Payment Date:',
+    recordDate: 'Record Date:'
+  },
+  ar: {
+    // Card header
+    financialSummary: 'الملخص المالي',
+    billDetailsAndPaymentStatus: 'تفاصيل الفاتورة وحالة الدفع',
+    paymentDetails: 'تفاصيل الدفع',
+    
+    // Amount labels
+    billAmount: 'مبلغ الفاتورة',
+    paymentAmount: 'مبلغ الدفع',
+    totalPaid: 'إجمالي المدفوع',
+    paymentMethod: 'طريقة الدفع',
+    
+    // Progress labels
+    paymentProgress: 'تقدم الدفع',
+    payment: 'دفعة',
+    completedProgress: 'مكتمل',
+    paidAmount: 'مدفوع:',
+    remaining: 'متبقي:',
+    fullyPaid: '✓ مدفوع بالكامل',
+    
+    // Status labels
+    status: 'الحالة',
+    paid: 'مدفوع',
+    completed: 'مكتمل',
+    pending: 'معلق',
+    overdue: 'متأخر',
+    daysOverdue: 'أيام تأخير',
+    inProgress: 'قيد المعالجة',
+    
+    // Bill information
+    billInformation: 'معلومات الفاتورة',
+    billType: 'نوع الفاتورة:',
+    creation: 'تاريخ الإنشاء:',
+    
+    // Bill types
+    dues: 'الرسوم',
+    maintenance: 'الصيانة',
+    utility: 'المرافق',
+    penalty: 'الغرامة',
+    
+    // Payment details
+    paymentDetailsTitle: 'تفاصيل الدفع',
+    paymentDate: 'تاريخ الدفع:',
+    recordDate: 'تاريخ التسجيل:'
+  }
+};
+
 interface FinancialSummaryCardProps {
   transaction: TransactionDetail;
 }
@@ -24,6 +163,18 @@ interface FinancialSummaryCardProps {
 const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({ 
   transaction 
 }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const appEnums = (typeof window !== 'undefined') ? enumsService.getFromCache() : null;
   const dynamicPaymentMethodOptions = (appEnums?.data?.payment?.paymentMethod as string[] | undefined)
     ? (appEnums!.data!.payment!.paymentMethod as string[]).map((code) => {
@@ -89,6 +240,36 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Get bill type label
+  const getBillTypeLabel = (billType: string) => {
+    switch (billType) {
+      case 'DUES':
+        return t.dues;
+      case 'MAINTENANCE':
+        return t.maintenance;
+      case 'UTILITY':
+        return t.utility;
+      case 'PENALTY':
+        return t.penalty;
+      default:
+        return billType;
+    }
+  };
+
+  // Get status label
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PAID':
+        return t.paid;
+      case 'COMPLETED':
+        return t.completed;
+      case 'PENDING':
+        return t.pending;
+      default:
+        return status;
+    }
+  };
+
   return (
     <Card className="p-6">
       <div className="flex items-center gap-3 mb-6">
@@ -97,10 +278,10 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Finansal Özet
+            {t.financialSummary}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {isBillTransaction(transaction) ? 'Fatura detayları ve ödeme durumu' : 'Ödeme detayları'}
+            {isBillTransaction(transaction) ? t.billDetailsAndPaymentStatus : t.paymentDetails}
           </p>
         </div>
       </div>
@@ -112,7 +293,7 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
             <div className="flex items-center gap-2 mb-2">
               <DollarSign className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {isBillTransaction(transaction) ? 'Fatura Tutarı' : 'Ödeme Tutarı'}
+                {isBillTransaction(transaction) ? t.billAmount : t.paymentAmount}
               </span>
             </div>
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -126,14 +307,14 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="h-4 w-4 text-green-500" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Toplam Ödenen
+                  {t.totalPaid}
                 </span>
               </div>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(paymentStats.totalPaid)} IQD
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                %{paymentStats.paymentProgress.toFixed(1)} tamamlandı
+                %{paymentStats.paymentProgress.toFixed(1)} {t.completed}
               </div>
             </div>
           )}
@@ -144,7 +325,7 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
               <div className="flex items-center gap-2 mb-2">
                 <CreditCard className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Ödeme Yöntemi
+                  {t.paymentMethod}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -164,10 +345,10 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Ödeme İlerlemesi
+                {t.paymentProgress}
               </span>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {paymentStats.completedPayments}/{paymentStats.paymentCount} ödeme
+                {paymentStats.completedPayments}/{paymentStats.paymentCount} {t.payment}
               </span>
             </div>
             
@@ -180,15 +361,15 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
 
             <div className="flex justify-between text-sm">
               <span className="text-green-600 dark:text-green-400 font-medium">
-                Ödenen: {formatCurrency(paymentStats.totalPaid)} IQD
+                {t.paid} {formatCurrency(paymentStats.totalPaid)} IQD
               </span>
               {paymentStats.remainingAmount > 0 ? (
                 <span className="text-orange-600 dark:text-orange-400 font-medium">
-                  Kalan: {formatCurrency(paymentStats.remainingAmount)} IQD
+                  {t.remaining} {formatCurrency(paymentStats.remainingAmount)} IQD
                 </span>
               ) : (
                 <span className="text-green-600 dark:text-green-400 font-medium">
-                  ✓ Tamamen Ödendi
+                  {t.fullyPaid}
                 </span>
               )}
             </div>
@@ -206,13 +387,10 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
             )}
             <div>
               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                Durum
+                {t.status}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                {transaction.data.status === 'PAID' ? 'Ödendi' : 
-                 transaction.data.status === 'COMPLETED' ? 'Tamamlandı' :
-                 transaction.data.status === 'PENDING' ? 'Bekliyor' : 
-                 transaction.data.status}
+                {getStatusLabel(transaction.data.status)}
               </div>
             </div>
           </div>
@@ -223,10 +401,10 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
               <AlertTriangle className="h-5 w-5 text-red-500" />
               <div>
                 <div className="text-sm font-medium text-red-900 dark:text-red-100">
-                  Gecikmiş
+                  {t.overdue}
                 </div>
                 <div className="text-sm text-red-600 dark:text-red-400">
-                  {getDaysOverdue()} gün gecikme
+                  {getDaysOverdue()} {t.daysOverdue}
                 </div>
               </div>
             </div>
@@ -239,7 +417,7 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
                 variant={transaction.data.status === 'COMPLETED' ? 'success' : 'warning'}
                 className="flex items-center gap-1"
               >
-                {transaction.data.status === 'COMPLETED' ? 'Tamamlandı' : 'İşlemde'}
+                {transaction.data.status === 'COMPLETED' ? t.completed : t.inProgress}
               </Badge>
             </div>
           )}
@@ -249,21 +427,17 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
         {isBillTransaction(transaction) && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-              Fatura Bilgileri
+              {t.billInformation}
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-500 dark:text-gray-400">Fatura Türü:</span>
+                <span className="text-gray-500 dark:text-gray-400">{t.billType}</span>
                 <div className="font-medium text-gray-900 dark:text-white">
-                  {transaction.data.billType === 'DUES' ? 'Aidat' :
-                   transaction.data.billType === 'MAINTENANCE' ? 'Bakım' :
-                   transaction.data.billType === 'UTILITY' ? 'Fayda' :
-                   transaction.data.billType === 'PENALTY' ? 'Ceza' :
-                   transaction.data.billType}
+                  {getBillTypeLabel(transaction.data.billType)}
                 </div>
               </div>
               <div>
-                <span className="text-gray-500 dark:text-gray-400">Oluşturulma:</span>
+                <span className="text-gray-500 dark:text-gray-400">{t.creation}</span>
                 <div className="font-medium text-gray-900 dark:text-white">
                   {new Date(transaction.data.createdAt).toLocaleDateString('tr-TR')}
                 </div>
@@ -276,19 +450,19 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
         {isPaymentTransaction(transaction) && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-              Ödeme Detayları
+              {t.paymentDetailsTitle}
             </div>
             <div className="space-y-2 text-sm">
               {transaction.data.paymentDate && (
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">Ödeme Tarihi:</span>
+                  <span className="text-gray-500 dark:text-gray-400">{t.paymentDate}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {new Date(transaction.data.paymentDate).toLocaleDateString('tr-TR')}
                   </span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-gray-500 dark:text-gray-400">Kayıt Tarihi:</span>
+                <span className="text-gray-500 dark:text-gray-400">{t.recordDate}</span>
                 <span className="font-medium text-gray-900 dark:text-white">
                   {new Date(transaction.data.createdAt).toLocaleDateString('tr-TR')}
                 </span>

@@ -1,5 +1,5 @@
 // Table Columns Configuration for Announcements
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Badge from '@/app/components/ui/Badge';
 import { 
     getAnnouncementTypeLabel,
@@ -13,6 +13,79 @@ import {
 import type { Announcement } from '@/services/types/announcement.types';
 import { Calendar, AlertTriangle, Pin, User } from 'lucide-react';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Table headers
+    title: 'Başlık',
+    type: 'Tip',
+    status: 'Durum',
+    createdBy: 'Oluşturan',
+    publishDate: 'Yayın Tarihi',
+    expiryDate: 'Bitiş Tarihi',
+    properties: 'Hedef Özellikler',
+    createdAt: 'Oluşturma Tarihi',
+    
+    // Status labels
+    expired: 'Süresi Dolmuş',
+    daysLeft: 'gün kaldı',
+    daysPassed: 'gün geçti',
+    
+    // Property labels
+    propertyLabel: 'özellik',
+    allProperties: 'Tüm özellikler',
+    
+    // User labels
+    unknown: 'Bilinmiyor'
+  },
+  en: {
+    // Table headers
+    title: 'Title',
+    type: 'Type',
+    status: 'Status',
+    createdBy: 'Created By',
+    publishDate: 'Publish Date',
+    expiryDate: 'Expiry Date',
+    properties: 'Target Properties',
+    createdAt: 'Created At',
+    
+    // Status labels
+    expired: 'Expired',
+    daysLeft: 'days left',
+    daysPassed: 'days passed',
+    
+    // Property labels
+    propertyLabel: 'property',
+    allProperties: 'All Properties',
+    
+    // User labels
+    unknown: 'Unknown'
+  },
+  ar: {
+    // Table headers
+    title: 'العنوان',
+    type: 'النوع',
+    status: 'الحالة',
+    createdBy: 'أنشأ بواسطة',
+    publishDate: 'تاريخ النشر',
+    expiryDate: 'تاريخ الانتهاء',
+    properties: 'الخصائص المستهدفة',
+    createdAt: 'تاريخ الإنشاء',
+    
+    // Status labels
+    expired: 'منتهي الصلاحية',
+    daysLeft: 'أيام متبقية',
+    daysPassed: 'أيام مرت',
+    
+    // Property labels
+    propertyLabel: 'خاصية',
+    allProperties: 'جميع الخصائص',
+    
+    // User labels
+    unknown: 'غير معروف'
+  }
+};
+
 interface TableActionHandlers {
     handleViewAnnouncement: (announcement: Announcement) => void;
 }
@@ -21,6 +94,10 @@ export function getTableColumns(
     actionHandlers: TableActionHandlers,
     ActionMenuComponent?: React.ComponentType<{ row: Announcement }>
 ) {
+    // Dil tercihini localStorage'dan al
+    const currentLanguage = typeof window !== 'undefined' ? localStorage.getItem('preferredLanguage') || 'tr' : 'tr';
+    const t = translations[currentLanguage as keyof typeof translations];
+
     const colorToTextClass = (color: string): string => {
         switch (color) {
             case 'gold':
@@ -40,7 +117,7 @@ export function getTableColumns(
     return [
         {
             id: 'title',
-            header: 'Başlık',
+            header: t.title,
             accessor: 'title',
             sortable: true,
             render: (_value: any, announcement: Announcement) => {
@@ -69,7 +146,7 @@ export function getTableColumns(
         },
         {
             id: 'type',
-            header: 'Tip',
+            header: t.type,
             accessor: 'type',
             sortable: true,
             render: (_value: any, announcement: Announcement) => {
@@ -84,7 +161,7 @@ export function getTableColumns(
         },
         {
             id: 'status',
-            header: 'Durum',
+            header: t.status,
             accessor: 'status',
             sortable: true,
             render: (_value: any, announcement: Announcement) => {
@@ -96,7 +173,7 @@ export function getTableColumns(
                 
                 if (isExpired) {
                     statusColor = 'red';
-                    statusLabel += ' (Süresi Dolmuş)';
+                    statusLabel += ` (${t.expired})`;
                 } else if (isExpiringSoon) {
                     // Only adjust color for expiring soon; do not append text
                     statusColor = 'gold';
@@ -107,7 +184,7 @@ export function getTableColumns(
         },
         {
             id: 'createdBy',
-            header: 'Oluşturan',
+            header: t.createdBy,
             accessor: 'createdBy',
             sortable: false,
             render: (_value: any, announcement: Announcement) => (
@@ -116,7 +193,7 @@ export function getTableColumns(
                     <span className="text-sm">
                         {announcement.createdBy 
                             ? `${announcement.createdBy.firstName} ${announcement.createdBy.lastName}`
-                            : 'Bilinmiyor'
+                            : t.unknown
                         }
                     </span>
                 </div>
@@ -124,7 +201,7 @@ export function getTableColumns(
         },
         {
             id: 'publishDate',
-            header: 'Yayın Tarihi',
+            header: t.publishDate,
             accessor: 'publishDate',
             sortable: true,
             render: (_value: any, announcement: Announcement) => (
@@ -141,7 +218,7 @@ export function getTableColumns(
         },
         {
             id: 'expiryDate',
-            header: 'Bitiş Tarihi',
+            header: t.expiryDate,
             accessor: 'expiryDate',
             sortable: true,
             render: (_value: any, announcement: Announcement) => {
@@ -168,8 +245,8 @@ export function getTableColumns(
                                 'text-text-light-secondary dark:text-text-secondary'
                             }`}>
                                 {isExpired 
-                                    ? `${Math.abs(daysUntilExpiry)} gün geçti`
-                                    : `${daysUntilExpiry} gün kaldı`
+                                    ? `${Math.abs(daysUntilExpiry)} ${t.daysPassed}`
+                                    : `${daysUntilExpiry} ${t.daysLeft}`
                                 }
                             </span>
                         )}
@@ -179,21 +256,21 @@ export function getTableColumns(
         },
         {
             id: 'properties',
-            header: 'Hedef Özellikler',
+            header: t.properties,
             accessor: 'properties',
             sortable: false,
             render: (_value: any, announcement: Announcement) => (
                 <span className="text-sm">
                     {announcement.properties && announcement.properties.length > 0
-                        ? `${announcement.properties.length} özellik`
-                        : 'Tüm özellikler'
+                        ? `${announcement.properties.length} ${t.propertyLabel}`
+                        : t.allProperties
                     }
                 </span>
             ),
         },
         {
             id: 'createdAt',
-            header: 'Oluşturma Tarihi',
+            header: t.createdAt,
             accessor: 'createdAt',
             sortable: true,
             render: (_value: any, announcement: Announcement) => (

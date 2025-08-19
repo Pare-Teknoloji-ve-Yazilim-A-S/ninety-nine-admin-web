@@ -31,6 +31,184 @@ import { unitsService } from '@/services';
 import { unitPricesService } from '@/services/unit-prices.service';
 // import { userService } from '@/services';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Form header
+    createNewBill: 'Yeni Fatura Oluştur',
+    createBillDesc: 'Aidat, bakım veya fayda faturası oluşturun',
+    
+    // Unit prices section
+    currentUnitPrices: 'Güncel Birim Fiyatlar',
+    pricesLoading: 'Fiyatlar yükleniyor...',
+    dues: 'Aidat:',
+    electricity: 'Elektrik:',
+    water: 'Su:',
+    gas: 'Doğalgaz:',
+    
+    // Form fields
+    billType: 'Fatura Türü *',
+    selectBillType: 'Fatura türü seçiniz',
+    property: 'Mülk *',
+    selectProperty: 'Mülk seçiniz',
+    propertySearch: 'Mülk ara...',
+    loading: 'Yükleniyor...',
+    removeSelection: 'Seçimi kaldır',
+    propertiesFound: 'mülk bulundu',
+    noPropertiesFound: 'Mülk bulunamadı',
+    noMatchingProperties: 'Aramanızla eşleşen mülk bulunamadı',
+    loadingMore: 'Daha fazla yükleniyor...',
+    tenant: 'Kiracı:',
+    owner: 'Malik:',
+    
+    // Bill title
+    billTitle: 'Fatura Başlığı *',
+    billTitleRequired: 'Fatura başlığı gereklidir',
+    billTitleMinLength: 'En az 3 karakter olmalıdır',
+    billTitlePlaceholder: 'Örnek: Ocak 2024 Aidat',
+    
+    // Due date
+    dueDate: 'Vade Tarihi *',
+    dueDateRequired: 'Vade tarihi gereklidir',
+    
+    // Amount
+    amount: 'Tutar (IQD) *',
+    amountRequired: 'Tutar gereklidir',
+    amountMin: 'Tutar 0\'dan büyük olmalıdır',
+    amountPlaceholder: '0.00',
+    duesCalculation: 'Aidat Hesaplama:',
+    calculationFailed: 'Hesaplanamadı',
+    
+    // Payment method
+    paymentMethod: 'Ödeme Yöntemi',
+    
+    // Document number
+    documentNumber: 'Belge Numarası',
+    documentNumberPlaceholder: 'Örnek: INV-2024-001',
+    
+    // Buttons
+    cancel: 'İptal',
+    createBill: 'Fatura Oluştur',
+    creatingBill: 'Fatura Oluşturuluyor...'
+  },
+  en: {
+    // Form header
+    createNewBill: 'Create New Bill',
+    createBillDesc: 'Create dues, maintenance or utility bills',
+    
+    // Unit prices section
+    currentUnitPrices: 'Current Unit Prices',
+    pricesLoading: 'Loading prices...',
+    dues: 'Dues:',
+    electricity: 'Electricity:',
+    water: 'Water:',
+    gas: 'Gas:',
+    
+    // Form fields
+    billType: 'Bill Type *',
+    selectBillType: 'Select bill type',
+    property: 'Property *',
+    selectProperty: 'Select property',
+    propertySearch: 'Search property...',
+    loading: 'Loading...',
+    removeSelection: 'Remove selection',
+    propertiesFound: 'properties found',
+    noPropertiesFound: 'No properties found',
+    noMatchingProperties: 'No properties match your search',
+    loadingMore: 'Loading more...',
+    tenant: 'Tenant:',
+    owner: 'Owner:',
+    
+    // Bill title
+    billTitle: 'Bill Title *',
+    billTitleRequired: 'Bill title is required',
+    billTitleMinLength: 'Must be at least 3 characters',
+    billTitlePlaceholder: 'Example: January 2024 Dues',
+    
+    // Due date
+    dueDate: 'Due Date *',
+    dueDateRequired: 'Due date is required',
+    
+    // Amount
+    amount: 'Amount (IQD) *',
+    amountRequired: 'Amount is required',
+    amountMin: 'Amount must be greater than 0',
+    amountPlaceholder: '0.00',
+    duesCalculation: 'Dues Calculation:',
+    calculationFailed: 'Cannot calculate',
+    
+    // Payment method
+    paymentMethod: 'Payment Method',
+    
+    // Document number
+    documentNumber: 'Document Number',
+    documentNumberPlaceholder: 'Example: INV-2024-001',
+    
+    // Buttons
+    cancel: 'Cancel',
+    createBill: 'Create Bill',
+    creatingBill: 'Creating Bill...'
+  },
+  ar: {
+    // Form header
+    createNewBill: 'إنشاء فاتورة جديدة',
+    createBillDesc: 'إنشاء فواتير رسوم أو صيانة أو مرافق',
+    
+    // Unit prices section
+    currentUnitPrices: 'أسعار الوحدات الحالية',
+    pricesLoading: 'جاري تحميل الأسعار...',
+    dues: 'الرسوم:',
+    electricity: 'الكهرباء:',
+    water: 'الماء:',
+    gas: 'الغاز:',
+    
+    // Form fields
+    billType: 'نوع الفاتورة *',
+    selectBillType: 'اختر نوع الفاتورة',
+    property: 'الممتلكات *',
+    selectProperty: 'اختر الممتلكات',
+    propertySearch: 'البحث في الممتلكات...',
+    loading: 'جاري التحميل...',
+    removeSelection: 'إزالة الاختيار',
+    propertiesFound: 'ممتلكات موجودة',
+    noPropertiesFound: 'لم يتم العثور على ممتلكات',
+    noMatchingProperties: 'لا توجد ممتلكات تطابق بحثك',
+    loadingMore: 'جاري تحميل المزيد...',
+    tenant: 'المستأجر:',
+    owner: 'المالك:',
+    
+    // Bill title
+    billTitle: 'عنوان الفاتورة *',
+    billTitleRequired: 'عنوان الفاتورة مطلوب',
+    billTitleMinLength: 'يجب أن يكون 3 أحرف على الأقل',
+    billTitlePlaceholder: 'مثال: رسوم يناير 2024',
+    
+    // Due date
+    dueDate: 'تاريخ الاستحقاق *',
+    dueDateRequired: 'تاريخ الاستحقاق مطلوب',
+    
+    // Amount
+    amount: 'المبلغ (دينار عراقي) *',
+    amountRequired: 'المبلغ مطلوب',
+    amountMin: 'يجب أن يكون المبلغ أكبر من 0',
+    amountPlaceholder: '0.00',
+    duesCalculation: 'حساب الرسوم:',
+    calculationFailed: 'لا يمكن الحساب',
+    
+    // Payment method
+    paymentMethod: 'طريقة الدفع',
+    
+    // Document number
+    documentNumber: 'رقم المستند',
+    documentNumberPlaceholder: 'مثال: INV-2024-001',
+    
+    // Buttons
+    cancel: 'إلغاء',
+    createBill: 'إنشاء فاتورة',
+    creatingBill: 'جاري إنشاء الفاتورة...'
+  }
+};
+
 interface CreateBillFormProps {
   onSuccess: (bill: any) => void;
   onCancel: () => void;
@@ -73,6 +251,18 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   onCancel,
   loading: externalLoading = false
 }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   // Generates a unique, human-friendly document number like: INV-20250808-7GQ4K9
   const generateDocumentNumber = (): string => {
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -329,13 +519,89 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
     }
   };
 
+  // Dinamik bill type options oluştur
+  const getBillTypeOptions = () => {
+    const billTypeTranslations = {
+      tr: {
+        DUES: { label: 'Aidat', description: 'Aylık aidat ödemesi' },
+        MAINTENANCE: { label: 'Bakım', description: 'Bakım ve onarım masrafları' },
+        UTILITY: { label: 'Fayda', description: 'Elektrik, su, gaz faturaları' },
+        PENALTY: { label: 'Ceza', description: 'Gecikme cezası' },
+        OTHER: { label: 'Diğer', description: 'Diğer fatura türleri' }
+      },
+      en: {
+        DUES: { label: 'Dues', description: 'Monthly dues payment' },
+        MAINTENANCE: { label: 'Maintenance', description: 'Maintenance and repair costs' },
+        UTILITY: { label: 'Utility', description: 'Electricity, water, gas bills' },
+        PENALTY: { label: 'Penalty', description: 'Late payment penalty' },
+        OTHER: { label: 'Other', description: 'Other bill types' }
+      },
+      ar: {
+        DUES: { label: 'الرسوم', description: 'دفع الرسوم الشهرية' },
+        MAINTENANCE: { label: 'الصيانة', description: 'تكاليف الصيانة والإصلاح' },
+        UTILITY: { label: 'المرافق', description: 'فواتير الكهرباء والماء والغاز' },
+        PENALTY: { label: 'الغرامة', description: 'غرامة التأخير في الدفع' },
+        OTHER: { label: 'أخرى', description: 'أنواع فواتير أخرى' }
+      }
+    };
+
+    return BILL_TYPE_OPTIONS.map(option => ({
+      ...option,
+      label: billTypeTranslations[currentLanguage as keyof typeof billTypeTranslations]?.[option.value]?.label || option.label,
+      description: billTypeTranslations[currentLanguage as keyof typeof billTypeTranslations]?.[option.value]?.description || option.description
+    }));
+  };
+
+  // Dinamik payment method options oluştur
+  const getPaymentMethodOptions = () => {
+    const paymentMethodTranslations = {
+      tr: {
+        CASH: { label: 'Nakit', description: 'Nakit ödeme' },
+        CREDIT_CARD: { label: 'Kredi Kartı', description: 'Kredi kartı ile ödeme' },
+        BANK_TRANSFER: { label: 'Banka Havalesi/EFT', description: 'Banka havalesi/EFT ile ödeme' },
+        DIRECT_DEBIT: { label: 'Otomatik Ödeme Talimatı', description: 'Hesaptan otomatik tahsilat' },
+        ONLINE_PAYMENT: { label: 'Online Ödeme', description: 'İnternet üzerinden ödeme' },
+        MOBILE_PAYMENT: { label: 'Mobil Ödeme', description: 'Mobil uygulama ile ödeme' },
+        CHECK: { label: 'Çek', description: 'Çek ile ödeme' },
+        OTHER: { label: 'Diğer', description: 'Diğer ödeme yöntemi' }
+      },
+      en: {
+        CASH: { label: 'Cash', description: 'Cash payment' },
+        CREDIT_CARD: { label: 'Credit Card', description: 'Payment by credit card' },
+        BANK_TRANSFER: { label: 'Bank Transfer/EFT', description: 'Payment by bank transfer/EFT' },
+        DIRECT_DEBIT: { label: 'Direct Debit', description: 'Automatic deduction from account' },
+        ONLINE_PAYMENT: { label: 'Online Payment', description: 'Payment over the internet' },
+        MOBILE_PAYMENT: { label: 'Mobile Payment', description: 'Payment via mobile app' },
+        CHECK: { label: 'Check', description: 'Payment by check' },
+        OTHER: { label: 'Other', description: 'Other payment method' }
+      },
+      ar: {
+        CASH: { label: 'نقداً', description: 'دفع نقدي' },
+        CREDIT_CARD: { label: 'بطاقة ائتمان', description: 'الدفع ببطاقة الائتمان' },
+        BANK_TRANSFER: { label: 'تحويل بنكي/EFT', description: 'الدفع بالتحويل البنكي/EFT' },
+        DIRECT_DEBIT: { label: 'خصم مباشر', description: 'خصم تلقائي من الحساب' },
+        ONLINE_PAYMENT: { label: 'دفع إلكتروني', description: 'الدفع عبر الإنترنت' },
+        MOBILE_PAYMENT: { label: 'دفع محمول', description: 'الدفع عبر التطبيق المحمول' },
+        CHECK: { label: 'شيك', description: 'الدفع بشيك' },
+        OTHER: { label: 'أخرى', description: 'طريقة دفع أخرى' }
+      }
+    };
+
+    return PAYMENT_METHOD_OPTIONS.map(option => ({
+      ...option,
+      label: paymentMethodTranslations[currentLanguage as keyof typeof paymentMethodTranslations]?.[option.value]?.label || option.label,
+      description: paymentMethodTranslations[currentLanguage as keyof typeof paymentMethodTranslations]?.[option.value]?.description || option.description
+    }));
+  };
+
   const getBillTypeIcon = (type: BillType) => {
     const option = BILL_TYPE_OPTIONS.find(opt => opt.value === type);
     return option?.icon || '📄';
   };
 
   const getBillTypeDescription = (type: BillType) => {
-    const option = BILL_TYPE_OPTIONS.find(opt => opt.value === type);
+    const translatedOptions = getBillTypeOptions();
+    const option = translatedOptions.find(opt => opt.value === type);
     return option?.description || '';
   };
 
@@ -350,10 +616,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Yeni Fatura Oluştur
+              {t.createNewBill}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Aidat, bakım veya fayda faturası oluşturun
+              {t.createBillDesc}
             </p>
           </div>
         </div>
@@ -361,17 +627,17 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         {/* Unit Prices Info */}
         <div className="flex flex-col gap-2 min-w-[200px]">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Güncel Birim Fiyatlar
+            {t.currentUnitPrices}
           </h4>
           {unitPricesLoading ? (
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              Fiyatlar yükleniyor...
+              {t.pricesLoading}
             </div>
           ) : (
             <div className="space-y-1">
               {getUnitPriceByType('DUES') && (
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-600 dark:text-gray-400">Aidat:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t.dues}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {parseFloat(getUnitPriceByType('DUES')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('DUES')?.unit}
                   </span>
@@ -379,7 +645,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
               )}
               {getUnitPriceByType('ELECTRICITY') && (
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-600 dark:text-gray-400">Elektrik:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t.electricity}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {parseFloat(getUnitPriceByType('ELECTRICITY')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('ELECTRICITY')?.unit}
                   </span>
@@ -387,7 +653,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
               )}
               {getUnitPriceByType('WATER') && (
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-600 dark:text-gray-400">Su:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t.water}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {parseFloat(getUnitPriceByType('WATER')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('WATER')?.unit}
                   </span>
@@ -395,7 +661,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
               )}
               {getUnitPriceByType('GAS') && (
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-600 dark:text-gray-400">Doğalgaz:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{t.gas}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {parseFloat(getUnitPriceByType('GAS')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('GAS')?.unit}
                   </span>
@@ -410,10 +676,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         {/* Bill Type Selection */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Fatura Türü *
+            {t.billType}
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {BILL_TYPE_OPTIONS.map((option) => (
+            {getBillTypeOptions().map((option) => (
               <label
                 key={option.value}
                 className={`relative flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -425,7 +691,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                 <input
                   type="radio"
                   value={option.value}
-                  {...register('billType', { required: 'Fatura türü seçiniz' })}
+                  {...register('billType', { required: t.selectBillType })}
                   className="sr-only"
                 />
                 <div className="flex items-center gap-2 w-full">
@@ -456,14 +722,14 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         {/* Property Selection - Expanded with search and dropdown (like AddOwnerModal) */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Mülk *
+            {t.property}
           </label>
           <div ref={propertyDropdownRef} className="relative">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted dark:text-text-muted" />
               <input
                 type="text"
-                placeholder={loadingProperties ? 'Yükleniyor...' : 'Mülk ara...'}
+                placeholder={loadingProperties ? t.loading : t.propertySearch}
                 value={propertySearchQuery}
                 onChange={(e) => setPropertySearchQuery(e.target.value)}
                 onFocus={() => setPropertyDropdownOpen(true)}
@@ -490,9 +756,9 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                       setPropertyDropdownOpen(false);
                     }}
                     className="inline-flex items-center px-2 py-1 text-xs rounded-md border border-primary-gold/40 text-primary-gold hover:bg-primary-gold/10"
-                    title="Seçimi kaldır"
+                    title={t.removeSelection}
                   >
-                    <X className="h-3 w-3 mr-1" /> Kaldır
+                    <X className="h-3 w-3 mr-1" /> {t.removeSelection}
                   </button>
                 </div>
               </div>
@@ -557,12 +823,12 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                 }}
               >
                 {loadingProperties ? (
-                  <div className="p-3 text-center text-text-light-muted dark:text-text-muted">Yükleniyor...</div>
+                  <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{t.loading}</div>
                 ) : filteredProperties.length === 0 ? (
-                  <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{propertySearchQuery ? 'Aramanızla eşleşen mülk bulunamadı' : 'Mülk bulunamadı'}</div>
+                  <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{propertySearchQuery ? t.noMatchingProperties : t.noPropertiesFound}</div>
                 ) : (
                   <>
-                    <div className="p-2 text-xs font-medium text-text-light-muted dark:text-text-muted border-b border-gray-200 dark:border-gray-700">{filteredProperties.length} mülk bulundu</div>
+                    <div className="p-2 text-xs font-medium text-text-light-muted dark:text-text-muted">{filteredProperties.length} {t.propertiesFound}</div>
             {filteredProperties.map((p) => (
                       <button
                         key={p.id}
@@ -605,12 +871,12 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                                 {p.tenant ? (
                                   <span className="inline-flex items-center gap-1">
                                     <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                    Kiracı: {p.tenant.firstName} {p.tenant.lastName}
+                                    {t.tenant} {p.tenant.firstName} {p.tenant.lastName}
                                   </span>
                                 ) : p.owner ? (
                                   <span className="inline-flex items-center gap-1">
                                     <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                    Malik: {p.owner.firstName} {p.owner.lastName}
+                                    {t.owner} {p.owner.firstName} {p.owner.lastName}
                                   </span>
                                 ) : null}
                               </div>
@@ -620,7 +886,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                       </button>
                     ))}
                     {isLoadingMore && (
-                      <div className="p-3 text-center text-text-light-muted dark:text-text-muted">Daha fazla yükleniyor...</div>
+                      <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{t.loadingMore}</div>
                     )}
                   </>
                 )}
@@ -628,7 +894,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
             )}
           </div>
           {/* Hidden input for validation error display */}
-          <input type="hidden" {...register('propertyId', { required: 'Mülk seçiniz' })} />
+          <input type="hidden" {...register('propertyId', { required: t.selectProperty })} />
           {errors.propertyId && (
             <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
               <AlertCircle className="h-3 w-3" />
@@ -640,14 +906,14 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         {/* Title */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Fatura Başlığı *
+            {t.billTitle}
           </label>
           <Input
             {...register('title', { 
-              required: 'Fatura başlığı gereklidir',
-              minLength: { value: 3, message: 'En az 3 karakter olmalıdır' }
+              required: t.billTitleRequired,
+              minLength: { value: 3, message: t.billTitleMinLength }
             })}
-            placeholder="Örnek: Ocak 2024 Aidat"
+            placeholder={t.billTitlePlaceholder}
             icon={FileText}
             error={errors.title?.message}
             disabled={isLoading}
@@ -658,11 +924,11 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Vade Tarihi *
+              {t.dueDate}
             </label>
             <Input
               type="date"
-              {...register('dueDate', { required: 'Vade tarihi gereklidir' })}
+              {...register('dueDate', { required: t.dueDateRequired })}
               icon={Calendar}
               error={errors.dueDate?.message}
               disabled={isLoading}
@@ -672,17 +938,17 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
 
                      <div className="space-y-2">
              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-               Tutar (IQD) *
+               {t.amount}
              </label>
              <Input
                type="number"
                step="0.01"
                min="0"
                {...register('amount', { 
-                 required: 'Tutar gereklidir',
-                 min: { value: 0.01, message: 'Tutar 0\'dan büyük olmalıdır' }
+                 required: t.amountRequired,
+                 min: { value: 0.01, message: t.amountMin }
                })}
-               placeholder="0.00"
+               placeholder={t.amountPlaceholder}
                icon={DollarSign}
                error={errors.amount?.message}
                disabled={isLoading}
@@ -691,7 +957,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
              {watchedBillType === 'DUES' && watchedPropertyId && (
                <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded">
                  <div className="flex justify-between">
-                   <span>Aidat Hesaplama:</span>
+                   <span>{t.duesCalculation}</span>
                    <span className="font-medium">
                      {(() => {
                        const selectedProperty = properties.find(p => p.id === watchedPropertyId);
@@ -701,7 +967,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                          const area = selectedProperty.area;
                          return `${unitPrice.toFixed(2)} ₺/m² × ${area} m² = ${(unitPrice * area).toFixed(2)} ₺`;
                        }
-                       return 'Hesaplanamadı';
+                       return t.calculationFailed;
                      })()}
                    </span>
                  </div>
@@ -713,10 +979,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         {/* Payment Method */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Ödeme Yöntemi
+            {t.paymentMethod}
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {PAYMENT_METHOD_OPTIONS.map((option) => (
+            {getPaymentMethodOptions().map((option) => (
               <label
                 key={option.value}
                 className={`relative flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
@@ -755,11 +1021,11 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         {/* Document Number */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Belge Numarası
+            {t.documentNumber}
           </label>
           <Input
             {...register('documentNumber')}
-            placeholder="Örnek: INV-2024-001"
+            placeholder={t.documentNumberPlaceholder}
             icon={Hash}
             disabled={isLoading}
           />
@@ -767,20 +1033,20 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
 
         {/* Açıklama alanı kaldırıldı */}
 
-        {/* Current Bill Type Info */}
-        {watchedBillType && (
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-lg">{getBillTypeIcon(watchedBillType)}</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {BILL_TYPE_OPTIONS.find(opt => opt.value === watchedBillType)?.label}
-              </span>
-              <span className="text-gray-500 dark:text-gray-400">
-                - {getBillTypeDescription(watchedBillType)}
-              </span>
-            </div>
-          </div>
-        )}
+                 {/* Current Bill Type Info */}
+         {watchedBillType && (
+           <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+             <div className="flex items-center gap-2 text-sm">
+               <span className="text-lg">{getBillTypeIcon(watchedBillType)}</span>
+               <span className="font-medium text-gray-900 dark:text-white">
+                 {getBillTypeOptions().find(opt => opt.value === watchedBillType)?.label}
+               </span>
+               <span className="text-gray-500 dark:text-gray-400">
+                 - {getBillTypeDescription(watchedBillType)}
+               </span>
+             </div>
+           </div>
+         )}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -791,7 +1057,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            İptal
+            {t.cancel}
           </Button>
           <Button
             type="submit"
@@ -801,7 +1067,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
             icon={FileText}
             className="w-full sm:w-auto"
           >
-            {isSubmitting ? 'Fatura Oluşturuluyor...' : 'Fatura Oluştur'}
+            {isSubmitting ? t.creatingBill : t.createBill}
           </Button>
         </div>
       </form>

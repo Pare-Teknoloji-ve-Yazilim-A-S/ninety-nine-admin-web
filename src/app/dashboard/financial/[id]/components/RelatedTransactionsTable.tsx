@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@/app/components/ui/Card';
 import Badge from '@/app/components/ui/Badge';
 import Button from '@/app/components/ui/Button';
@@ -19,6 +19,124 @@ import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../h
 import { PAYMENT_METHOD_OPTIONS } from '@/services/types/billing.types';
 import { enumsService } from '@/services/enums.service';
 
+// Dil çevirileri
+const translations = {
+  tr: {
+    // Bill payments section
+    paymentsForThisBill: 'Bu Faturaya Yapılan Ödemeler',
+    paymentRecordsFound: 'ödeme kaydı bulundu',
+    noPaymentsYet: 'Henüz Ödeme Yapılmamış',
+    noPaymentsYetDesc: 'Bu faturaya henüz hiç ödeme kaydedilmemiş.',
+    
+    // Related bill section
+    relatedBill: 'İlgili Fatura',
+    relatedBillDesc: 'Bu ödemenin yapıldığı fatura bilgileri',
+    relatedBillNotFound: 'İlgili Fatura Bulunamadı',
+    relatedBillNotFoundDesc: 'Bu ödemeye ait fatura bilgisi bulunamadı.',
+    
+    // Table headers
+    paymentId: 'Ödeme ID',
+    method: 'Yöntem',
+    amount: 'Tutar',
+    date: 'Tarih',
+    status: 'Durum',
+    actions: 'İşlemler',
+    
+    // Bill info labels
+    billId: 'Fatura ID:',
+    billAmount: 'Fatura Tutarı',
+    dueDate: 'Vade Tarihi',
+    description: 'Açıklama',
+    
+    // Buttons
+    detail: 'Detay',
+    viewBill: 'Faturayı Görüntüle',
+    
+    // Status labels
+    paid: 'Ödendi',
+    pending: 'Bekliyor',
+    completed: 'Tamamlandı',
+    failed: 'Başarısız',
+    cancelled: 'İptal'
+  },
+  en: {
+    // Bill payments section
+    paymentsForThisBill: 'Payments for This Bill',
+    paymentRecordsFound: 'payment records found',
+    noPaymentsYet: 'No Payments Yet',
+    noPaymentsYetDesc: 'No payments have been recorded for this bill yet.',
+    
+    // Related bill section
+    relatedBill: 'Related Bill',
+    relatedBillDesc: 'Bill information for this payment',
+    relatedBillNotFound: 'Related Bill Not Found',
+    relatedBillNotFoundDesc: 'Bill information for this payment could not be found.',
+    
+    // Table headers
+    paymentId: 'Payment ID',
+    method: 'Method',
+    amount: 'Amount',
+    date: 'Date',
+    status: 'Status',
+    actions: 'Actions',
+    
+    // Bill info labels
+    billId: 'Bill ID:',
+    billAmount: 'Bill Amount',
+    dueDate: 'Due Date',
+    description: 'Description',
+    
+    // Buttons
+    detail: 'Detail',
+    viewBill: 'View Bill',
+    
+    // Status labels
+    paid: 'Paid',
+    pending: 'Pending',
+    completed: 'Completed',
+    failed: 'Failed',
+    cancelled: 'Cancelled'
+  },
+  ar: {
+    // Bill payments section
+    paymentsForThisBill: 'المدفوعات لهذه الفاتورة',
+    paymentRecordsFound: 'سجل دفع موجود',
+    noPaymentsYet: 'لا توجد مدفوعات بعد',
+    noPaymentsYetDesc: 'لم يتم تسجيل أي مدفوعات لهذه الفاتورة بعد.',
+    
+    // Related bill section
+    relatedBill: 'الفاتورة المرتبطة',
+    relatedBillDesc: 'معلومات الفاتورة لهذا الدفع',
+    relatedBillNotFound: 'الفاتورة المرتبطة غير موجودة',
+    relatedBillNotFoundDesc: 'لا يمكن العثور على معلومات الفاتورة لهذا الدفع.',
+    
+    // Table headers
+    paymentId: 'معرف الدفع',
+    method: 'الطريقة',
+    amount: 'المبلغ',
+    date: 'التاريخ',
+    status: 'الحالة',
+    actions: 'الإجراءات',
+    
+    // Bill info labels
+    billId: 'معرف الفاتورة:',
+    billAmount: 'مبلغ الفاتورة',
+    dueDate: 'تاريخ الاستحقاق',
+    description: 'الوصف',
+    
+    // Buttons
+    detail: 'التفاصيل',
+    viewBill: 'عرض الفاتورة',
+    
+    // Status labels
+    paid: 'مدفوع',
+    pending: 'معلق',
+    completed: 'مكتمل',
+    failed: 'فشل',
+    cancelled: 'ملغي'
+  }
+};
+
 interface RelatedTransactionsTableProps {
   transaction: TransactionDetail;
 }
@@ -26,6 +144,18 @@ interface RelatedTransactionsTableProps {
 const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({ 
   transaction 
 }) => {
+  // Dil tercihini localStorage'dan al
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
   const appEnums = (typeof window !== 'undefined') ? enumsService.getFromCache() : null;
   const dynamicPaymentMethodOptions = (appEnums?.data?.payment?.paymentMethod as string[] | undefined)
     ? (appEnums!.data!.payment!.paymentMethod as string[]).map((code) => {
@@ -77,16 +207,16 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case 'paid':
-        return 'Ödendi';
+        return t.paid;
       case 'pending':
-        return 'Bekliyor';
+        return t.pending;
       case 'completed':
-        return 'Tamamlandı';
+        return t.completed;
       case 'failed':
-        return 'Başarısız';
+        return t.failed;
       case 'cancelled':
       case 'canceled':
-        return 'İptal';
+        return t.cancelled;
       default:
         return status;
     }
@@ -116,10 +246,10 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Bu Faturaya Yapılan Ödemeler
+                {t.paymentsForThisBill}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {payments.length} ödeme kaydı bulundu
+                {payments.length} {t.paymentRecordsFound}
               </p>
             </div>
           </div>
@@ -128,8 +258,8 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
         {payments.length === 0 ? (
           <EmptyState
             icon={<CreditCard className="h-8 w-8" />}
-            title="Henüz Ödeme Yapılmamış"
-            description="Bu faturaya henüz hiç ödeme kaydedilmemiş."
+            title={t.noPaymentsYet}
+            description={t.noPaymentsYetDesc}
           />
         ) : (
           <div className="overflow-x-auto">
@@ -137,22 +267,22 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
                   <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    Ödeme ID
+                    {t.paymentId}
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    Yöntem
+                    {t.method}
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    Tutar
+                    {t.amount}
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    Tarih
+                    {t.date}
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    Durum
+                    {t.status}
                   </th>
                   <th className="text-right py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    İşlemler
+                    {t.actions}
                   </th>
                 </tr>
               </thead>
@@ -199,7 +329,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                         icon={Eye}
                         onClick={() => handleViewTransaction(payment.id)}
                       >
-                        Detay
+                        {t.detail}
                       </Button>
                     </td>
                   </tr>
@@ -225,10 +355,10 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                İlgili Fatura
+                {t.relatedBill}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Bu ödemenin yapıldığı fatura bilgileri
+                {t.relatedBillDesc}
               </p>
             </div>
           </div>
@@ -237,8 +367,8 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
         {!bill ? (
           <EmptyState
             icon={<FileText className="h-8 w-8" />}
-            title="İlgili Fatura Bulunamadı"
-            description="Bu ödemeye ait fatura bilgisi bulunamadı."
+            title={t.relatedBillNotFound}
+            description={t.relatedBillNotFoundDesc}
           />
         ) : (
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
@@ -251,7 +381,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                       {bill.title}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Fatura ID: {bill.id.substring(0, 8)}...
+                      {t.billId} {bill.id.substring(0, 8)}...
                     </div>
                   </div>
                 </div>
@@ -261,7 +391,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                     <DollarSign className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Fatura Tutarı
+                        {t.billAmount}
                       </div>
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {formatCurrency(bill.amount)} IQD
@@ -273,7 +403,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                     <Calendar className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Vade Tarihi
+                        {t.dueDate}
                       </div>
                       <div className="font-semibold text-gray-900 dark:text-white">
                         {new Date(bill.dueDate).toLocaleDateString('tr-TR')}
@@ -285,7 +415,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                     <Receipt className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Durum
+                        {t.status}
                       </div>
                       <Badge variant={getStatusVariant(bill.status)}>
                         {getStatusLabel(bill.status)}
@@ -297,7 +427,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                 {bill.description && (
                   <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                     <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                      Açıklama
+                      {t.description}
                     </div>
                     <div className="text-sm text-gray-700 dark:text-gray-300">
                       {bill.description}
@@ -313,7 +443,7 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                   icon={ArrowUpRight}
                   onClick={() => handleViewTransaction(bill.id)}
                 >
-                  Faturayı Görüntüle
+                  {t.viewBill}
                 </Button>
               </div>
             </div>

@@ -37,7 +37,6 @@ const translations = {
     // Breadcrumb
     home: 'Ana Sayfa',
     residents: 'Sakinler',
-    addNewResident: 'Yeni Sakin Ekle',
     
     // Form sections
     requiredInfo: 'ZORUNLU BİLGİLER',
@@ -106,7 +105,6 @@ const translations = {
     // Breadcrumb
     home: 'Home',
     residents: 'Residents',
-    addNewResident: 'Add New Resident',
     
     // Form sections
     requiredInfo: 'REQUIRED INFORMATION',
@@ -175,7 +173,6 @@ const translations = {
     // Breadcrumb
     home: 'الرئيسية',
     residents: 'السكان',
-    addNewResident: 'إضافة ساكن جديد',
     
     // Form sections
     requiredInfo: 'المعلومات المطلوبة',

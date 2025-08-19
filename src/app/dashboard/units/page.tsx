@@ -69,7 +69,6 @@ const translations = {
     units: 'Konutlar',
     unitsList: 'Daire/Villa Listesi',
     totalUnits: 'Konut',
-    occupied: 'Dolu',
     vacant: 'Boş',
     maintenance: 'Bakımda',
     occupancyRate: 'Doluluk Oranı',
@@ -102,7 +101,7 @@ const translations = {
     detail: 'Detay',
     unitType: 'Konut Tipi',
     residence: 'Daire',
-    villa: 'Villa',
+    villaType: 'Villa',
     commercial: 'Ticari',
     unitStatus: 'Durum',
     bulkEdit: 'Toplu Düzenle',
@@ -125,7 +124,6 @@ const translations = {
     units: 'Units',
     unitsList: 'Units List',
     totalUnits: 'Units',
-    occupied: 'Occupied',
     vacant: 'Vacant',
     maintenance: 'Maintenance',
     occupancyRate: 'Occupancy Rate',
@@ -158,7 +156,7 @@ const translations = {
     detail: 'Detail',
     unitType: 'Unit Type',
     residence: 'Residence',
-    villa: 'Villa',
+    villaType: 'Villa',
     commercial: 'Commercial',
     unitStatus: 'Status',
     bulkEdit: 'Bulk Edit',
@@ -181,7 +179,6 @@ const translations = {
     units: 'الوحدات',
     unitsList: 'قائمة الوحدات',
     totalUnits: 'وحدة',
-    occupied: 'مشغول',
     vacant: 'شاغر',
     maintenance: 'صيانة',
     occupancyRate: 'معدل الإشغال',
@@ -214,7 +211,7 @@ const translations = {
     detail: 'تفاصيل',
     unitType: 'نوع الوحدة',
     residence: 'سكني',
-    villa: 'فيلا',
+    villaType: 'فيلا',
     commercial: 'تجاري',
     unitStatus: 'الحالة',
     bulkEdit: 'تعديل جماعي',
@@ -672,7 +669,7 @@ export default function UnitsListPage() {
             type: 'select' as const,
             options: [
                 { id: 'RESIDENCE', label: t.residence, value: 'RESIDENCE' },
-                { id: 'VILLA', label: t.villa, value: 'VILLA' },
+                { id: 'VILLA', label: t.villaType, value: 'VILLA' },
                 { id: 'COMMERCIAL', label: t.commercial, value: 'COMMERCIAL' },
             ],
         },
@@ -778,7 +775,7 @@ export default function UnitsListPage() {
                                     size="md"
                                 />
                                 <StatsCard
-                                    title={t.villa}
+                                    title={t.villaType}
                                     value={unitStats.villaUnits}
                                     icon={Home}
                                     color="success"
