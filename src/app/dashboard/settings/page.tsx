@@ -20,11 +20,11 @@ const translations = {
     home: 'Ana Sayfa',
     settings: 'Ayarlar',
     
-    // Section titles
-    securitySettings: 'Güvenlik Ayarları',
-    unitPrices: 'Birim Fiyatlar',
-    systemEnums: 'Sistem Enum Değerleri',
-    availableUnits: 'Kullanılabilir Birimler',
+         // Section titles
+     securitySettings: 'Güvenlik Ayarları',
+     unitPrices: 'Birim Fiyatlar',
+     systemEnums: 'Sistem parametre ayarları',
+     availableUnits: 'Kullanılabilir Birimler',
     priceTypes: 'Fiyat Türleri ve Birim Fiyatlar',
     
     // Security settings
@@ -157,11 +157,11 @@ const translations = {
     home: 'Home',
     settings: 'Settings',
     
-    // Section titles
-    securitySettings: 'Security Settings',
-    unitPrices: 'Unit Prices',
-    systemEnums: 'System Enum Values',
-    availableUnits: 'Available Units',
+         // Section titles
+     securitySettings: 'Security Settings',
+     unitPrices: 'Unit Prices',
+     systemEnums: 'System Parameter Settings',
+     availableUnits: 'Available Units',
     priceTypes: 'Price Types and Unit Prices',
     
     // Security settings
@@ -294,11 +294,11 @@ const translations = {
     home: 'الرئيسية',
     settings: 'الإعدادات',
     
-    // Section titles
-    securitySettings: 'إعدادات الأمان',
-    unitPrices: 'أسعار الوحدات',
-    systemEnums: 'قيم التعداد النظامية',
-    availableUnits: 'الوحدات المتاحة',
+         // Section titles
+     securitySettings: 'إعدادات الأمان',
+     unitPrices: 'أسعار الوحدات',
+     systemEnums: 'إعدادات معاملات النظام',
+     availableUnits: 'الوحدات المتاحة',
     priceTypes: 'أنواع الأسعار وأسعار الوحدات',
     
     // Security settings
@@ -484,7 +484,6 @@ export default function DashboardSettingsPage() {
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [newEnumCode, setNewEnumCode] = useState<string>('');
-  const [newEnumLabel, setNewEnumLabel] = useState<string>('');
   const [newEnumSortOrder, setNewEnumSortOrder] = useState<string>('1');
   const [isCreatingEnum, setIsCreatingEnum] = useState<boolean>(false);
   
@@ -705,7 +704,6 @@ export default function DashboardSettingsPage() {
     setSelectedModule('');
     setSelectedCategory('');
     setNewEnumCode('');
-    setNewEnumLabel('');
     setNewEnumSortOrder('1');
   };
 
@@ -714,16 +712,7 @@ export default function DashboardSettingsPage() {
     setSelectedModule('');
     setSelectedCategory('');
     setNewEnumCode('');
-    setNewEnumLabel('');
     setNewEnumSortOrder('1');
-  };
-
-  const generateLabelFromCode = (code: string) => {
-    return code
-      .toLowerCase()
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
   };
 
   const getModuleDisplayName = (moduleName: string): string => {
@@ -779,29 +768,25 @@ export default function DashboardSettingsPage() {
     return categoryNames[categoryName] || categoryName;
   };
 
-  const handleCodeChange = (code: string) => {
-    setNewEnumCode(code);
-    if (!newEnumLabel) {
-      setNewEnumLabel(generateLabelFromCode(code));
-    }
-  };
+
 
   const createEnumValue = async () => {
     try {
-      if (!selectedModule || !selectedCategory || !newEnumCode || !newEnumLabel) {
-        console.error('Tüm alanlar doldurulmalı');
+      if (!selectedModule || !selectedCategory || !newEnumCode) {
+        console.error('Modül, kategori ve kod alanları doldurulmalı');
         return;
       }
 
       setIsCreatingEnum(true);
 
+      // Kodu otomatik olarak UPPER_CASE formatına çevir
+      const formattedCode = newEnumCode.toUpperCase().replace(/\s+/g, '_');
+
       const response = await enumsService.createEnum({
         module: selectedModule,
         category: selectedCategory,
-        code: newEnumCode.toUpperCase(),
-        label: newEnumLabel,
-        sortOrder: parseInt(newEnumSortOrder) || 1,
-        isActive: true
+        codes: [formattedCode],
+        sortOrder: parseInt(newEnumSortOrder) || 1
       });
 
       console.log('Enum değeri başarıyla oluşturuldu:', response);
@@ -1022,26 +1007,15 @@ export default function DashboardSettingsPage() {
       icon: Settings,
              content: (
          <div className="space-y-6 p-6">
-           {/* Header with Add Button */}
-           <div className="flex justify-between items-center">
-             <div>
-               <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-2">
-                 {t.systemEnums}
-               </h3>
-               <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                 {t.systemEnumsDescription}
-               </p>
-             </div>
-             <button
-               onClick={openEnumForm}
-               className="inline-flex items-center px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
-             >
-               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-               </svg>
-               {t.createEnumValues}
-             </button>
-           </div>
+                       {/* Header */}
+            <div>
+              <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                {t.systemEnums}
+              </h3>
+              <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                {t.systemEnumsDescription}
+              </p>
+            </div>
 
            {/* Enum Categories */}
            {enumsLoading ? (
@@ -1064,17 +1038,16 @@ export default function DashboardSettingsPage() {
                           {category.enumValues.length} {t.categories}
                         </p>
                       </div>
-                      <button
-                        onClick={() => {
-                          setSelectedModule(category.module);
-                          setSelectedCategory(category.category);
-                          setNewEnumCode('');
-                          setNewEnumLabel('');
-                          setNewEnumSortOrder((category.enumValues.length + 1).toString());
-                          setShowEnumForm(true);
-                        }}
-                        className="inline-flex items-center px-3 py-1.5 bg-primary-gold text-white text-xs font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
-                      >
+                                             <button
+                         onClick={() => {
+                           setSelectedModule(category.module);
+                           setSelectedCategory(category.category);
+                           setNewEnumCode('');
+                           setNewEnumSortOrder((category.enumValues.length + 1).toString());
+                           setShowEnumForm(true);
+                         }}
+                         className="inline-flex items-center px-3 py-1.5 bg-primary-gold text-white text-xs font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
+                       >
                         <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
@@ -1151,34 +1124,21 @@ export default function DashboardSettingsPage() {
                       </div>
                     </div>
                    
-                   <div>
-                     <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                       {t.code}
-                     </label>
-                     <input
-                       type="text"
-                       value={newEnumCode}
-                       onChange={(e) => handleCodeChange(e.target.value)}
-                       className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
-                       placeholder={t.enumCodePlaceholder}
-                     />
-                     <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
-                       {t.codeFormatInfo}
-                     </p>
-                   </div>
-                   
-                   <div>
-                     <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
-                       {t.title}
-                     </label>
-                     <input
-                       type="text"
-                       value={newEnumLabel}
-                       onChange={(e) => setNewEnumLabel(e.target.value)}
-                       className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
-                       placeholder="Enum etiketi"
-                     />
-                   </div>
+                                       <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
+                        {t.code}
+                      </label>
+                      <input
+                        type="text"
+                        value={newEnumCode}
+                        onChange={(e) => setNewEnumCode(e.target.value)}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                        placeholder="Örn: Yeni Departman"
+                      />
+                      <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
+                        Sadece adını yazın, sistem otomatik olarak UPPER_CASE formatına çevirecek
+                      </p>
+                    </div>
                    
                    <div>
                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
@@ -1195,13 +1155,13 @@ export default function DashboardSettingsPage() {
                  </div>
                  
                  <div className="flex gap-3 mt-6">
-                   <button
-                     onClick={createEnumValue}
-                     disabled={isCreatingEnum || !selectedModule || !selectedCategory || !newEnumCode || !newEnumLabel}
-                     className="flex-1 px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                   >
-                     {isCreatingEnum ? t.creatingPosition : t.add}
-                   </button>
+                                       <button
+                      onClick={createEnumValue}
+                      disabled={isCreatingEnum || !selectedModule || !selectedCategory || !newEnumCode}
+                      className="flex-1 px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isCreatingEnum ? t.creatingPosition : t.add}
+                    </button>
                    <button
                      onClick={closeEnumForm}
                      className="flex-1 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600 transition-colors"

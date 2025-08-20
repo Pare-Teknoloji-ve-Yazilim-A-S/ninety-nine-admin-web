@@ -245,33 +245,20 @@ class EnumsService {
   async createEnum(enumData: {
     module: string;
     category: string;
-    code: string;
-    label: string;
+    codes: string[];
     sortOrder: number;
-    isActive: boolean;
   }): Promise<any> {
     try {
-      console.log('🔧 Creating enum:', enumData);
+      console.log('🔧 Creating enum with POST request:', enumData);
       
-      // Backend'de enum oluşturma endpoint'i henüz yok, bu yüzden simüle ediyoruz
-      // TODO: Backend'de enum oluşturma endpoint'i eklendiğinde bu kısmı güncelle
-      
-      // Simüle edilmiş response
-      const mockResponse = {
-        success: true,
-        data: {
-          id: `enum-${Date.now()}`,
-          ...enumData,
-          createdAt: new Date().toISOString()
-        }
-      };
-      
-      console.log('✅ Enum created successfully (simulated):', mockResponse);
+      // POST isteği ile enum oluştur
+      const response = await apiClient.post(this.baseUrl, enumData);
+      console.log('✅ Enum created successfully:', response);
       
       // Cache'i temizle ki yeniden yüklensin
       this.clearCache();
       
-      return mockResponse;
+      return response.data || response;
     } catch (error) {
       console.error('❌ Error creating enum:', error);
       throw error;
@@ -288,26 +275,16 @@ class EnumsService {
     isActive?: boolean;
   }): Promise<any> {
     try {
-      console.log('🔧 Updating enum:', enumId, enumData);
+      console.log('🔧 Updating enum with PUT request:', enumId, enumData);
       
-      // Backend'de enum güncelleme endpoint'i henüz yok, bu yüzden simüle ediyoruz
-      // TODO: Backend'de enum güncelleme endpoint'i eklendiğinde bu kısmı güncelle
-      
-      const mockResponse = {
-        success: true,
-        data: {
-          id: enumId,
-          ...enumData,
-          updatedAt: new Date().toISOString()
-        }
-      };
-      
-      console.log('✅ Enum updated successfully (simulated):', mockResponse);
+      // PUT isteği ile enum güncelle
+      const response = await apiClient.put(`${this.baseUrl}/${enumId}`, enumData);
+      console.log('✅ Enum updated successfully:', response);
       
       // Cache'i temizle ki yeniden yüklensin
       this.clearCache();
       
-      return mockResponse;
+      return response.data || response;
     } catch (error) {
       console.error('❌ Error updating enum:', error);
       throw error;
@@ -319,25 +296,16 @@ class EnumsService {
    */
   async deleteEnum(enumId: string): Promise<any> {
     try {
-      console.log('🔧 Deleting enum:', enumId);
+      console.log('🔧 Deleting enum with DELETE request:', enumId);
       
-      // Backend'de enum silme endpoint'i henüz yok, bu yüzden simüle ediyoruz
-      // TODO: Backend'de enum silme endpoint'i eklendiğinde bu kısmı güncelle
-      
-      const mockResponse = {
-        success: true,
-        data: {
-          id: enumId,
-          deletedAt: new Date().toISOString()
-        }
-      };
-      
-      console.log('✅ Enum deleted successfully (simulated):', mockResponse);
+      // DELETE isteği ile enum sil
+      const response = await apiClient.delete(`${this.baseUrl}/${enumId}`);
+      console.log('✅ Enum deleted successfully:', response);
       
       // Cache'i temizle ki yeniden yüklensin
       this.clearCache();
       
-      return mockResponse;
+      return response.data || response;
     } catch (error) {
       console.error('❌ Error deleting enum:', error);
       throw error;
