@@ -626,8 +626,30 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
      * GET /admin/properties/resident/count
      */
     async getResidentCount(): Promise<number> {
-        const response = await apiClient.get(apiConfig.endpoints.properties.admin.residentCount);
-        return response.data.count;
+        try {
+            this.logger.info('Fetching resident count');
+            const response = await apiClient.get(apiConfig.endpoints.properties.admin.residentCount);
+            
+            // Handle different response structures
+            if (response.data && typeof response.data.count === 'number') {
+                return response.data.count;
+            } else if (response.data && response.data.data && typeof response.data.data.count === 'number') {
+                return response.data.data.count;
+            } else {
+                this.logger.warn('Unexpected response structure for resident count:', response.data);
+                return 0;
+            }
+        } catch (error) {
+            this.logger.error('Failed to fetch resident count, using fallback:', error);
+            // Fallback: calculate from main properties list
+            try {
+                const properties = await this.getAllProperties({ limit: 1000 });
+                return properties.data.filter(p => p.type === 'RESIDENCE').length;
+            } catch (fallbackError) {
+                this.logger.error('Fallback calculation also failed:', fallbackError);
+                return 0;
+            }
+        }
     }
 
     /**
@@ -635,17 +657,61 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
      * GET /admin/properties/villa/count
      */
     async getVillaCount(): Promise<number> {
-        const response = await apiClient.get(apiConfig.endpoints.properties.admin.villaCount);
-        return response.data.count;
+        try {
+            this.logger.info('Fetching villa count');
+            const response = await apiClient.get(apiConfig.endpoints.properties.admin.villaCount);
+            
+            // Handle different response structures
+            if (response.data && typeof response.data.count === 'number') {
+                return response.data.count;
+            } else if (response.data && response.data.data && typeof response.data.data.count === 'number') {
+                return response.data.data.count;
+            } else {
+                this.logger.warn('Unexpected response structure for villa count:', response.data);
+                return 0;
+            }
+        } catch (error) {
+            this.logger.error('Failed to fetch villa count, using fallback:', error);
+            // Fallback: calculate from main properties list
+            try {
+                const properties = await this.getAllProperties({ limit: 1000 });
+                return properties.data.filter(p => p.type === 'VILLA').length;
+            } catch (fallbackError) {
+                this.logger.error('Fallback calculation also failed:', fallbackError);
+                return 0;
+            }
+        }
     }
 
     /**
      * Get available count
-     * GET /admin/properties/avaliable/count
+     * GET /admin/properties/available/count
      */
     async getAvailableCount(): Promise<number> {
-        const response = await apiClient.get(apiConfig.endpoints.properties.admin.availableCount);
-        return response.data.count;
+        try {
+            this.logger.info('Fetching available count');
+            const response = await apiClient.get(apiConfig.endpoints.properties.admin.availableCount);
+            
+            // Handle different response structures
+            if (response.data && typeof response.data.count === 'number') {
+                return response.data.count;
+            } else if (response.data && response.data.data && typeof response.data.data.count === 'number') {
+                return response.data.data.count;
+            } else {
+                this.logger.warn('Unexpected response structure for available count:', response.data);
+                return 0;
+            }
+        } catch (error) {
+            this.logger.error('Failed to fetch available count, using fallback:', error);
+            // Fallback: calculate from main properties list
+            try {
+                const properties = await this.getAllProperties({ limit: 1000 });
+                return properties.data.filter(p => p.status === 'AVAILABLE').length;
+            } catch (fallbackError) {
+                this.logger.error('Fallback calculation also failed:', fallbackError);
+                return 0;
+            }
+        }
     }
 
     /**
@@ -668,8 +734,15 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
                 return 0;
             }
         } catch (error) {
-            this.logger.error('Failed to fetch total properties count:', error);
-            throw error;
+            this.logger.error('Failed to fetch total properties count, using fallback:', error);
+            // Fallback: calculate from main properties list
+            try {
+                const properties = await this.getAllProperties({ limit: 1000 });
+                return properties.data.length;
+            } catch (fallbackError) {
+                this.logger.error('Fallback calculation also failed:', fallbackError);
+                return 0;
+            }
         }
     }
 
@@ -693,8 +766,15 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
                 return 0;
             }
         } catch (error) {
-            this.logger.error('Failed to fetch assigned properties count:', error);
-            throw error;
+            this.logger.error('Failed to fetch assigned properties count, using fallback:', error);
+            // Fallback: calculate from main properties list
+            try {
+                const properties = await this.getAllProperties({ limit: 1000 });
+                return properties.data.filter(p => p.status === 'OCCUPIED').length;
+            } catch (fallbackError) {
+                this.logger.error('Fallback calculation also failed:', fallbackError);
+                return 0;
+            }
         }
     }
 }

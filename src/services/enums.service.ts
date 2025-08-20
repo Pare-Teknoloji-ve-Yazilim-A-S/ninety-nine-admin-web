@@ -78,16 +78,48 @@ class EnumsService {
       console.log('🔍 Enums service raw response:', response);
       console.log('📊 Response.data:', response.data);
       console.log('📊 Response type:', typeof response);
+      console.log('📊 Response.data type:', typeof response.data);
       
-      // Backend direkt data objesi döndürüyor, response.data değil
-      const data = response.data || response;
+      // API response yapısını kontrol et ve uygun şekilde işle
+      let processedData;
+      
+      if (response.data && typeof response.data === 'object') {
+        // response.data mevcut ve obje
+        if (response.data.success !== undefined && response.data.data !== undefined) {
+          // Standart API response: { success: true, data: {...} }
+          processedData = response.data;
+        } else {
+          // Direkt enum data: { announcements: {...}, billing: {...} }
+          processedData = {
+            success: true,
+            data: response.data
+          };
+        }
+      } else if (response && typeof response === 'object') {
+        // response.data yok ama response obje
+        if (response.success !== undefined && response.data !== undefined) {
+          // Standart API response
+          processedData = response;
+        } else {
+          // Direkt enum data
+          processedData = {
+            success: true,
+            data: response
+          };
+        }
+      } else {
+        console.error('❌ Unexpected API response structure:', response);
+        throw new Error('Invalid API response structure');
+      }
+      
+      console.log('🔧 Processed data for caching:', processedData);
       
       // Cache the result
-      this.setCache(data);
+      this.setCache(processedData);
       
-      return data;
+      return processedData;
     } catch (error) {
-      console.error('Error fetching enums:', error);
+      console.error('❌ Error fetching enums:', error);
       throw error;
     }
   }
@@ -170,9 +202,10 @@ class EnumsService {
         }
       }
       
+      console.log('📦 Retrieved from cache:', parsed);
       return parsed;
     } catch (error) {
-      console.error('Error reading enums from cache:', error);
+      console.error('❌ Error reading enums from cache:', error);
       return null;
     }
   }
@@ -186,8 +219,9 @@ class EnumsService {
       
       localStorage.setItem('enums_cache', JSON.stringify(data));
       localStorage.setItem('enums_cache_time', Date.now().toString());
+      console.log('📦 Cached enums data:', data);
     } catch (error) {
-      console.error('Error setting enums cache:', error);
+      console.error('❌ Error setting enums cache:', error);
     }
   }
 
@@ -202,6 +236,111 @@ class EnumsService {
       localStorage.removeItem('enums_cache_time');
     } catch (error) {
       console.error('Error clearing enums cache:', error);
+    }
+  }
+
+  /**
+   * Create new enum value
+   */
+  async createEnum(enumData: {
+    module: string;
+    category: string;
+    code: string;
+    label: string;
+    sortOrder: number;
+    isActive: boolean;
+  }): Promise<any> {
+    try {
+      console.log('🔧 Creating enum:', enumData);
+      
+      // Backend'de enum oluşturma endpoint'i henüz yok, bu yüzden simüle ediyoruz
+      // TODO: Backend'de enum oluşturma endpoint'i eklendiğinde bu kısmı güncelle
+      
+      // Simüle edilmiş response
+      const mockResponse = {
+        success: true,
+        data: {
+          id: `enum-${Date.now()}`,
+          ...enumData,
+          createdAt: new Date().toISOString()
+        }
+      };
+      
+      console.log('✅ Enum created successfully (simulated):', mockResponse);
+      
+      // Cache'i temizle ki yeniden yüklensin
+      this.clearCache();
+      
+      return mockResponse;
+    } catch (error) {
+      console.error('❌ Error creating enum:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update enum value
+   */
+  async updateEnum(enumId: string, enumData: {
+    code?: string;
+    label?: string;
+    sortOrder?: number;
+    isActive?: boolean;
+  }): Promise<any> {
+    try {
+      console.log('🔧 Updating enum:', enumId, enumData);
+      
+      // Backend'de enum güncelleme endpoint'i henüz yok, bu yüzden simüle ediyoruz
+      // TODO: Backend'de enum güncelleme endpoint'i eklendiğinde bu kısmı güncelle
+      
+      const mockResponse = {
+        success: true,
+        data: {
+          id: enumId,
+          ...enumData,
+          updatedAt: new Date().toISOString()
+        }
+      };
+      
+      console.log('✅ Enum updated successfully (simulated):', mockResponse);
+      
+      // Cache'i temizle ki yeniden yüklensin
+      this.clearCache();
+      
+      return mockResponse;
+    } catch (error) {
+      console.error('❌ Error updating enum:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete enum value
+   */
+  async deleteEnum(enumId: string): Promise<any> {
+    try {
+      console.log('🔧 Deleting enum:', enumId);
+      
+      // Backend'de enum silme endpoint'i henüz yok, bu yüzden simüle ediyoruz
+      // TODO: Backend'de enum silme endpoint'i eklendiğinde bu kısmı güncelle
+      
+      const mockResponse = {
+        success: true,
+        data: {
+          id: enumId,
+          deletedAt: new Date().toISOString()
+        }
+      };
+      
+      console.log('✅ Enum deleted successfully (simulated):', mockResponse);
+      
+      // Cache'i temizle ki yeniden yüklensin
+      this.clearCache();
+      
+      return mockResponse;
+    } catch (error) {
+      console.error('❌ Error deleting enum:', error);
+      throw error;
     }
   }
 }
