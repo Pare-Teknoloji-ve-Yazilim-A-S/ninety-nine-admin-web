@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Property } from '@/services/types/property.types';
-import { PropertyService } from '@/services/property.service';
+import propertyService from '@/services/property.service';
 
 interface PropertyFilterParams {
     page?: number;
@@ -35,7 +35,7 @@ export const useUnitsData = ({
     const [totalPages, setTotalPages] = useState(1);
     const [lastUpdated, setLastUpdated] = useState(new Date());
 
-    const unitsService = useMemo(() => new PropertyService(), []);
+    const unitsService = useMemo(() => propertyService, []);
 
     const loadProperties = useCallback(async (showLoadingIndicator: boolean = true) => {
         try {

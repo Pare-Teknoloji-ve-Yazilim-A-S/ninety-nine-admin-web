@@ -44,7 +44,7 @@ import {
 
 import Modal from "@/app/components/ui/Modal";
 import { UpdateBasicInfoDto, UpdateOwnerInfoDto, UpdateTenantInfoDto } from "@/services/types/unit-detail.types";
-import { PropertyService } from "@/services/property.service";
+import propertyService from "@/services/property.service";
 import { userService } from "@/services/user.service";
 
 // Dil çevirileri
@@ -297,7 +297,7 @@ export default function UnitDetailPage() {
   console.log('📄 UnitDetailPage - unitId length:', unitId?.length);
   
   // Initialize PropertyService
-  const propertyService = new PropertyService();
+  // const propertyService = new PropertyService();
   
   // Helper function to format UUID (add hyphens if missing)
   const formatUUID = (uuid: string): string => {

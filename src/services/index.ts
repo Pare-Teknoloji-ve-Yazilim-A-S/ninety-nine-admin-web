@@ -29,7 +29,7 @@ export { default as authService, authService as AuthService } from './auth.servi
 export { default as userService, userService as UserService } from './user.service';
 export { default as adminResidentService, adminResidentService as AdminResidentService } from './admin-resident.service';
 export { default as residentService, residentService as ResidentService } from './resident.service';
-export { default as propertyService, PropertyService } from './property.service';
+export { default as propertyService } from './property.service';
 export { unitsService, UnitsService } from './units.service';
 export { residentsStatsService } from './residents-stats.service';
 export { fileUploadService } from './file-upload.service';

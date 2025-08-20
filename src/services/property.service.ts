@@ -644,7 +644,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             // Fallback: calculate from main properties list
             try {
                 const properties = await this.getAllProperties({ limit: 1000 });
-                return properties.data.filter(p => p.type === 'RESIDENCE').length;
+                return properties.data.filter((p: Property) => p.type === 'RESIDENCE').length;
             } catch (fallbackError) {
                 this.logger.error('Fallback calculation also failed:', fallbackError);
                 return 0;
@@ -675,7 +675,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             // Fallback: calculate from main properties list
             try {
                 const properties = await this.getAllProperties({ limit: 1000 });
-                return properties.data.filter(p => p.type === 'VILLA').length;
+                return properties.data.filter((p: Property) => p.type === 'VILLA').length;
             } catch (fallbackError) {
                 this.logger.error('Fallback calculation also failed:', fallbackError);
                 return 0;
@@ -706,7 +706,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             // Fallback: calculate from main properties list
             try {
                 const properties = await this.getAllProperties({ limit: 1000 });
-                return properties.data.filter(p => p.status === 'AVAILABLE').length;
+                return properties.data.filter((p: Property) => p.status === 'AVAILABLE').length;
             } catch (fallbackError) {
                 this.logger.error('Fallback calculation also failed:', fallbackError);
                 return 0;
@@ -770,7 +770,7 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
             // Fallback: calculate from main properties list
             try {
                 const properties = await this.getAllProperties({ limit: 1000 });
-                return properties.data.filter(p => p.status === 'OCCUPIED').length;
+                return properties.data.filter((p: Property) => p.status === 'OCCUPIED').length;
             } catch (fallbackError) {
                 this.logger.error('Fallback calculation also failed:', fallbackError);
                 return 0;
@@ -779,5 +779,6 @@ class PropertyService extends BaseService<Property, CreatePropertyDto, UpdatePro
     }
 }
 
-export default new PropertyService();
+const propertyService = new PropertyService();
+export default propertyService;
 export { PropertyService };
