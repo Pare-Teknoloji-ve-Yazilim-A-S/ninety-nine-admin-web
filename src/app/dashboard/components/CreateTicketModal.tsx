@@ -950,7 +950,7 @@ export default function CreateTicketModal({
                                             }}
                                             onCompositionEnd={(e) => {
                                                 // Trigger search after IME composition ends (for non-Latin characters)
-                                                setPropertySearchQuery(e.target.value);
+                                                setPropertySearchQuery((e.target as HTMLInputElement).value);
                                             }}
                                             onFocus={() => setPropertyDropdownOpen(true)}
                                             onKeyDown={(e) => {

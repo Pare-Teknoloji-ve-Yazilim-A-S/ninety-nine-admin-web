@@ -772,10 +772,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                       }, 0);
                     }
                   }}
-                 onCompositionEnd={(e) => {
-                   // Trigger search after IME composition ends (for non-Latin characters)
-                   setPropertySearchQuery(e.target.value);
-                 }}
+                                   onCompositionEnd={(e) => {
+                    // Trigger search after IME composition ends (for non-Latin characters)
+                    setPropertySearchQuery((e.target as HTMLInputElement).value);
+                  }}
                  onFocus={() => setPropertyDropdownOpen(true)}
                  onKeyDown={(e) => {
                    // Allow typing without delay
