@@ -21,7 +21,7 @@ const translations = {
     settings: 'Ayarlar',
     
          // Section titles
-     securitySettings: 'Güvenlik Ayarları',
+     securitySettings: 'Rol ayarları',
      unitPrices: 'Birim Fiyatlar',
      systemEnums: 'Sistem parametre ayarları',
      availableUnits: 'Kullanılabilir Birimler',
@@ -158,7 +158,7 @@ const translations = {
     settings: 'Settings',
     
          // Section titles
-     securitySettings: 'Security Settings',
+     securitySettings: 'Role Settings',
      unitPrices: 'Unit Prices',
      systemEnums: 'System Parameter Settings',
      availableUnits: 'Available Units',
@@ -295,7 +295,7 @@ const translations = {
     settings: 'الإعدادات',
     
          // Section titles
-     securitySettings: 'إعدادات الأمان',
+     securitySettings: 'إعدادات الأدوار',
      unitPrices: 'أسعار الوحدات',
      systemEnums: 'إعدادات معاملات النظام',
      availableUnits: 'الوحدات المتاحة',
