@@ -8,7 +8,7 @@ import { unitPricesService } from '@/services/unit-prices.service';
 import enumsService from '@/services/enums.service';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import Tabs from '@/app/components/ui/Tabs';
-import { DollarSign, Settings, Shield } from 'lucide-react';
+import { DollarSign, Settings, Shield, Users, Lock, Eye, Edit, Trash2, Plus, UserCheck, Building, CreditCard, FileText, Bell, QrCode, Home } from 'lucide-react';
 
 // Dil çevirileri
 const translations = {
@@ -20,12 +20,74 @@ const translations = {
     home: 'Ana Sayfa',
     settings: 'Ayarlar',
     
-         // Section titles
+        // Section titles
      securitySettings: 'Rol ayarları',
      unitPrices: 'Birim Fiyatlar',
      systemEnums: 'Sistem parametre ayarları',
      availableUnits: 'Kullanılabilir Birimler',
     priceTypes: 'Fiyat Türleri ve Birim Fiyatlar',
+    rbacDemo: 'Rol Bazlı Erişim Kontrolü',
+    
+    // RBAC Demo
+    rbacDemoTitle: 'Rol Bazlı Erişim Kontrolü Demo',
+    rbacDemoDescription: 'Farklı rollerin sistemdeki yetkilerini test edin ve görün',
+    selectRole: 'Kullanıcı Rolü Seçin:',
+    currentRole: 'Mevcut Rol:',
+    rolePermissions: 'Rol Yetkileri',
+    availableActions: 'Kullanılabilir İşlemler',
+    restrictedActions: 'Kısıtlı İşlemler',
+    permissionMatrix: 'İzin Matrisi',
+    moduleAccess: 'Modül Erişimi',
+    demoActions: 'Demo İşlemler',
+    
+    // Roles
+    superAdmin: 'Süper Admin',
+    admin: 'Admin',
+    financeManager: 'Mali İşler Müdürü',
+    hrManager: 'İK Müdürü',
+    operator: 'Operatör',
+    viewer: 'Görüntüleyici',
+    user: 'Kullanıcı',
+    
+    // Permissions
+    canView: 'Görüntüleyebilir',
+    canCreate: 'Oluşturabilir',
+    canEdit: 'Düzenleyebilir',
+    canDelete: 'Silebilir',
+    canApprove: 'Onaylayabilir',
+    canExport: 'Dışa Aktarabilir',
+    canManageUsers: 'Kullanıcı Yönetebilir',
+    canManageRoles: 'Rol Yönetebilir',
+    canViewFinancials: 'Finansal Verileri Görebilir',
+    canManageSettings: 'Ayarları Yönetebilir',
+    
+    // Modules
+    dashboard: 'Dashboard',
+    residents: 'Sakinler',
+    staff: 'Personel',
+    financial: 'Finansal',
+    requests: 'Talepler',
+    announcements: 'Duyurular',
+    reports: 'Raporlar',
+    
+    // Actions
+    viewProfile: 'Profili Görüntüle',
+    editProfile: 'Profili Düzenle',
+    deleteUser: 'Kullanıcıyı Sil',
+    createUser: 'Kullanıcı Oluştur',
+    viewReports: 'Raporları Görüntüle',
+    exportData: 'Veriyi Dışa Aktar',
+    manageSettings: 'Ayarları Yönet',
+    approveRequests: 'Talepleri Onayla',
+    viewFinancials: 'Finansal Verileri Görüntüle',
+    manageUsers: 'Kullanıcıları Yönet',
+    manageRoles: 'Rolleri Yönet',
+    
+    // Messages
+    actionSuccess: 'İşlem başarılı!',
+    actionDenied: 'Bu işlem için yetkiniz bulunmuyor.',
+    roleChanged: 'Rol değiştirildi',
+    permissionCheck: 'Yetki kontrolü yapılıyor...',
     
     // Security settings
     sessionTimeout: 'Oturum Zaman Aşımı',
@@ -157,12 +219,74 @@ const translations = {
     home: 'Home',
     settings: 'Settings',
     
-         // Section titles
-     securitySettings: 'Role Settings',
-     unitPrices: 'Unit Prices',
-     systemEnums: 'System Parameter Settings',
-     availableUnits: 'Available Units',
+    // Section titles
+    securitySettings: 'Role Settings',
+    unitPrices: 'Unit Prices',
+    systemEnums: 'System Parameter Settings',
+    availableUnits: 'Available Units',
     priceTypes: 'Price Types and Unit Prices',
+    rbacDemo: 'Role-Based Access Control',
+    
+    // RBAC Demo
+    rbacDemoTitle: 'Role-Based Access Control Demo',
+    rbacDemoDescription: 'Test and visualize different role permissions in the system',
+    selectRole: 'Select User Role:',
+    currentRole: 'Current Role:',
+    rolePermissions: 'Role Permissions',
+    availableActions: 'Available Actions',
+    restrictedActions: 'Restricted Actions',
+    permissionMatrix: 'Permission Matrix',
+    moduleAccess: 'Module Access',
+    demoActions: 'Demo Actions',
+    
+    // Roles
+    superAdmin: 'Super Admin',
+    admin: 'Admin',
+    financeManager: 'Finance Manager',
+    hrManager: 'HR Manager',
+    operator: 'Operator',
+    viewer: 'Viewer',
+    user: 'User',
+    
+    // Permissions
+    canView: 'Can View',
+    canCreate: 'Can Create',
+    canEdit: 'Can Edit',
+    canDelete: 'Can Delete',
+    canApprove: 'Can Approve',
+    canExport: 'Can Export',
+    canManageUsers: 'Can Manage Users',
+    canManageRoles: 'Can Manage Roles',
+    canViewFinancials: 'Can View Financials',
+    canManageSettings: 'Can Manage Settings',
+    
+    // Modules
+    dashboard: 'Dashboard',
+    residents: 'Residents',
+    staff: 'Staff',
+    financial: 'Financial',
+    requests: 'Requests',
+    announcements: 'Announcements',
+    reports: 'Reports',
+    
+    // Actions
+    viewProfile: 'View Profile',
+    editProfile: 'Edit Profile',
+    deleteUser: 'Delete User',
+    createUser: 'Create User',
+    viewReports: 'View Reports',
+    exportData: 'Export Data',
+    manageSettings: 'Manage Settings',
+    approveRequests: 'Approve Requests',
+    viewFinancials: 'View Financials',
+    manageUsers: 'Manage Users',
+    manageRoles: 'Manage Roles',
+    
+    // Messages
+    actionSuccess: 'Action successful!',
+    actionDenied: 'You do not have permission for this action.',
+    roleChanged: 'Role changed',
+    permissionCheck: 'Checking permissions...',
     
     // Security settings
     sessionTimeout: 'Session Timeout',
@@ -294,12 +418,74 @@ const translations = {
     home: 'الرئيسية',
     settings: 'الإعدادات',
     
-         // Section titles
-     securitySettings: 'إعدادات الأدوار',
-     unitPrices: 'أسعار الوحدات',
-     systemEnums: 'إعدادات معاملات النظام',
-     availableUnits: 'الوحدات المتاحة',
+    // Section titles
+    securitySettings: 'إعدادات الأدوار',
+    unitPrices: 'أسعار الوحدات',
+    systemEnums: 'إعدادات معاملات النظام',
+    availableUnits: 'الوحدات المتاحة',
     priceTypes: 'أنواع الأسعار وأسعار الوحدات',
+    rbacDemo: 'التحكم في الوصول القائم على الأدوار',
+    
+    // RBAC Demo
+    rbacDemoTitle: 'عرض توضيحي للتحكم في الوصول القائم على الأدوار',
+    rbacDemoDescription: 'اختبر وتصور صلاحيات الأدوار المختلفة في النظام',
+    selectRole: 'اختر دور المستخدم:',
+    currentRole: 'الدور الحالي:',
+    rolePermissions: 'صلاحيات الدور',
+    availableActions: 'الإجراءات المتاحة',
+    restrictedActions: 'الإجراءات المقيدة',
+    permissionMatrix: 'مصفوفة الأذونات',
+    moduleAccess: 'الوصول إلى الوحدات',
+    demoActions: 'إجراءات العرض التوضيحي',
+    
+    // Roles
+    superAdmin: 'مدير النظام',
+    admin: 'مدير',
+    financeManager: 'مدير المالية',
+    hrManager: 'مدير الموارد البشرية',
+    operator: 'مشغل',
+    viewer: 'عارض',
+    user: 'مستخدم',
+    
+    // Permissions
+    canView: 'يمكنه العرض',
+    canCreate: 'يمكنه الإنشاء',
+    canEdit: 'يمكنه التعديل',
+    canDelete: 'يمكنه الحذف',
+    canApprove: 'يمكنه الموافقة',
+    canExport: 'يمكنه التصدير',
+    canManageUsers: 'يمكنه إدارة المستخدمين',
+    canManageRoles: 'يمكنه إدارة الأدوار',
+    canViewFinancials: 'يمكنه عرض البيانات المالية',
+    canManageSettings: 'يمكنه إدارة الإعدادات',
+    
+    // Modules
+    dashboard: 'لوحة التحكم',
+    residents: 'المقيمون',
+    staff: 'الموظفون',
+    financial: 'المالية',
+    requests: 'الطلبات',
+    announcements: 'الإعلانات',
+    reports: 'التقارير',
+    
+    // Actions
+    viewProfile: 'عرض الملف الشخصي',
+    editProfile: 'تعديل الملف الشخصي',
+    deleteUser: 'حذف المستخدم',
+    createUser: 'إنشاء مستخدم',
+    viewReports: 'عرض التقارير',
+    exportData: 'تصدير البيانات',
+    manageSettings: 'إدارة الإعدادات',
+    approveRequests: 'الموافقة على الطلبات',
+    viewFinancials: 'عرض البيانات المالية',
+    manageUsers: 'إدارة المستخدمين',
+    manageRoles: 'إدارة الأدوار',
+    
+    // Messages
+    actionSuccess: 'تم تنفيذ الإجراء بنجاح!',
+    actionDenied: 'ليس لديك إذن لهذا الإجراء.',
+    roleChanged: 'تم تغيير الدور',
+    permissionCheck: 'جاري التحقق من الأذونات...',
     
     // Security settings
     sessionTimeout: 'انتهاء صلاحية الجلسة',
@@ -439,7 +625,7 @@ export default function DashboardSettingsPage() {
   const t = translations[currentLanguage as keyof typeof translations];
 
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>('unit-prices');
+  const [activeTab, setActiveTab] = useState<string>('rbac-demo');
   
   // Unit Prices states
   const [unitPricesLoading, setUnitPricesLoading] = useState<boolean>(true);
@@ -486,6 +672,17 @@ export default function DashboardSettingsPage() {
   const [newEnumCode, setNewEnumCode] = useState<string>('');
   const [newEnumSortOrder, setNewEnumSortOrder] = useState<string>('1');
   const [isCreatingEnum, setIsCreatingEnum] = useState<boolean>(false);
+  
+  // RBAC Demo states
+  const [selectedRole, setSelectedRole] = useState<string>('user');
+  const [actionMessage, setActionMessage] = useState<string>('');
+  const [showActionMessage, setShowActionMessage] = useState<boolean>(false);
+  const [showAddRoleModal, setShowAddRoleModal] = useState<boolean>(false);
+  const [newRoleName, setNewRoleName] = useState<string>('');
+  const [newRoleDescription, setNewRoleDescription] = useState<string>('');
+  const [isAddingRole, setIsAddingRole] = useState<boolean>(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
+  const [roleToDelete, setRoleToDelete] = useState<string>('');
   
   // Breadcrumb Items
   const breadcrumbItems = [
@@ -858,8 +1055,509 @@ export default function DashboardSettingsPage() {
     }
   };
 
+  // RBAC Demo Functions
+  const rolePermissions = {
+    superAdmin: {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canApprove: true,
+      canExport: true,
+      canManageUsers: true,
+      canManageRoles: true,
+      canViewFinancials: true,
+      canManageSettings: true
+    },
+    admin: {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+      canApprove: true,
+      canExport: true,
+      canManageUsers: true,
+      canManageRoles: false,
+      canViewFinancials: true,
+      canManageSettings: true
+    },
+    financeManager: {
+      canView: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canApprove: true,
+      canExport: true,
+      canManageUsers: false,
+      canManageRoles: false,
+      canViewFinancials: true,
+      canManageSettings: false
+    },
+    hrManager: {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: false,
+      canApprove: true,
+      canExport: true,
+      canManageUsers: true,
+      canManageRoles: false,
+      canViewFinancials: false,
+      canManageSettings: false
+    },
+    operator: {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: false,
+      canApprove: false,
+      canExport: false,
+      canManageUsers: false,
+      canManageRoles: false,
+      canViewFinancials: false,
+      canManageSettings: false
+    },
+    viewer: {
+      canView: true,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canApprove: false,
+      canExport: false,
+      canManageUsers: false,
+      canManageRoles: false,
+      canViewFinancials: false,
+      canManageSettings: false
+    },
+    user: {
+      canView: false,
+      canCreate: false,
+      canEdit: false,
+      canDelete: false,
+      canApprove: false,
+      canExport: false,
+      canManageUsers: false,
+      canManageRoles: false,
+      canViewFinancials: false,
+      canManageSettings: false
+    }
+  };
+
+  const moduleAccess = {
+    superAdmin: ['dashboard', 'residents', 'staff', 'financial', 'requests', 'announcements', 'settings', 'reports'],
+    admin: ['dashboard', 'residents', 'staff', 'financial', 'requests', 'announcements', 'settings', 'reports'],
+    financeManager: ['dashboard', 'financial', 'reports'],
+    hrManager: ['dashboard', 'staff', 'requests'],
+    operator: ['dashboard', 'residents', 'requests'],
+    viewer: ['dashboard', 'residents'],
+    user: ['dashboard']
+  };
+
+  const handleDemoAction = (action: string) => {
+    const permissions = rolePermissions[selectedRole as keyof typeof rolePermissions];
+    
+    if (permissions && permissions[action as keyof typeof permissions]) {
+      setActionMessage(t.actionSuccess);
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } else {
+      setActionMessage(t.actionDenied);
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    }
+  };
+
+  const getModuleIcon = (module: string) => {
+    const icons: Record<string, any> = {
+      dashboard: Home,
+      residents: Users,
+      staff: UserCheck,
+      financial: CreditCard,
+      requests: FileText,
+      announcements: Bell,
+      settings: Settings,
+      reports: FileText
+    };
+    return icons[module] || Settings;
+  };
+
+  // Role Management Functions
+  const handleAddRole = async () => {
+    if (!newRoleName.trim()) {
+      setActionMessage('Rol adı boş olamaz');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+      return;
+    }
+
+    setIsAddingRole(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const newRoleKey = newRoleName.toLowerCase().replace(/\s+/g, '');
+      
+      // Add new role to permissions
+      rolePermissions[newRoleKey as keyof typeof rolePermissions] = {
+        canView: false,
+        canCreate: false,
+        canEdit: false,
+        canDelete: false,
+        canApprove: false,
+        canExport: false,
+        canManageUsers: false,
+        canManageRoles: false,
+        canViewFinancials: false,
+        canManageSettings: false
+      };
+
+      // Add new role to module access
+      moduleAccess[newRoleKey as keyof typeof moduleAccess] = ['dashboard'];
+
+      setActionMessage('Rol başarıyla eklendi');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+      
+      setShowAddRoleModal(false);
+      setNewRoleName('');
+      setNewRoleDescription('');
+    } catch (error) {
+      setActionMessage('Rol eklenirken hata oluştu');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } finally {
+      setIsAddingRole(false);
+    }
+  };
+
+  const handleDeleteRole = (roleKey: string) => {
+    if (roleKey === 'superAdmin' || roleKey === 'admin') {
+      setActionMessage('Sistem rolleri silinemez');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+      return;
+    }
+
+    // Remove role from permissions and module access
+    delete rolePermissions[roleKey as keyof typeof rolePermissions];
+    delete moduleAccess[roleKey as keyof typeof moduleAccess];
+    
+    // If deleted role was selected, switch to user role
+    if (selectedRole === roleKey) {
+      setSelectedRole('user');
+    }
+
+    setActionMessage('Rol başarıyla silindi');
+    setShowActionMessage(true);
+    setTimeout(() => setShowActionMessage(false), 3000);
+  };
+
+  const confirmDeleteRole = (roleKey: string) => {
+    setRoleToDelete(roleKey);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const executeDeleteRole = () => {
+    handleDeleteRole(roleToDelete);
+    setShowDeleteConfirmModal(false);
+    setRoleToDelete('');
+  };
+
+  const getRoleDisplayName = (roleKey: string): string => {
+    const roleNames: Record<string, string> = {
+      superAdmin: t.superAdmin,
+      admin: t.admin,
+      financeManager: t.financeManager,
+      hrManager: t.hrManager,
+      operator: t.operator,
+      viewer: t.viewer,
+      user: t.user
+    };
+    return roleNames[roleKey] || roleKey;
+  };
+
   // Tab items
   const tabItems = [
+    {
+      id: 'rbac-demo',
+      label: t.rbacDemo,
+      icon: Lock,
+      content: (
+        <div className="space-y-6 p-6">
+          {/* Header */}
+          <div>
+            <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-2">
+              {t.rbacDemoTitle}
+            </h3>
+            <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+              {t.rbacDemoDescription}
+            </p>
+          </div>
+
+                     {/* Role Management */}
+           <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+             <div className="flex items-center justify-between mb-4">
+               <h4 className="text-md font-medium text-text-on-light dark:text-text-on-dark">
+                 Rol Yönetimi
+               </h4>
+               <button
+                 onClick={() => setShowAddRoleModal(true)}
+                 className="inline-flex items-center px-3 py-1.5 bg-primary-gold text-white text-xs font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
+               >
+                 <Plus className="w-3 h-3 mr-1" />
+                 Rol Ekle
+               </button>
+             </div>
+             
+                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                {Object.keys(rolePermissions).map((roleKey) => (
+                  <div key={roleKey} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500">
+                    <div className="flex items-center space-x-2 flex-1">
+                      <input
+                        type="radio"
+                        id={roleKey}
+                        name="selectedRole"
+                        value={roleKey}
+                        checked={selectedRole === roleKey}
+                        onChange={(e) => setSelectedRole(e.target.value)}
+                        className="text-primary-gold focus:ring-primary-gold"
+                      />
+                      <label htmlFor={roleKey} className="text-sm font-medium text-text-on-light dark:text-text-on-dark cursor-pointer">
+                        {getRoleDisplayName(roleKey)}
+                      </label>
+                    </div>
+                    <div className="flex items-center ml-auto">
+                      {roleKey !== 'superAdmin' && roleKey !== 'admin' && (
+                        <button
+                          onClick={() => confirmDeleteRole(roleKey)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                          title="Rolü Sil"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+           </div>
+
+          {/* Action Message */}
+          {showActionMessage && (
+            <div className={`p-4 rounded-lg ${
+              actionMessage === t.actionSuccess 
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+            }`}>
+              {actionMessage}
+            </div>
+          )}
+
+          {/* Module Access */}
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 className="text-md font-medium text-text-on-light dark:text-text-on-dark mb-4">
+              {t.moduleAccess}
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {['dashboard', 'residents', 'staff', 'financial', 'requests', 'announcements', 'reports'].map((module) => {
+                const IconComponent = getModuleIcon(module);
+                const hasAccess = moduleAccess[selectedRole as keyof typeof moduleAccess]?.includes(module);
+                return (
+                  <div key={module} className={`p-3 rounded-lg border-2 transition-colors ${
+                    hasAccess 
+                      ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700' 
+                      : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      <IconComponent className={`w-4 h-4 ${
+                        hasAccess ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                      }`} />
+                      <span className={`text-sm font-medium ${
+                        hasAccess ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
+                      }`}>
+                        {t[module as keyof typeof t]}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Permission Matrix */}
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 className="text-md font-medium text-text-on-light dark:text-text-on-dark mb-4">
+              {t.permissionMatrix}
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {Object.entries(rolePermissions[selectedRole as keyof typeof rolePermissions] || {}).map(([permission, hasPermission]) => (
+                <div key={permission} className={`p-3 rounded-lg border-2 transition-colors ${
+                  hasPermission 
+                    ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700' 
+                    : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700'
+                }`}>
+                  <div className="text-center">
+                    <div className={`text-sm font-medium ${
+                      hasPermission ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
+                    }`}>
+                      {t[permission as keyof typeof t]}
+                    </div>
+                    <div className={`text-xs mt-1 ${
+                      hasPermission ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {hasPermission ? '✓' : '✗'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Demo Actions */}
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 className="text-md font-medium text-text-on-light dark:text-text-on-dark mb-4">
+              {t.demoActions}
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {[
+                { action: 'canView', label: t.viewProfile, icon: Eye },
+                { action: 'canEdit', label: t.editProfile, icon: Edit },
+                { action: 'canCreate', label: t.createUser, icon: Plus },
+                { action: 'canDelete', label: t.deleteUser, icon: Trash2 },
+                { action: 'canViewFinancials', label: t.viewFinancials, icon: CreditCard },
+                { action: 'canExport', label: t.exportData, icon: FileText },
+                { action: 'canManageUsers', label: t.manageUsers, icon: Users },
+                { action: 'canManageRoles', label: t.manageRoles, icon: Lock }
+              ].map(({ action, label, icon: IconComponent }) => {
+                const permissions = rolePermissions[selectedRole as keyof typeof rolePermissions];
+                const hasPermission = permissions && permissions[action as keyof typeof permissions];
+                return (
+                  <button
+                    key={action}
+                    onClick={() => handleDemoAction(action)}
+                    disabled={!hasPermission}
+                    className={`p-3 rounded-lg border-2 transition-colors flex items-center space-x-2 ${
+                      hasPermission 
+                        ? 'bg-primary-gold/10 border-primary-gold/30 hover:bg-primary-gold/20 text-primary-gold' 
+                        : 'bg-gray-100 border-gray-300 dark:bg-gray-600 dark:border-gray-500 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                    <span className="text-sm font-medium">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+                     {/* Add Role Modal */}
+           {showAddRoleModal && (
+             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+                 <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-4">
+                   Yeni Rol Ekle
+                 </h3>
+                 
+                 <div className="space-y-4">
+                   <div>
+                     <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
+                       Rol Adı
+                     </label>
+                     <input
+                       type="text"
+                       value={newRoleName}
+                       onChange={(e) => setNewRoleName(e.target.value)}
+                       className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                       placeholder="Örn: Editör"
+                     />
+                   </div>
+                   
+                   <div>
+                     <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
+                       Açıklama
+                     </label>
+                     <textarea
+                       value={newRoleDescription}
+                       onChange={(e) => setNewRoleDescription(e.target.value)}
+                       className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                       placeholder="Rol açıklaması (opsiyonel)"
+                       rows={3}
+                     />
+                   </div>
+                 </div>
+                 
+                 <div className="flex gap-3 mt-6">
+                   <button
+                     onClick={handleAddRole}
+                     disabled={isAddingRole || !newRoleName.trim()}
+                     className="flex-1 px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                   >
+                     {isAddingRole ? 'Ekleniyor...' : 'Ekle'}
+                   </button>
+                   <button
+                     onClick={() => {
+                       setShowAddRoleModal(false);
+                       setNewRoleName('');
+                       setNewRoleDescription('');
+                     }}
+                     className="flex-1 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600 transition-colors"
+                   >
+                     İptal
+                   </button>
+                 </div>
+               </div>
+             </div>
+           )}
+
+           {/* Delete Confirmation Modal */}
+           {showDeleteConfirmModal && (
+             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+               <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+                 <div className="flex items-center space-x-3 mb-4">
+                   <div className="flex-shrink-0">
+                     <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                       <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+                     </div>
+                   </div>
+                   <div>
+                     <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark">
+                       Rolü Sil
+                     </h3>
+                     <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                       Bu işlem geri alınamaz
+                     </p>
+                   </div>
+                 </div>
+                 
+                 <div className="mb-6">
+                   <p className="text-sm text-text-on-light dark:text-text-on-dark">
+                     <span className="font-medium">{getRoleDisplayName(roleToDelete)}</span> rolünü silmek istediğinizden emin misiniz?
+                   </p>
+                 </div>
+                 
+                                   <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowDeleteConfirmModal(false);
+                        setRoleToDelete('');
+                      }}
+                      className="flex-1 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600 transition-colors"
+                    >
+                      İptal
+                    </button>
+                    <button
+                      onClick={executeDeleteRole}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
+                    >
+                      Evet, Sil
+                    </button>
+                  </div>
+               </div>
+             </div>
+           )}
+        </div>
+      )
+    },
     {
       id: 'unit-prices',
       label: t.unitPrices,
@@ -984,23 +1682,7 @@ export default function DashboardSettingsPage() {
          </div>
        )
     },
-    {
-      id: 'security',
-      label: t.securitySettings,
-      icon: Shield,
-      content: (
-        <div className="space-y-6">
-          <div className="text-center py-8">
-            <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-2">
-              {t.securitySettings}
-            </h3>
-            <p className="text-text-light-secondary dark:text-text-secondary">
-              {t.securitySettingsDescription}
-            </p>
-          </div>
-        </div>
-      )
-    },
+    
     {
       id: 'system-enums',
       label: t.systemEnums,
@@ -1194,27 +1876,18 @@ export default function DashboardSettingsPage() {
           {/* Main Content */}
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Page Header with Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-text-on-light dark:text-text-on-dark mb-2">
-                  {t.systemEnums}
+                  {t.rbacDemoTitle}
                 </h2>
                 <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                  {t.systemEnumsDescription}
+                  {t.rbacDemoDescription}
                 </p>
               </div>
-              <div className="flex gap-3">
-                <LanguageSwitcher />
-                <button
-                  onClick={() => window.location.href = '/dashboard/settings/device-settings'}
-                  className="inline-flex items-center px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {t.deviceSettings}
-                </button>
-              </div>
+                             <div className="flex gap-3">
+                 <LanguageSwitcher />
+               </div>
             </div>
 
             {/* Tabs Content */}
@@ -1229,9 +1902,9 @@ export default function DashboardSettingsPage() {
                 defaultValue="unit-prices"
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-sm"
               />
-            </div>
+              </div>
           </main>
-        </div>
+            </div>
       </div>
     </ProtectedRoute>
   );
