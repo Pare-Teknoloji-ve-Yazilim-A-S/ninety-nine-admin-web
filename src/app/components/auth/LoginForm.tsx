@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, Mail, Lock, Shield, ArrowRight, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Shield, ArrowRight, CheckCircle, X } from 'lucide-react';
 import Button from '@/app/components/ui/Button';
 import Input from '@/app/components/ui/Input';
 import Checkbox from '@/app/components/ui/Checkbox';
@@ -25,14 +25,15 @@ export function LoginForm({ onSuccess, onError }: LoginFormProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const { login: contextLogin } = useAuth();
+    const { login: contextLogin, error: authError } = useAuth();
 
     const {
         register,
         handleSubmit,
         formState: { errors, isValid },
         reset,
-        setError
+        setError,
+        watch
     } = useForm<LoginFormData>({
         mode: 'onChange',
         defaultValues: {
@@ -42,9 +43,29 @@ export function LoginForm({ onSuccess, onError }: LoginFormProps) {
         }
     });
 
+    // Form alanlarını izle ve değişiklik olduğunda hata mesajını temizle
+    const emailValue = watch('email');
+    const passwordValue = watch('password');
+
+    React.useEffect(() => {
+        // Sadece form alanları tamamen boş olduğunda hata mesajını temizle
+        // Bu sayede kullanıcı hatalı bilgi girdiğinde hata mesajı kalır
+        if (errorMessage && !emailValue && !passwordValue) {
+            setErrorMessage(null);
+        }
+    }, [emailValue, passwordValue, errorMessage]);
+
+    // AuthProvider'dan gelen hatayı da kullan
+    React.useEffect(() => {
+        if (authError && !errorMessage) {
+            setErrorMessage(authError);
+        }
+    }, [authError, errorMessage]);
+
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true);
-        setErrorMessage(null);
+        // Hata mesajını sadece yeni bir giriş denemesi yapıldığında temizle
+        // setErrorMessage(null); // Bu satırı kaldırıyoruz
 
         try {
             const email = data.email.trim();
@@ -54,6 +75,8 @@ export function LoginForm({ onSuccess, onError }: LoginFormProps) {
                 await contextLogin(email, password);
             }
 
+            // Başarılı giriş durumunda hata mesajını temizle
+            setErrorMessage(null);
             reset();
             onSuccess?.();
 
@@ -261,14 +284,24 @@ export function LoginForm({ onSuccess, onError }: LoginFormProps) {
                                 </button>
                             </div>
 
+
+
                             {/* Error Message */}
                             {errorMessage && (
-                                <div className="p-4 rounded-lg bg-primary-red/10 border border-primary-red/30">
-                                    <div className="flex items-start space-x-3">
-                                        <div className="w-2 h-2 bg-primary-red rounded-full flex-shrink-0 mt-2" />
+                                <div className="p-4 rounded-lg bg-red-50 border border-red-200 relative transition-all duration-300 ease-in-out">
+                                    <button
+                                        type="button"
+                                        onClick={() => setErrorMessage(null)}
+                                        className="absolute top-2 right-2 text-red-400 hover:text-red-600 transition-colors p-1 rounded-md hover:bg-red-100"
+                                        aria-label="Hata mesajını kapat"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                    <div className="flex items-start space-x-3 pr-6">
+                                        <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-2 animate-pulse" />
                                         <div>
-                                            <p className="text-sm text-primary-red font-medium font-inter">Hata</p>
-                                            <p className="text-sm text-primary-red/80 font-inter mt-1">{errorMessage}</p>
+                                            <p className="text-sm text-red-700 font-medium font-inter">Hata</p>
+                                            <p className="text-sm text-red-600 font-inter mt-1">{errorMessage}</p>
                                         </div>
                                     </div>
                                 </div>

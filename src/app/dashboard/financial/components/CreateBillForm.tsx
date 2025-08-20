@@ -280,6 +280,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
   const propertyDropdownRef = useRef<HTMLDivElement>(null);
+  const propertyInputRef = useRef<HTMLInputElement>(null);
   const [propertySearchQuery, setPropertySearchQuery] = useState('');
   const [filteredProperties, setFilteredProperties] = useState<PropertyOption[]>([]);
   const [page, setPage] = useState(1);
@@ -362,22 +363,25 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
     }
   }, [watchedBillType, watchedPropertyId, unitPrices, setValue]);
 
-  // Fetch properties from admin/properties with search (server-side pagination)
-  useEffect(() => {
-    let active = true;
-    const fetchWithSearch = async () => {
-      try {
-        if (!propertyDropdownOpen) return;
-        setLoadingProperties(true);
-        const requestedLimit = 100;
-        const res = await unitsService.getAllProperties({
-          page: 1,
-          limit: requestedLimit,
-          orderColumn: 'name',
-          orderBy: 'ASC',
-          search: propertySearchQuery || undefined,
-          includeBills: false,
-        } as any);
+         // Fetch properties from admin/properties with search (server-side pagination) - with debounce
+   useEffect(() => {
+     let active = true;
+     const timeoutId = setTimeout(async () => {
+       try {
+         if (!propertyDropdownOpen) return;
+         
+         setLoadingProperties(true);
+         
+                  // Always fetch properties when dropdown is open
+         const requestedLimit = 100;
+         const res = await unitsService.getAllProperties({
+           page: 1,
+           limit: requestedLimit,
+           orderColumn: 'name',
+           orderBy: 'ASC',
+           search: propertySearchQuery || undefined,
+           includeBills: false,
+         } as any);
                  const list = res?.data || [];
          const mapped: PropertyOption[] = list.map((property: any) => ({
            id: property.id,
@@ -420,28 +424,42 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
       } finally {
         if (active) setLoadingProperties(false);
       }
-    };
-    fetchWithSearch();
-    return () => { active = false; };
-  }, [propertySearchQuery, propertyDropdownOpen]);
+    }, 100); // 100ms debounce delay - çok hızlı tepki
 
-  // Minimal client-side filter fallback (when API returns full list)
-  useEffect(() => {
-    if (!propertySearchQuery.trim()) {
-      setFilteredProperties(properties);
-    }
-  }, [properties]);
+    return () => { 
+      active = false; 
+      clearTimeout(timeoutId);
+    };
+  }, [propertySearchQuery]); // propertyDropdownOpen'ı dependency'den çıkardık
+
+     // Show existing properties when dropdown opens and keep it open
+   useEffect(() => {
+     if (propertyDropdownOpen) {
+       // If we have properties and search is empty, show all properties
+       if (properties.length > 0 && !propertySearchQuery.trim()) {
+         setFilteredProperties(properties);
+       }
+       // If dropdown opens and no properties loaded yet, trigger initial load
+       if (properties.length === 0 && !propertySearchQuery.trim()) {
+         // This will trigger the main useEffect to load properties
+         setPropertySearchQuery(''); // Force a refresh
+       }
+     }
+   }, [propertyDropdownOpen, properties, propertySearchQuery]);
 
   // Close dropdown on outside click
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (propertyDropdownRef.current && !propertyDropdownRef.current.contains(e.target as Node)) {
-        setPropertyDropdownOpen(false);
+        // Only close if user is not actively typing
+        if (!propertySearchQuery.trim()) {
+          setPropertyDropdownOpen(false);
+        }
       }
     };
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
-  }, []);
+  }, [propertySearchQuery]);
 
   // Load unit prices
   useEffect(() => {
@@ -727,15 +745,48 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           <div ref={propertyDropdownRef} className="relative">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted dark:text-text-muted" />
-              <input
-                type="text"
-                placeholder={loadingProperties ? t.loading : t.propertySearch}
-                value={propertySearchQuery}
-                onChange={(e) => setPropertySearchQuery(e.target.value)}
-                onFocus={() => setPropertyDropdownOpen(true)}
-                disabled={loadingProperties || isLoading}
-                className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-primary-gold/30 hover:border-primary-gold/50 focus:border-primary-gold focus:outline-none focus:ring-2 focus:ring-primary-gold/50 bg-background-secondary text-text-primary transition-colors"
-              />
+                                                           <input
+                  ref={propertyInputRef}
+                  type="text"
+                  autoComplete="off"
+                  placeholder={loadingProperties ? t.loading : t.propertySearch}
+                  value={propertySearchQuery}
+                                   onChange={(e) => {
+                    setPropertySearchQuery(e.target.value);
+                    // Reset pagination when search changes
+                    setPage(1);
+                    setHasMore(true);
+                    // Keep dropdown open when typing
+                    if (!propertyDropdownOpen) {
+                      setPropertyDropdownOpen(true);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Prevent blur when clicking inside dropdown
+                    const relatedTarget = e.relatedTarget as HTMLElement;
+                    if (propertyDropdownRef.current?.contains(relatedTarget)) {
+                      e.preventDefault();
+                      // Use setTimeout to ensure focus is maintained
+                      setTimeout(() => {
+                        propertyInputRef.current?.focus();
+                      }, 0);
+                    }
+                  }}
+                 onCompositionEnd={(e) => {
+                   // Trigger search after IME composition ends (for non-Latin characters)
+                   setPropertySearchQuery(e.target.value);
+                 }}
+                 onFocus={() => setPropertyDropdownOpen(true)}
+                 onKeyDown={(e) => {
+                   // Allow typing without delay
+                   if (e.key === 'Enter') {
+                     e.preventDefault();
+                     setPropertyDropdownOpen(false);
+                   }
+                 }}
+                 disabled={loadingProperties || isLoading}
+                 className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-primary-gold/30 hover:border-primary-gold/50 focus:border-primary-gold focus:outline-none focus:ring-2 focus:ring-primary-gold/50 bg-background-secondary text-text-primary transition-colors"
+               />
               <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted transition-transform ${propertyDropdownOpen ? 'rotate-180' : ''}`} />
             </div>
 
@@ -830,34 +881,38 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                   <>
                     <div className="p-2 text-xs font-medium text-text-light-muted dark:text-text-muted">{filteredProperties.length} {t.propertiesFound}</div>
             {filteredProperties.map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => {
-                  setValue('propertyId', p.id, { shouldValidate: true });
-                  // Prefer tenant, otherwise owner, for assignedToId
-                  const tenantId = p.tenant?.id;
-                  const ownerId = p.owner?.id;
-                  const resolvedAssignedId = tenantId || ownerId || undefined;
-                  
-                  console.log('🔗 Property selected:', {
-                    propertyId: p.id,
-                    propertyNumber: p.propertyNumber,
-                    tenant: p.tenant ? `${p.tenant.firstName} ${p.tenant.lastName}` : 'None',
-                    owner: p.owner ? `${p.owner.firstName} ${p.owner.lastName}` : 'None',
-                    assignedToId: resolvedAssignedId
-                  });
-                  
-                  if (resolvedAssignedId) {
-                    setValue('assignedToId', resolvedAssignedId, { shouldValidate: false });
-                  } else {
-                    setValue('assignedToId', '', { shouldValidate: false });
-                  }
-                          setPropertyDropdownOpen(false);
-                          setPropertySearchQuery('');
-                        }}
-                        className="w-full text-left p-3 hover:bg-primary-gold/10 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                      >
+                                             <button
+                         key={p.id}
+                         type="button"
+                         onMouseDown={(e) => {
+                           // Prevent input blur when clicking dropdown items
+                           e.preventDefault();
+                         }}
+                         onClick={() => {
+                   setValue('propertyId', p.id, { shouldValidate: true });
+                   // Prefer tenant, otherwise owner, for assignedToId
+                   const tenantId = p.tenant?.id;
+                   const ownerId = p.owner?.id;
+                   const resolvedAssignedId = tenantId || ownerId || undefined;
+                   
+                   console.log('🔗 Property selected:', {
+                     propertyId: p.id,
+                     propertyNumber: p.propertyNumber,
+                     tenant: p.tenant ? `${p.tenant.firstName} ${p.tenant.lastName}` : 'None',
+                     owner: p.owner ? `${p.owner.firstName} ${p.owner.lastName}` : 'None',
+                     assignedToId: resolvedAssignedId
+                   });
+                   
+                   if (resolvedAssignedId) {
+                     setValue('assignedToId', resolvedAssignedId, { shouldValidate: false });
+                   } else {
+                     setValue('assignedToId', '', { shouldValidate: false });
+                   }
+                           setPropertyDropdownOpen(false);
+                           setPropertySearchQuery('');
+                         }}
+                         className="w-full text-left p-3 hover:bg-primary-gold/10 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                       >
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-primary-gold/20 rounded-full flex items-center justify-center">
                             <span className="text-xs font-medium text-primary-gold">{p.propertyNumber?.slice(0,2) || 'PR'}</span>

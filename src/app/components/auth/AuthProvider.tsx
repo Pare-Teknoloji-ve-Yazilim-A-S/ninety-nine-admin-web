@@ -73,10 +73,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const login = async (email: string, password: string) => {
         setIsLoading(true);
-        setError(null);
+        // Hata mesajını sadece başarılı giriş durumunda temizle
+        // setError(null); // Bu satırı kaldırıyoruz
 
         try {
             const response = await authService.login({ email, password });
+
+            // Başarılı giriş durumunda hata mesajını temizle
+            setError(null);
 
             // Set tokens
             setTokens({
@@ -109,6 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             // Clear state regardless of logout result
             setUser(null);
             setTokens(null);
+            // Logout sırasında hata mesajını temizle (bu doğru)
             setError(null);
             setIsLoading(false);
         }
