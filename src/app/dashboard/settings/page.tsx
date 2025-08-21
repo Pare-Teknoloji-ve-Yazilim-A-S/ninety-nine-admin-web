@@ -6,9 +6,13 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import { unitPricesService } from '@/services/unit-prices.service';
 import enumsService from '@/services/enums.service';
+import { useRoles } from '@/hooks/useRoles';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import Tabs from '@/app/components/ui/Tabs';
-import { DollarSign, Settings, Shield, Users, Lock, Eye, Edit, Trash2, Plus, UserCheck, Building, CreditCard, FileText, Bell, QrCode, Home } from 'lucide-react';
+import RolePermissionsModal from '@/app/components/ui/RolePermissionsModal';
+import { DollarSign, Settings, Shield, Users, Lock, Eye, Edit, Trash2, Plus, UserCheck, Building, CreditCard, FileText, Bell, QrCode, Home, ChevronDown, Key } from 'lucide-react';
 
 // Dil çevirileri
 const translations = {
@@ -684,6 +688,18 @@ export default function DashboardSettingsPage() {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
   const [roleToDelete, setRoleToDelete] = useState<string>('');
   
+  // Permission Management states
+  const [showAddPermissionModal, setShowAddPermissionModal] = useState<boolean>(false);
+  const [newPermissionName, setNewPermissionName] = useState<string>('');
+  const [newPermissionAction, setNewPermissionAction] = useState<string>('');
+  const [newPermissionResource, setNewPermissionResource] = useState<string>('');
+  const [newPermissionDescription, setNewPermissionDescription] = useState<string>('');
+  const [isAddingPermission, setIsAddingPermission] = useState<boolean>(false);
+  
+  // Role Permissions Modal states
+  const [showRolePermissionsModal, setShowRolePermissionsModal] = useState<boolean>(false);
+  const [selectedRoleForPermissions, setSelectedRoleForPermissions] = useState<any>(null);
+  
   // Breadcrumb Items
   const breadcrumbItems = [
     { label: t.home, href: '/dashboard' },
@@ -1055,7 +1071,7 @@ export default function DashboardSettingsPage() {
     }
   };
 
-  // RBAC Demo Functions
+  // RBAC Demo Functions - Mock data for demo purposes
   const rolePermissions = {
     superAdmin: {
       canView: true,
@@ -1153,6 +1169,29 @@ export default function DashboardSettingsPage() {
     user: ['dashboard']
   };
 
+  // Real API integration for role management
+  const {
+    roles,
+    loading: rolesLoading,
+    error: rolesError,
+    createRole,
+    updateRole,
+    deleteRole,
+    refreshRoles
+  } = useRoles();
+
+  // Real API integration for permission management
+  const {
+    permissions,
+    permissionsByResource,
+    loading: permissionsLoading,
+    error: permissionsError,
+    createPermission,
+    updatePermission,
+    deletePermission,
+    refreshPermissions
+  } = usePermissions();
+
   const handleDemoAction = (action: string) => {
     const permissions = rolePermissions[selectedRole as keyof typeof rolePermissions];
     
@@ -1192,28 +1231,16 @@ export default function DashboardSettingsPage() {
 
     setIsAddingRole(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await createRole({
+        name: newRoleName.trim(),
+        description: newRoleDescription.trim() || undefined
+      });
       
-      const newRoleKey = newRoleName.toLowerCase().replace(/\s+/g, '');
+      // Rol oluşturduktan sonra listeyi yenile
+      setTimeout(() => {
+        refreshRoles();
+      }, 500);
       
-      // Add new role to permissions
-      rolePermissions[newRoleKey as keyof typeof rolePermissions] = {
-        canView: false,
-        canCreate: false,
-        canEdit: false,
-        canDelete: false,
-        canApprove: false,
-        canExport: false,
-        canManageUsers: false,
-        canManageRoles: false,
-        canViewFinancials: false,
-        canManageSettings: false
-      };
-
-      // Add new role to module access
-      moduleAccess[newRoleKey as keyof typeof moduleAccess] = ['dashboard'];
-
       setActionMessage('Rol başarıyla eklendi');
       setShowActionMessage(true);
       setTimeout(() => setShowActionMessage(false), 3000);
@@ -1230,51 +1257,103 @@ export default function DashboardSettingsPage() {
     }
   };
 
-  const handleDeleteRole = (roleKey: string) => {
-    if (roleKey === 'superAdmin' || roleKey === 'admin') {
-      setActionMessage('Sistem rolleri silinemez');
+  const handleDeleteRole = async (roleId: string) => {
+    try {
+      await deleteRole(roleId);
+      setActionMessage('Rol başarıyla silindi');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } catch (error) {
+      setActionMessage('Rol silinirken hata oluştu');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    }
+  };
+
+  const handleEditRole = (role: any) => {
+    // TODO: Implement role editing functionality
+    console.log('Edit role:', role);
+    setActionMessage('Rol düzenleme özelliği yakında eklenecek');
+    setShowActionMessage(true);
+    setTimeout(() => setShowActionMessage(false), 3000);
+  };
+
+  // Permission Management Functions
+  const handleAddPermission = async () => {
+    if (!newPermissionName.trim() || !newPermissionAction.trim() || !newPermissionResource.trim()) {
+      setActionMessage('İzin adı, eylem ve kaynak alanları boş olamaz');
       setShowActionMessage(true);
       setTimeout(() => setShowActionMessage(false), 3000);
       return;
     }
 
-    // Remove role from permissions and module access
-    delete rolePermissions[roleKey as keyof typeof rolePermissions];
-    delete moduleAccess[roleKey as keyof typeof moduleAccess];
-    
-    // If deleted role was selected, switch to user role
-    if (selectedRole === roleKey) {
-      setSelectedRole('user');
+    setIsAddingPermission(true);
+    try {
+      await createPermission({
+        name: newPermissionName.trim(),
+        action: newPermissionAction.trim(),
+        resource: newPermissionResource.trim(),
+        description: newPermissionDescription.trim() || undefined
+      });
+      
+      // İzin oluşturduktan sonra listeyi yenile
+      setTimeout(() => {
+        refreshPermissions();
+      }, 500);
+      
+      setActionMessage('İzin başarıyla eklendi');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+      
+      setShowAddPermissionModal(false);
+      setNewPermissionName('');
+      setNewPermissionAction('');
+      setNewPermissionResource('');
+      setNewPermissionDescription('');
+    } catch (error) {
+      setActionMessage('İzin eklenirken hata oluştu');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } finally {
+      setIsAddingPermission(false);
     }
+  };
 
-    setActionMessage('Rol başarıyla silindi');
+  const handleDeletePermission = async (permissionId: string) => {
+    try {
+      await deletePermission(permissionId);
+      setActionMessage('İzin başarıyla silindi');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } catch (error) {
+      setActionMessage('İzin silinirken hata oluştu');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    }
+  };
+
+  const handleEditPermission = (permission: any) => {
+    // TODO: Implement permission editing functionality
+    console.log('Edit permission:', permission);
+    setActionMessage('İzin düzenleme özelliği yakında eklenecek');
     setShowActionMessage(true);
     setTimeout(() => setShowActionMessage(false), 3000);
   };
 
-  const confirmDeleteRole = (roleKey: string) => {
-    setRoleToDelete(roleKey);
-    setShowDeleteConfirmModal(true);
+  // Role Permissions Management Functions
+  const handleManageRolePermissions = (role: any) => {
+    setSelectedRoleForPermissions(role);
+    setShowRolePermissionsModal(true);
   };
 
-  const executeDeleteRole = () => {
-    handleDeleteRole(roleToDelete);
-    setShowDeleteConfirmModal(false);
-    setRoleToDelete('');
+  const handleCloseRolePermissionsModal = () => {
+    setShowRolePermissionsModal(false);
+    setSelectedRoleForPermissions(null);
   };
 
-  const getRoleDisplayName = (roleKey: string): string => {
-    const roleNames: Record<string, string> = {
-      superAdmin: t.superAdmin,
-      admin: t.admin,
-      financeManager: t.financeManager,
-      hrManager: t.hrManager,
-      operator: t.operator,
-      viewer: t.viewer,
-      user: t.user
-    };
-    return roleNames[roleKey] || roleKey;
-  };
+
+
+
 
   // Tab items
   const tabItems = [
@@ -1309,40 +1388,238 @@ export default function DashboardSettingsPage() {
                </button>
              </div>
              
-                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                {Object.keys(rolePermissions).map((roleKey) => (
-                  <div key={roleKey} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500">
-                    <div className="flex items-center space-x-2 flex-1">
-                      <input
-                        type="radio"
-                        id={roleKey}
-                        name="selectedRole"
-                        value={roleKey}
-                        checked={selectedRole === roleKey}
-                        onChange={(e) => setSelectedRole(e.target.value)}
-                        className="text-primary-gold focus:ring-primary-gold"
-                      />
-                      <label htmlFor={roleKey} className="text-sm font-medium text-text-on-light dark:text-text-on-dark cursor-pointer">
-                        {getRoleDisplayName(roleKey)}
-                      </label>
+             {rolesLoading ? (
+               <div className="flex items-center justify-center py-8">
+                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold"></div>
+                 <span className="ml-2 text-text-light-secondary dark:text-text-secondary">Roller yükleniyor...</span>
+               </div>
+             ) : rolesError ? (
+               <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                 <p className="text-red-800 dark:text-red-200 text-sm">{rolesError}</p>
+               </div>
+                                         ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                  {roles && roles.length > 0 ? (
+                    roles.map((role) => {
+                      // Güvenli kontrol - role objesi ve gerekli alanları var mı?
+                      if (!role || !role.id || !role.name || !role.slug) {
+                        console.warn('Invalid role object:', role);
+                        return null;
+                      }
+                      
+                      return (
+                        <div key={role.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500">
+                          <div className="flex items-center space-x-2 flex-1">
+                            <input
+                              type="radio"
+                              id={role.id}
+                              name="selectedRole"
+                              value={role.slug}
+                              checked={selectedRole === role.slug}
+                              onChange={(e) => setSelectedRole(e.target.value)}
+                              className="text-primary-gold focus:ring-primary-gold"
+                            />
+                            <div className="flex flex-col">
+                              <label htmlFor={role.id} className="text-sm font-medium text-text-on-light dark:text-text-on-dark cursor-pointer">
+                                {role.name}
+                              </label>
+                              {role.description && (
+                                <span className="text-xs text-text-light-secondary dark:text-text-secondary">
+                                  {role.description}
+                                </span>
+                              )}
+                              {role.isSystem && (
+                                <span className="text-xs text-primary-gold bg-primary-gold-light/20 px-2 py-0.5 rounded-full">
+                                  Sistem Rolü
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                                                     <div className="flex items-center ml-auto space-x-2">
+                             <button
+                               onClick={() => handleManageRolePermissions(role)}
+                               className="text-primary-gold hover:text-primary-gold/80 transition-colors"
+                               title="İzinleri Yönet"
+                             >
+                               <Key className="w-4 h-4" />
+                             </button>
+                             <button
+                               onClick={() => handleEditRole(role)}
+                               className="text-primary-blue hover:text-primary-blue/80 transition-colors"
+                               title="Rolü Düzenle"
+                             >
+                               <Edit className="w-4 h-4" />
+                             </button>
+                             {!role.isSystem && (
+                               <button
+                                 onClick={() => handleDeleteRole(role.id)}
+                                 className="text-red-500 hover:text-red-700 transition-colors"
+                                 title="Rolü Sil"
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </button>
+                             )}
+                           </div>
+                        </div>
+                      );
+                    }).filter(Boolean) // null değerleri filtrele
+                  ) : (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-text-light-secondary dark:text-text-secondary">
+                        Henüz rol bulunmuyor
+                      </p>
                     </div>
-                    <div className="flex items-center ml-auto">
-                      {roleKey !== 'superAdmin' && roleKey !== 'admin' && (
-                        <button
-                          onClick={() => confirmDeleteRole(roleKey)}
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                          title="Rolü Sil"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                  )}
+                </div>
+              )}
+                       </div>
+
+                         {/* Permission Management */}
+             <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+               <div className="flex items-center justify-between mb-4">
+                 <h4 className="text-md font-medium text-text-on-light dark:text-text-on-dark">
+                   İzin Yönetimi
+                 </h4>
+                 <button
+                   onClick={() => setShowAddPermissionModal(true)}
+                   className="inline-flex items-center px-3 py-1.5 bg-primary-gold text-white text-xs font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
+                 >
+                   <Plus className="w-3 h-3 mr-1" />
+                   İzin Ekle
+                 </button>
+               </div>
+               
+               <details className="bg-gray-100 dark:bg-gray-800 rounded-lg border-2 border-primary-gold/30 overflow-hidden shadow-sm">
+                 <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                   <div className="flex items-center space-x-3">
+                     <div className="p-2 bg-primary-gold/20 rounded-lg">
+                       <Shield className="w-5 h-5 text-primary-gold" />
+                     </div>
+                     <div>
+                       <h5 className="text-base font-bold text-text-on-light dark:text-text-on-dark">
+                         Tüm İzinler
+                       </h5>
+                       <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                         İzinleri görüntüle ve yönet
+                       </p>
+                     </div>
+                   </div>
+                   <div className="flex items-center space-x-3">
+                     <span className="text-sm bg-primary-gold text-white px-3 py-1 rounded-full font-medium">
+                       {permissions ? permissions.length : 0}
+                     </span>
+                     <ChevronDown className="w-5 h-5 text-primary-gold transition-transform group-open:rotate-180" />
+                   </div>
+                 </summary>
+               
+               {permissionsLoading ? (
+                 <div className="flex items-center justify-center py-8">
+                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold"></div>
+                   <span className="ml-2 text-text-light-secondary dark:text-text-secondary">İzinler yükleniyor...</span>
+                 </div>
+               ) : permissionsError ? (
+                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                   <p className="text-red-800 dark:text-red-200 text-sm">{permissionsError}</p>
+                 </div>
+                               ) : (
+                  <div className="overflow-y-auto max-h-[600px] p-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#AC8D6A #E5E7EB' }}>
+                    <div className="space-y-4">
+                      {permissionsByResource && Object.keys(permissionsByResource).length > 0 ? (
+                        Object.entries(permissionsByResource).map(([resource, resourcePermissions]) => (
+                          <details key={resource} className="bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 overflow-hidden">
+                            <summary className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors">
+                              <div className="flex items-center space-x-2">
+                                <Shield className="w-4 h-4 text-primary-gold" />
+                                <div>
+                                  <h5 className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
+                                    {resource.charAt(0).toUpperCase() + resource.slice(1)}
+                                  </h5>
+                                  <p className="text-xs text-text-light-secondary dark:text-text-secondary">
+                                    {resourcePermissions.length} izin
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs bg-primary-gold-light/20 text-primary-gold px-2 py-0.5 rounded-full">
+                                  {resourcePermissions.length}
+                                </span>
+                                <ChevronDown className="w-4 h-4 text-text-light-secondary dark:text-text-secondary transition-transform group-open:rotate-180" />
+                              </div>
+                            </summary>
+                            
+                            <div className="border-t border-gray-200 dark:border-gray-500 p-3 bg-gray-50 dark:bg-gray-700">
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {resourcePermissions.map((permission) => {
+                                  // Güvenli kontrol - permission objesi ve gerekli alanları var mı?
+                                  if (!permission || !permission.id || !permission.name || !permission.action || !permission.resource) {
+                                    console.warn('Invalid permission object:', permission);
+                                    return null;
+                                  }
+                                  
+                                  return (
+                                    <div key={permission.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500">
+                                      <div className="flex items-center space-x-2 flex-1">
+                                        <div className="w-2 h-2 bg-primary-gold rounded-full flex-shrink-0"></div>
+                                        <div className="flex flex-col">
+                                          <label className="text-sm font-medium text-text-on-light dark:text-text-on-dark cursor-pointer">
+                                            {permission.name}
+                                          </label>
+                                          <div className="text-xs text-text-light-secondary dark:text-text-secondary">
+                                            <span className="font-medium">Eylem:</span> {permission.action}
+                                          </div>
+                                          {permission.description && (
+                                            <div className="text-xs text-text-light-muted dark:text-text-muted line-clamp-1">
+                                              {permission.description}
+                                            </div>
+                                          )}
+                                          {permission.isSystem && (
+                                            <span className="text-xs text-primary-gold bg-primary-gold-light/20 px-2 py-0.5 rounded-full mt-1 inline-block">
+                                              Sistem İzni
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center ml-auto space-x-2">
+                                        <button
+                                          onClick={() => handleEditPermission(permission)}
+                                          className="text-primary-blue hover:text-primary-blue/80 transition-colors"
+                                          title="İzni Düzenle"
+                                        >
+                                          <Edit className="w-4 h-4" />
+                                        </button>
+                                        {!permission.isSystem && (
+                                          <button
+                                            onClick={() => handleDeletePermission(permission.id)}
+                                            className="text-red-500 hover:text-red-700 transition-colors"
+                                            title="İzni Sil"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                }).filter(Boolean) // null değerleri filtrele
+                              }
+                              </div>
+                            </div>
+                          </details>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Shield className="w-12 h-12 text-text-light-secondary dark:text-text-secondary mx-auto mb-3" />
+                          <p className="text-text-light-secondary dark:text-text-secondary">
+                            Henüz izin bulunmuyor
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
-           </div>
+                )}
+                 </details>
+             </div>
 
-          {/* Action Message */}
+           {/* Action Message */}
           {showActionMessage && (
             <div className={`p-4 rounded-lg ${
               actionMessage === t.actionSuccess 
@@ -1507,9 +1784,96 @@ export default function DashboardSettingsPage() {
                  </div>
                </div>
              </div>
-           )}
+                       )}
 
-           {/* Delete Confirmation Modal */}
+            {/* Add Permission Modal */}
+            {showAddPermissionModal && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+                  <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-4">
+                    Yeni İzin Ekle
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
+                        İzin Adı
+                      </label>
+                      <input
+                        type="text"
+                        value={newPermissionName}
+                        onChange={(e) => setNewPermissionName(e.target.value)}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                        placeholder="Örn: Kullanıcı Oluştur"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
+                        Eylem
+                      </label>
+                      <input
+                        type="text"
+                        value={newPermissionAction}
+                        onChange={(e) => setNewPermissionAction(e.target.value)}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                        placeholder="Örn: create"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
+                        Kaynak
+                      </label>
+                      <input
+                        type="text"
+                        value={newPermissionResource}
+                        onChange={(e) => setNewPermissionResource(e.target.value)}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                        placeholder="Örn: user"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-1">
+                        Açıklama
+                      </label>
+                      <textarea
+                        value={newPermissionDescription}
+                        onChange={(e) => setNewPermissionDescription(e.target.value)}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                        placeholder="İzin açıklaması (opsiyonel)"
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={handleAddPermission}
+                      disabled={isAddingPermission || !newPermissionName.trim() || !newPermissionAction.trim() || !newPermissionResource.trim()}
+                      className="flex-1 px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isAddingPermission ? 'Ekleniyor...' : 'Ekle'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowAddPermissionModal(false);
+                        setNewPermissionName('');
+                        setNewPermissionAction('');
+                        setNewPermissionResource('');
+                        setNewPermissionDescription('');
+                      }}
+                      className="flex-1 px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600 transition-colors"
+                    >
+                      İptal
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
            {showDeleteConfirmModal && (
              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
@@ -1531,7 +1895,7 @@ export default function DashboardSettingsPage() {
                  
                  <div className="mb-6">
                    <p className="text-sm text-text-on-light dark:text-text-on-dark">
-                     <span className="font-medium">{getRoleDisplayName(roleToDelete)}</span> rolünü silmek istediğinizden emin misiniz?
+                     <span className="font-medium">{roleToDelete}</span> rolünü silmek istediğinizden emin misiniz?
                    </p>
                  </div>
                  
@@ -1546,7 +1910,11 @@ export default function DashboardSettingsPage() {
                       İptal
                     </button>
                     <button
-                      onClick={executeDeleteRole}
+                      onClick={() => {
+                        handleDeleteRole(roleToDelete);
+                        setShowDeleteConfirmModal(false);
+                        setRoleToDelete('');
+                      }}
                       className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors"
                     >
                       Evet, Sil
@@ -1554,10 +1922,17 @@ export default function DashboardSettingsPage() {
                   </div>
                </div>
              </div>
-           )}
-        </div>
-      )
-    },
+                        )}
+
+             {/* Role Permissions Modal */}
+             <RolePermissionsModal
+               isOpen={showRolePermissionsModal}
+               onClose={handleCloseRolePermissionsModal}
+               role={selectedRoleForPermissions}
+             />
+         </div>
+       )
+     },
     {
       id: 'unit-prices',
       label: t.unitPrices,
