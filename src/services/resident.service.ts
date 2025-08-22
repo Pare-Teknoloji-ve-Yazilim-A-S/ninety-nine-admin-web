@@ -115,13 +115,19 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
     /**
      * Get all residents with pagination and filtering (admin)
-     * GET /admin/users
+     * GET /admin/users?type=resident
      */
     async getAllResidents(params?: ResidentFilterParams): Promise<PaginatedResponse<Resident>> {
         try {
             this.logger.info('Fetching all residents (admin)', params);
 
-            const queryParams = this.buildQueryParams(params);
+            // type=resident parametresini otomatik olarak ekle
+            const residentParams = {
+                ...params,
+                type: 'resident'
+            };
+
+            const queryParams = this.buildQueryParams(residentParams);
             const response = await apiClient.get<ResidentListResponse>(
                 `${apiConfig.endpoints.residents.admin.base}${queryParams}`
             );
@@ -177,13 +183,19 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
     /**
      * Get pending residents
-     * GET /admin/users/pending-verification
+     * GET /admin/users/pending-verification?type=resident
      */
     async getPendingResidents(params?: ResidentFilterParams): Promise<PaginatedResponse<Resident>> {
         try {
             this.logger.info('Fetching pending residents', params);
 
-            const queryParams = this.buildQueryParams(params);
+            // type=resident parametresini otomatik olarak ekle
+            const residentParams = {
+                ...params,
+                type: 'resident'
+            };
+
+            const queryParams = this.buildQueryParams(residentParams);
             const response = await apiClient.get<PendingResidentsResponse>(
                 `${apiConfig.endpoints.residents.admin.pendingVerification}${queryParams}`
             );

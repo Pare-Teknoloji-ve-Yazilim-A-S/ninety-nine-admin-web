@@ -142,6 +142,7 @@ export interface ResidentFilterParams {
     search?: string;
     orderColumn?: string;
     orderBy?: 'ASC' | 'DESC';
+    type?: 'resident' | 'admin' | 'staff'; // Kullanıcı tipi filtresi
     status?: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'BANNED' | 'SUSPENDED';
     role?: 'admin' | 'resident' | 'tenant';
     membershipTier?: 'GOLD' | 'SILVER' | 'STANDARD';
