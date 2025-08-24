@@ -5,8 +5,9 @@ import dynamic from 'next/dynamic';
 import type { ApexOptions } from 'apexcharts';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
-import { TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TrendingUp, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import billingService from '@/services/billing.service';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -50,6 +51,14 @@ export default function FinancialChart({
   const [monthlyTotals, setMonthlyTotals] = useState<number[]>(Array(12).fill(0));
   const [loading, setLoading] = useState<boolean>(false);
   const [currentLanguage, setCurrentLanguage] = useState('tr');
+  
+  // Permission kontrolü
+  const { hasPermission, loading: permissionLoading, refreshPermissions } = usePermissionCheck();
+  const canViewFinancialChart = hasPermission('billing:stats:read');
+  
+  // Debug için log
+  console.log('FinancialChart - canViewFinancialChart:', canViewFinancialChart);
+  console.log('FinancialChart - permissionLoading:', permissionLoading);
 
   // Dil tercihini localStorage'dan al
   useEffect(() => {
@@ -63,6 +72,9 @@ export default function FinancialChart({
   const t = translations[currentLanguage as keyof typeof translations];
 
   useEffect(() => {
+    // Permission yoksa veri yükleme
+    if (!canViewFinancialChart) return;
+    
     let mounted = true;
     const load = async () => {
       setLoading(true);
@@ -85,7 +97,7 @@ export default function FinancialChart({
     };
     load();
     return () => { mounted = false; };
-  }, [year]);
+  }, [year, canViewFinancialChart]);
   const gold = '#AC8D6A';
   const gray200 = '#E7E5E4';
   const gray300 = '#D6D3D1';
@@ -146,6 +158,27 @@ export default function FinancialChart({
     [ { name: `${year} ${t.seriesName}`, data: monthlyTotals } ]
   ), [year, monthlyTotals, t.seriesName]);
 
+  // Permission yoksa erişim reddedildi mesajı göster
+  if (!canViewFinancialChart) {
+    return (
+      <Card
+        title={title || t.title}
+        subtitle="Erişim Kısıtlı"
+        icon={Lock}
+      >
+        <div className="h-64 bg-background-light-card dark:bg-background-card rounded-lg p-8 flex flex-col items-center justify-center">
+          <Lock className="w-12 h-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-2">
+            Erişim Kısıtlı
+          </h3>
+          <p className="text-sm text-text-light-secondary dark:text-text-secondary text-center">
+            Bu grafiği görüntülemek için gerekli izinlere sahip değilsiniz.
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card
       title={title || t.title}
@@ -173,7 +206,7 @@ export default function FinancialChart({
     >
       <div className="h-64 bg-background-light-card dark:bg-background-card rounded-lg p-2">
         <Chart type="area" height="100%" options={options} series={series} />
-        {loading && <div className="absolute inset-0 flex items-center justify-center">
+        {(loading || permissionLoading) && <div className="absolute inset-0 flex items-center justify-center">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary-gold border-t-transparent" />
         </div>}
       </div>

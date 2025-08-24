@@ -74,6 +74,13 @@ Bu doküman, NinetyNine Admin Web uygulamasındaki her sayfa, modal ve bileşeni
 - GET /admin/announcements/active (Aktif duyurular)
 ```
 
+#### 7. Finansal Grafik
+```typescript
+// billingService
+- GET /admin/billing/dues/monthly-paid-totals/{year} (Aylık aidat tahsilat toplamları - FinancialChart)
+// Required Permission: billing:stats:read
+```
+
 ### Modal'lar
 - **Day Events Modal** - Günlük etkinlikler detayı
 
@@ -499,6 +506,13 @@ Bu doküman, NinetyNine Admin Web uygulamasındaki her sayfa, modal ve bileşeni
 - GET /admin/billing/debt-summary (Borç özeti)
 ```
 
+#### 4. Aidat İstatistikleri
+```typescript
+// billingService
+- GET /admin/billing/dues/monthly-paid-totals/{year} (Aylık aidat tahsilat toplamları)
+// Required Permission: billing:stats:read
+```
+
 #### 4. Ödeme İşlemleri
 ```typescript
 // paymentService
@@ -667,13 +681,13 @@ Bu doküman, NinetyNine Admin Web uygulamasındaki her sayfa, modal ve bileşeni
 
 | Sayfa | Endpoint Kategorisi | Gerekli İzinler |
 |-------|-------------------|-----------------|
-| Dashboard | Dashboard | `dashboard:read` |
+| Dashboard | Dashboard, Billing | `dashboard:read`, `billing:stats:read` |
 | Hizmet Talepleri | Tickets | `tickets:read`, `tickets:write`, `tickets:delete` |
 | Personel Yönetimi | Staff | `staff:read`, `staff:write`, `staff:delete` |
 | Sakin Listesi | Residents | `residents:read`, `residents:write`, `residents:delete` |
 | Duyuru Listesi | Announcements | `announcements:read`, `announcements:write`, `announcements:delete` |
 | Konut Yönetimi | Properties | `properties:read`, `properties:write`, `properties:delete` |
-| Finansal İşlemler | Billing, Payments | `billing:read`, `billing:write`, `payments:read`, `payments:write` |
+| Finansal İşlemler | Billing, Payments | `billing:read`, `billing:write`, `billing:stats:read`, `payments:read`, `payments:write` |
 | Sistem Ayarları | Roles, Permissions | `roles:read`, `roles:write`, `permissions:read`, `permissions:write` |
 
 ### Modal Bazlı İzinler

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { authService } from '@/services/auth.service';
 import { User } from '@/services/types/user.types';
 import { AuthTokens, AuthState } from '@/services/types/auth.types';
+import { triggerPermissionChange } from '@/lib/permission-utils';
 
 interface AuthContextType {
     // State
@@ -22,6 +23,7 @@ interface AuthContextType {
     // Permissions
     hasPermission: (resource: string, action: string) => Promise<boolean>;
     hasRole: (roleName: string) => boolean;
+    refreshUserPermissions: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +50,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 // Try to get current user
                 const currentUser = await authService.getCurrentUser();
                 setUser(currentUser);
+
+                // Save user permissions to localStorage
+                if (currentUser?.role?.permissions) {
+                    localStorage.setItem('userPermissions', JSON.stringify(currentUser.role.permissions));
+                    console.log('User permissions saved to localStorage:', currentUser.role.permissions);
+                    // Permission değişikliğini tetikle
+                    triggerPermissionChange();
+                }
 
                 // Set tokens from storage
                 const accessToken = authService.getAccessToken();
@@ -94,6 +104,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const currentUser = await authService.getCurrentUser();
             setUser(currentUser);
 
+            // Save user permissions to localStorage
+            if (currentUser?.role?.permissions) {
+                localStorage.setItem('userPermissions', JSON.stringify(currentUser.role.permissions));
+                console.log('User permissions saved to localStorage:', currentUser.role.permissions);
+                // Permission değişikliğini tetikle
+                triggerPermissionChange();
+            }
+
         } catch (error: any) {
             const message = error?.response?.data?.message || error?.message || 'Giriş yapılamadı';
             setError(message);
@@ -113,6 +131,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
             // Clear state regardless of logout result
             setUser(null);
             setTokens(null);
+            // Clear user permissions from localStorage
+            localStorage.removeItem('userPermissions');
+            // Permission değişikliğini tetikle
+            triggerPermissionChange();
             // Logout sırasında hata mesajını temizle (bu doğru)
             setError(null);
             setIsLoading(false);
@@ -153,6 +175,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return user?.role?.name?.toLowerCase() === roleName.toLowerCase();
     };
 
+    // Permission'ları yenile
+    const refreshUserPermissions = async () => {
+        try {
+            const currentUser = await authService.getCurrentUser();
+            setUser(currentUser);
+
+            // Save user permissions to localStorage
+            if (currentUser?.role?.permissions) {
+                localStorage.setItem('userPermissions', JSON.stringify(currentUser.role.permissions));
+                console.log('User permissions refreshed in localStorage:', currentUser.role.permissions);
+                // Permission değişikliğini tetikle
+                triggerPermissionChange();
+            } else {
+                localStorage.removeItem('userPermissions');
+                console.log('User permissions removed from localStorage');
+                // Permission değişikliğini tetikle
+                triggerPermissionChange();
+            }
+        } catch (error) {
+            console.error('Failed to refresh user permissions:', error);
+        }
+    };
+
     const value: AuthContextType = {
         // State
         user,
@@ -170,6 +215,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Permissions
         hasPermission,
         hasRole,
+        refreshUserPermissions,
     };
 
     return (
