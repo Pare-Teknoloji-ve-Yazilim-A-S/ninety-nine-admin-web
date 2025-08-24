@@ -52,13 +52,70 @@ export default function FinancialChart({
   const [loading, setLoading] = useState<boolean>(false);
   const [currentLanguage, setCurrentLanguage] = useState('tr');
   
-  // Permission kontrolü
+  // Permission kontrolü - ID tabanlı (öncelikli) ve name tabanlı (geriye dönük uyumluluk)
   const { hasPermission, loading: permissionLoading, refreshPermissions } = usePermissionCheck();
-  const canViewFinancialChart = hasPermission('billing:stats:read');
   
-  // Debug için log
-  console.log('FinancialChart - canViewFinancialChart:', canViewFinancialChart);
+  // Önce ID ile kontrol et, sonra name ile
+  const billingStatsPermissionId = '4158aedc-5ae7-4a79-a746-a8268dd1510e'; // Billing Statistics ID
+  const billingStatsPermissionName = 'billing:stats:read'; // Eski name tabanlı
+  
+  const canViewFinancialChartById = hasPermission(billingStatsPermissionId);
+  const canViewFinancialChartByName = hasPermission(billingStatsPermissionName);
+  const canViewFinancialChart = canViewFinancialChartById || canViewFinancialChartByName;
+  
+  // Debug için detaylı log'lar
+  console.log('=== FinancialChart Debug ===');
+  console.log('FinancialChart - canViewFinancialChart (final):', canViewFinancialChart);
+  console.log('FinancialChart - canViewFinancialChartById:', canViewFinancialChartById);
+  console.log('FinancialChart - canViewFinancialChartByName:', canViewFinancialChartByName);
   console.log('FinancialChart - permissionLoading:', permissionLoading);
+  console.log('FinancialChart - Required permission ID:', billingStatsPermissionId);
+  console.log('FinancialChart - Required permission name:', billingStatsPermissionName);
+  
+  // localStorage'daki permission'ları kontrol et
+  const userPermissions = localStorage.getItem('userPermissions');
+  console.log('FinancialChart - userPermissions from localStorage:', userPermissions);
+  
+  if (userPermissions) {
+    try {
+      const parsedPermissions = JSON.parse(userPermissions);
+      console.log('FinancialChart - Parsed permissions:', parsedPermissions);
+      console.log('FinancialChart - Permissions type:', typeof parsedPermissions);
+      console.log('FinancialChart - Is array:', Array.isArray(parsedPermissions));
+      
+      if (Array.isArray(parsedPermissions) && parsedPermissions.length > 0) {
+        console.log('FinancialChart - First permission item:', parsedPermissions[0]);
+        console.log('FinancialChart - All permissions:', parsedPermissions);
+        
+        // billing:stats permission'ını ID ve name ile ara
+        const hasBillingStatsById = parsedPermissions.some(perm => {
+          if (typeof perm === 'object' && perm !== null) {
+            return perm.id === billingStatsPermissionId;
+          }
+          return false;
+        });
+        
+        const hasBillingStatsByName = parsedPermissions.some(perm => {
+          if (typeof perm === 'string') {
+            return perm === billingStatsPermissionName;
+          } else if (typeof perm === 'object' && perm !== null) {
+            return perm.name === billingStatsPermissionName;
+          }
+          return false;
+        });
+        
+        console.log('FinancialChart - Manual permission check by ID:', hasBillingStatsById);
+        console.log('FinancialChart - Manual permission check by name:', hasBillingStatsByName);
+        console.log('FinancialChart - Manual permission check result (combined):', hasBillingStatsById || hasBillingStatsByName);
+      }
+    } catch (error) {
+      console.error('FinancialChart - Permission parsing error:', error);
+    }
+  } else {
+    console.warn('FinancialChart - No userPermissions found in localStorage');
+  }
+  
+  console.log('=== End FinancialChart Debug ===');
 
   // Dil tercihini localStorage'dan al
   useEffect(() => {
