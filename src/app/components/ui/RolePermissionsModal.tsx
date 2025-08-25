@@ -116,10 +116,14 @@ export default function RolePermissionsModal({ isOpen, onClose, role }: RolePerm
   const moveToAvailable = () => {
     if (selectedCurrentPermissions.length === 0) return;
     
+    console.log('Moving permissions to available:', selectedCurrentPermissions);
+    
     // Seçili izinleri bul
     const permissionsToMove = tempRolePermissions.filter(rp => 
       selectedCurrentPermissions.includes(rp.permissionId)
     );
+    
+    console.log('Permissions to move:', permissionsToMove.map(p => ({ id: p.permissionId, name: p.permission?.name })));
     
     // Mevcut izinlerden kaldır
     setTempRolePermissions(prev => 
@@ -141,16 +145,22 @@ export default function RolePermissionsModal({ isOpen, onClose, role }: RolePerm
     
     // Seçimi temizle
     setSelectedCurrentPermissions([]);
+    
+    console.log('Move to available completed');
   };
 
   // İzinleri sola taşı (atanabilecek → mevcut)
   const moveToCurrent = () => {
     if (selectedAvailablePermissions.length === 0) return;
     
+    console.log('Moving permissions to current:', selectedAvailablePermissions);
+    
     // Seçili izinleri bul
     const permissionsToMove = tempAvailablePermissions.filter(p => 
       selectedAvailablePermissions.includes(p.id)
     );
+    
+    console.log('Permissions to move:', permissionsToMove.map(p => ({ id: p.id, name: p.name })));
     
     // Atanabilecek izinlerden kaldır
     setTempAvailablePermissions(prev => 
@@ -172,6 +182,8 @@ export default function RolePermissionsModal({ isOpen, onClose, role }: RolePerm
     
     // Seçimi temizle
     setSelectedAvailablePermissions([]);
+    
+    console.log('Move to current completed');
   };
 
   // Tümünü seç/kaldır
@@ -198,12 +210,21 @@ export default function RolePermissionsModal({ isOpen, onClose, role }: RolePerm
     // Geçici state'lerden final permission ID'lerini al
     const finalPermissionIds = tempRolePermissions.map(rp => rp.permissionId);
     
+    console.log('RolePermissionsModal - Saving permissions:', {
+      roleId: role.id,
+      roleName: role.name,
+      finalPermissionIds,
+      tempRolePermissionsCount: tempRolePermissions.length,
+      tempAvailablePermissionsCount: tempAvailablePermissions.length
+    });
+    
     try {
       await updateRolePermissions(finalPermissionIds, role.id);
+      console.log('RolePermissionsModal - Save successful');
       showSuccessToast('Rol izinleri başarıyla güncellendi');
       onClose();
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('RolePermissionsModal - Save error:', error);
       showErrorToast('Rol izinleri güncellenirken hata oluştu');
     }
   };

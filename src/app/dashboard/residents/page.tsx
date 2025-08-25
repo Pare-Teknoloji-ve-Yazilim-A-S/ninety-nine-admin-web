@@ -22,7 +22,14 @@ import { useResidentsFilters } from '@/hooks/useResidentsFilters';
 import { useResidentsActions } from '@/hooks/useResidentsActions';
 import { useResidentsUI } from '@/hooks/useResidentsUI';
 import { useResidentsStats } from '@/hooks/useResidentsStats';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { generateStatsCardsDataFromCounts } from './utils/stats';
+
+// Sakin oluşturma izinleri için sabitler
+const CREATE_RESIDENT_PERMISSION_ID = 'da1b5308-72ee-4b07-9a59-5a4bb99e0ce9';
+const CREATE_RESIDENT_PERMISSION_NAME = 'Kullanıcı Oluştur';
+const MANAGE_RESIDENTS_PERMISSION_ID = '27c9019e-5b8e-4dd7-a702-db47d3fc6bca';
+const MANAGE_RESIDENTS_PERMISSION_NAME = 'Create User';
 import {
     Filter, Download, Plus, RefreshCw,
     ChevronRight, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX, CheckCircle, Users, Home, DollarSign, Calendar
@@ -307,6 +314,25 @@ const translations = {
 export default function ResidentsPage() {
     const router = useRouter();
     const { toasts, removeToast } = useToast();
+    
+    // İzin kontrolleri
+    const { hasPermission } = usePermissionCheck();
+    const hasCreateResidentPermission = hasPermission(CREATE_RESIDENT_PERMISSION_ID) || hasPermission(CREATE_RESIDENT_PERMISSION_NAME);
+    const hasManageResidentsPermission = hasPermission(MANAGE_RESIDENTS_PERMISSION_ID) || hasPermission(MANAGE_RESIDENTS_PERMISSION_NAME);
+    
+    // Kullanıcı bu iki izinden birine sahip olmalı
+    const canCreateResident = hasCreateResidentPermission || hasManageResidentsPermission;
+    
+    // Debug logları
+    console.log('Residents Page Debug:', {
+        hasCreateResidentPermission,
+        hasManageResidentsPermission,
+        canCreateResident,
+        CREATE_RESIDENT_PERMISSION_ID,
+        CREATE_RESIDENT_PERMISSION_NAME,
+        MANAGE_RESIDENTS_PERMISSION_ID,
+        MANAGE_RESIDENTS_PERMISSION_NAME
+    });
 
     // Dil tercihini localStorage'dan al
     const [currentLanguage, setCurrentLanguage] = useState('tr');
@@ -863,9 +889,17 @@ export default function ResidentsPage() {
                                     variant="secondary"
                                     size="md"
                                 />
-                                <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewResident}>
-                                    {t.newResident}
-                                </Button>
+                                {canCreateResident && (
+                                    <Button 
+                                        variant="primary" 
+                                        size="md" 
+                                        icon={Plus} 
+                                        onClick={handleAddNewResident}
+                                        data-testid="add-resident-button"
+                                    >
+                                        {t.newResident}
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
@@ -1112,4 +1146,4 @@ export default function ResidentsPage() {
             </div>
         </ProtectedRoute>
     );
-} 
+}

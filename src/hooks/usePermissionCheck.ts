@@ -65,7 +65,11 @@ export const usePermissionCheck = () => {
     // Permission name mapping (ID'den name'e çeviri)
     const permissionNameMap: { [key: string]: string } = {
       'e5f6g7h8-i9j0-1234-efgh-ij5678901234': 'Assign Property',
-      'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'Update Property'
+      'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'Update Property',
+      'create_resident': 'Create Resident',
+      'manage_residents': 'Manage Residents',
+      'da1b5308-72ee-4b07-9a59-5a4bb99e0ce9': 'Kullanıcı Oluştur',
+      '27c9019e-5b8e-4dd7-a702-db47d3fc6bca': 'Create User'
     };
     
     // Name varyasyonlarını da ekle
