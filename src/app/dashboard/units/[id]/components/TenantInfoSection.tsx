@@ -114,6 +114,7 @@ interface TenantInfoSectionProps {
   onAddTenant?: () => void;
   loading?: boolean;
   canEdit?: boolean;
+  canAssign?: boolean;
 }
 
 
@@ -124,7 +125,8 @@ export default function TenantInfoSection({
   onRemove,
   onAddTenant,
   loading = false,
-  canEdit = true 
+  canEdit = true,
+  canAssign = true 
 }: TenantInfoSectionProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('tr');
@@ -232,6 +234,8 @@ export default function TenantInfoSection({
     }
   };
 
+
+
   // If not rented or no tenant info
   if (!tenantInfo?.isRented) {
     return (
@@ -242,7 +246,7 @@ export default function TenantInfoSection({
               <Home className="h-5 w-5 text-primary-gold" />
               {t.tenantInfoTitle}
             </h3>
-            {canEdit && onAddTenant && (
+            {canEdit && canAssign && onAddTenant && (
               <Button variant="primary" size="sm" icon={UserPlus} onClick={onAddTenant}>
                 {t.addTenant}
               </Button>

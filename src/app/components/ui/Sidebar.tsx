@@ -125,7 +125,10 @@ const READ_STAFF_PERMISSION_NAME = 'Read Staff'; // Name for backward compatibil
 const READ_ANNOUNCEMENT_PERMISSION_ID = 'f5g6h7i8-9j0k-1l2m-3n4o-5p6q7r8s9t0u'; // UUID for Read Announcement permission
 const READ_ANNOUNCEMENT_PERMISSION_NAME = 'Read Announcement'; // Name for backward compatibility
 
-const getMenuItems = (currentLanguage: string, hasReadPropertyPermission: boolean, hasViewUserPermission: boolean, hasReadTicketPermission: boolean, hasReadBillingPermission: boolean, hasReadStaffPermission: boolean, hasReadAnnouncementPermission: boolean): MenuItemProps[] => {
+const READ_ROLE_PERMISSION_ID = 'g6h7i8j9-0k1l-2m3n-4o5p-6q7r8s9t0u1v'; // UUID for Read Role permission
+const READ_ROLE_PERMISSION_NAME = 'Read Role'; // Name for backward compatibility
+
+const getMenuItems = (currentLanguage: string, hasReadPropertyPermission: boolean, hasViewUserPermission: boolean, hasReadTicketPermission: boolean, hasReadBillingPermission: boolean, hasReadStaffPermission: boolean, hasReadAnnouncementPermission: boolean, hasReadRolePermission: boolean): MenuItemProps[] => {
     const t = translations[currentLanguage as keyof typeof translations];
     
     const allMenuItems = [
@@ -202,6 +205,11 @@ const getMenuItems = (currentLanguage: string, hasReadPropertyPermission: boolea
             console.log('Sidebar - Checking Read Announcement permission for Announcements');
             console.log('Sidebar - hasReadAnnouncementPermission:', hasReadAnnouncementPermission);
             return hasReadAnnouncementPermission;
+        }
+        if (item.href === '/dashboard/settings') {
+            console.log('Sidebar - Checking Read Role permission for Settings');
+            console.log('Sidebar - hasReadRolePermission:', hasReadRolePermission);
+            return hasReadRolePermission;
         }
         return true;
     });
@@ -332,6 +340,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     // Read Announcement izni kontrolü - hem ID hem de name ile kontrol et
     const hasReadAnnouncementPermission = permissionCheck.hasPermission(READ_ANNOUNCEMENT_PERMISSION_ID) || permissionCheck.hasPermission(READ_ANNOUNCEMENT_PERMISSION_NAME)
     
+    // Read Role izni kontrolü - hem ID hem de name ile kontrol et
+    const hasReadRolePermission = permissionCheck.hasPermission(READ_ROLE_PERMISSION_ID) || permissionCheck.hasPermission(READ_ROLE_PERMISSION_NAME)
+    
     console.log('Sidebar - READ_PROPERTY_PERMISSION_ID:', READ_PROPERTY_PERMISSION_ID)
     console.log('Sidebar - READ_PROPERTY_PERMISSION_NAME:', READ_PROPERTY_PERMISSION_NAME)
     console.log('Sidebar - hasReadPropertyPermission:', hasReadPropertyPermission)
@@ -350,6 +361,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     console.log('Sidebar - READ_ANNOUNCEMENT_PERMISSION_ID:', READ_ANNOUNCEMENT_PERMISSION_ID)
     console.log('Sidebar - READ_ANNOUNCEMENT_PERMISSION_NAME:', READ_ANNOUNCEMENT_PERMISSION_NAME)
     console.log('Sidebar - hasReadAnnouncementPermission:', hasReadAnnouncementPermission)
+    console.log('Sidebar - READ_ROLE_PERMISSION_ID:', READ_ROLE_PERMISSION_ID)
+    console.log('Sidebar - READ_ROLE_PERMISSION_NAME:', READ_ROLE_PERMISSION_NAME)
+    console.log('Sidebar - hasReadRolePermission:', hasReadRolePermission)
     console.log('Sidebar - permissionCheck loading:', permissionCheck.loading)
 
     // Dil tercihini localStorage'dan al
@@ -361,7 +375,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }, []);
 
     // Menü öğelerini dil ve izin bazlı al
-    const menuItems = getMenuItems(currentLanguage, hasReadPropertyPermission, hasViewUserPermission, hasReadTicketPermission, hasReadBillingPermission, hasReadStaffPermission, hasReadAnnouncementPermission);
+    const menuItems = getMenuItems(currentLanguage, hasReadPropertyPermission, hasViewUserPermission, hasReadTicketPermission, hasReadBillingPermission, hasReadStaffPermission, hasReadAnnouncementPermission, hasReadRolePermission);
     const t = translations[currentLanguage as keyof typeof translations];
 
     const handleLogout = async () => {

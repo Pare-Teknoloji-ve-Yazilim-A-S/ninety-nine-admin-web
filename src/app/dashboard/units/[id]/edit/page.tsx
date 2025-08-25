@@ -13,8 +13,13 @@ import TextArea from '@/app/components/ui/TextArea';
 import Label from '@/app/components/ui/Label';
 import { unitsService, Property } from '@/services';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { ArrowLeft, Save, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
+
+// Permission constants
+const UPDATE_PROPERTY_PERMISSION_ID = 'Update Property';
+const UPDATE_PROPERTY_PERMISSION_NAME = 'Update Property';
 
 export default function EditUnitPage() {
     const router = useRouter();
@@ -33,6 +38,10 @@ export default function EditUnitPage() {
             router.push('/dashboard/units');
         }
     });
+
+    // Permission check
+    const { hasPermission } = usePermissionCheck();
+    const hasUpdatePropertyPermission = hasPermission(UPDATE_PROPERTY_PERMISSION_ID);
 
     const breadcrumbItems = [
         { label: 'Ana Sayfa', href: '/dashboard' },
@@ -70,6 +79,13 @@ export default function EditUnitPage() {
         }
     }, [unitId, router]);
 
+    // Permission check - redirect if no permission
+    useEffect(() => {
+        if (!hasUpdatePropertyPermission) {
+            router.push('/dashboard/units');
+        }
+    }, [hasUpdatePropertyPermission, router]);
+
     const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         if (errors[field]) {
@@ -98,6 +114,12 @@ export default function EditUnitPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Check permission before submitting
+        if (!hasUpdatePropertyPermission) {
+            console.error('Update Property permission required');
+            return;
+        }
 
         if (!validateForm()) {
             return;
@@ -243,6 +265,7 @@ export default function EditUnitPage() {
                                             error={errors.propertyNumber}
                                             placeholder="Örn: A1, B25, Villa-1"
                                             required
+                                            disabled={!hasUpdatePropertyPermission}
                                         />
                                     </div>
 
@@ -253,6 +276,7 @@ export default function EditUnitPage() {
                                             value={formData.name || ''}
                                             onChange={(value: any) => handleInputChange('name', value)}
                                             placeholder="Konut ismi"
+                                            disabled={!hasUpdatePropertyPermission}
                                         />
                                     </div>
 
@@ -273,6 +297,7 @@ export default function EditUnitPage() {
                                                 { value: 'PARKING', label: 'Otopark' }
                                             ]}
                                             required
+                                            disabled={!hasUpdatePropertyPermission}
                                         />
                                     </div>
 
@@ -357,7 +382,7 @@ export default function EditUnitPage() {
                                         variant="secondary"
                                         onClick={handleReset}
                                         icon={RotateCcw}
-                                        disabled={isUpdating}
+                                        disabled={isUpdating || !hasUpdatePropertyPermission}
                                     >
                                         Sıfırla
                                     </Button>
@@ -366,7 +391,7 @@ export default function EditUnitPage() {
                                         variant="primary"
                                         icon={Save}
                                         isLoading={isUpdating}
-                                        disabled={isUpdating}
+                                        disabled={isUpdating || !hasUpdatePropertyPermission}
                                     >
                                         {isUpdating ? 'Kaydediliyor...' : 'Kaydet'}
                                     </Button>
@@ -379,4 +404,4 @@ export default function EditUnitPage() {
             </div>
         </ProtectedRoute>
     );
-} 
+}

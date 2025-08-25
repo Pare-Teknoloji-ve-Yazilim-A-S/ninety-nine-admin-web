@@ -108,6 +108,7 @@ interface OwnerInfoSectionProps {
   onOpenAddOwnerModal?: () => void;
   loading?: boolean;
   canEdit?: boolean;
+  canAssign?: boolean;
   residentId?: string; // Malik için sakin ID'si
   propertyId?: string; // Property ID for owner assignment
 }
@@ -122,6 +123,7 @@ export default function OwnerInfoSection({
   onOpenAddOwnerModal,
   loading = false,
   canEdit = true,
+  canAssign = true,
   residentId,
   propertyId
 }: OwnerInfoSectionProps) {
@@ -478,6 +480,8 @@ export default function OwnerInfoSection({
 
   const hasOwnerInfo = ownerInfo.data.fullName.value;
 
+
+
   if (!hasOwnerInfo) {
     return (
       <Card>
@@ -487,7 +491,7 @@ export default function OwnerInfoSection({
                <User className="h-5 w-5 text-primary-gold" />
                {getTranslatedTitle(ownerInfo.title)}
              </h3>
-            {canEdit && (
+            {canEdit && canAssign && (
               <Button variant="primary" size="sm" icon={Edit} onClick={handleEdit}>
                 {t.owner} Ekle
               </Button>

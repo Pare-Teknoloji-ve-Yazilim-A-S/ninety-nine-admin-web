@@ -58,6 +58,11 @@ import { useUnitsData } from '@/hooks/useUnitsData';
 import { useUnitsFilters } from '@/hooks/useUnitsFilters';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+
+// Create Property izni için sabitler
+const CREATE_PROPERTY_PERMISSION_ID = 'create-property-permission-id';
+const CREATE_PROPERTY_PERMISSION_NAME = 'Create Property';
 
 
 // Dil çevirileri
@@ -230,6 +235,19 @@ const translations = {
 };
 
 export default function UnitsListPage() {
+    // Permission kontrolü
+    const permissionCheck = usePermissionCheck();
+    
+    // Create Property izni kontrolü - hem ID hem de name ile kontrol et
+    const hasCreatePropertyPermission = permissionCheck.hasPermission(CREATE_PROPERTY_PERMISSION_ID) || permissionCheck.hasPermission(CREATE_PROPERTY_PERMISSION_NAME);
+    
+    // Debug: Create Property izni kontrolü
+    console.log('=== Create Property Permission Debug ===');
+    console.log('CREATE_PROPERTY_PERMISSION_ID:', CREATE_PROPERTY_PERMISSION_ID);
+    console.log('CREATE_PROPERTY_PERMISSION_NAME:', CREATE_PROPERTY_PERMISSION_NAME);
+    console.log('hasCreatePropertyPermission:', hasCreatePropertyPermission);
+    console.log('=== End Create Property Permission Debug ===');
+    
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
     // 1. Local search input state
@@ -735,11 +753,13 @@ export default function UnitsListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     {t.refresh}
                                 </Button>
-                                <Link href="/dashboard/units/add">
-                                    <Button variant="primary" size="md" icon={Plus}>
-                                        {t.newUnit}
-                                    </Button>
-                                </Link>
+                                {hasCreatePropertyPermission && (
+                                    <Link href="/dashboard/units/add">
+                                        <Button variant="primary" size="md" icon={Plus}>
+                                            {t.newUnit}
+                                        </Button>
+                                    </Link>
+                                )}
                             </div>
                         </div>
 

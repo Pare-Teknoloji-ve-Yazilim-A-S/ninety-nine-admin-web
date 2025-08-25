@@ -45,6 +45,8 @@ const READ_STAFF_PERMISSION_ID = 'read-staff'
 const READ_STAFF_PERMISSION_NAME = 'Read Staff'
 const READ_ANNOUNCEMENT_PERMISSION_ID = 'read-announcement'
 const READ_ANNOUNCEMENT_PERMISSION_NAME = 'Read Announcement'
+const READ_ROLE_PERMISSION_ID = 'read-role'
+const READ_ROLE_PERMISSION_NAME = 'Read Role'
 
 interface SubMenuItem {
     label: string;

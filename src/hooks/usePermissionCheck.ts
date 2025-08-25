@@ -34,41 +34,56 @@ export const usePermissionCheck = () => {
   }, [refreshUserPermissions]);
 
   const hasPermission = useCallback((requiredPermission: string): boolean => {
-    console.log('=== usePermissionCheck.hasPermission Debug ===');
-    console.log('Loading state:', loading);
-    console.log('Required permission:', requiredPermission);
     
     if (loading) {
-      console.log('Still loading, returning false');
       return false;
     }
     
     // SSR sırasında localStorage erişimini kontrol et
     if (typeof window === 'undefined') {
-      console.log('SSR environment detected, returning false');
       return false;
     }
     
     // Kullanıcının permission'larını localStorage'dan al
     const userPermissions = localStorage.getItem('userPermissions');
-    console.log('Raw userPermissions from localStorage:', userPermissions);
     
     if (!userPermissions) {
-      console.warn('usePermissionCheck - User permissions not found in localStorage');
       return false;
     }
-
+    
+    // Permission ID'sinin farklı varyasyonlarını oluştur
+    const permissionVariations = [
+      requiredPermission,
+      requiredPermission.toLowerCase(),
+      requiredPermission.toUpperCase(),
+      requiredPermission.replace(/-/g, '_'),
+      requiredPermission.replace(/_/g, '-'),
+      requiredPermission.toLowerCase().replace(/-/g, '_'),
+      requiredPermission.toLowerCase().replace(/_/g, '-')
+    ];
+    
+    // Permission name mapping (ID'den name'e çeviri)
+    const permissionNameMap: { [key: string]: string } = {
+      'e5f6g7h8-i9j0-1234-efgh-ij5678901234': 'Assign Property',
+      'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'Update Property'
+    };
+    
+    // Name varyasyonlarını da ekle
+    const permissionName = permissionNameMap[requiredPermission];
+    if (permissionName) {
+      permissionVariations.push(
+        permissionName,
+        permissionName.toLowerCase(),
+        permissionName.toUpperCase(),
+        permissionName.replace(/\s+/g, '_'),
+        permissionName.replace(/\s+/g, '-'),
+        permissionName.toLowerCase().replace(/\s+/g, '_'),
+        permissionName.toLowerCase().replace(/\s+/g, '-')
+      );
+    }
+    
     try {
       const userPerms = JSON.parse(userPermissions);
-      console.log('usePermissionCheck - Parsed permissions:', userPerms);
-      console.log('usePermissionCheck - Permissions type:', typeof userPerms);
-      console.log('usePermissionCheck - Is array:', Array.isArray(userPerms));
-      console.log('usePermissionCheck - Required permission:', requiredPermission);
-      
-      if (Array.isArray(userPerms)) {
-        console.log('usePermissionCheck - Array length:', userPerms.length);
-        console.log('usePermissionCheck - First few permissions:', userPerms.slice(0, 5));
-      }
       
       // Array ise kontrol et
       if (Array.isArray(userPerms)) {
@@ -78,56 +93,51 @@ export const usePermissionCheck = () => {
           
           // String array ise direkt kontrol et
           if (typeof firstItem === 'string') {
-            console.log('usePermissionCheck - Checking string array');
-            const hasPerm = userPerms.includes(requiredPermission);
-            console.log('usePermissionCheck - String array check result:', hasPerm);
-            console.log('usePermissionCheck - All permissions in array:', userPerms);
-            console.log('=== End usePermissionCheck Debug ===');
-            return hasPerm;
+            // Tüm varyasyonları kontrol et
+            return permissionVariations.some(variation => userPerms.includes(variation));
           }
           
           // Object array ise name ve id field'larını kontrol et
           if (typeof firstItem === 'object' && firstItem !== null) {
-            console.log('usePermissionCheck - Checking object array');
-            console.log('usePermissionCheck - First item structure:', firstItem);
-            const hasPerm = userPerms.some((perm: any) => {
-              // ID kontrolü öncelikli (daha güvenli)
-              if (perm.id && perm.id === requiredPermission) {
-                console.log('usePermissionCheck - Permission found by ID:', perm.id);
+            return userPerms.some((perm: any) => {
+              // ID kontrolü - tüm varyasyonları kontrol et
+              if (perm.id && permissionVariations.includes(perm.id)) {
                 return true;
               }
-              // Name kontrolü (geriye dönük uyumluluk için)
+              // Name kontrolü - tüm varyasyonları kontrol et
               const permName = perm.name || perm;
-              console.log('usePermissionCheck - Checking permission by name:', permName, 'against required:', requiredPermission);
-              return permName === requiredPermission;
+              if (permName && permissionVariations.includes(permName)) {
+                return true;
+              }
+              return false;
             });
-            console.log('usePermissionCheck - Object array check result:', hasPerm);
-            console.log('=== End usePermissionCheck Debug ===');
-            return hasPerm;
           }
         }
       }
       
       // Object ise name field'ını kontrol et
       if (typeof userPerms === 'object' && !Array.isArray(userPerms)) {
-        console.log('usePermissionCheck - Checking object (non-array)');
-        console.log('usePermissionCheck - Object values:', Object.values(userPerms));
-        const hasPerm = Object.values(userPerms).some((perm: any) => {
+        return Object.values(userPerms).some((perm: any) => {
           const permName = typeof perm === 'string' ? perm : perm.name;
-          console.log('usePermissionCheck - Checking object permission:', permName, 'against required:', requiredPermission);
-          return permName === requiredPermission;
+          const permId = typeof perm === 'object' ? perm.id : null;
+          
+          // ID kontrolü
+          if (permId && permissionVariations.includes(permId)) {
+            return true;
+          }
+          
+          // Name kontrolü
+          if (permName && permissionVariations.includes(permName)) {
+            return true;
+          }
+          
+          return false;
         });
-        console.log('usePermissionCheck - Object check result:', hasPerm);
-        console.log('=== End usePermissionCheck Debug ===');
-        return hasPerm;
       }
       
-      console.log('usePermissionCheck - No valid permission format found');
-      console.log('=== End usePermissionCheck Debug ===');
       return false;
     } catch (error) {
-      console.error('usePermissionCheck - Error parsing user permissions:', error);
-      console.log('=== End usePermissionCheck Debug ===');
+      console.error('Error parsing user permissions:', error);
       return false;
     }
   }, [loading, refreshKey]); // refreshKey dependency eklendi

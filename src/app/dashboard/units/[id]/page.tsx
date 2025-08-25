@@ -46,6 +46,13 @@ import Modal from "@/app/components/ui/Modal";
 import { UpdateBasicInfoDto, UpdateOwnerInfoDto, UpdateTenantInfoDto } from "@/services/types/unit-detail.types";
 import propertyService from "@/services/property.service";
 import { userService } from "@/services/user.service";
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+
+// Property permission constants
+const UPDATE_PROPERTY_PERMISSION_ID = 'Update Property';
+const UPDATE_PROPERTY_PERMISSION_NAME = 'Update Property';
+const ASSIGN_PROPERTY_PERMISSION_ID = 'Assign Property';
+const ASSIGN_PROPERTY_PERMISSION_NAME = 'Assign Property';
 
 // Dil çevirileri
 const translations = {
@@ -277,6 +284,68 @@ export default function UnitDetailPage() {
   const params = useParams();
   const unitId = params.id as string;
   const [currentLanguage, setCurrentLanguage] = useState('tr');
+  
+  // Permission checks
+  const { hasPermission } = usePermissionCheck();
+  const hasUpdatePropertyPermission = hasPermission(UPDATE_PROPERTY_PERMISSION_ID);
+  const hasAssignPropertyPermission = hasPermission(ASSIGN_PROPERTY_PERMISSION_ID);
+
+  // Debug: Console log permission values
+  console.log('Unit Detail Page Debug:', {
+    hasUpdatePropertyPermission,
+    hasAssignPropertyPermission,
+    UPDATE_PROPERTY_PERMISSION_ID,
+    ASSIGN_PROPERTY_PERMISSION_ID
+  });
+  
+  // Debug: localStorage'daki izinleri kontrol et
+  React.useEffect(() => {
+    const userPermissions = localStorage.getItem('userPermissions');
+    console.log('🔍 localStorage userPermissions:', userPermissions);
+    if (userPermissions) {
+      try {
+        const parsed = JSON.parse(userPermissions);
+        console.log('🔍 Parsed userPermissions:', parsed);
+        console.log('🔍 Type of parsed:', typeof parsed);
+        console.log('🔍 Is array:', Array.isArray(parsed));
+        console.log('🔍 Permission array length:', parsed?.length);
+        
+        if (Array.isArray(parsed)) {
+          parsed.forEach((perm, index) => {
+            console.log(`🔍 Permission ${index}:`, perm);
+            if (typeof perm === 'object' && perm !== null) {
+              console.log(`  - ID: ${perm.id}`);
+              console.log(`  - Name: ${perm.name}`);
+              console.log(`  - Action: ${perm.action}`);
+              console.log(`  - Resource: ${perm.resource}`);
+            }
+          });
+          
+          // Özellikle 'Property' ile ilgili izinleri ara
+          const propertyPermissions = parsed.filter(p => 
+            (p.name && p.name.toLowerCase().includes('property')) ||
+            (p.action && p.action.toLowerCase().includes('property')) ||
+            (p.resource && p.resource.toLowerCase().includes('property'))
+          );
+          console.log('🏠 Property related permissions:', propertyPermissions);
+          
+          // 'Update' ve 'Assign' action'larını ara
+          const updatePermissions = parsed.filter(p => 
+            (p.action && p.action.toLowerCase().includes('update')) ||
+            (p.name && p.name.toLowerCase().includes('update'))
+          );
+          const assignPermissions = parsed.filter(p => 
+            (p.action && p.action.toLowerCase().includes('assign')) ||
+            (p.name && p.name.toLowerCase().includes('assign'))
+          );
+          console.log('✏️ Update permissions:', updatePermissions);
+          console.log('📌 Assign permissions:', assignPermissions);
+        }
+      } catch (e) {
+        console.error('❌ Error parsing userPermissions:', e);
+      }
+    }
+  }, []);
 
   // Dil tercihini localStorage'dan al
   React.useEffect(() => {
@@ -1101,17 +1170,21 @@ export default function UnitDetailPage() {
                 </div>
               </div>
 
-              {/* <div className="flex gap-3">
-                <Button variant="secondary" icon={Phone}>
-                  İletişim
-                </Button>
-                <Button variant="secondary" icon={MessageSquare}>
-                  Note Ekle
-                </Button>
-                <Button variant="primary" icon={Edit}>
-                  Düzenle
-                </Button>
-              </div> */}
+              {hasUpdatePropertyPermission && (
+                <div className="flex gap-3">
+                  <Button variant="secondary" icon={Phone}>
+                    İletişim
+                  </Button>
+                  <Button variant="secondary" icon={MessageSquare}>
+                    Note Ekle
+                  </Button>
+                  <Link href={`/dashboard/units/${unitId}/edit`}>
+                    <Button variant="primary" icon={Edit}>
+                      Düzenle
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Main Content Grid */}
@@ -1175,7 +1248,7 @@ export default function UnitDetailPage() {
                     basicInfo={unit.basicInfo}
                     onUpdate={handleUpdateBasicInfo}
                     loading={loading}
-                    canEdit={unit.permissions.canEdit}
+                    canEdit={unit.permissions.canEdit && hasUpdatePropertyPermission}
                   />
                 )}
 
@@ -1288,7 +1361,8 @@ export default function UnitDetailPage() {
                     onAddOwner={handleAddOwnerRequest}
                     onOpenAddOwnerModal={() => setShowAddOwnerModal(true)}
                     loading={loading || removingOwner}
-                    canEdit={unit.permissions.canEdit}
+                    canEdit={unit.permissions.canEdit && hasUpdatePropertyPermission}
+                    canAssign={hasAssignPropertyPermission}
                     residentId={unit.ownerId}
                     propertyId={unitId}
                   />
@@ -1299,7 +1373,8 @@ export default function UnitDetailPage() {
                   tenantInfo={unit?.tenantInfo}
                   onUpdate={handleUpdateTenantInfo}
                   loading={loading || removingTenant}
-                  canEdit={unit?.permissions.canEdit}
+                  canEdit={unit?.permissions.canEdit && hasUpdatePropertyPermission}
+                  canAssign={hasAssignPropertyPermission}
                   onRemove={handleRemoveTenantRequest}
                   onAddTenant={handleAddTenantRequest}
                 />
