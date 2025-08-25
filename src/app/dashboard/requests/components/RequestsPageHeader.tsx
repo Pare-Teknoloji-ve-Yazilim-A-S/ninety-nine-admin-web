@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button';
 import { Plus, RefreshCw, Wrench } from 'lucide-react';
 import { TicketSummary } from '../hooks/useTicketSummary';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { CREATE_TICKET_PERMISSION_ID, CREATE_TICKET_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
 
 // Dil çevirileri
 const translations = {
@@ -76,6 +78,10 @@ export default function RequestsPageHeader({
       setCurrentLanguage(savedLanguage);
     }
   }, []);
+
+  // Create Ticket izin kontrolü
+  const { hasPermission } = usePermissionCheck();
+  const hasCreateTicketPermission = hasPermission(CREATE_TICKET_PERMISSION_NAME);
 
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
@@ -155,15 +161,17 @@ export default function RequestsPageHeader({
         >
           {t.refresh}
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          icon={Plus}
-          onClick={onCreateRequest}
-          disabled={loading}
-        >
-          {t.newRequest}
-        </Button>
+        {hasCreateTicketPermission && (
+          <Button
+            variant="primary"
+            size="md"
+            icon={Plus}
+            onClick={onCreateRequest}
+            disabled={loading}
+          >
+            {t.newRequest}
+          </Button>
+        )}
       </div>
     </div>
   );

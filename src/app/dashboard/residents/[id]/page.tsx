@@ -48,6 +48,8 @@ import EditModal, { EditFormData } from '@/app/components/ui/EditModal';
 import { useResidentDocuments } from '@/hooks/useResidentDocuments';
 import { useResidentTickets } from '@/hooks/useResidentTickets';
 import { useToast } from '@/hooks/useToast';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { CREATE_TICKET_PERMISSION_ID, CREATE_TICKET_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
 import RequestDetailModal from '../../requests/RequestDetailModal';
 import CreateTicketModal from '../../components/CreateTicketModal';
 import { ToastContainer } from '@/app/components/ui/Toast';
@@ -554,6 +556,12 @@ export default function ResidentViewPage() {
 
     // Çevirileri al
     const t = translations[currentLanguage as keyof typeof translations];
+
+    // Create Ticket izin kontrolü
+    const hasCreateTicketPermission = usePermissionCheck({
+        permissionId: CREATE_TICKET_PERMISSION_ID,
+        permissionName: CREATE_TICKET_PERMISSION_NAME
+    });
 
     // Helper fonksiyonlar - backend'den gelen değerleri çevirmek için
     const getTranslatedMembershipTier = (tier: string) => {
@@ -1517,14 +1525,16 @@ export default function ResidentViewPage() {
                                                         <h4 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">
                                                             {t.requestsTitle}
                                                         </h4>
-                                                        <Button
-                                                            variant="primary"
-                                                            size="md"
-                                                            icon={Plus}
-                                                            onClick={handleCreateTicket}
-                                                        >
-                                                            {t.newRequest}
-                                                        </Button>
+                                                        {hasCreateTicketPermission && (
+                                                            <Button
+                                                                variant="primary"
+                                                                size="md"
+                                                                icon={Plus}
+                                                                onClick={handleCreateTicket}
+                                                            >
+                                                                {t.newRequest}
+                                                            </Button>
+                                                        )}
                                                     </div>
 
                                                     {ticketsLoading ? (
@@ -2180,4 +2190,4 @@ export default function ResidentViewPage() {
             <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
         </ProtectedRoute>
     );
-} 
+}

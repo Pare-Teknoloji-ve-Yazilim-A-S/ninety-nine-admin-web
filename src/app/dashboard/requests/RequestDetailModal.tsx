@@ -9,6 +9,15 @@ import type { Ticket } from '@/services/ticket.service';
 import { ticketService } from '@/services/ticket.service';
 import { useMemo } from 'react';
 import { handleModalAction } from '@/lib/handleModalAction';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+
+// Update Ticket permission constants
+const UPDATE_TICKET_PERMISSION_ID = 'i8j9k0l1-2m3n-4o5p-6q7r-8s9t0u1v2w3x';
+const UPDATE_TICKET_PERMISSION_NAME = 'Update Ticket';
+
+// Cancel Ticket permission constants
+const CANCEL_TICKET_PERMISSION_ID = 'k0l1m2n3-4o5p-6q7r-8s9t-0u1v2w3x4y5z';
+const CANCEL_TICKET_PERMISSION_NAME = 'Cancel Ticket';
 
 // Dil çevirileri
 const translations = {
@@ -234,6 +243,11 @@ interface RequestDetailModalProps {
 }
 
 const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, item, onActionComplete, toast }) => {
+  // Permission checks
+  const { hasPermission } = usePermissionCheck();
+  const hasUpdateTicketPermission = hasPermission(UPDATE_TICKET_PERMISSION_NAME);
+  const hasCancelTicketPermission = hasPermission(CANCEL_TICKET_PERMISSION_NAME);
+
   // Dil tercihini localStorage'dan al
   const [currentLanguage, setCurrentLanguage] = useState('tr');
   useEffect(() => {
@@ -350,31 +364,31 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
 
   
   const actionButtons = [
-    status === 'OPEN' && {
+    hasUpdateTicketPermission && status === 'OPEN' && {
       label: t.startProgress,
       action: 'start-progress',
       toastLabel: t.request,
       variant: 'primary',
     },
-    status === 'IN_PROGRESS' && {
+    hasUpdateTicketPermission && status === 'IN_PROGRESS' && {
       label: t.markWaiting,
       action: 'mark-waiting',
       toastLabel: t.request,
       variant: 'secondary',
     },
-    (status === 'IN_PROGRESS' || status === 'OPEN') && {
+    hasUpdateTicketPermission && (status === 'IN_PROGRESS' || status === 'OPEN') && {
       label: t.complete,
       action: 'resolve',
       toastLabel: t.approval,
       variant: 'success',
     },
-    (status === 'IN_PROGRESS' || status === 'OPEN') && {
+    hasUpdateTicketPermission && (status === 'IN_PROGRESS' || status === 'OPEN') && {
       label: t.closeButton,
       action: 'close',
       toastLabel: t.request,
       variant: 'warning',
     },
-    (status !== 'COMPLETED' && status !== 'CLOSED' && status !== 'CANCELLED') && {
+    hasCancelTicketPermission && (status !== 'COMPLETED' && status !== 'CLOSED' && status !== 'CANCELLED') && {
       label: t.cancel,
       action: 'cancel',
       toastLabel: t.reject,
@@ -728,4 +742,4 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   );
 };
 
-export default RequestDetailModal; 
+export default RequestDetailModal;

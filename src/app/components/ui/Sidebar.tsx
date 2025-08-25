@@ -128,6 +128,12 @@ const READ_ANNOUNCEMENT_PERMISSION_NAME = 'Read Announcement'; // Name for backw
 const READ_ROLE_PERMISSION_ID = 'g6h7i8j9-0k1l-2m3n-4o5p-6q7r8s9t0u1v'; // UUID for Read Role permission
 const READ_ROLE_PERMISSION_NAME = 'Read Role'; // Name for backward compatibility
 
+const CREATE_TICKET_PERMISSION_ID = 'h7i8j9k0-1l2m-3n4o-5p6q-7r8s9t0u1v2w'; // UUID for Create Ticket permission
+const CREATE_TICKET_PERMISSION_NAME = 'Create Ticket'; // Name for backward compatibility
+
+const UPDATE_TICKET_PERMISSION_ID = 'i8j9k0l1-2m3n-4o5p-6q7r-8s9t0u1v2w3x'; // UUID for Update Ticket permission
+const UPDATE_TICKET_PERMISSION_NAME = 'Update Ticket'; // Name for backward compatibility
+
 const getMenuItems = (currentLanguage: string, hasReadPropertyPermission: boolean, hasViewUserPermission: boolean, hasReadTicketPermission: boolean, hasReadBillingPermission: boolean, hasReadStaffPermission: boolean, hasReadAnnouncementPermission: boolean, hasReadRolePermission: boolean): MenuItemProps[] => {
     const t = translations[currentLanguage as keyof typeof translations];
     
@@ -501,3 +507,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </>
     );
 }
+
+// Export permission constants for use in other components
+export {
+    CREATE_TICKET_PERMISSION_ID,
+    CREATE_TICKET_PERMISSION_NAME,
+    UPDATE_TICKET_PERMISSION_ID,
+    UPDATE_TICKET_PERMISSION_NAME
+};
+
+// Delete Ticket permission constants
+export const DELETE_TICKET_PERMISSION_ID = 'j9k0l1m2-3n4o-5p6q-7r8s-9t0u1v2w3x4y';
+export const DELETE_TICKET_PERMISSION_NAME = 'Delete Ticket';
+
+// Cancel Ticket permission constants
+export const CANCEL_TICKET_PERMISSION_ID = 'k0l1m2n3-4o5p-6q7r-8s9t-0u1v2w3x4y5z';
+export const CANCEL_TICKET_PERMISSION_NAME = 'Cancel Ticket';

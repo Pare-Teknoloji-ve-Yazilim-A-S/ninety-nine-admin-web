@@ -3,12 +3,22 @@ import { Play, CheckCircle, PauseCircle, RotateCcw, X, AlertCircle, UserCheck } 
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import { RequestDetailStatusProps, STATUS_CONFIGS, RequestDetailAction } from '@/services/types/request-detail.types';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+
+// Permission constants
+const UPDATE_TICKET_PERMISSION_NAME = 'Update Ticket';
+const CANCEL_TICKET_PERMISSION_NAME = 'Cancel Ticket';
 
 const RequestDetailStatus: React.FC<RequestDetailStatusProps> = ({
   request,
   onStatusChange,
   loading = false
 }) => {
+  // Permission checks
+  const { hasPermission } = usePermissionCheck();
+  const hasUpdateTicketPermission = hasPermission(UPDATE_TICKET_PERMISSION_NAME);
+  const hasCancelTicketPermission = hasPermission(CANCEL_TICKET_PERMISSION_NAME);
+
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const currentStatus = request.status.id;
@@ -80,10 +90,18 @@ const RequestDetailStatus: React.FC<RequestDetailStatusProps> = ({
     }
   ];
 
-  // Filter available actions
-  const availableActions = actionButtons.filter(button => 
-    allowedActions.includes(button.action as any)
-  );
+  // Filter available actions based on permissions and allowed actions
+  const availableActions = actionButtons.filter(button => {
+    const isAllowed = allowedActions.includes(button.action as any);
+    
+    // Check specific permissions for different actions
+    if (button.action === 'cancel') {
+      return hasCancelTicketPermission && isAllowed;
+    }
+    
+    // All other actions require Update Ticket permission
+    return hasUpdateTicketPermission && isAllowed;
+  });
 
   // No actions available
   if (availableActions.length === 0) {
