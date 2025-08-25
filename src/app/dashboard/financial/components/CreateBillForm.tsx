@@ -29,6 +29,11 @@ import {
 import { billingService } from '@/services';
 import { unitsService } from '@/services';
 import { unitPricesService } from '@/services/unit-prices.service';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { 
+  CREATE_BILLING_PERMISSION_ID, 
+  CREATE_BILLING_PERMISSION_NAME 
+} from '@/app/components/ui/Sidebar';
 // import { userService } from '@/services';
 
 // Dil çevirileri
@@ -89,7 +94,10 @@ const translations = {
     // Buttons
     cancel: 'İptal',
     createBill: 'Fatura Oluştur',
-    creatingBill: 'Fatura Oluşturuluyor...'
+    creatingBill: 'Fatura Oluşturuluyor...',
+    permissionLoading: 'İzinler kontrol ediliyor...',
+    noPermission: 'Bu sayfaya erişim izniniz bulunmamaktadır.',
+    requiredPermission: 'Gerekli İzin: Fatura Oluşturma'
   },
   en: {
     // Form header
@@ -147,7 +155,10 @@ const translations = {
     // Buttons
     cancel: 'Cancel',
     createBill: 'Create Bill',
-    creatingBill: 'Creating Bill...'
+    creatingBill: 'Creating Bill...',
+    permissionLoading: 'Checking permissions...',
+    noPermission: 'You do not have permission to access this page.',
+    requiredPermission: 'Required Permission: Create Billing'
   },
   ar: {
     // Form header
@@ -205,7 +216,10 @@ const translations = {
     // Buttons
     cancel: 'إلغاء',
     createBill: 'إنشاء فاتورة',
-    creatingBill: 'جاري إنشاء الفاتورة...'
+    creatingBill: 'جاري إنشاء الفاتورة...',
+    permissionLoading: 'جاري فحص الأذونات...',
+    noPermission: 'ليس لديك إذن للوصول إلى هذه الصفحة.',
+    requiredPermission: 'الإذن المطلوب: إنشاء فاتورة'
   }
 };
 
@@ -251,28 +265,12 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   onCancel,
   loading: externalLoading = false
 }) => {
+  // BEFORE any conditional returns - Tüm hook'ları en üste taşı
+  const [mounted, setMounted] = useState(false);
+  const { hasPermission, loading: permissionLoading } = usePermissionCheck();
+  
   // Dil tercihini localStorage'dan al
   const [currentLanguage, setCurrentLanguage] = useState('tr');
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  // Çevirileri al
-  const t = translations[currentLanguage as keyof typeof translations];
-
-  // Generates a unique, human-friendly document number like: INV-20250808-7GQ4K9
-  const generateDocumentNumber = (): string => {
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = pad(now.getMonth() + 1);
-    const d = pad(now.getDate());
-    const rand = Array.from({ length: 6 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
-    return `INV-${y}${m}${d}-${rand}`;
-  };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [users, setUsers] = useState<UserOption[]>([]);
@@ -316,6 +314,123 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
   const watchedBillType = watch('billType');
   const watchedPropertyId = watch('propertyId');
 
+  // Client-side mount kontrolü
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Generate/clear document number when property selection changes
+  useEffect(() => {
+    if (watchedPropertyId && watchedPropertyId !== '') {
+      setValue('documentNumber', generateDocumentNumber(), { shouldValidate: false });
+    } else {
+      setValue('documentNumber', '', { shouldValidate: false });
+    }
+  }, [watchedPropertyId, setValue]);
+
+  // Auto-calculate dues amount when bill type is DUES and property is selected
+  useEffect(() => {
+    if (watchedBillType === 'DUES' && watchedPropertyId && unitPrices.length > 0) {
+      const calculatedAmount = calculateDuesAmount();
+      if (calculatedAmount > 0) {
+        console.log('🔧 Auto-setting dues amount:', calculatedAmount);
+        setValue('amount', calculatedAmount, { shouldValidate: true });
+      }
+    }
+  }, [watchedBillType, watchedPropertyId, unitPrices, setValue]);
+
+  // Fetch properties from admin/properties with search (server-side pagination) - with debounce
+  useEffect(() => {
+    let active = true;
+    const timeoutId = setTimeout(async () => {
+      try {
+        if (!propertyDropdownOpen) return;
+        
+        setLoadingProperties(true);
+        
+        // Always fetch properties when dropdown is open
+        const requestedLimit = 100;
+        const res = await unitsService.getAllProperties({
+          page: 1,
+          limit: requestedLimit,
+          orderColumn: 'name',
+          orderBy: 'ASC',
+          search: propertySearchQuery || undefined,
+          includeBills: false,
+        } as any);
+
+        if (active && res.success && res.data) {
+          const formattedProperties = res.data.map((property: any) => ({
+            id: property.id,
+            value: property.id,
+            label: `${property.name} (${property.propertyNumber})`,
+            propertyNumber: property.propertyNumber,
+            area: property.area,
+            owner: property.owner,
+            tenant: property.tenant,
+            __raw: property
+          }));
+          
+          setProperties(formattedProperties);
+          setFilteredProperties(formattedProperties);
+          setHasMore(res.data.length >= requestedLimit);
+        }
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+      } finally {
+        if (active) {
+          setLoadingProperties(false);
+        }
+      }
+    }, 300); // 300ms debounce
+
+    return () => {
+      active = false;
+      clearTimeout(timeoutId);
+    };
+  }, [propertyDropdownOpen, propertySearchQuery]);
+
+  // Fetch unit prices
+  useEffect(() => {
+    const fetchUnitPrices = async () => {
+      try {
+        setUnitPricesLoading(true);
+        const response = await unitPricesService.getUnitPrices();
+        if (response.success && response.data) {
+          setUnitPrices(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching unit prices:', error);
+      } finally {
+        setUnitPricesLoading(false);
+      }
+    };
+
+    fetchUnitPrices();
+  }, []);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
+  // Generates a unique, human-friendly document number like: INV-20250808-7GQ4K9
+  const generateDocumentNumber = (): string => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = pad(now.getMonth() + 1);
+    const d = pad(now.getDate());
+    const rand = Array.from({ length: 6 }, () => 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
+    return `INV-${y}${m}${d}-${rand}`;
+  };
+
   // Helper function to get unit price by type
   const getUnitPriceByType = (type: string) => {
     return unitPrices.find(price => price.priceType === type);
@@ -343,6 +458,38 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
     return 0;
   };
 
+  // Permission kontrolü - koşullu render fonksiyonları
+  const renderPermissionLoading = () => (
+    <Card className="w-full max-w-4xl mx-auto">
+      <div className="p-6 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400">{t.permissionLoading}</p>
+      </div>
+    </Card>
+  );
+
+  const renderNoPermission = () => (
+    <Card className="w-full max-w-4xl mx-auto">
+      <div className="p-6 text-center">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          {t.noPermission}
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          {t.requiredPermission}
+        </p>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onCancel}
+          className="w-auto"
+        >
+          {t.cancel}
+        </Button>
+      </div>
+    </Card>
+  );
+
   // Generate/clear document number when property selection changes
   useEffect(() => {
     if (watchedPropertyId && watchedPropertyId !== '') {
@@ -363,8 +510,8 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
     }
   }, [watchedBillType, watchedPropertyId, unitPrices, setValue]);
 
-         // Fetch properties from admin/properties with search (server-side pagination) - with debounce
-   useEffect(() => {
+  // Fetch properties from admin/properties with search (server-side pagination) - with debounce
+  useEffect(() => {
      let active = true;
      const timeoutId = setTimeout(async () => {
        try {
@@ -478,6 +625,15 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
 
     loadUnitPrices();
   }, []);
+
+  // SSR ve permission kontrolü
+  if (!mounted || permissionLoading) {
+    return renderPermissionLoading();
+  }
+
+  if (!hasPermission(CREATE_BILLING_PERMISSION_ID)) {
+    return renderNoPermission();
+  }
 
   const onSubmit = async (data: BillFormData) => {
     if (isSubmitting || externalLoading) return;

@@ -9,6 +9,11 @@ import {
 } from 'lucide-react';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import {
+  CREATE_BILLING_PERMISSION_ID,
+  CREATE_PAYMENT_PERMISSION_ID
+} from '@/app/components/ui/Sidebar';
 
 // Dil çevirileri
 const translations = {
@@ -27,7 +32,9 @@ const translations = {
     continue: 'Devam Et',
     
     // Footer
-    manageFinancialTransactions: 'Bu sayfadan finansal işlemlerinizi kolayca yönetebilirsiniz.'
+    manageFinancialTransactions: 'Bu sayfadan finansal işlemlerinizi kolayca yönetebilirsiniz.',
+    
+
   },
   en: {
     // Page header
@@ -44,7 +51,9 @@ const translations = {
     continue: 'Continue',
     
     // Footer
-    manageFinancialTransactions: 'You can easily manage your financial transactions from this page.'
+    manageFinancialTransactions: 'You can easily manage your financial transactions from this page.',
+    
+
   },
   ar: {
     // Page header
@@ -61,7 +70,9 @@ const translations = {
     continue: 'استمر',
     
     // Footer
-    manageFinancialTransactions: 'يمكنك إدارة معاملاتك المالية بسهولة من هذه الصفحة.'
+    manageFinancialTransactions: 'يمكنك إدارة معاملاتك المالية بسهولة من هذه الصفحة.',
+    
+
   }
 };
 
@@ -77,8 +88,15 @@ interface TransactionTypeOption {
 const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
   onTypeSelect
 }) => {
-  // Dil tercihini localStorage'dan al
   const [currentLanguage, setCurrentLanguage] = useState('tr');
+  const router = useRouter();
+
+  // Permission kontrolü
+  const { hasPermission } = usePermissionCheck();
+  const hasCreateBillingPermission = hasPermission(CREATE_BILLING_PERMISSION_ID);
+  const hasCreatePaymentPermission = hasPermission(CREATE_PAYMENT_PERMISSION_ID);
+
+  // Dil tercihini localStorage'dan al
   useEffect(() => {
     const savedLanguage = localStorage.getItem('preferredLanguage');
     if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
@@ -89,10 +107,8 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
 
-  const router = useRouter();
-
-  // Transaction types with translations
-  const transactionTypes: TransactionTypeOption[] = [
+  // Transaction types with translations - sadece izinli olanları göster
+  const allTransactionTypes: TransactionTypeOption[] = [
     {
       id: 'bill',
       title: t.createBill,
@@ -110,6 +126,17 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
       route: '/dashboard/financial/create/payment'
     }
   ];
+
+  // İzinlere göre filtreleme
+  const transactionTypes = allTransactionTypes.filter(type => {
+    if (type.id === 'bill') {
+      return hasCreateBillingPermission;
+    }
+    if (type.id === 'payment') {
+      return hasCreatePaymentPermission;
+    }
+    return false;
+  });
 
   const handleTypeSelect = (option: TransactionTypeOption) => {
     if (onTypeSelect) {
@@ -130,47 +157,56 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {transactionTypes.map((option) => {
-          const IconComponent = option.icon;
-          
-          return (
-            <Card 
-              key={option.id}
-              className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-primary-gold/30"
-              onClick={() => handleTypeSelect(option)}
-            >
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className={`p-4 rounded-2xl ${option.color}`}>
-                  <IconComponent className="h-8 w-8" />
-                </div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {option.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                    {option.description}
-                  </p>
-                </div>
+      {transactionTypes.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {transactionTypes.map((option) => {
+            const IconComponent = option.icon;
+            
+            return (
+              <Card 
+                key={option.id}
+                className="p-6 hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-primary-gold/30"
+                onClick={() => handleTypeSelect(option)}
+              >
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className={`p-4 rounded-2xl ${option.color}`}>
+                    <IconComponent className="h-8 w-8" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      {option.title}
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                      {option.description}
+                    </p>
+                  </div>
 
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={ArrowRight}
-                  className="mt-4"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTypeSelect(option);
-                  }}
-                >
-                  {t.continue}
-                </Button>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={ArrowRight}
+                    className="mt-4"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTypeSelect(option);
+                    }}
+                  >
+                    {t.continue}
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <div className="text-gray-500 dark:text-gray-400">
+            <p className="text-lg mb-2">Yetkiniz bulunmamaktadır</p>
+            <p className="text-sm">Finansal işlem oluşturmak için gerekli izinlere sahip değilsiniz.</p>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 text-center">
         <p className="text-sm text-gray-500 dark:text-gray-400">

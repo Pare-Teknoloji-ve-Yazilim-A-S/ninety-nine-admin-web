@@ -2,6 +2,8 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from './components/auth/AuthProvider'
+import { AuthProvider as AuthContextProvider } from '@/contexts/AuthContext'
+import { PermissionProvider } from '@/contexts/PermissionContext'
 import EnumsProvider from './components/providers/EnumsProvider'
 import ToastProvider from './components/providers/ToastProvider'
 
@@ -25,13 +27,17 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${inter.variable} font-sans antialiased bg-background-primary overflow-x-hidden dark`}>
-        <AuthProvider>
-          <EnumsProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </EnumsProvider>
-        </AuthProvider>
+        <AuthContextProvider>
+          <PermissionProvider>
+            <AuthProvider>
+              <EnumsProvider>
+                <ToastProvider>
+                  {children}
+                </ToastProvider>
+              </EnumsProvider>
+            </AuthProvider>
+          </PermissionProvider>
+        </AuthContextProvider>
       </body>
     </html>
   )

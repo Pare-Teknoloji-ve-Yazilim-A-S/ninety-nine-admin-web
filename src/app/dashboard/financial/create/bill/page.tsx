@@ -7,7 +7,23 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Button from '@/app/components/ui/Button';
 import { FileText, ArrowLeft, CheckCircle } from 'lucide-react';
-import CreateBillForm from '../../components/CreateBillForm';
+import dynamic from 'next/dynamic';
+
+// CreateBillForm'u dynamic import ile yükle
+const CreateBillForm = dynamic(
+  () => import('../../components/CreateBillForm'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+);
 
 // Dil çevirileri
 const translations = {

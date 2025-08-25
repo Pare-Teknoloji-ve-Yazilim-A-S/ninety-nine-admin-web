@@ -1,12 +1,27 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
 import { Plus } from 'lucide-react';
-import TransactionTypeSelector from './components/TransactionTypeSelector';
+import dynamic from 'next/dynamic';
+
+// TransactionTypeSelector'ı dynamic import ile yükle
+const TransactionTypeSelector = dynamic(
+  () => import('./components/TransactionTypeSelector'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+);
 
 // Dil çevirileri
 const translations = {
@@ -95,63 +110,61 @@ export default function CreateTransactionPage() {
   ];
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-background-primary">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        
-        <div className="lg:ml-72">
-          <DashboardHeader
-            title={t.pageTitle}
-            breadcrumbItems={breadcrumbItems}
-          />
+    <div className="min-h-screen bg-background-primary">
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="lg:ml-72">
+        <DashboardHeader
+          title={t.pageTitle}
+          breadcrumbItems={breadcrumbItems}
+        />
 
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Page Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-primary-gold/10 rounded-lg">
-                    <Plus className="h-5 w-5 text-primary-gold" />
-                  </div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {t.createNewTransaction}
-                  </h1>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-primary-gold/10 rounded-lg">
+                  <Plus className="h-5 w-5 text-primary-gold" />
                 </div>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {t.createBillOrPayment}
-                </p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {t.createNewTransaction}
+                </h1>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400">
+                {t.createBillOrPayment}
+              </p>
+            </div>
+          </div>
+
+          {/* Transaction Type Selection */}
+          <Card className="p-8">
+            <TransactionTypeSelector />
+          </Card>
+
+          {/* Help Section */}
+          <Card className="mt-6 p-6 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex-shrink-0">
+                <Plus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  {t.aboutTransactionTypes}
+                </h3>
+                <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                  <p>
+                    <strong>{t.createBill}</strong> {t.createBillDesc}
+                  </p>
+                  <p>
+                    <strong>{t.recordPayment}</strong> {t.recordPaymentDesc}
+                  </p>
+                </div>
               </div>
             </div>
-
-            {/* Transaction Type Selection */}
-            <Card className="p-8">
-              <TransactionTypeSelector />
-            </Card>
-
-            {/* Help Section */}
-            <Card className="mt-6 p-6 bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex-shrink-0">
-                  <Plus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-1">
-                    {t.aboutTransactionTypes}
-                  </h3>
-                  <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                    <p>
-                      <strong>{t.createBill}</strong> {t.createBillDesc}
-                    </p>
-                    <p>
-                      <strong>{t.recordPayment}</strong> {t.recordPaymentDesc}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </main>
-        </div>
+          </Card>
+        </main>
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }

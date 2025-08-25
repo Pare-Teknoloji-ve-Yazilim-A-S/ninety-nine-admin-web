@@ -134,6 +134,24 @@ const CREATE_TICKET_PERMISSION_NAME = 'Create Ticket'; // Name for backward comp
 const UPDATE_TICKET_PERMISSION_ID = 'i8j9k0l1-2m3n-4o5p-6q7r-8s9t0u1v2w3x'; // UUID for Update Ticket permission
 const UPDATE_TICKET_PERMISSION_NAME = 'Update Ticket'; // Name for backward compatibility
 
+const CREATE_BILLING_PERMISSION_ID = '59d68129-66f3-4608-8568-552eed089b43'; // UUID for Manage Billing permission
+const CREATE_BILLING_PERMISSION_NAME = 'Manage Billing'; // Name for backward compatibility
+
+const UPDATE_BILLING_PERMISSION_ID = 'm2n3o4p5-6q7r-8s9t-0u1v-2w3x4y5z6a7b'; // UUID for Update Billing permission
+const UPDATE_BILLING_PERMISSION_NAME = 'Update Billing'; // Name for backward compatibility
+
+const CREATE_PAYMENT_PERMISSION_ID = 'fb1d69ae-ba26-47b8-b366-2da6a1a1c83d'; // UUID for Create Payment permission
+const CREATE_PAYMENT_PERMISSION_NAME = 'Create Payment'; // Name for backward compatibility
+
+const READ_PAYMENT_PERMISSION_ID = '93127240-7cfc-4d8b-a1b6-806d6d3e61fd'; // UUID for Read Payment permission
+const READ_PAYMENT_PERMISSION_NAME = 'Read Payment'; // Name for backward compatibility
+
+const UPDATE_PAYMENT_PERMISSION_ID = '95473791-20a7-429c-b083-2934872af40d'; // UUID for Update Payment permission
+const UPDATE_PAYMENT_PERMISSION_NAME = 'Update Payment'; // Name for backward compatibility
+
+const DELETE_PAYMENT_PERMISSION_ID = '7be7dadf-8b96-4706-9be6-758c4d106000'; // UUID for Delete Payment permission
+const DELETE_PAYMENT_PERMISSION_NAME = 'Delete Payment'; // Name for backward compatibility
+
 const getMenuItems = (currentLanguage: string, hasReadPropertyPermission: boolean, hasViewUserPermission: boolean, hasReadTicketPermission: boolean, hasReadBillingPermission: boolean, hasReadStaffPermission: boolean, hasReadAnnouncementPermission: boolean, hasReadRolePermission: boolean): MenuItemProps[] => {
     const t = translations[currentLanguage as keyof typeof translations];
     
@@ -513,7 +531,21 @@ export {
     CREATE_TICKET_PERMISSION_ID,
     CREATE_TICKET_PERMISSION_NAME,
     UPDATE_TICKET_PERMISSION_ID,
-    UPDATE_TICKET_PERMISSION_NAME
+    UPDATE_TICKET_PERMISSION_NAME,
+    CREATE_BILLING_PERMISSION_ID,
+    CREATE_BILLING_PERMISSION_NAME,
+    UPDATE_BILLING_PERMISSION_ID,
+    UPDATE_BILLING_PERMISSION_NAME,
+    READ_BILLING_PERMISSION_ID,
+    READ_BILLING_PERMISSION_NAME,
+    CREATE_PAYMENT_PERMISSION_ID,
+    CREATE_PAYMENT_PERMISSION_NAME,
+    READ_PAYMENT_PERMISSION_ID,
+    READ_PAYMENT_PERMISSION_NAME,
+    UPDATE_PAYMENT_PERMISSION_ID,
+    UPDATE_PAYMENT_PERMISSION_NAME,
+    DELETE_PAYMENT_PERMISSION_ID,
+    DELETE_PAYMENT_PERMISSION_NAME
 };
 
 // Delete Ticket permission constants

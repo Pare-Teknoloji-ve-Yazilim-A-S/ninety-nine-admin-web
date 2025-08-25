@@ -28,6 +28,11 @@ import { paymentService } from '@/services';
 import type { ResponseBillDto } from '@/services/types/billing.types';
 import billingService from '@/services/billing.service';
 import { enumsService } from '@/services/enums.service';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { 
+  UPDATE_PAYMENT_PERMISSION_ID, 
+  UPDATE_PAYMENT_PERMISSION_NAME 
+} from '@/app/components/ui/Sidebar';
 
 // Dil çevirileri
 const translations = {
@@ -56,7 +61,10 @@ const translations = {
     // Buttons
     cancel: 'İptal',
     recordPayment: 'Ödeme Kaydet',
-    recordingPayment: 'Ödeme Kaydediliyor...'
+    recordingPayment: 'Ödeme Kaydediliyor...',
+    permissionLoading: 'İzinler kontrol ediliyor...',
+    noPermission: 'Bu sayfaya erişim izniniz bulunmamaktadır.',
+    requiredPermission: 'Gerekli İzin: Ödeme Güncelleme'
   },
   en: {
     // Form header
@@ -83,7 +91,10 @@ const translations = {
     // Buttons
     cancel: 'Cancel',
     recordPayment: 'Record Payment',
-    recordingPayment: 'Recording Payment...'
+    recordingPayment: 'Recording Payment...',
+    permissionLoading: 'Checking permissions...',
+    noPermission: 'You do not have permission to access this page.',
+    requiredPermission: 'Required Permission: Update Payment'
   },
   ar: {
     // Form header
@@ -110,7 +121,10 @@ const translations = {
     // Buttons
     cancel: 'إلغاء',
     recordPayment: 'تسجيل الدفع',
-    recordingPayment: 'جاري تسجيل الدفع...'
+    recordingPayment: 'جاري تسجيل الدفع...',
+    permissionLoading: 'جاري فحص الأذونات...',
+    noPermission: 'ليس لديك إذن للوصول إلى هذه الصفحة.',
+    requiredPermission: 'الإذن المطلوب: تحديث الدفع'
   }
 };
 
@@ -142,18 +156,16 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
   onClearBills,
   selectedPaymentMethod,
 }) => {
-  // Dil tercihini localStorage'dan al
-  const [currentLanguage, setCurrentLanguage] = useState('tr');
+  // BEFORE any conditional returns - Tüm hook'ları en üste taşı
+  const [mounted, setMounted] = useState(false);
+  const { hasPermission, loading: permissionLoading } = usePermissionCheck();
+  
+  // Client-side mount kontrolü
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
+    setMounted(true);
   }, []);
-
-  // Çevirileri al
-  const t = translations[currentLanguage as keyof typeof translations];
-
+  
+  const [currentLanguage, setCurrentLanguage] = useState('tr');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bills, setBills] = useState<BillOption[]>([]);
   const [loadingBills, setLoadingBills] = useState(true);
@@ -171,7 +183,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     defaultValues: {
       billId: '',
       amount: 0,
-        paymentMethod: PaymentMethod.CASH,
+      paymentMethod: PaymentMethod.CASH,
       paymentDate: new Date().toISOString().split('T')[0], // Format for HTML date input
       transactionId: '',
       receiptNumber: '',
@@ -180,7 +192,20 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     }
   });
 
+  // Tüm hook'ları en üste taşı
   const watchedPaymentMethod = watch('paymentMethod');
+
+  const totalSelectedAmount = useMemo(() => {
+    return bills.reduce((sum, b) => sum + Number(b.amount || 0), 0);
+  }, [bills]);
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
 
   // Reflect selected payment method from parent into form state
   useEffect(() => {
@@ -188,10 +213,6 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
       setValue('paymentMethod', selectedPaymentMethod, { shouldValidate: true });
     }
   }, [selectedPaymentMethod, setValue]);
-
-  const totalSelectedAmount = useMemo(() => {
-    return bills.reduce((sum, b) => sum + Number(b.amount || 0), 0);
-  }, [bills]);
 
   // Load bills: always reflect bills selected from parent; no internal fetching
   useEffect(() => {
@@ -223,7 +244,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     if (cached) setAppEnums(cached);
   }, []);
 
-  // Keep derived fields in sync
+  // Keep derived fields in sync - Bu useEffect'i hook'ların başına taşıyoruz
   useEffect(() => {
     setValue('amount', totalSelectedAmount);
     // Auto-fill receipt number as joined bill IDs
@@ -232,6 +253,44 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     // Ensure today's date
     setValue('paymentDate', new Date().toISOString().split('T')[0]);
   }, [bills, setValue, totalSelectedAmount]);
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
+
+  // Permission kontrolü - koşullu render fonksiyonları
+  const renderPermissionLoading = () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span className="ml-2 text-gray-600">{t.permissionLoading}</span>
+    </div>
+  );
+
+  const renderNoPermission = () => (
+    <Card className="p-6 text-center">
+      <div className="flex flex-col items-center space-y-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">İzin Yok</h3>
+          <p className="text-gray-600 mb-2">{t.noPermission}</p>
+          <p className="text-sm text-gray-500">{t.requiredPermission}</p>
+        </div>
+        <Button onClick={onCancel} variant="outline">
+          {t.cancel}
+        </Button>
+      </div>
+    </Card>
+  );
+
+  // SSR ve permission kontrolü
+  if (!mounted || permissionLoading) {
+    return renderPermissionLoading();
+  }
+
+  if (!hasPermission(UPDATE_PAYMENT_PERMISSION_ID)) {
+    return renderNoPermission();
+  }
+
+
 
   const onSubmit = async (data: PaymentFormData) => {
     if (isSubmitting || externalLoading) return;

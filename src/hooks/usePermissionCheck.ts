@@ -1,201 +1,201 @@
-import { useCallback, useState, useEffect } from 'react';
-import { usePermissions } from './usePermissions';
-import { useAuth } from '@/app/components/auth/AuthProvider';
+'use client'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export const usePermissionCheck = () => {
-  const { permissions, loading } = usePermissions();
-  const { refreshUserPermissions } = useAuth();
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [isClient, setIsClient] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  // Client-side mount kontrolü
+  useEffect(() => {
+    setIsClient(true)
+    setMounted(true)
+    setLoading(false)
+  }, [])
 
   // Permission değişikliklerini dinle
   useEffect(() => {
-    // SSR sırasında window erişimini kontrol et
-    if (typeof window === 'undefined') {
-      return;
+    const handlePermissionChange = () => {
+      setRefreshKey(prev => prev + 1)
     }
-    
-    const handlePermissionChange = async () => {
-      console.log('Permission change detected, refreshing permissions...');
-      try {
-        await refreshUserPermissions();
-        setRefreshKey(prev => prev + 1);
-      } catch (error) {
-        console.error('Failed to refresh permissions on change:', error);
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('permission-changed', handlePermissionChange)
+      return () => {
+        window.removeEventListener('permission-changed', handlePermissionChange)
       }
-    };
-
-    // Custom event listener ekle
-    window.addEventListener('permission-changed', handlePermissionChange);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('permission-changed', handlePermissionChange);
-    };
-  }, [refreshUserPermissions]);
+    }
+  }, [])
 
   const hasPermission = useCallback((requiredPermission: string): boolean => {
-    console.log('🔍 Permission Check Debug:');
-    console.log('- Checking permission:', requiredPermission);
-    console.log('- Loading state:', loading);
-    
+    // SSR sırasında güvenli varsayılan değer döndür
+    if (!mounted || !isClient) {
+      return false
+    }
+
     if (loading) {
-      console.log('❌ Still loading permissions');
-      return false;
+      return false
     }
-    
-    // SSR sırasında localStorage erişimini kontrol et
-    if (typeof window === 'undefined') {
-      console.log('❌ SSR environment, no localStorage access');
-      return false;
+
+    if (!requiredPermission) {
+      return true
     }
-    
-    // Kullanıcının permission'larını localStorage'dan al
-    const userPermissions = localStorage.getItem('userPermissions');
-    console.log('- Raw userPermissions from localStorage:', userPermissions);
-    
-    if (!userPermissions) {
-      console.log('❌ No userPermissions found in localStorage');
-      return false;
-    }
-    
-    // Permission ID'sinin farklı varyasyonlarını oluştur
-    const permissionVariations = [
-      requiredPermission,
-      requiredPermission.toLowerCase(),
-      requiredPermission.toUpperCase(),
-      requiredPermission.replace(/-/g, '_'),
-      requiredPermission.replace(/_/g, '-'),
-      requiredPermission.toLowerCase().replace(/-/g, '_'),
-      requiredPermission.toLowerCase().replace(/_/g, '-')
-    ];
-    
-    // Permission name mapping (ID'den name'e çeviri)
-    const permissionNameMap: { [key: string]: string } = {
-      'e5f6g7h8-i9j0-1234-efgh-ij5678901234': 'Assign Property',
-      'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'Update Property',
-      'h7i8j9k0-1l2m-3n4o-5p6q-7r8s9t0u1v2w': 'Create Ticket',
-      'i8j9k0l1-2m3n-4o5p-6q7r-8s9t0u1v2w3x': 'Update Ticket',
-      'j9k0l1m2-3n4o-5p6q-7r8s-9t0u1v2w3x4y': 'Delete Ticket',
-      'k0l1m2n3-4o5p-6q7r-8s9t-0u1v2w3x4y5z': 'Cancel Ticket',
-      'create_resident': 'Create Resident',
-      'manage_residents': 'Manage Residents',
-      'da1b5308-72ee-4b07-9a59-5a4bb99e0ce9': 'Kullanıcı Oluştur',
-      '27c9019e-5b8e-4dd7-a702-db47d3fc6bca': 'Create User'
-    };
-    
-    // Name varyasyonlarını da ekle
-    const permissionName = permissionNameMap[requiredPermission];
-    if (permissionName) {
-      permissionVariations.push(
-        permissionName,
-        permissionName.toLowerCase(),
-        permissionName.toUpperCase(),
-        permissionName.replace(/\s+/g, '_'),
-        permissionName.replace(/\s+/g, '-'),
-        permissionName.toLowerCase().replace(/\s+/g, '_'),
-        permissionName.toLowerCase().replace(/\s+/g, '-')
-      );
-    }
-    
+
     try {
-      const userPerms = JSON.parse(userPermissions);
-      console.log('- Parsed userPermissions:', userPerms);
-      console.log('- Permission variations to check:', permissionVariations);
-      
-      // Array ise kontrol et
-      if (Array.isArray(userPerms)) {
-        console.log('- UserPermissions is array with length:', userPerms.length);
-        // İlk eleman string mi object mi kontrol et
-        if (userPerms.length > 0) {
-          const firstItem = userPerms[0];
-          console.log('- First item type:', typeof firstItem, 'value:', firstItem);
-          
-          // String array ise direkt kontrol et
-          if (typeof firstItem === 'string') {
-            console.log('- Checking string array permissions');
-            // Tüm varyasyonları kontrol et
-            const hasPermissionResult = permissionVariations.some(variation => userPerms.includes(variation));
-            console.log('- String array check result:', hasPermissionResult);
-            if (hasPermissionResult) console.log('✅ Permission found in string array');
-            return hasPermissionResult;
+      // localStorage'dan userPermissions'ı güvenli şekilde al
+      let userPermissions = null
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const stored = localStorage.getItem('userPermissions')
+          if (stored) {
+            userPermissions = JSON.parse(stored)
           }
-          
-          // Object array ise name ve id field'larını kontrol et
-          if (typeof firstItem === 'object' && firstItem !== null) {
-            console.log('- Checking object array permissions');
-            const hasPermissionResult = userPerms.some((perm: any) => {
-              console.log('  - Checking permission object:', perm);
-              // ID kontrolü - tüm varyasyonları kontrol et
-              if (perm.id && permissionVariations.includes(perm.id)) {
-                console.log('  ✅ Found by ID:', perm.id);
-                return true;
-              }
-              // Name kontrolü - tüm varyasyonları kontrol et
-              const permName = perm.name || perm;
-              if (permName && permissionVariations.includes(permName)) {
-                console.log('  ✅ Found by name:', permName);
-                return true;
-              }
-              return false;
-            });
-            console.log('- Object array check result:', hasPermissionResult);
-            if (hasPermissionResult) console.log('✅ Permission found in object array');
-            return hasPermissionResult;
-          }
+        } catch (e) {
+          // localStorage erişim hatası - sessizce devam et
         }
       }
-      
-      // Object ise name field'ını kontrol et
-      if (typeof userPerms === 'object' && !Array.isArray(userPerms)) {
-        return Object.values(userPerms).some((perm: any) => {
-          const permName = typeof perm === 'string' ? perm : perm.name;
-          const permId = typeof perm === 'object' ? perm.id : null;
-          
-          // ID kontrolü
-          if (permId && permissionVariations.includes(permId)) {
-            return true;
+
+      // userPermissions yoksa false döndür
+
+      if (!userPermissions) {
+        return false
+      }
+
+      // Permission varyasyonları oluştur
+      const permissionVariations = [
+        requiredPermission,
+        requiredPermission.toLowerCase(),
+        requiredPermission.toUpperCase(),
+        requiredPermission.replace(/[_-]/g, ''),
+        requiredPermission.replace(/[_-]/g, '').toLowerCase(),
+        requiredPermission.replace(/[_-]/g, '').toUpperCase()
+      ]
+
+      // userPermissions string ise JSON parse et
+      let userPerms = userPermissions
+      if (typeof userPermissions === 'string') {
+        try {
+          userPerms = JSON.parse(userPermissions)
+        } catch (e) {
+          userPerms = userPermissions
+        }
+      }
+
+      // Array ise direkt kontrol et
+      if (Array.isArray(userPerms)) {
+        return userPerms.some((perm: any) => {
+          if (typeof perm === 'string') {
+            return permissionVariations.includes(perm)
           }
           
-          // Name kontrolü
-          if (permName && permissionVariations.includes(permName)) {
-            return true;
+          if (typeof perm === 'object' && perm !== null) {
+            // ID kontrolü
+            if (perm.id && permissionVariations.includes(perm.id)) {
+              return true
+            }
+            
+            // Name kontrolü
+            const permName = perm.name || perm
+            if (permName && permissionVariations.includes(permName)) {
+              return true
+            }
           }
           
-          return false;
-        });
+          return false
+        })
       }
       
-      console.log('❌ Permission not found by any method');
-      return false;
+      // Object ise values'ları kontrol et
+      if (typeof userPerms === 'object' && userPerms !== null && !Array.isArray(userPerms)) {
+        return Object.values(userPerms).some((perm: any) => {
+          if (typeof perm === 'string') {
+            return permissionVariations.includes(perm)
+          }
+          
+          if (typeof perm === 'object' && perm !== null) {
+            // ID kontrolü
+            if (perm.id && permissionVariations.includes(perm.id)) {
+              return true
+            }
+            
+            // Name kontrolü
+            if (perm.name && permissionVariations.includes(perm.name)) {
+              return true
+            }
+          }
+          
+          return false
+        })
+      }
+      
+      // String ise direkt kontrol et
+      if (typeof userPerms === 'string') {
+        return permissionVariations.includes(userPerms)
+      }
+      
+      return false
     } catch (error) {
-      console.error('Error parsing user permissions:', error);
-      return false;
+      return false
     }
-  }, [loading, refreshKey]); // refreshKey dependency eklendi
+  }, [loading, refreshKey, isClient, mounted])
 
   const hasAnyPermission = useCallback((requiredPermissions: string[]): boolean => {
-    return requiredPermissions.some(permission => hasPermission(permission));
-  }, [hasPermission]);
+    if (!mounted) return false
+    return requiredPermissions.some(permission => hasPermission(permission))
+  }, [hasPermission, mounted])
 
   const hasAllPermissions = useCallback((requiredPermissions: string[]): boolean => {
-    return requiredPermissions.every(permission => hasPermission(permission));
-  }, [hasPermission]);
+    if (!mounted) return false
+    return requiredPermissions.every(permission => hasPermission(permission))
+  }, [hasPermission, mounted])
 
-  // Permission'ları yenile
-  const refreshPermissions = useCallback(async () => {
-    try {
-      await refreshUserPermissions();
-      setRefreshKey(prev => prev + 1); // Hook'u yeniden tetikle
-    } catch (error) {
-      console.error('Failed to refresh permissions:', error);
+  const userPermissions = useMemo(() => {
+    if (!mounted || !isClient) {
+      return []
     }
-  }, [refreshUserPermissions]);
+
+    try {
+      let userPerms = null
+      if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+          const stored = localStorage.getItem('userPermissions')
+          if (stored) {
+            userPerms = JSON.parse(stored)
+          }
+        } catch (e) {
+          // localStorage erişim hatası
+        }
+      }
+
+      if (!userPerms) {
+        return []
+      }
+
+      if (Array.isArray(userPerms)) {
+        return userPerms
+      }
+
+      if (typeof userPerms === 'object') {
+        return Object.values(userPerms)
+      }
+
+      return []
+    } catch (error) {
+      console.error('Error getting user permissions:', error)
+      return []
+    }
+  }, [mounted, isClient, refreshKey])
 
   return {
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    loading,
-    refreshPermissions
-  };
-};
+    userPermissions,
+    loading: !mounted,
+    refreshPermissions: () => setRefreshKey(prev => prev + 1)
+  }
+}
+
+export default usePermissionCheck

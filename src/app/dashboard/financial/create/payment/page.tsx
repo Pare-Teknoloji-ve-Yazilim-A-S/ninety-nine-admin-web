@@ -4,10 +4,26 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
-import Sidebar from '@/app/components/ui/Sidebar';
+import Sidebar, { UPDATE_PAYMENT_PERMISSION_ID, UPDATE_PAYMENT_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
 import Button from '@/app/components/ui/Button';
 import { CreditCard, ArrowLeft, CheckCircle, Home, User, AlertTriangle, X } from 'lucide-react';
-import CreatePaymentForm from '../../components/CreatePaymentForm';
+import dynamic from 'next/dynamic';
+
+// CreatePaymentForm'u dynamic import ile yükle
+const CreatePaymentForm = dynamic(
+  () => import('../../components/CreatePaymentForm'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+);
 import Card from '@/app/components/ui/Card';
 import SearchBar from '@/app/components/ui/SearchBar';
 import billingService from '@/services/billing.service';
@@ -15,6 +31,7 @@ import type { ResponseBillDto } from '@/services/types/billing.types';
 import TablePagination from '@/app/components/ui/TablePagination';
 import { PAYMENT_METHOD_OPTIONS, PaymentMethod } from '@/services/types/billing.types';
 import { enumsService } from '@/services/enums.service';
+import usePermissionCheck from '@/hooks/usePermissionCheck';
 
 // Dil çevirileri
 const translations = {
@@ -69,7 +86,13 @@ const translations = {
     tip2: 'Ödeme tutarı fatura tutarından farklı olabilir (kısmi/fazla ödeme)',
     tip3: 'Ödeme yöntemini doğru seçtiğinizden emin olun',
     tip4: 'İşlem ID ve makbuz numarası takip için önemlidir',
-    tip5: 'Ödeme tarihi geçmiş bir tarih olabilir'
+    tip5: 'Ödeme tarihi geçmiş bir tarih olabilir',
+    
+    // Permission messages
+    permissionLoading: 'İzinler kontrol ediliyor...',
+    noPermission: 'Bu sayfaya erişim izniniz bulunmamaktadır.',
+    requiredPermission: 'Gerekli İzin: Ödeme Düzenleme',
+    goBack: 'Geri Dön'
   },
   en: {
     pageTitle: 'Record Payment',
@@ -122,7 +145,13 @@ const translations = {
     tip2: 'Payment amount can be different from bill amount (partial/overpayment)',
     tip3: 'Make sure to select the correct payment method',
     tip4: 'Transaction ID and receipt number are important for tracking',
-    tip5: 'Payment date can be a past date'
+    tip5: 'Payment date can be a past date',
+    
+    // Permission messages
+    permissionLoading: 'Checking permissions...',
+    noPermission: 'You do not have permission to access this page.',
+    requiredPermission: 'Required Permission: Update Payment',
+    goBack: 'Go Back'
   },
   ar: {
     pageTitle: 'تسجيل الدفع',
@@ -175,23 +204,20 @@ const translations = {
     tip2: 'يمكن أن يكون مبلغ الدفع مختلفاً عن مبلغ الفاتورة (دفع جزئي/زائد)',
     tip3: 'تأكد من اختيار طريقة الدفع الصحيحة',
     tip4: 'معرف المعاملة ورقم الإيصال مهمان للتتبع',
-    tip5: 'يمكن أن يكون تاريخ الدفع تاريخاً سابقاً'
+    tip5: 'يمكن أن يكون تاريخ الدفع تاريخاً سابقاً',
+    
+    // Permission messages
+    permissionLoading: 'جاري فحص الأذونات...',
+    noPermission: 'ليس لديك إذن للوصول إلى هذه الصفحة.',
+    requiredPermission: 'الإذن المطلوب: تحديث الدفع',
+    goBack: 'العودة'
   }
 };
 
 export default function CreatePaymentPage() {
-  // Dil tercihini localStorage'dan al
+  // All hooks must be called at the top level - BEFORE any conditional returns
   const [currentLanguage, setCurrentLanguage] = useState('tr');
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  // Çevirileri al
-  const t = translations[currentLanguage as keyof typeof translations];
-
+  const { hasPermission, loading: permissionLoading } = usePermissionCheck();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -202,6 +228,24 @@ export default function CreatePaymentPage() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [billType, setBillType] = useState<string | undefined>(undefined);
+  const [selectedBills, setSelectedBills] = useState<ResponseBillDto[]>([]);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | undefined>(undefined);
+  const [appEnums, setAppEnums] = useState<Record<string, any> | null>(null);
+  const router = useRouter();
+
+  // Dil tercihini localStorage'dan al
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+
+
+  // Çevirileri al
+  const t = translations[currentLanguage as keyof typeof translations];
   // Helper to load from backend
   const loadPending = async (params: { page: number; limit: number; search?: string; billType?: string }) => {
     setSearchLoading(true);
@@ -221,11 +265,6 @@ export default function CreatePaymentPage() {
       setSearchLoading(false);
     }
   };
-  const [selectedBills, setSelectedBills] = useState<ResponseBillDto[]>([]);
-  const [isConfirmed, setIsConfirmed] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | undefined>(undefined);
-  const [appEnums, setAppEnums] = useState<Record<string, any> | null>(null);
-  const router = useRouter();
 
   // Breadcrumb items
   const breadcrumbItems = [
@@ -335,6 +374,53 @@ export default function CreatePaymentPage() {
       description: paymentMethodTranslations[currentLanguage as keyof typeof paymentMethodTranslations]?.[option.value as keyof typeof paymentMethodTranslations.tr]?.description || ''
     }));
   })();
+
+  // Permission loading durumu - koşullu render JSX içinde yapılacak
+  const renderPermissionLoading = () => (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t.permissionLoading}</p>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+
+  // Permission kontrolü - koşullu render JSX içinde yapılacak
+  const renderNoPermission = () => (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background-primary flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-full w-fit mx-auto mb-4">
+            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            {t.noPermission}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            {t.requiredPermission}
+          </p>
+          <Button
+            onClick={() => router.back()}
+            variant="outline"
+            className="w-full"
+          >
+            {t.goBack}
+          </Button>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+
+  // Koşullu render kontrolü
+  if (permissionLoading) {
+    return renderPermissionLoading();
+  }
+
+  if (!hasPermission(UPDATE_PAYMENT_PERMISSION_ID)) {
+    return renderNoPermission();
+  }
 
   return (
     <ProtectedRoute>
