@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/app/components/auth/AuthProvider';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import {
     BarChart3,
     Users,
@@ -105,10 +106,29 @@ const translations = {
     }
 };
 
-const getMenuItems = (currentLanguage: string): MenuItemProps[] => {
+// Permission constants
+const READ_PROPERTY_PERMISSION_ID = 'b2c8f4e1-9a7d-4f3e-8b5c-1d2e3f4a5b6c'; // UUID for Read Property permission
+const READ_PROPERTY_PERMISSION_NAME = 'Read Property'; // Name for backward compatibility
+
+const VIEW_USER_PERMISSION_ID = 'a1b2c3d4-5e6f-7g8h-9i0j-1k2l3m4n5o6p'; // UUID for View User permission
+const VIEW_USER_PERMISSION_NAME = 'View User'; // Name for backward compatibility
+
+const READ_TICKET_PERMISSION_ID = 'c2d3e4f5-6g7h-8i9j-0k1l-2m3n4o5p6q7r'; // UUID for Read Ticket permission
+const READ_TICKET_PERMISSION_NAME = 'Read Ticket'; // Name for backward compatibility
+
+const READ_BILLING_PERMISSION_ID = 'd3e4f5g6-7h8i-9j0k-1l2m-3n4o5p6q7r8s'; // UUID for Read Billing permission
+const READ_BILLING_PERMISSION_NAME = 'Read Billing'; // Name for backward compatibility
+
+const READ_STAFF_PERMISSION_ID = 'e4f5g6h7-8i9j-0k1l-2m3n-4o5p6q7r8s9t'; // UUID for Read Staff permission
+const READ_STAFF_PERMISSION_NAME = 'Read Staff'; // Name for backward compatibility
+
+const READ_ANNOUNCEMENT_PERMISSION_ID = 'f5g6h7i8-9j0k-1l2m-3n4o-5p6q7r8s9t0u'; // UUID for Read Announcement permission
+const READ_ANNOUNCEMENT_PERMISSION_NAME = 'Read Announcement'; // Name for backward compatibility
+
+const getMenuItems = (currentLanguage: string, hasReadPropertyPermission: boolean, hasViewUserPermission: boolean, hasReadTicketPermission: boolean, hasReadBillingPermission: boolean, hasReadStaffPermission: boolean, hasReadAnnouncementPermission: boolean): MenuItemProps[] => {
     const t = translations[currentLanguage as keyof typeof translations];
     
-    return [
+    const allMenuItems = [
         {
             title: t.dashboard,
             icon: BarChart3,
@@ -150,6 +170,41 @@ const getMenuItems = (currentLanguage: string): MenuItemProps[] => {
             href: '/dashboard/settings'
         }
     ];
+
+    // Filter out menu items based on permissions
+    return allMenuItems.filter(item => {
+        if (item.href === '/dashboard/units') {
+            console.log('Sidebar - Checking Read Property permission for Unit Management');
+            console.log('Sidebar - hasReadPropertyPermission:', hasReadPropertyPermission);
+            return hasReadPropertyPermission;
+        }
+        if (item.href === '/dashboard/residents') {
+            console.log('Sidebar - Checking View User permission for Resident Management');
+            console.log('Sidebar - hasViewUserPermission:', hasViewUserPermission);
+            return hasViewUserPermission;
+        }
+        if (item.href === '/dashboard/requests') {
+            console.log('Sidebar - Checking Read Ticket permission for Service Request Management');
+            console.log('Sidebar - hasReadTicketPermission:', hasReadTicketPermission);
+            return hasReadTicketPermission;
+        }
+        if (item.href === '/dashboard/financial') {
+            console.log('Sidebar - Checking Read Billing permission for Financial Operations');
+            console.log('Sidebar - hasReadBillingPermission:', hasReadBillingPermission);
+            return hasReadBillingPermission;
+        }
+        if (item.href === '/dashboard/staff') {
+            console.log('Sidebar - Checking Read Staff permission for Staff Management');
+            console.log('Sidebar - hasReadStaffPermission:', hasReadStaffPermission);
+            return hasReadStaffPermission;
+        }
+        if (item.href === '/dashboard/announcements') {
+            console.log('Sidebar - Checking Read Announcement permission for Announcements');
+            console.log('Sidebar - hasReadAnnouncementPermission:', hasReadAnnouncementPermission);
+            return hasReadAnnouncementPermission;
+        }
+        return true;
+    });
 };
 
 function MenuItem({ title, icon: Icon, href, children, isOpen, onToggle }: MenuItemProps) {
@@ -256,6 +311,47 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const { user, logout } = useAuth();
     const [currentLanguage, setCurrentLanguage] = useState('tr');
 
+    // Permission kontrolü için usePermissionCheck hook'unu kullan
+    const permissionCheck = usePermissionCheck()
+    
+    // Read Property izni kontrolü - hem ID hem de name ile kontrol et
+    const hasReadPropertyPermission = permissionCheck.hasPermission(READ_PROPERTY_PERMISSION_ID) || permissionCheck.hasPermission(READ_PROPERTY_PERMISSION_NAME)
+    
+    // View User izni kontrolü - hem ID hem de name ile kontrol et
+    const hasViewUserPermission = permissionCheck.hasPermission(VIEW_USER_PERMISSION_ID) || permissionCheck.hasPermission(VIEW_USER_PERMISSION_NAME)
+    
+    // Read Ticket izni kontrolü - hem ID hem de name ile kontrol et
+    const hasReadTicketPermission = permissionCheck.hasPermission(READ_TICKET_PERMISSION_ID) || permissionCheck.hasPermission(READ_TICKET_PERMISSION_NAME)
+    
+    // Read Billing izni kontrolü - hem ID hem de name ile kontrol et
+    const hasReadBillingPermission = permissionCheck.hasPermission(READ_BILLING_PERMISSION_ID) || permissionCheck.hasPermission(READ_BILLING_PERMISSION_NAME)
+    
+    // Read Staff izni kontrolü - hem ID hem de name ile kontrol et
+    const hasReadStaffPermission = permissionCheck.hasPermission(READ_STAFF_PERMISSION_ID) || permissionCheck.hasPermission(READ_STAFF_PERMISSION_NAME)
+    
+    // Read Announcement izni kontrolü - hem ID hem de name ile kontrol et
+    const hasReadAnnouncementPermission = permissionCheck.hasPermission(READ_ANNOUNCEMENT_PERMISSION_ID) || permissionCheck.hasPermission(READ_ANNOUNCEMENT_PERMISSION_NAME)
+    
+    console.log('Sidebar - READ_PROPERTY_PERMISSION_ID:', READ_PROPERTY_PERMISSION_ID)
+    console.log('Sidebar - READ_PROPERTY_PERMISSION_NAME:', READ_PROPERTY_PERMISSION_NAME)
+    console.log('Sidebar - hasReadPropertyPermission:', hasReadPropertyPermission)
+    console.log('Sidebar - VIEW_USER_PERMISSION_ID:', VIEW_USER_PERMISSION_ID)
+    console.log('Sidebar - VIEW_USER_PERMISSION_NAME:', VIEW_USER_PERMISSION_NAME)
+    console.log('Sidebar - hasViewUserPermission:', hasViewUserPermission)
+    console.log('Sidebar - READ_TICKET_PERMISSION_ID:', READ_TICKET_PERMISSION_ID)
+    console.log('Sidebar - READ_TICKET_PERMISSION_NAME:', READ_TICKET_PERMISSION_NAME)
+    console.log('Sidebar - hasReadTicketPermission:', hasReadTicketPermission)
+    console.log('Sidebar - READ_BILLING_PERMISSION_ID:', READ_BILLING_PERMISSION_ID)
+    console.log('Sidebar - READ_BILLING_PERMISSION_NAME:', READ_BILLING_PERMISSION_NAME)
+    console.log('Sidebar - hasReadBillingPermission:', hasReadBillingPermission)
+    console.log('Sidebar - READ_STAFF_PERMISSION_ID:', READ_STAFF_PERMISSION_ID)
+    console.log('Sidebar - READ_STAFF_PERMISSION_NAME:', READ_STAFF_PERMISSION_NAME)
+    console.log('Sidebar - hasReadStaffPermission:', hasReadStaffPermission)
+    console.log('Sidebar - READ_ANNOUNCEMENT_PERMISSION_ID:', READ_ANNOUNCEMENT_PERMISSION_ID)
+    console.log('Sidebar - READ_ANNOUNCEMENT_PERMISSION_NAME:', READ_ANNOUNCEMENT_PERMISSION_NAME)
+    console.log('Sidebar - hasReadAnnouncementPermission:', hasReadAnnouncementPermission)
+    console.log('Sidebar - permissionCheck loading:', permissionCheck.loading)
+
     // Dil tercihini localStorage'dan al
     useEffect(() => {
         const savedLanguage = localStorage.getItem('preferredLanguage');
@@ -264,8 +360,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         }
     }, []);
 
-    // Menü öğelerini dil bazlı al
-    const menuItems = getMenuItems(currentLanguage);
+    // Menü öğelerini dil ve izin bazlı al
+    const menuItems = getMenuItems(currentLanguage, hasReadPropertyPermission, hasViewUserPermission, hasReadTicketPermission, hasReadBillingPermission, hasReadStaffPermission, hasReadAnnouncementPermission);
     const t = translations[currentLanguage as keyof typeof translations];
 
     const handleLogout = async () => {

@@ -32,6 +32,20 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Header from './Header'
 
+// Permission constants
+const READ_PROPERTY_PERMISSION_ID = 'read-property'
+const READ_PROPERTY_PERMISSION_NAME = 'Read Property'
+const VIEW_USER_PERMISSION_ID = 'view-user'
+const VIEW_USER_PERMISSION_NAME = 'View User'
+const READ_TICKET_PERMISSION_ID = 'read-ticket'
+const READ_TICKET_PERMISSION_NAME = 'Read Ticket'
+const READ_BILLING_PERMISSION_ID = 'read-billing'
+const READ_BILLING_PERMISSION_NAME = 'Read Billing'
+const READ_STAFF_PERMISSION_ID = 'read-staff'
+const READ_STAFF_PERMISSION_NAME = 'Read Staff'
+const READ_ANNOUNCEMENT_PERMISSION_ID = 'read-announcement'
+const READ_ANNOUNCEMENT_PERMISSION_NAME = 'Read Announcement'
+
 interface SubMenuItem {
     label: string;
     href: string;
