@@ -15,6 +15,13 @@ import { ToastContainer } from '@/app/components/ui/Toast';
 import { useToast } from '@/hooks/useToast';
 import { useAnnouncementDetail } from '../hooks/useAnnouncementDetail';
 import { createAnnouncementActionHandlers } from '../actions/announcement-actions';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import {
+    UPDATE_ANNOUNCEMENT_PERMISSION_ID,
+    UPDATE_ANNOUNCEMENT_PERMISSION_NAME,
+    DELETE_ANNOUNCEMENT_PERMISSION_ID,
+    DELETE_ANNOUNCEMENT_PERMISSION_NAME
+} from '@/app/components/ui/Sidebar';
 import {
     ArrowLeft, Edit, Trash2, Archive, Send, Pin, AlertTriangle, 
     Copy, Calendar, User, MapPin, Clock, Eye, Download, ChevronLeft, ChevronRight, X
@@ -41,6 +48,15 @@ export default function AnnouncementDetailPage() {
     const params = useParams();
     const { toasts, removeToast } = useToast();
     const announcementId = params?.id as string;
+
+    // Permission checks
+    const permissionCheck = usePermissionCheck();
+    const hasUpdateAnnouncementPermission = permissionCheck.hasPermission(
+        UPDATE_ANNOUNCEMENT_PERMISSION_ID
+    );
+    const hasDeleteAnnouncementPermission = permissionCheck.hasPermission(
+        DELETE_ANNOUNCEMENT_PERMISSION_ID
+    );
 
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -227,12 +243,14 @@ export default function AnnouncementDetailPage() {
     const renderActionButtons = (announcement: Announcement) => {
         const buttons = [];
 
-        // Edit button - always available
-        buttons.push(
-            <Button key="edit" variant="secondary" size="md" icon={Edit} onClick={handleEdit}>
-                Düzenle
-            </Button>
-        );
+        // Edit button - only if user has UPDATE_ANNOUNCEMENT permission
+        if (hasUpdateAnnouncementPermission) {
+            buttons.push(
+                <Button key="edit" variant="secondary" size="md" icon={Edit} onClick={handleEdit}>
+                    Düzenle
+                </Button>
+            );
+        }
 
         // Status-specific actions
         if (announcement.status === AnnouncementStatus.DRAFT) {
@@ -286,12 +304,14 @@ export default function AnnouncementDetailPage() {
             </Button>
         );
 
-        // Delete button
-        buttons.push(
-            <Button key="delete" variant="danger" size="md" icon={Trash2} onClick={handleDelete}>
-                Sil
-            </Button>
-        );
+        // Delete button - only if user has DELETE_ANNOUNCEMENT permission
+        if (hasDeleteAnnouncementPermission) {
+            buttons.push(
+                <Button key="delete" variant="danger" size="md" icon={Trash2} onClick={handleDelete}>
+                    Sil
+                </Button>
+            );
+        }
 
         return buttons;
     };
@@ -376,12 +396,16 @@ export default function AnnouncementDetailPage() {
 
                         {/* Sağ üst aksiyonlar */}
                         <div className="mb-4 flex justify-end gap-3">
-                            <Button variant="secondary" size="md" icon={Edit} onClick={handleEdit}>
-                                Düzenle
-                            </Button>
-                            <Button variant="danger" size="md" icon={Trash2} onClick={handleDelete}>
-                                Kaldır
-                            </Button>
+                            {hasUpdateAnnouncementPermission && (
+                                <Button variant="secondary" size="md" icon={Edit} onClick={handleEdit}>
+                                    Düzenle
+                                </Button>
+                            )}
+                            {hasDeleteAnnouncementPermission && (
+                                <Button variant="danger" size="md" icon={Trash2} onClick={handleDelete}>
+                                    Kaldır
+                                </Button>
+                            )}
                         </div>
 
                         {/* Üst dizilim: Sol büyük kart (Başlık ve İçerik) + Sağ küçük kart (Yayın/Bitiş/Tip) */}

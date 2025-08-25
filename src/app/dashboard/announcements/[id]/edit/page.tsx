@@ -13,6 +13,11 @@ import { useToast } from '@/hooks/useToast';
 import AnnouncementForm from '../../components/AnnouncementForm';
 import { useAnnouncementDetail } from '../../hooks/useAnnouncementDetail';
 import { announcementService } from '@/services';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import {
+    UPDATE_ANNOUNCEMENT_PERMISSION_ID,
+    UPDATE_ANNOUNCEMENT_PERMISSION_NAME
+} from '@/app/components/ui/Sidebar';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import type { 
     AnnouncementFormData, 
@@ -32,6 +37,18 @@ export default function EditAnnouncementPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     
     const announcementId = params?.id as string;
+
+    // Permission check
+    const permissionCheck = usePermissionCheck();
+    const hasUpdateAnnouncementPermission = permissionCheck.hasPermission(UPDATE_ANNOUNCEMENT_PERMISSION_ID);
+
+    // Redirect if no permission
+    React.useEffect(() => {
+        if (!hasUpdateAnnouncementPermission) {
+            showToast('error', 'Yetkisiz Erişim', 'Duyuru düzenleme yetkiniz bulunmamaktadır.');
+            router.push('/dashboard/announcements');
+        }
+    }, [hasUpdateAnnouncementPermission, router]);
 
     // Data hook
     const { announcement, loading: fetchLoading, error, refreshAnnouncement } = useAnnouncementDetail({

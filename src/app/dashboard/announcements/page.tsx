@@ -17,6 +17,8 @@ import ExportDropdown from '@/app/components/ui/ExportDropdown';
 import { ToastContainer } from '@/app/components/ui/Toast';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 import { useToast } from '@/hooks/useToast';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { CREATE_ANNOUNCEMENT_PERMISSION_ID, CREATE_ANNOUNCEMENT_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
 import {
     Filter, Download, Plus, RefreshCw, ChevronRight, Eye, Edit, 
     AlertTriangle, Pin, Archive, Send, Copy, Trash2, 
@@ -227,6 +229,10 @@ export default function AnnouncementsPage() {
 
     const router = useRouter();
     const { toasts, removeToast } = useToast();
+    const permissionCheck = usePermissionCheck();
+
+    // Check CREATE_ANNOUNCEMENT permission
+    const hasCreateAnnouncementPermission = permissionCheck.hasPermission(CREATE_ANNOUNCEMENT_PERMISSION_ID);
 
     // Event modal state
     const [eventModalOpen, setEventModalOpen] = useState(false)
@@ -627,9 +633,11 @@ export default function AnnouncementsPage() {
                                         {t.refresh}
                                     </Button>
                                     {/* Export button removed as requested */}
-                                    <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewAnnouncement}>
-                                        {t.newAnnouncement}
-                                    </Button>
+                                    {hasCreateAnnouncementPermission && (
+                                        <Button variant="primary" size="md" icon={Plus} onClick={handleAddNewAnnouncement}>
+                                            {t.newAnnouncement}
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 

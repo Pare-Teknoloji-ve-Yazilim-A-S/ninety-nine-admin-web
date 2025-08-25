@@ -119,11 +119,29 @@ const READ_TICKET_PERMISSION_NAME = 'Read Ticket'; // Name for backward compatib
 const READ_BILLING_PERMISSION_ID = 'd3e4f5g6-7h8i-9j0k-1l2m-3n4o5p6q7r8s'; // UUID for Read Billing permission
 const READ_BILLING_PERMISSION_NAME = 'Read Billing'; // Name for backward compatibility
 
-const READ_STAFF_PERMISSION_ID = 'e4f5g6h7-8i9j-0k1l-2m3n-4o5p6q7r8s9t'; // UUID for Read Staff permission
+const READ_STAFF_PERMISSION_ID = 'be598b8a-4d77-4373-993e-62907b5f59e7'; // UUID for Read Staff permission
 const READ_STAFF_PERMISSION_NAME = 'Read Staff'; // Name for backward compatibility
 
-const READ_ANNOUNCEMENT_PERMISSION_ID = 'f5g6h7i8-9j0k-1l2m-3n4o-5p6q7r8s9t0u'; // UUID for Read Announcement permission
+const CREATE_STAFF_PERMISSION_ID = 'e811976e-8594-4d8a-b6c4-7636dd404959'; // UUID for Create Staff permission
+const CREATE_STAFF_PERMISSION_NAME = 'Create Staff'; // Name for backward compatibility
+
+const UPDATE_STAFF_PERMISSION_ID = '4b5b6ea7-2ce4-414d-ad0a-272eae1d9e93'; // UUID for Update Staff permission
+const UPDATE_STAFF_PERMISSION_NAME = 'Update Staff'; // Name for backward compatibility
+
+const DELETE_STAFF_PERMISSION_ID = '525d1a57-b786-4c38-a6c1-768f45b6196e'; // UUID for Delete Staff permission
+const DELETE_STAFF_PERMISSION_NAME = 'Delete Staff'; // Name for backward compatibility
+
+const READ_ANNOUNCEMENT_PERMISSION_ID = '9e6974bd-55e8-439e-a295-97486ffffdf9'; // UUID for Read Announcement permission
 const READ_ANNOUNCEMENT_PERMISSION_NAME = 'Read Announcement'; // Name for backward compatibility
+
+const CREATE_ANNOUNCEMENT_PERMISSION_ID = 'ae1ed96c-230e-41f6-bc16-c1db0ff9e71a'; // UUID for Create Announcement permission
+const CREATE_ANNOUNCEMENT_PERMISSION_NAME = 'Create Announcement'; // Name for backward compatibility
+
+const UPDATE_ANNOUNCEMENT_PERMISSION_ID = '6ec1de38-b579-4445-802a-11efc5a2dc0c'; // UUID for Update Announcement permission
+const UPDATE_ANNOUNCEMENT_PERMISSION_NAME = 'Update Announcement'; // Name for backward compatibility
+
+const DELETE_ANNOUNCEMENT_PERMISSION_ID = '832841a0-5891-4e93-b164-cb94355e2fce'; // UUID for Delete Announcement permission
+const DELETE_ANNOUNCEMENT_PERMISSION_NAME = 'Delete Announcement'; // Name for backward compatibility
 
 const READ_ROLE_PERMISSION_ID = 'g6h7i8j9-0k1l-2m3n-4o5p-6q7r8s9t0u1v'; // UUID for Read Role permission
 const READ_ROLE_PERMISSION_NAME = 'Read Role'; // Name for backward compatibility
@@ -140,16 +158,16 @@ const CREATE_BILLING_PERMISSION_NAME = 'Manage Billing'; // Name for backward co
 const UPDATE_BILLING_PERMISSION_ID = 'm2n3o4p5-6q7r-8s9t-0u1v-2w3x4y5z6a7b'; // UUID for Update Billing permission
 const UPDATE_BILLING_PERMISSION_NAME = 'Update Billing'; // Name for backward compatibility
 
-const CREATE_PAYMENT_PERMISSION_ID = 'fb1d69ae-ba26-47b8-b366-2da6a1a1c83d'; // UUID for Create Payment permission
-const CREATE_PAYMENT_PERMISSION_NAME = 'Create Payment'; // Name for backward compatibility
+const CREATE_PAYMENT_PERMISSION_ID = '47c85bcb-188f-4f02-bfc0-1364c52fc883'; // UUID for Manage Payment permission
+const CREATE_PAYMENT_PERMISSION_NAME = 'Manage Payment'; // Name for backward compatibility
 
-const READ_PAYMENT_PERMISSION_ID = '93127240-7cfc-4d8b-a1b6-806d6d3e61fd'; // UUID for Read Payment permission
+const READ_PAYMENT_PERMISSION_ID = 'o4p5q6r7-8s9t-0u1v-2w3x-4y5z6a7b8c9d'; // UUID for Read Payment permission
 const READ_PAYMENT_PERMISSION_NAME = 'Read Payment'; // Name for backward compatibility
 
-const UPDATE_PAYMENT_PERMISSION_ID = '95473791-20a7-429c-b083-2934872af40d'; // UUID for Update Payment permission
+const UPDATE_PAYMENT_PERMISSION_ID = 'p5q6r7s8-9t0u-1v2w-3x4y-5z6a7b8c9d0e'; // UUID for Update Payment permission
 const UPDATE_PAYMENT_PERMISSION_NAME = 'Update Payment'; // Name for backward compatibility
 
-const DELETE_PAYMENT_PERMISSION_ID = '7be7dadf-8b96-4706-9be6-758c4d106000'; // UUID for Delete Payment permission
+const DELETE_PAYMENT_PERMISSION_ID = 'q6r7s8t9-0u1v-2w3x-4y5z-6a7b8c9d0e1f'; // UUID for Delete Payment permission
 const DELETE_PAYMENT_PERMISSION_NAME = 'Delete Payment'; // Name for backward compatibility
 
 const getMenuItems = (currentLanguage: string, hasReadPropertyPermission: boolean, hasViewUserPermission: boolean, hasReadTicketPermission: boolean, hasReadBillingPermission: boolean, hasReadStaffPermission: boolean, hasReadAnnouncementPermission: boolean, hasReadRolePermission: boolean): MenuItemProps[] => {
@@ -545,7 +563,19 @@ export {
     UPDATE_PAYMENT_PERMISSION_ID,
     UPDATE_PAYMENT_PERMISSION_NAME,
     DELETE_PAYMENT_PERMISSION_ID,
-    DELETE_PAYMENT_PERMISSION_NAME
+    DELETE_PAYMENT_PERMISSION_NAME,
+    CREATE_ANNOUNCEMENT_PERMISSION_ID,
+    CREATE_ANNOUNCEMENT_PERMISSION_NAME,
+    UPDATE_ANNOUNCEMENT_PERMISSION_ID,
+    UPDATE_ANNOUNCEMENT_PERMISSION_NAME,
+    DELETE_ANNOUNCEMENT_PERMISSION_ID,
+    DELETE_ANNOUNCEMENT_PERMISSION_NAME,
+    CREATE_STAFF_PERMISSION_ID,
+    CREATE_STAFF_PERMISSION_NAME,
+    UPDATE_STAFF_PERMISSION_ID,
+    UPDATE_STAFF_PERMISSION_NAME,
+    DELETE_STAFF_PERMISSION_ID,
+    DELETE_STAFF_PERMISSION_NAME
 };
 
 // Delete Ticket permission constants

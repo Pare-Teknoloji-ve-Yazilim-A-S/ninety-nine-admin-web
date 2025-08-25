@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Test Permissions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Add Test Permissions</h1>
+        <p>Bu sayfa localStorage'a test izin verileri ekler.</p>
+        
+        <button class="button" onclick="addTestPermissions()">➕ Test İzinlerini Ekle</button>
+        <button class="button" onclick="clearPermissions()">🗑️ İzinleri Temizle</button>
+        <button class="button" onclick="checkCurrentPermissions()">🔍 Mevcut İzinleri Kontrol Et</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function addTestPermissions() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Test kullanıcı verisi ekle
+                const userData = {
+                    id: 'test-user-123',
+                    name: 'Test User',
+                    email: 'test@example.com'
+                };
+                localStorage.setItem('userData', JSON.stringify(userData));
+                
+                // Test izin verileri ekle
+                const testPermissions = [
+                    {
+                        id: 'f1e2d3c4-b5a6-9788-1234-567890abcdef',
+                        name: 'Update Announcement',
+                        resource: 'announcement',
+                        action: 'update'
+                    },
+                    {
+                        id: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
+                        name: 'Delete Announcement',
+                        resource: 'announcement',
+                        action: 'delete'
+                    },
+                    {
+                        id: 'b2c3d4e5-f6a7-8901-2345-678901bcdefg',
+                        name: 'Create Announcement',
+                        resource: 'announcement',
+                        action: 'create'
+                    }
+                ];
+                
+                localStorage.setItem('userPermissions', JSON.stringify(testPermissions));
+                
+                resultsDiv.innerHTML = `
+                    <h3 class="success">✅ Test İzinleri Başarıyla Eklendi!</h3>
+                    <pre>Eklenen İzinler:
+${JSON.stringify(testPermissions, null, 2)}</pre>
+                    <p class="warning">⚠️ Sayfayı yenileyin veya duyuru sayfasına gidin.</p>
+                `;
+                
+                // Permission değişikliği event'i gönder
+                if (window.dispatchEvent) {
+                    window.dispatchEvent(new CustomEvent('permission-changed'));
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<h3 style="color: red;">❌ Hata: ${error.message}</h3>`;
+            }
+        }
+        
+        function clearPermissions() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                localStorage.removeItem('userData');
+                localStorage.removeItem('userPermissions');
+                
+                resultsDiv.innerHTML = `
+                    <h3 class="success">✅ Tüm İzinler Temizlendi!</h3>
+                    <p class="warning">⚠️ Sayfayı yenileyin.</p>
+                `;
+                
+                // Permission değişikliği event'i gönder
+                if (window.dispatchEvent) {
+                    window.dispatchEvent(new CustomEvent('permission-changed'));
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<h3 style="color: red;">❌ Hata: ${error.message}</h3>`;
+            }
+        }
+        
+        function checkCurrentPermissions() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                const userData = localStorage.getItem('userData');
+                const userPermissions = localStorage.getItem('userPermissions');
+                
+                let output = '<h3>📊 Mevcut LocalStorage Durumu:</h3>';
+                
+                if (userData) {
+                    output += `<h4>👤 User Data:</h4><pre>${JSON.stringify(JSON.parse(userData), null, 2)}</pre>`;
+                } else {
+                    output += '<h4>👤 User Data:</h4><p style="color: red;">❌ Bulunamadı</p>';
+                }
+                
+                if (userPermissions) {
+                    const perms = JSON.parse(userPermissions);
+                    output += `<h4>🔑 User Permissions (${perms.length} adet):</h4><pre>${JSON.stringify(perms, null, 2)}</pre>`;
+                } else {
+                    output += '<h4>🔑 User Permissions:</h4><p style="color: red;">❌ Bulunamadı</p>';
+                }
+                
+                resultsDiv.innerHTML = output;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<h3 style="color: red;">❌ Hata: ${error.message}</h3>`;
+            }
+        }
+        
+        // Sayfa yüklendiğinde mevcut durumu göster
+        window.addEventListener('load', () => {
+            checkCurrentPermissions();
+        });
+    </script>
+</body>
+</html>

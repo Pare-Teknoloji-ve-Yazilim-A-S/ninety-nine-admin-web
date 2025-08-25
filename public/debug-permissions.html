@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Permissions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Announcement Permissions Debug</h1>
+        <button class="button" onclick="runDebug()">🚀 Run Debug Analysis</button>
+        <button class="button" onclick="clearResults()">🗑️ Clear Results</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function runDebug() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>🔄 Running Debug Analysis...</h2>';
+            
+            let output = '';
+            
+            try {
+                // 1. Check localStorage userData
+                output += '<div class="section"><h3>📊 1. LocalStorage User Data</h3>';
+                const userDataStr = localStorage.getItem('userData');
+                if (userDataStr) {
+                    const userData = JSON.parse(userDataStr);
+                    output += `<pre>User ID: ${userData.id || 'N/A'}\nUser Name: ${userData.name || 'N/A'}\nUser Email: ${userData.email || 'N/A'}</pre>`;
+                } else {
+                    output += '<pre class="error">❌ No userData found in localStorage</pre>';
+                }
+                output += '</div>';
+
+                // 2. Check userPermissions
+                output += '<div class="section"><h3>🔑 2. User Permissions</h3>';
+                const userPermissionsStr = localStorage.getItem('userPermissions');
+                if (userPermissionsStr) {
+                    const userPermissions = JSON.parse(userPermissionsStr);
+                    output += `<pre>Total Permissions: ${userPermissions.length}</pre>`;
+                    
+                    // Show all permission IDs and names
+                    output += '<h4>All Permission IDs:</h4><pre>';
+                    userPermissions.forEach((perm, index) => {
+                        output += `${index + 1}. ID: ${perm.id} | Name: ${perm.name}\n`;
+                    });
+                    output += '</pre>';
+                } else {
+                    output += '<pre class="error">❌ No userPermissions found in localStorage</pre>';
+                }
+                output += '</div>';
+
+                // 3. Check specific announcement permissions
+                output += '<div class="section"><h3>📢 3. Announcement Permission Analysis</h3>';
+                if (userPermissionsStr) {
+                    const userPermissions = JSON.parse(userPermissionsStr);
+                    
+                    // Define permission constants (same as in the app)
+                    const UPDATE_ANNOUNCEMENT_PERMISSION_ID = 'f1e2d3c4-b5a6-9788-1234-567890abcdef';
+                    const UPDATE_ANNOUNCEMENT_PERMISSION_NAME = 'Update Announcement';
+                    const DELETE_ANNOUNCEMENT_PERMISSION_ID = 'a1b2c3d4-e5f6-7890-1234-567890abcdef';
+                    const DELETE_ANNOUNCEMENT_PERMISSION_NAME = 'Delete Announcement';
+                    const CREATE_ANNOUNCEMENT_PERMISSION_ID = 'b2c3d4e5-f6a7-8901-2345-678901bcdefg';
+                    const CREATE_ANNOUNCEMENT_PERMISSION_NAME = 'Create Announcement';
+                    
+                    // Check UPDATE_ANNOUNCEMENT permission
+                    const hasUpdateById = userPermissions.some(p => p.id === UPDATE_ANNOUNCEMENT_PERMISSION_ID);
+                    const hasUpdateByName = userPermissions.some(p => p.name === UPDATE_ANNOUNCEMENT_PERMISSION_NAME);
+                    const updatePermission = userPermissions.find(p => p.id === UPDATE_ANNOUNCEMENT_PERMISSION_ID || p.name === UPDATE_ANNOUNCEMENT_PERMISSION_NAME);
+                    
+                    output += '<h4>🔄 UPDATE_ANNOUNCEMENT Permission:</h4>';
+                    output += `<pre>Permission ID: ${UPDATE_ANNOUNCEMENT_PERMISSION_ID}\n`;
+                    output += `Permission Name: ${UPDATE_ANNOUNCEMENT_PERMISSION_NAME}\n`;
+                    output += `Has by ID: ${hasUpdateById ? '✅ YES' : '❌ NO'}\n`;
+                    output += `Has by Name: ${hasUpdateByName ? '✅ YES' : '❌ NO'}\n`;
+                    if (updatePermission) {
+                        output += `Found Permission: ${JSON.stringify(updatePermission, null, 2)}</pre>`;
+                    } else {
+                        output += 'Found Permission: ❌ NONE</pre>';
+                    }
+                    
+                    // Check DELETE_ANNOUNCEMENT permission
+                    const hasDeleteById = userPermissions.some(p => p.id === DELETE_ANNOUNCEMENT_PERMISSION_ID);
+                    const hasDeleteByName = userPermissions.some(p => p.name === DELETE_ANNOUNCEMENT_PERMISSION_NAME);
+                    const deletePermission = userPermissions.find(p => p.id === DELETE_ANNOUNCEMENT_PERMISSION_ID || p.name === DELETE_ANNOUNCEMENT_PERMISSION_NAME);
+                    
+                    output += '<h4>🗑️ DELETE_ANNOUNCEMENT Permission:</h4>';
+                    output += `<pre>Permission ID: ${DELETE_ANNOUNCEMENT_PERMISSION_ID}\n`;
+                    output += `Permission Name: ${DELETE_ANNOUNCEMENT_PERMISSION_NAME}\n`;
+                    output += `Has by ID: ${hasDeleteById ? '✅ YES' : '❌ NO'}\n`;
+                    output += `Has by Name: ${hasDeleteByName ? '✅ YES' : '❌ NO'}\n`;
+                    if (deletePermission) {
+                        output += `Found Permission: ${JSON.stringify(deletePermission, null, 2)}</pre>`;
+                    } else {
+                        output += 'Found Permission: ❌ NONE</pre>';
+                    }
+                    
+                    // Check CREATE_ANNOUNCEMENT permission (for comparison)
+                    const hasCreateById = userPermissions.some(p => p.id === CREATE_ANNOUNCEMENT_PERMISSION_ID);
+                    const hasCreateByName = userPermissions.some(p => p.name === CREATE_ANNOUNCEMENT_PERMISSION_NAME);
+                    const createPermission = userPermissions.find(p => p.id === CREATE_ANNOUNCEMENT_PERMISSION_ID || p.name === CREATE_ANNOUNCEMENT_PERMISSION_NAME);
+                    
+                    output += '<h4>➕ CREATE_ANNOUNCEMENT Permission (for comparison):</h4>';
+                    output += `<pre>Permission ID: ${CREATE_ANNOUNCEMENT_PERMISSION_ID}\n`;
+                    output += `Permission Name: ${CREATE_ANNOUNCEMENT_PERMISSION_NAME}\n`;
+                    output += `Has by ID: ${hasCreateById ? '✅ YES' : '❌ NO'}\n`;
+                    output += `Has by Name: ${hasCreateByName ? '✅ YES' : '❌ NO'}\n`;
+                    if (createPermission) {
+                        output += `Found Permission: ${JSON.stringify(createPermission, null, 2)}</pre>`;
+                    } else {
+                        output += 'Found Permission: ❌ NONE</pre>';
+                    }
+                }
+                output += '</div>';
+
+                // 4. Simulate usePermissionCheck logic
+                output += '<div class="section"><h3>🧮 4. usePermissionCheck Simulation</h3>';
+                if (userPermissionsStr) {
+                    const userPermissions = JSON.parse(userPermissionsStr);
+                    
+                    // Simulate the hook logic
+                    function simulatePermissionCheck(permissionIdOrName) {
+                        if (!userPermissions || !Array.isArray(userPermissions)) {
+                            return false;
+                        }
+                        return userPermissions.some(permission => 
+                            permission.id === permissionIdOrName || permission.name === permissionIdOrName
+                        );
+                    }
+                    
+                    const UPDATE_ANNOUNCEMENT_PERMISSION_ID = 'f1e2d3c4-b5a6-9788-1234-567890abcdef';
+                    const UPDATE_ANNOUNCEMENT_PERMISSION_NAME = 'Update Announcement';
+                    const DELETE_ANNOUNCEMENT_PERMISSION_ID = 'a1b2c3d4-e5f6-7890-1234-567890abcdef';
+                    const DELETE_ANNOUNCEMENT_PERMISSION_NAME = 'Delete Announcement';
+                    
+                    const hasUpdateAnnouncementPermission = simulatePermissionCheck(UPDATE_ANNOUNCEMENT_PERMISSION_ID) || simulatePermissionCheck(UPDATE_ANNOUNCEMENT_PERMISSION_NAME);
+                    const hasDeleteAnnouncementPermission = simulatePermissionCheck(DELETE_ANNOUNCEMENT_PERMISSION_ID) || simulatePermissionCheck(DELETE_ANNOUNCEMENT_PERMISSION_NAME);
+                    
+                    output += '<pre>';
+                    output += `hasUpdateAnnouncementPermission: ${hasUpdateAnnouncementPermission ? '✅ TRUE' : '❌ FALSE'}\n`;
+                    output += `hasDeleteAnnouncementPermission: ${hasDeleteAnnouncementPermission ? '✅ TRUE' : '❌ FALSE'}`;
+                    output += '</pre>';
+                }
+                output += '</div>';
+
+                // 5. Check for announcement-related permissions
+                output += '<div class="section"><h3>🔍 5. All Announcement-Related Permissions</h3>';
+                if (userPermissionsStr) {
+                    const userPermissions = JSON.parse(userPermissionsStr);
+                    const announcementPerms = userPermissions.filter(p => 
+                        p.name.toLowerCase().includes('announcement') || 
+                        p.resource === 'announcement' ||
+                        p.action === 'announcement'
+                    );
+                    
+                    if (announcementPerms.length > 0) {
+                        output += '<pre>';
+                        announcementPerms.forEach((perm, index) => {
+                            output += `${index + 1}. ${JSON.stringify(perm, null, 2)}\n\n`;
+                        });
+                        output += '</pre>';
+                    } else {
+                        output += '<pre class="warning">⚠️ No announcement-related permissions found</pre>';
+                    }
+                }
+                output += '</div>';
+
+                // 6. Check DOM elements
+                output += '<div class="section"><h3>🎯 6. DOM Elements Check</h3>';
+                
+                // Check for Edit button
+                const editButtons = document.querySelectorAll('button, a');
+                let editButtonFound = false;
+                let deleteButtonFound = false;
+                let newAnnouncementButtonFound = false;
+                
+                editButtons.forEach(btn => {
+                    const text = btn.textContent || btn.innerText || '';
+                    if (text.toLowerCase().includes('düzenle') || text.toLowerCase().includes('edit')) {
+                        editButtonFound = true;
+                        output += `<pre>✅ Edit Button Found: "${text}" | Visible: ${btn.offsetParent !== null} | Display: ${getComputedStyle(btn).display}</pre>`;
+                    }
+                    if (text.toLowerCase().includes('sil') || text.toLowerCase().includes('delete') || text.toLowerCase().includes('kaldır')) {
+                        deleteButtonFound = true;
+                        output += `<pre>✅ Delete Button Found: "${text}" | Visible: ${btn.offsetParent !== null} | Display: ${getComputedStyle(btn).display}</pre>`;
+                    }
+                    if (text.toLowerCase().includes('yeni duyuru') || text.toLowerCase().includes('new announcement') || text.toLowerCase().includes('duyuru oluştur')) {
+                        newAnnouncementButtonFound = true;
+                        output += `<pre>✅ New Announcement Button Found: "${text}" | Visible: ${btn.offsetParent !== null} | Display: ${getComputedStyle(btn).display}</pre>`;
+                    }
+                });
+                
+                if (!editButtonFound) {
+                    output += '<pre class="warning">⚠️ No Edit button found in DOM</pre>';
+                }
+                if (!deleteButtonFound) {
+                    output += '<pre class="warning">⚠️ No Delete button found in DOM</pre>';
+                }
+                if (!newAnnouncementButtonFound) {
+                    output += '<pre class="warning">⚠️ No New Announcement button found in DOM</pre>';
+                }
+                
+                output += '</div>';
+
+                // 7. Recommendations
+                output += '<div class="section"><h3>💡 7. Recommendations</h3>';
+                output += '<pre>';
+                if (userPermissionsStr) {
+                    const userPermissions = JSON.parse(userPermissionsStr);
+                    const UPDATE_ANNOUNCEMENT_PERMISSION_ID = 'f1e2d3c4-b5a6-9788-1234-567890abcdef';
+                    const UPDATE_ANNOUNCEMENT_PERMISSION_NAME = 'Update Announcement';
+                    const DELETE_ANNOUNCEMENT_PERMISSION_ID = 'a1b2c3d4-e5f6-7890-1234-567890abcdef';
+                    const DELETE_ANNOUNCEMENT_PERMISSION_NAME = 'Delete Announcement';
+                    
+                    const hasUpdate = userPermissions.some(p => p.id === UPDATE_ANNOUNCEMENT_PERMISSION_ID || p.name === UPDATE_ANNOUNCEMENT_PERMISSION_NAME);
+                    const hasDelete = userPermissions.some(p => p.id === DELETE_ANNOUNCEMENT_PERMISSION_ID || p.name === DELETE_ANNOUNCEMENT_PERMISSION_NAME);
+                    
+                    if (hasUpdate) {
+                        output += '🔧 User HAS Update Announcement permission - Edit button should be visible\n';
+                    } else {
+                        output += '🚫 User does NOT have Update Announcement permission - Edit button should be hidden\n';
+                    }
+                    
+                    if (hasDelete) {
+                        output += '🔧 User HAS Delete Announcement permission - Delete button should be visible\n';
+                    } else {
+                        output += '🚫 User does NOT have Delete Announcement permission - Delete button should be hidden\n';
+                    }
+                    
+                    if (!hasUpdate && !hasDelete) {
+                        output += '\n💡 SOLUTION: Add the missing permissions to localStorage:\n';
+                        output += 'UPDATE_ANNOUNCEMENT: f1e2d3c4-b5a6-9788-1234-567890abcdef\n';
+                        output += 'DELETE_ANNOUNCEMENT: a1b2c3d4-e5f6-7890-1234-567890abcdef\n';
+                    }
+                } else {
+                    output += '❌ Cannot provide recommendations - no permission data found';
+                }
+                output += '</pre></div>';
+                
+            } catch (error) {
+                output += `<div class="section"><h3 class="error">❌ Error</h3><pre class="error">${error.message}\n${error.stack}</pre></div>`;
+            }
+            
+            resultsDiv.innerHTML = output;
+        }
+
+        // Auto-run on page load
+        window.addEventListener('load', () => {
+            setTimeout(runDebug, 500);
+        });
+    </script>
+</body>
+</html>

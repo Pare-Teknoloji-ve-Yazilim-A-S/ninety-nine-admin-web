@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Button from '@/app/components/ui/Button'
 import { Plus, RefreshCw } from 'lucide-react'
+import { usePermissionCheck } from '@/hooks/usePermissionCheck'
+import { CREATE_STAFF_PERMISSION_ID } from '@/app/components/ui/Sidebar'
 
 // Dil çevirileri
 const translations = {
@@ -47,6 +49,10 @@ export default function PageHeader({
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
 
+  // Permission kontrolü
+  const { hasPermission } = usePermissionCheck();
+  const hasCreateStaffPermission = hasPermission(CREATE_STAFF_PERMISSION_ID);
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
@@ -64,7 +70,7 @@ export default function PageHeader({
           </Button>
         )}
 
-        {onCreateNew && (
+        {onCreateNew && hasCreateStaffPermission && (
           <Button variant="primary" size="md" icon={Plus} onClick={onCreateNew}>
             {t.addNewStaff}
           </Button>

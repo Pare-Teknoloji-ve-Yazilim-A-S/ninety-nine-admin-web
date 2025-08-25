@@ -15,6 +15,8 @@ import { transformApiStaffToStaff } from '../../staff/utils/transformations'
 import type { Staff } from '@/services/types/staff.types'
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal'
 import { ShieldAlert } from 'lucide-react'
+import { usePermissionCheck } from '@/hooks/usePermissionCheck'
+import { UPDATE_STAFF_PERMISSION_ID, DELETE_STAFF_PERMISSION_ID } from '@/app/components/ui/Sidebar'
 
 export default function StaffDetailPage() {
   const params = useParams()
@@ -27,6 +29,11 @@ export default function StaffDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+
+  // Permission checks
+  const { hasPermission } = usePermissionCheck()
+  const hasUpdateStaffPermission = hasPermission(UPDATE_STAFF_PERMISSION_ID)
+  const hasDeleteStaffPermission = hasPermission(DELETE_STAFF_PERMISSION_ID)
 
   useEffect(() => {
     let isMounted = true
@@ -134,12 +141,16 @@ export default function StaffDetailPage() {
 
             {/* Right Actions */}
             <div className="mb-4 flex justify-end gap-3">
-              <Button variant="secondary" size="md" icon={Edit} onClick={() => { /* TODO: edit modal or route */ }}>
-                Düzenle
-              </Button>
-              <Button variant="danger" size="md" icon={ShieldAlert} onClick={() => setShowDeleteModal(true)} disabled={deleting}>
-                {deleting ? 'Siliniyor...' : 'Kaldır'}
-              </Button>
+              {hasUpdateStaffPermission && (
+                <Button variant="secondary" size="md" icon={Edit} onClick={() => { /* TODO: edit modal or route */ }}>
+                  Düzenle
+                </Button>
+              )}
+              {hasDeleteStaffPermission && (
+                <Button variant="danger" size="md" icon={ShieldAlert} onClick={() => setShowDeleteModal(true)} disabled={deleting}>
+                  {deleting ? 'Siliniyor...' : 'Kaldır'}
+                </Button>
+              )}
             </div>
 
             {/* Content Grid */}

@@ -8,6 +8,8 @@ import Sidebar from '@/app/components/ui/Sidebar';
 import Button from '@/app/components/ui/Button';
 import { ToastContainer } from '@/app/components/ui/Toast';
 import { useToast } from '@/hooks/useToast';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { CREATE_ANNOUNCEMENT_PERMISSION_ID, CREATE_ANNOUNCEMENT_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
 import AnnouncementForm from '../components/AnnouncementForm';
 import { announcementService } from '@/services';
 import { ArrowLeft } from 'lucide-react';
@@ -115,8 +117,20 @@ export default function CreateAnnouncementPage() {
 
     const router = useRouter();
     const { toasts, removeToast } = useToast();
+    const permissionCheck = usePermissionCheck();
     const [loading, setLoading] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Check CREATE_ANNOUNCEMENT permission
+    const hasCreateAnnouncementPermission = permissionCheck.hasPermission(CREATE_ANNOUNCEMENT_PERMISSION_ID);
+
+    // Redirect if no permission
+    useEffect(() => {
+        if (!hasCreateAnnouncementPermission) {
+            showToast('error', 'Hata', 'Bu sayfaya erişim yetkiniz bulunmamaktadır.');
+            router.push('/dashboard/announcements');
+        }
+    }, [hasCreateAnnouncementPermission, router]);
 
     // Breadcrumb items
     const breadcrumbItems = getBreadcrumbItems(currentLanguage).concat([
