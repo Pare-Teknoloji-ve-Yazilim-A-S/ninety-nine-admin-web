@@ -404,8 +404,8 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
       try {
         setUnitPricesLoading(true);
         const response = await unitPricesService.getUnitPrices();
-        if (response.success && response.data) {
-          setUnitPrices(response.data);
+        if (response && Array.isArray(response)) {
+          setUnitPrices(response);
         }
       } catch (error) {
         console.error('Error fetching unit prices:', error);

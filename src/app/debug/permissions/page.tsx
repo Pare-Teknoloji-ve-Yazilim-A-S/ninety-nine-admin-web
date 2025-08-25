@@ -21,14 +21,14 @@ interface Permission {
 }
 
 export default function PermissionsDebugPage() {
-  const { hasPermission, permissionLoading, mounted } = usePermissionCheck()
+  const { hasPermission, loading } = usePermissionCheck()
   const [localStorageData, setLocalStorageData] = useState<any>(null)
   const [parsedPermissions, setParsedPermissions] = useState<Permission[]>([])
   const [permissionIds, setPermissionIds] = useState<string[]>([])
   const [permissionNames, setPermissionNames] = useState<string[]>([])
 
   useEffect(() => {
-    if (mounted) {
+    if (!loading) {
       try {
         const userPermissions = localStorage.getItem('userPermissions')
         setLocalStorageData(userPermissions)
@@ -49,9 +49,9 @@ export default function PermissionsDebugPage() {
         console.error('Error parsing localStorage permissions:', error)
       }
     }
-  }, [mounted])
+  }, [loading])
 
-  if (!mounted) {
+  if (loading) {
     return <div className="p-8">Loading...</div>
   }
 
@@ -63,8 +63,8 @@ export default function PermissionsDebugPage() {
         {/* Permission Loading Status */}
         <div className="bg-blue-50 p-4 rounded-lg">
           <h2 className="font-semibold mb-2">Permission Hook Durumu</h2>
-          <p>Loading: {permissionLoading ? 'Evet' : 'Hayır'}</p>
-          <p>Mounted: {mounted ? 'Evet' : 'Hayır'}</p>
+          <p>Loading: {loading ? 'Evet' : 'Hayır'}</p>
+          <p>Mounted: {!loading ? 'Evet' : 'Hayır'}</p>
         </div>
 
         {/* LocalStorage Raw Data */}

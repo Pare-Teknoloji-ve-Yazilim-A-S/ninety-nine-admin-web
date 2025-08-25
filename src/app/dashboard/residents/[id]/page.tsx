@@ -558,10 +558,8 @@ export default function ResidentViewPage() {
     const t = translations[currentLanguage as keyof typeof translations];
 
     // Create Ticket izin kontrolü
-    const hasCreateTicketPermission = usePermissionCheck({
-        permissionId: CREATE_TICKET_PERMISSION_ID,
-        permissionName: CREATE_TICKET_PERMISSION_NAME
-    });
+    const { hasPermission } = usePermissionCheck();
+    const hasCreateTicketPermission = hasPermission(CREATE_TICKET_PERMISSION_ID);
 
     // Helper fonksiyonlar - backend'den gelen değerleri çevirmek için
     const getTranslatedMembershipTier = (tier: string) => {
