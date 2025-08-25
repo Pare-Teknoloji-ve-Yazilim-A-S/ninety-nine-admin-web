@@ -9,6 +9,11 @@ export const usePermissionCheck = () => {
 
   // Permission değişikliklerini dinle
   useEffect(() => {
+    // SSR sırasında window erişimini kontrol et
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     const handlePermissionChange = async () => {
       console.log('Permission change detected, refreshing permissions...');
       try {
@@ -35,6 +40,12 @@ export const usePermissionCheck = () => {
     
     if (loading) {
       console.log('Still loading, returning false');
+      return false;
+    }
+    
+    // SSR sırasında localStorage erişimini kontrol et
+    if (typeof window === 'undefined') {
+      console.log('SSR environment detected, returning false');
       return false;
     }
     
