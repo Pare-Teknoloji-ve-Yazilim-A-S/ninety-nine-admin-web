@@ -494,18 +494,18 @@ export default function CreateTicketModal({
                     includeBills: false,
                 } as any);
                 
-                // Handle different response structures
-         let list = [];
-         if (res?.data?.data && Array.isArray(res.data.data)) {
-           list = res.data.data;
-         } else if (res?.data && Array.isArray(res.data)) {
-           list = res.data;
-         } else if (Array.isArray(res)) {
-           list = res;
-         } else {
-           console.warn('🚨 CreateTicketModal: Unexpected API response structure:', res);
-           list = [];
-         }
+                // Handle response structure - unitsService returns { data: Property[], pagination: {...} }
+                let list = [];
+                if (res?.success && res?.data && Array.isArray(res.data)) {
+                    list = res.data;
+                } else if (res?.data && Array.isArray(res.data)) {
+                    list = res.data;
+                } else if (Array.isArray(res)) {
+                    list = res;
+                } else {
+                    console.warn('🚨 CreateTicketModal: Unexpected API response structure:', res);
+                    list = [];
+                }
                 
                 console.log('🔍 CreateTicketModal API Response:', {
                     res,
@@ -544,8 +544,8 @@ export default function CreateTicketModal({
                 if (!active) return;
                 setProperties(mapped);
                 setFilteredProperties(mapped);
-                const current = res?.data?.pagination?.page ?? 1;
-                const totalPages = res?.data?.pagination?.totalPages;
+                const current = res?.pagination?.page ?? 1;
+                const totalPages = res?.pagination?.totalPages;
                 setPage(current);
                 const serverHasMore = typeof totalPages === 'number' ? current < totalPages : false;
                 const filledPage = list.length === requestedLimit;
@@ -1035,10 +1035,10 @@ export default function CreateTicketModal({
                                                             includeBills: false,
                                                         } as any);
                                                         
-                                                        // Handle different response structures
+                                                        // Handle response structure - unitsService returns { data: Property[], pagination: {...} }
                                                         let list = [];
-                                                        if (res?.data?.data && Array.isArray(res.data.data)) {
-                                                            list = res.data.data;
+                                                        if (res?.success && res?.data && Array.isArray(res.data)) {
+                                                            list = res.data;
                                                         } else if (res?.data && Array.isArray(res.data)) {
                                                             list = res.data;
                                                         } else if (Array.isArray(res)) {
@@ -1080,7 +1080,7 @@ export default function CreateTicketModal({
                                                         }));
                                                         setProperties(prev => [...prev, ...mapped]);
                                                         setFilteredProperties(prev => [...prev, ...mapped]);
-                                                        const totalPages = res?.data?.pagination?.totalPages;
+                                                        const totalPages = res?.pagination?.totalPages;
                                                         setPage(next);
                                                         const serverHasMore = typeof totalPages === 'number' ? next < totalPages : false;
                                                         const filledPage = list.length === requestedLimit;
