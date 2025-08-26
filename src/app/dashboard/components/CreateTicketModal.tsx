@@ -494,7 +494,30 @@ export default function CreateTicketModal({
                     includeBills: false,
                 } as any);
                 
-                const list = res?.data || [];
+                // Handle different response structures
+         let list = [];
+         if (res?.data?.data && Array.isArray(res.data.data)) {
+           list = res.data.data;
+         } else if (res?.data && Array.isArray(res.data)) {
+           list = res.data;
+         } else if (Array.isArray(res)) {
+           list = res;
+         } else {
+           console.warn('🚨 CreateTicketModal: Unexpected API response structure:', res);
+           list = [];
+         }
+                
+                console.log('🔍 CreateTicketModal API Response:', {
+                    res,
+                    hasSuccess: !!res?.success,
+                    hasData: !!res?.data,
+                    dataType: typeof res?.data,
+                    isDataArray: Array.isArray(res?.data),
+                    dataLength: Array.isArray(res?.data) ? res.data.length : 'not array',
+                    list,
+                    listLength: list.length
+                });
+                
                 const mapped: PropertyOption[] = list.map((property: any) => ({
                     id: property.id,
                     value: property.id,
@@ -521,8 +544,8 @@ export default function CreateTicketModal({
                 if (!active) return;
                 setProperties(mapped);
                 setFilteredProperties(mapped);
-                const current = res?.pagination?.page ?? 1;
-                const totalPages = res?.pagination?.totalPages;
+                const current = res?.data?.pagination?.page ?? 1;
+                const totalPages = res?.data?.pagination?.totalPages;
                 setPage(current);
                 const serverHasMore = typeof totalPages === 'number' ? current < totalPages : false;
                 const filledPage = list.length === requestedLimit;
@@ -1012,7 +1035,27 @@ export default function CreateTicketModal({
                                                             includeBills: false,
                                                         } as any);
                                                         
-                                                        const list = res?.data || [];
+                                                        // Handle different response structures
+                                                        let list = [];
+                                                        if (res?.data?.data && Array.isArray(res.data.data)) {
+                                                            list = res.data.data;
+                                                        } else if (res?.data && Array.isArray(res.data)) {
+                                                            list = res.data;
+                                                        } else if (Array.isArray(res)) {
+                                                            list = res;
+                                                        } else {
+                                                            console.warn('🚨 CreateTicketModal Scroll: Unexpected API response structure:', res);
+                                                            list = [];
+                                                        }
+                                                        
+                                                        console.log('🔍 CreateTicketModal Scroll API Response:', {
+                                                            res,
+                                                            page: next,
+                                                            hasSuccess: !!res?.success,
+                                                            hasData: !!res?.data,
+                                                            dataLength: list.length
+                                                        });
+                                                        
                                                         const mapped: PropertyOption[] = list.map((property: any) => ({
                                                             id: property.id,
                                                             value: property.id,
@@ -1037,7 +1080,7 @@ export default function CreateTicketModal({
                                                         }));
                                                         setProperties(prev => [...prev, ...mapped]);
                                                         setFilteredProperties(prev => [...prev, ...mapped]);
-                                                        const totalPages = res?.pagination?.totalPages;
+                                                        const totalPages = res?.data?.pagination?.totalPages;
                                                         setPage(next);
                                                         const serverHasMore = typeof totalPages === 'number' ? next < totalPages : false;
                                                         const filledPage = list.length === requestedLimit;

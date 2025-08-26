@@ -370,15 +370,15 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         console.log('🔍 CreateBillForm API Response:', {
           res,
           hasSuccess: !!res.success,
-          hasData: !!res.data,
-          dataType: typeof res.data,
-          isDataArray: Array.isArray(res.data),
-          dataLength: Array.isArray(res.data) ? res.data.length : 'not array',
-          firstItem: Array.isArray(res.data) && res.data.length > 0 ? res.data[0] : 'no items'
+          hasData: !!res?.data?.data,
+          dataType: typeof res?.data?.data,
+          isDataArray: Array.isArray(res?.data?.data),
+          dataLength: Array.isArray(res?.data?.data) ? res.data.data.length : 'not array',
+          firstItem: Array.isArray(res?.data?.data) && res.data.data.length > 0 ? res.data.data[0] : 'no items'
         });
 
-        if (active && res.success && res.data) {
-          const formattedProperties = res.data.map((property: any) => ({
+        if (active && res.success && res?.data?.data) {
+          const formattedProperties = res.data.data.map((property: any) => ({
             id: property.id,
             value: property.id,
             label: `${property.name} (${property.propertyNumber})`,
@@ -390,14 +390,14 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           }));
           
           console.log('🔍 CreateBillForm Formatted Properties:', {
-            originalLength: res.data.length,
+            originalLength: res.data.data.length,
             formattedLength: formattedProperties.length,
             firstFormatted: formattedProperties[0] || 'no items'
           });
           
           setProperties(formattedProperties);
           setFilteredProperties(formattedProperties);
-          setHasMore(res.data.length >= requestedLimit);
+          setHasMore(res.data.data.length >= requestedLimit);
         }
       } catch (error) {
         console.error('Error fetching properties:', error);
@@ -548,14 +548,27 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
          
          console.log('🔍 CreateBillForm Second API Response:', {
            res,
-           hasSuccess: !!res.success,
-           hasData: !!res.data,
-           dataType: typeof res.data,
-           isDataArray: Array.isArray(res.data),
-           dataLength: Array.isArray(res.data) ? res.data.length : 'not array'
+           hasSuccess: !!res?.success,
+           hasData: !!res?.data,
+           dataType: typeof res?.data,
+           isDataArray: Array.isArray(res?.data),
+           dataLength: Array.isArray(res?.data) ? res.data.length : 'not array',
+           fullResponse: JSON.stringify(res, null, 2)
          });
          
-         const list = res?.data || [];
+         // Handle different response structures
+         let list = [];
+         if (res?.success && res?.data && Array.isArray(res.data)) {
+           list = res.data;
+         } else if (res?.data && Array.isArray(res.data)) {
+           list = res.data;
+         } else if (Array.isArray(res)) {
+           list = res;
+         } else {
+           console.warn('🚨 CreateBillForm: Unexpected API response structure:', res);
+           list = [];
+         }
+         
          console.log('🔍 CreateBillForm List:', {
            list,
            listLength: list.length,
