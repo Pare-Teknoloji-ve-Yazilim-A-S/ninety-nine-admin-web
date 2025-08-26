@@ -769,7 +769,8 @@ export default function ResidentViewPage() {
         if (propertyInfo?.id) {
             setDebtLoading(true);
             setDebtError(null);
-            fetch(`/api/proxy/admin/billing/total-debt/${propertyInfo.id}`, {
+            // Use working endpoint: /admin/billing/property/{propertyId} to get bills and calculate debt
+            fetch(`/api/proxy/admin/billing/property/${propertyInfo.id}`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                 }
@@ -780,7 +781,12 @@ export default function ResidentViewPage() {
                         return;
                     }
                     const data = await res.json();
-                    setTotalDebt(typeof data?.data === 'number' ? data.data : 0);
+                    // Calculate total debt from pending bills
+                    const bills = data?.data || data || [];
+                    const totalDebt = bills
+                        .filter((bill: any) => bill.status === 'PENDING' || bill.status === 'OVERDUE')
+                        .reduce((sum: number, bill: any) => sum + (parseFloat(bill.amount) || 0), 0);
+                    setTotalDebt(totalDebt);
                 })
                 .catch(() => setTotalDebt(0))
                 .finally(() => setDebtLoading(false));
