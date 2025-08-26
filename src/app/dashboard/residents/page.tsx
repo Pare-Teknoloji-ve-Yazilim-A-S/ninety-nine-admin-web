@@ -977,8 +977,6 @@ export default function ResidentsPage() {
                                 data={dataHook.residents}
                                 loading={dataHook.loading}
                                 error={dataHook.apiError}
-                                onSelectionChange={filtersHook.handleSelectionChange}
-                                bulkActions={bulkActions}
                                                                  columns={getTableColumns(tableActionHandlers, ResidentActionMenuWrapper, {
                                      photo: t.photo,
                                      name: t.name,

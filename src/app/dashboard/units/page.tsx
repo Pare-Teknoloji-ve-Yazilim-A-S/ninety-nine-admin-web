@@ -875,36 +875,6 @@ function UnitsListPage() {
                                             data={dataHook.properties}
                                             loading={dataHook.loading}
                                             error={dataHook.error}
-                                            bulkActions={[
-                                                {
-                                                    id: 'bulk-edit',
-                                                    label: t.bulkEdit,
-                                                    icon: Edit,
-                                                    onClick: (selectedItems: Property[]) => {
-                                                        console.log('Toplu düzenleme:', selectedItems.map(item => item.id));
-                                                        // TODO: Toplu düzenleme modal'ı açılacak
-                                                    }
-                                                },
-                                                {
-                                                    id: 'bulk-export',
-                                                    label: t.bulkExport,
-                                                    icon: Download,
-                                                    onClick: (selectedItems: Property[]) => {
-                                                        console.log('Seçili konutları dışa aktar:', selectedItems.map(item => item.id));
-                                                        // TODO: Seçili konutları Excel/PDF olarak dışa aktar
-                                                    }
-                                                },
-                                                {
-                                                    id: 'bulk-delete',
-                                                    label: t.bulkDelete,
-                                                    icon: Trash2,
-                                                    variant: 'danger' as const,
-                                                    onClick: (selectedItems: Property[]) => {
-                                                        console.log('Toplu silme:', selectedItems.map(item => item.id));
-                                                        // TODO: Toplu silme onayı ve işlemi
-                                                    }
-                                                }
-                                            ]}
                                             columns={tableColumns}
                                             pagination={{
                                                 currentPage: filtersHook.currentPage,
@@ -918,7 +888,6 @@ function UnitsListPage() {
                                                 preventScroll: true, // Prevent auto-scroll to top
                                             }}
                                             emptyStateMessage={t.noUnitsFound}
-                                            selectable={true}
                                             showPagination={true}
                                             ActionMenuComponent={UnitActionMenuWrapper}
                                         />

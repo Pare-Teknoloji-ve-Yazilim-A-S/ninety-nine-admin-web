@@ -607,7 +607,6 @@ export default function WaitingRequestsPage() {
                                         loading={loading}
                                         error={error}
                                         columns={tableColumns}
-                                        onSelectionChange={handleListSelectionChange}
                                         pagination={{
                                             currentPage: pagination.page,
                                             totalPages: pagination.totalPages,
@@ -617,7 +616,6 @@ export default function WaitingRequestsPage() {
                                             onRecordsPerPageChange: handleRecordsPerPageChange,
                                         }}
                                         ActionMenuComponent={RequestActionMenuWrapper}
-                                        selectable={true}
                                         showPagination={true}
                                         emptyStateMessage="Henüz bekleyen hizmet talebi bulunmuyor."
                                     />

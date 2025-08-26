@@ -231,7 +231,6 @@ export default function MaintenanceUnitsPage() {
                       onRecordsPerPageChange: (limit) => setPagination(prev => ({ ...prev, limit, page: 1 })),
                     }}
                     emptyStateMessage="Şu anda bakımda olan konut kaydı bulunmuyor."
-                    selectable={false}
                     showPagination={true}
                   />
                 )}
@@ -243,4 +242,4 @@ export default function MaintenanceUnitsPage() {
       </div>
     </ProtectedRoute>
   );
-} 
+}

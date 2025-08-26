@@ -96,7 +96,6 @@ export default function ContentArea({
           loading={!!isLoading}
           error={error}
           columns={columns as any}
-          onSelectionChange={(rows: Staff[]) => onSelectionChange(rows.map(r => String(r.id)))}
           pagination={{
             currentPage,
             totalPages,
@@ -108,7 +107,6 @@ export default function ContentArea({
             preventScroll: true
           }}
           emptyStateMessage={totalCount === 0 ? t.noStaffRecords : t.noRecordsFound}
-          selectable
           showPagination
         />
       )}

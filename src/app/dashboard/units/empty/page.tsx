@@ -230,7 +230,6 @@ export default function EmptyUnitsPage() {
                       onRecordsPerPageChange: (limit) => setPagination(prev => ({ ...prev, limit, page: 1 })),
                     }}
                     emptyStateMessage="Şu anda boş durumda olan konut kaydı bulunmuyor."
-                    selectable={false}
                     showPagination={true}
                   />
                 )}
@@ -242,4 +241,4 @@ export default function EmptyUnitsPage() {
       </div>
     </ProtectedRoute>
   );
-} 
+}

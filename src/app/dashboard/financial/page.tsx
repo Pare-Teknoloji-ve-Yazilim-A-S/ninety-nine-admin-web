@@ -1000,7 +1000,6 @@ export default function FinancialListPage() {
                                                 preventScroll: true,
                                             }}
                                         emptyStateMessage={t.noTransactions}
-                                        selectable={true}
                                         showPagination={true}
                                         ActionMenuComponent={TransactionActionMenuWrapper}
                                     />

@@ -328,8 +328,6 @@ export default function RequestsListPage() {
                      })}
                     data={data.requests}
                     loading={tableLoading}
-                    selectable={true}
-                    onSelectionChange={setSelectedRequests}
                     pagination={{
                       currentPage: data.pagination.currentPage,
                       totalPages: data.pagination.totalPages,
