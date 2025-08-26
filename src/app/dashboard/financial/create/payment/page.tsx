@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
-import Sidebar, { UPDATE_PAYMENT_PERMISSION_ID, UPDATE_PAYMENT_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
+import Sidebar from '@/app/components/ui/Sidebar';
 import Button from '@/app/components/ui/Button';
 import { CreditCard, ArrowLeft, CheckCircle, Home, User, AlertTriangle, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -91,7 +91,7 @@ const translations = {
     // Permission messages
     permissionLoading: 'İzinler kontrol ediliyor...',
     noPermission: 'Bu sayfaya erişim izniniz bulunmamaktadır.',
-    requiredPermission: 'Gerekli İzin: Ödeme Düzenleme',
+    requiredPermission: 'Gerekli İzin: Ödeme Oluşturma',
     goBack: 'Geri Dön'
   },
   en: {
@@ -150,7 +150,7 @@ const translations = {
     // Permission messages
     permissionLoading: 'Checking permissions...',
     noPermission: 'You do not have permission to access this page.',
-    requiredPermission: 'Required Permission: Update Payment',
+    requiredPermission: 'Required Permission: Create Payment',
     goBack: 'Go Back'
   },
   ar: {
@@ -209,7 +209,7 @@ const translations = {
     // Permission messages
     permissionLoading: 'جاري فحص الأذونات...',
     noPermission: 'ليس لديك إذن للوصول إلى هذه الصفحة.',
-    requiredPermission: 'الإذن المطلوب: تحديث الدفع',
+    requiredPermission: 'الإذن المطلوب: إنشاء الدفع',
     goBack: 'العودة'
   }
 };
@@ -418,7 +418,8 @@ export default function CreatePaymentPage() {
     return renderPermissionLoading();
   }
 
-  if (!hasPermission(UPDATE_PAYMENT_PERMISSION_ID)) {
+  // Ödeme oluşturma sayfası için Create Payment izni yeterli
+  if (!hasPermission('fb1d69ae-ba26-47b8-b366-2da6a1a1c83d')) { // Create Payment permission ID
     return renderNoPermission();
   }
 
