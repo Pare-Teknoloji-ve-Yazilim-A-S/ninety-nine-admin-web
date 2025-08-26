@@ -24,7 +24,9 @@ import {
     AlertTriangle, Pin, Archive, Send, Copy, Trash2, 
     MessageSquare, Calendar as CalendarIcon, Hash, Settings
 } from 'lucide-react';
-import type { Announcement } from '@/services/types/announcement.types';
+import type { Announcement, AnnouncementFormData, CreateAnnouncementDto } from '@/services/types/announcement.types';
+import AnnouncementForm from './components/AnnouncementForm';
+import { announcementService } from '@/services';
 
 // Import view components
 import GenericListView from '@/app/components/templates/GenericListView';
@@ -103,7 +105,14 @@ const translations = {
     filterDay: 'Günü filtrele',
     
     // Tooltips
-    detail: 'Detay'
+    detail: 'Detay',
+    
+    // New announcement modal
+    createNewAnnouncement: 'Yeni Duyuru Oluştur',
+    success: 'Başarılı',
+    error: 'Hata',
+    announcementCreated: 'Duyuru başarıyla oluşturuldu',
+    createError: 'Duyuru oluşturulurken bir hata oluştu'
   },
   en: {
     // Page titles
@@ -147,7 +156,14 @@ const translations = {
     filterDay: 'Filter by day',
     
     // Tooltips
-    detail: 'Detail'
+    detail: 'Detail',
+    
+    // New announcement modal
+    createNewAnnouncement: 'Create New Announcement',
+    success: 'Success',
+    error: 'Error',
+    announcementCreated: 'Announcement created successfully',
+    createError: 'An error occurred while creating the announcement'
   },
   ar: {
     // Page titles
@@ -191,7 +207,14 @@ const translations = {
     filterDay: 'تصفية حسب اليوم',
     
     // Tooltips
-    detail: 'التفاصيل'
+    detail: 'التفاصيل',
+    
+    // Missing properties for Arabic translation
+    createNewAnnouncement: 'إنشاء إعلان جديد',
+    success: 'نجح',
+    error: 'خطأ',
+    announcementCreated: 'تم إنشاء الإعلان بنجاح',
+    createError: 'حدث خطأ أثناء إنشاء الإعلان'
   }
 };
 
@@ -228,7 +251,7 @@ export default function AnnouncementsPage() {
     const t = translations[currentLanguage as keyof typeof translations];
 
     const router = useRouter();
-    const { toasts, removeToast } = useToast();
+    const { toasts, addToast, removeToast } = useToast();
     const permissionCheck = usePermissionCheck();
 
     // Check CREATE_ANNOUNCEMENT permission
@@ -238,6 +261,10 @@ export default function AnnouncementsPage() {
     const [eventModalOpen, setEventModalOpen] = useState(false)
     const [eventModalDate, setEventModalDate] = useState<string | null>(null)
     const [eventModalItems, setEventModalItems] = useState<CalendarEventDetail[]>([])
+    
+    // New announcement modal state
+    const [newAnnouncementModalOpen, setNewAnnouncementModalOpen] = useState(false)
+    const [newAnnouncementLoading, setNewAnnouncementLoading] = useState(false)
 
     // UI State for modals and bulk actions
     const [bulkDeleteState, setBulkDeleteState] = useState<{
@@ -426,8 +453,51 @@ export default function AnnouncementsPage() {
 
     // Event handlers (orchestration only)
     const handleAddNewAnnouncement = useCallback(() => {
-        router.push('/dashboard/announcements/add');
-    }, [router]);
+        setNewAnnouncementModalOpen(true);
+    }, []);
+
+    const handleCreateAnnouncement = useCallback(async (data: AnnouncementFormData) => {
+        try {
+            setNewAnnouncementLoading(true);
+            
+            // Convert AnnouncementFormData to CreateAnnouncementDto
+            const createDto = {
+                title: data.title,
+                content: data.content,
+                type: data.type,
+                status: data.status,
+                publishDate: data.publishDate?.toISOString(),
+                expiryDate: data.expiryDate?.toISOString(),
+                isPinned: data.isPinned,
+                isEmergency: data.isEmergency,
+                imageUrl: data.imageUrl,
+                propertyIds: data.propertyIds
+            };
+            
+            await announcementService.createAnnouncement(createDto);
+            addToast({
+                type: 'success',
+                title: t.success,
+                message: t.announcementCreated
+            });
+            setNewAnnouncementModalOpen(false);
+            dataHook.refreshData();
+            statsHook.refreshStats();
+        } catch (error) {
+            console.error('Error creating announcement:', error);
+            addToast({
+                type: 'error',
+                title: t.error,
+                message: t.createError
+            });
+        } finally {
+            setNewAnnouncementLoading(false);
+        }
+    }, [addToast, dataHook, statsHook, t]);
+
+    const handleCancelNewAnnouncement = useCallback(() => {
+        setNewAnnouncementModalOpen(false);
+    }, []);
 
     const handleRefresh = useCallback(() => {
         dataHook.refreshData();
@@ -897,6 +967,21 @@ export default function AnnouncementsPage() {
                       )}
                     </div>
                   </div>
+                </Modal>
+
+                {/* New Announcement Modal */}
+                <Modal
+                  isOpen={newAnnouncementModalOpen}
+                  onClose={handleCancelNewAnnouncement}
+                  title={t.createNewAnnouncement}
+                  size="lg"
+                >
+                  <AnnouncementForm
+                    mode="create"
+                    onSubmit={handleCreateAnnouncement}
+                    onCancel={handleCancelNewAnnouncement}
+                    loading={newAnnouncementLoading}
+                  />
                 </Modal>
             </div>
         </ProtectedRoute>

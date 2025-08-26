@@ -365,6 +365,11 @@ export default function AnnouncementForm({
         if (!nextFormData.expiryDate) {
             nextFormData.expiryDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
         }
+        
+        // Remove empty imageUrl to avoid validation error
+        if (!nextFormData.imageUrl || nextFormData.imageUrl.trim() === '') {
+            nextFormData.imageUrl = undefined;
+        }
 
         // Replace state before validation/submit
         setFormData(nextFormData);
