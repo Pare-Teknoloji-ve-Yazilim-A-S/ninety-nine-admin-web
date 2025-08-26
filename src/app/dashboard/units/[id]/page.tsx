@@ -1178,11 +1178,6 @@ export default function UnitDetailPage() {
                   <Button variant="secondary" icon={MessageSquare}>
                     Note Ekle
                   </Button>
-                  <Link href={`/dashboard/units/${unitId}/edit`}>
-                    <Button variant="primary" icon={Edit}>
-                      Düzenle
-                    </Button>
-                  </Link>
                 </div>
               )}
             </div>

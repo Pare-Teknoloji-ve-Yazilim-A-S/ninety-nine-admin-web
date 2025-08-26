@@ -716,12 +716,6 @@ export default function AnnouncementsPage() {
                                     data={dataHook.announcements}
                                     loading={dataHook.loading}
                                     error={dataHook.apiError}
-                                    onSelectionChange={filtersHook.handleSelectionChange}
-                                    bulkActions={bulkActions.map(action => ({
-                                        ...action,
-                                        variant: action.variant === 'primary' ? 'default' : action.variant as any,
-                                        onClick: (items: Announcement[]) => action.onClick()
-                                    }))}
                                     columns={getTableColumns(tableActionHandlers)}
                                     sortConfig={filtersHook.sortConfig}
                                     onSortChange={(key, direction) => filtersHook.handleSort({ key: key as keyof Announcement, direction })}

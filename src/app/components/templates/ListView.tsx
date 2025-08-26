@@ -4,8 +4,6 @@ import DataTable from '@/app/components/ui/DataTable';
 export interface ListViewProps<T> {
   data: T[];
   loading: boolean;
-  onSelectionChange: (selected: T[]) => void;
-  bulkActions: any[]; // Kullanıcı kendi tipini geçebilir
   columns: any[]; // Kullanıcı kendi tipini geçebilir
   sortConfig?: { key: string; direction: 'asc' | 'desc' };
   onSortChange?: (key: string, direction: 'asc' | 'desc') => void;
@@ -24,8 +22,6 @@ export interface ListViewProps<T> {
 function ListView<T>({
   data,
   loading,
-  onSelectionChange,
-  bulkActions,
   columns,
   sortConfig,
   onSortChange,
@@ -38,9 +34,6 @@ function ListView<T>({
       columns={columns}
       data={data}
       loading={loading}
-      selectable={true}
-      onSelectionChange={onSelectionChange}
-      bulkActions={bulkActions}
       rowActions={[]}
       sortConfig={sortConfig}
       onSortChange={onSortChange}
@@ -51,4 +44,4 @@ function ListView<T>({
   );
 }
 
-export default ListView; 
+export default ListView;

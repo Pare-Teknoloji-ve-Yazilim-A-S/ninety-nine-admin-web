@@ -135,7 +135,7 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
       id: 'actions',
       header: '',
       accessor: (row: Staff) => row,
-      minWidth: '48px',
+      minWidth: '80px',
       render: (_: any, row: Staff) => {
         const targetId = String((row as any)?.id ?? (row as any)?.employeeId)
         return (

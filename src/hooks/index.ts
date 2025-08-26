@@ -5,6 +5,9 @@ export { default as useStaffFilters } from './useStaffFilters'
 export { default as useDepartments } from './useDepartments'
 export { default as usePositions } from './usePositions'
 
+// Role Hooks
+export { useRoles } from './useRoles'
+
 // Permission Hooks
 export { usePermissions } from './usePermissions'
 export { usePermissionCheck } from './usePermissionCheck'

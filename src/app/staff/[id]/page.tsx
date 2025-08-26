@@ -11,7 +11,7 @@ import Separator from '@/app/components/ui/Separator'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { StaffForm } from '@/components/staff'
-import { useStaffActions } from '@/hooks'
+import { useStaffActions, useRoles } from '@/hooks'
 import { staffService } from '@/services/staff.service'
 import type { Staff } from '@/services/types/staff.types'
 import { STAFF_STATUS_CONFIG, EMPLOYMENT_TYPE_CONFIG } from '@/services/types/ui.types'
@@ -32,6 +32,8 @@ function StaffDetailPage () {
     deleteStaff,
     loading: actionsLoading
   } = useStaffActions()
+
+  const { roles } = useRoles()
 
   useEffect(() => {
     loadStaff()
@@ -316,6 +318,7 @@ function StaffDetailPage () {
             departments={[]}
             positions={[]}
             managers={[]}
+            roles={roles}
             onSubmit={handleUpdateStaff}
             onCancel={() => setIsEditFormOpen(false)}
             isLoading={actionsLoading}

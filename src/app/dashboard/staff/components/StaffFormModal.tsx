@@ -5,9 +5,11 @@ import Modal from '@/app/components/ui/Modal'
 import { StaffForm } from '@/components/staff'
 import type { Staff, CreateStaffDto, UpdateStaffDto } from '@/services/types/staff.types'
 import type { Department, Position } from '@/services/types/department.types'
+import type { Role } from '@/types/role'
 import type { SearchableOption } from '@/app/components/ui/SearchableDropdown'
 import { DepartmentCode, PositionCode } from '@/services/types/organization.enums'
 import { enumsService } from '@/services/enums.service'
+import { roleService } from '@/services/role.service'
 
 // Dil çevirileri
 const translations = {
@@ -48,12 +50,34 @@ export default function StaffFormModal({
 }: StaffFormModalProps) {
   // Dil tercihini localStorage'dan al
   const [currentLanguage, setCurrentLanguage] = useState('tr');
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  
   useEffect(() => {
     const savedLanguage = localStorage.getItem('preferredLanguage');
     if (savedLanguage && ['tr', 'en', 'ar'].includes(savedLanguage)) {
       setCurrentLanguage(savedLanguage);
     }
   }, []);
+  
+  // Fetch roles when modal opens
+  useEffect(() => {
+    if (open && roles.length === 0) {
+      const fetchRoles = async () => {
+        try {
+          setRolesLoading(true);
+          const rolesData = await roleService.getNonAdminRoles();
+          setRoles(rolesData);
+        } catch (error) {
+          console.error('Error fetching roles:', error);
+          setRoles([]);
+        } finally {
+          setRolesLoading(false);
+        }
+      };
+      fetchRoles();
+    }
+  }, [open, roles.length]);
 
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
@@ -135,11 +159,12 @@ export default function StaffFormModal({
         departments={departments}
         positions={positions}
         managers={managers}
+        roles={roles}
         departmentOptions={departmentOptions}
         positionOptions={positionOptions}
         onSubmit={onSubmit}
         onCancel={onClose}
-        isLoading={!!isLoading}
+        isLoading={!!isLoading || rolesLoading}
       />
     </Modal>
   )

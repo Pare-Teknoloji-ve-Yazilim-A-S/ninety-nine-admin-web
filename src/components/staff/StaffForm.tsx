@@ -29,6 +29,7 @@ import {
   EmploymentType
 } from '@/services/types/staff.types'
 import { Department, Position } from '@/services/types/department.types'
+import { Role } from '@/types/role'
 import { getStaffStatusConfig, getEmploymentTypeConfig } from '@/services/types/ui.types'
 import {
   User,
@@ -61,6 +62,7 @@ const translations = {
     nationalId: 'TC Kimlik No',
     address: 'Adres',
     department: 'Departman',
+    role: 'Rol',
     position: 'Pozisyon',
     manager: 'Yönetici',
     status: 'Durum',
@@ -80,6 +82,7 @@ const translations = {
     nationalIdPlaceholder: '12345678901',
     addressPlaceholder: 'Tam adres',
     departmentPlaceholder: 'Departman seçiniz',
+    rolePlaceholder: 'Rol seçiniz',
     positionPlaceholder: 'Pozisyon seçiniz',
     managerPlaceholder: 'Yönetici seçiniz',
     statusPlaceholder: 'Durum seçiniz',
@@ -106,6 +109,8 @@ const translations = {
     lastNameRequired: 'Soyad gereklidir',
     validEmail: 'Geçerli bir e-posta adresi giriniz',
     departmentRequired: 'Departman seçiniz',
+    roleRequired: 'Rol gereklidir',
+    positionRequired: 'Pozisyon gereklidir',
     startDateRequired: 'İşe başlama tarihi gereklidir',
     salaryMin: 'Maaş 0\'dan büyük olmalıdır'
   },
@@ -129,6 +134,7 @@ const translations = {
     nationalId: 'National ID',
     address: 'Address',
     department: 'Department',
+    role: 'Role',
     position: 'Position',
     manager: 'Manager',
     status: 'Status',
@@ -148,6 +154,7 @@ const translations = {
     nationalIdPlaceholder: '12345678901',
     addressPlaceholder: 'Full address',
     departmentPlaceholder: 'Select department',
+    rolePlaceholder: 'Select role',
     positionPlaceholder: 'Select position',
     managerPlaceholder: 'Select manager',
     statusPlaceholder: 'Select status',
@@ -174,6 +181,8 @@ const translations = {
     lastNameRequired: 'Last name is required',
     validEmail: 'Please enter a valid email address',
     departmentRequired: 'Please select a department',
+    roleRequired: 'Role is required',
+    positionRequired: 'Position is required',
     startDateRequired: 'Start date is required',
     salaryMin: 'Salary must be greater than 0'
   },
@@ -197,6 +206,7 @@ const translations = {
     nationalId: 'رقم الهوية الوطنية',
     address: 'العنوان',
     department: 'القسم',
+    role: 'الدور',
     position: 'المنصب',
     manager: 'المدير',
     status: 'الحالة',
@@ -216,6 +226,7 @@ const translations = {
     nationalIdPlaceholder: '12345678901',
     addressPlaceholder: 'العنوان الكامل',
     departmentPlaceholder: 'اختر القسم',
+    rolePlaceholder: 'اختر الدور',
     positionPlaceholder: 'اختر المنصب',
     managerPlaceholder: 'اختر المدير',
     statusPlaceholder: 'اختر الحالة',
@@ -242,6 +253,8 @@ const translations = {
     lastNameRequired: 'اسم العائلة مطلوب',
     validEmail: 'يرجى إدخال عنوان بريد إلكتروني صحيح',
     departmentRequired: 'يرجى اختيار قسم',
+    roleRequired: 'الدور مطلوب',
+    positionRequired: 'المنصب مطلوب',
     startDateRequired: 'تاريخ البدء مطلوب',
     salaryMin: 'يجب أن يكون الراتب أكبر من 0'
   }
@@ -257,6 +270,7 @@ const createStaffFormSchema = (t: any) => z.object({
   dateOfBirth: z.string().optional(),
   nationalId: z.string().optional(),
   department: z.string().min(1, t.departmentRequired), // Department enum code
+  roleId: z.string().min(1, t.roleRequired),
   positionTitle: z.string().optional(), // Position enum/title
   managerId: z.string().optional(),
   status: z.nativeEnum(StaffStatus),
@@ -277,6 +291,7 @@ interface StaffFormProps {
   departments: Department[]
   positions: Position[]
   managers: Staff[]
+  roles: Role[]
   onSubmit: (data: CreateStaffDto | UpdateStaffDto) => Promise<void>
   onCancel?: () => void
   isLoading?: boolean
@@ -291,6 +306,7 @@ export function StaffForm({
   departments,
   positions,
   managers,
+  roles,
   onSubmit,
   onCancel,
   isLoading = false,
@@ -411,6 +427,7 @@ export function StaffForm({
         nationalId: data.nationalId,
         // enum-based mapping for admin API
         department: data.department,
+        roleId: data.roleId,
         positionTitle: data.positionTitle || undefined,
         // managerId can be included if provided
         managerId: data.managerId || undefined,
@@ -623,6 +640,26 @@ export function StaffForm({
                 <Briefcase className="h-5 w-5 mr-2" />
                 {t.employmentInfo}
               </h3>
+              
+              {/* Role Selection - Standalone */}
+              <FormField
+                control={form.control}
+                name="roleId"
+                render={({ field }) => (
+                  <FormItem>
+                    <SearchableDropdown
+                      label={t.role}
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      options={roles.map(r => ({ value: r.id, label: r.name, description: r.description })) as SearchableOption[]}
+                      placeholder={t.rolePlaceholder}
+                      searchable={false}
+                      showSelectedSummary={false}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField

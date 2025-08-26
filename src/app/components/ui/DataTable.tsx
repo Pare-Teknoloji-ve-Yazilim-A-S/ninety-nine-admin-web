@@ -4,8 +4,6 @@ import { cn } from '@/lib/utils';
 import Card from './Card';
 import Button from './Button';
 import TablePagination from './TablePagination';
-import BulkActionsBar from './BulkActionsBar';
-import Checkbox from './Checkbox';
 
 export interface ColumnAction {
     id: string;
@@ -38,18 +36,9 @@ export interface DataTableProps {
     columns: Column[];
     data: any[];
     loading?: boolean;
-    selectable?: boolean;
     expandable?: boolean;
     onRowClick?: (row: any) => void;
     onRowDoubleClick?: (row: any) => void;
-    onSelectionChange?: (selectedRows: any[]) => void;
-    bulkActions?: Array<{
-        id: string;
-        label: string;
-        icon: LucideIcon;
-        onClick: (selectedRows: any[]) => void;
-        variant?: 'default' | 'danger' | 'success' | 'warning';
-    }>;
     rowActions?: ColumnAction[];
     pagination?: {
         currentPage: number;
@@ -79,12 +68,9 @@ const DataTable: React.FC<DataTableProps> = ({
     columns,
     data,
     loading = false,
-    selectable = false,
     expandable = false,
     onRowClick,
     onRowDoubleClick,
-    onSelectionChange,
-    bulkActions = [],
     rowActions = [],
     pagination,
     sortConfig,
@@ -98,7 +84,6 @@ const DataTable: React.FC<DataTableProps> = ({
     stickyHeader = false,
     ActionMenuComponent,
 }) => {
-    const [selectedRows, setSelectedRows] = useState<any[]>([]);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
     const sizeClasses = {
@@ -117,34 +102,6 @@ const DataTable: React.FC<DataTableProps> = ({
         default: 'border border-gray-200 dark:border-gray-700',
         minimal: 'border-0 shadow-none',
         bordered: 'border-2 border-primary-gold/30',
-    };
-
-    // Selection logic
-    const isAllSelected = useMemo(() => {
-        const rows = Array.isArray(data) ? data : [];
-        return rows.length > 0 && selectedRows.length === rows.length;
-    }, [data, selectedRows]);
-
-    const isIndeterminate = useMemo(() => {
-        const rows = Array.isArray(data) ? data : [];
-        return selectedRows.length > 0 && selectedRows.length < rows.length;
-    }, [data, selectedRows]);
-
-    const handleSelectAll = () => {
-        if (isAllSelected) {
-            setSelectedRows([]);
-        } else {
-            setSelectedRows([...data]);
-        }
-    };
-
-    const handleSelectRow = (row: any) => {
-        const isSelected = selectedRows.some(selected => selected.id === row.id);
-        if (isSelected) {
-            setSelectedRows(selectedRows.filter(selected => selected.id !== row.id));
-        } else {
-            setSelectedRows([...selectedRows, row]);
-        }
     };
 
     // Expand logic
@@ -166,10 +123,7 @@ const DataTable: React.FC<DataTableProps> = ({
         return expandedRows.has(rowId);
     };
 
-    // Update selection change callback
-    React.useEffect(() => {
-        onSelectionChange?.(selectedRows);
-    }, [selectedRows, onSelectionChange]);
+
 
     // Get cell value
     const getCellValue = (row: any, column: Column) => {
@@ -212,7 +166,7 @@ const DataTable: React.FC<DataTableProps> = ({
         if (rowActions.length === 0) return null;
         const visibleActions = rowActions.filter(action => action.visible?.(row) ?? true);
         return (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-shrink-0">
                 {visibleActions.map((action) => (
                     <Button
                         key={action.id}
@@ -240,7 +194,7 @@ const DataTable: React.FC<DataTableProps> = ({
     // Loading row
     const renderLoadingRow = () => (
         <tr>
-            <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)}>
+            <td colSpan={columns.length + (expandable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)}>
                 <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary-gold border-t-transparent" />
                     <span className="ml-2 text-text-light-secondary dark:text-text-secondary">Yükleniyor...</span>
@@ -252,7 +206,7 @@ const DataTable: React.FC<DataTableProps> = ({
     // Empty state row
     const renderEmptyRow = () => (
         <tr>
-            <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)}>
+            <td colSpan={columns.length + (expandable ? 1 : 0) + (rowActions.length > 0 ? 1 : 0)}>
                 <div className="flex items-center justify-center py-8 text-text-light-secondary dark:text-text-secondary">
                     {emptyStateMessage}
                 </div>
@@ -267,16 +221,6 @@ const DataTable: React.FC<DataTableProps> = ({
             stickyHeader && 'sticky top-0'
         )}>
             <tr>
-                {selectable && (
-                    <th className={cn('w-10', paddingClasses[size])}>
-                        <Checkbox
-                            checked={isAllSelected}
-                            indeterminate={isIndeterminate}
-                            onChange={handleSelectAll}
-                            checkboxSize={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'}
-                        />
-                    </th>
-                )}
                 {expandable && <th className={cn('w-10', paddingClasses[size])} />}
                 {columns.map((column, columnIndex) => (
                     <th
@@ -323,11 +267,6 @@ const DataTable: React.FC<DataTableProps> = ({
                     // Show skeleton rows when loading - use dynamic count
                     Array.from({ length: pageSize }).map((_, index) => (
                         <tr key={`skeleton-${index}`} className="border-b border-gray-200 dark:border-gray-700 h-16">
-                            {selectable && (
-                                <td className={paddingClasses[size]}>
-                                    <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                                </td>
-                            )}
                             {expandable && (
                                 <td className={paddingClasses[size]}>
                                     <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
@@ -367,15 +306,6 @@ const DataTable: React.FC<DataTableProps> = ({
                                 onClick={(e) => onRowClick?.(row)}
                                 onDoubleClick={(e) => onRowDoubleClick?.(row)}
                             >
-                                {selectable && (
-                                    <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
-                                        <Checkbox
-                                            checked={selectedRows.some(selected => selected.id === row.id)}
-                                            onChange={() => handleSelectRow(row)}
-                                            checkboxSize={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'}
-                                        />
-                                    </td>
-                                )}
                                 {expandable && (
                                     <td className={paddingClasses[size]} onClick={(e) => e.stopPropagation()}>
                                         <Button
@@ -415,7 +345,7 @@ const DataTable: React.FC<DataTableProps> = ({
                                 })}
                                 {/* Actions column */}
                                 {(rowActions.length > 0 || ActionMenuComponent) && (
-                                    <td className={paddingClasses[size]}>
+                                    <td className={cn('w-20 overflow-hidden', paddingClasses[size])}>
                                         {rowActions.length > 0 && renderRowActions(row)}
                                         {ActionMenuComponent && <ActionMenuComponent row={row} />}
                                     </td>
@@ -423,7 +353,7 @@ const DataTable: React.FC<DataTableProps> = ({
                             </tr>
                             {expandable && isRowExpanded(row) && expandedContent && (
                                 <tr>
-                                    <td colSpan={columns.length + (selectable ? 1 : 0) + (expandable ? 1 : 0) + ((rowActions.length > 0 || ActionMenuComponent) ? 1 : 0)}>
+                                    <td colSpan={columns.length + (expandable ? 1 : 0) + ((rowActions.length > 0 || ActionMenuComponent) ? 1 : 0)}>
                                         <div className="bg-background-light-soft dark:bg-background-soft p-4 border-t border-gray-200 dark:border-gray-700">
                                             {expandedContent(row)}
                                         </div>
@@ -434,7 +364,6 @@ const DataTable: React.FC<DataTableProps> = ({
                     ))}
                     {emptyRowCount > 0 && Array.from({ length: emptyRowCount }).map((_, idx) => (
                         <tr key={`empty-${idx}`} className="border-b border-gray-200 dark:border-gray-700 h-16">
-                            {selectable && <td className={paddingClasses[size]} />}
                             {expandable && <td className={paddingClasses[size]} />}
                             {columns.map((column, columnIndex) => (
                                 <td
@@ -456,8 +385,8 @@ const DataTable: React.FC<DataTableProps> = ({
     };
 
     const tableContent = (
-        <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-full">
+        <div className="w-full">
+            <table className="w-full">
                 {renderTableHeader()}
                 {renderTableBody()}
             </table>
@@ -466,18 +395,6 @@ const DataTable: React.FC<DataTableProps> = ({
 
     return (
         <div className={cn('space-y-4', className)}>
-            {/* Bulk Actions */}
-            {bulkActions.length > 0 && (
-                <BulkActionsBar
-                    selectedCount={selectedRows.length}
-                    actions={bulkActions.map(action => ({
-                        ...action,
-                        onClick: () => action.onClick(selectedRows)
-                    }))}
-                    onClearSelection={() => setSelectedRows([])}
-                />
-            )}
-
             {/* Table */}
             <Card className={cn(variantClasses[variant], 'overflow-hidden')}>
                 {tableContent}

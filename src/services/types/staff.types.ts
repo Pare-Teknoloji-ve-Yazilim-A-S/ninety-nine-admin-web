@@ -137,6 +137,7 @@ export interface CreateStaffDto {
   username: string
   password: string
   role: UserRole
+  roleId: string
   permissions?: Permission[]
 }
 

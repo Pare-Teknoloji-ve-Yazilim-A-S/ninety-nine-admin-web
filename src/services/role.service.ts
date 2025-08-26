@@ -58,6 +58,31 @@ class RoleService {
   }
 
   /**
+   * Non-admin rolleri getir (Admin, Super Admin, Resident hariç)
+   */
+  async getNonAdminRoles(): Promise<Role[]> {
+    const response = await apiClient.get(`${this.baseUrl}/non-admin`);
+    
+    // API response yapısını kontrol et ve düzelt
+    if (response.data && response.data.data) {
+      // Standart paginated response: { data: [...], pagination: {...} }
+      return response.data.data;
+    } else if (Array.isArray(response.data)) {
+      // Direkt array response: [...]
+      return response.data;
+    } else if (Array.isArray(response)) {
+      // Response direkt array olabilir
+      return response;
+    } else if (response.data && typeof response.data === 'object') {
+      // Response direkt obje olabilir
+      return [response.data];
+    } else {
+      // Fallback
+      return [];
+    }
+  }
+
+  /**
    * Tüm rolleri getir (pagination ile - eski metod)
    */
   async getRoles(filters?: RoleFilters): Promise<PaginatedResponse<Role>> {

@@ -981,8 +981,6 @@ export default function FinancialListPage() {
                                         data={data?.transactions || []}
                                         loading={loading}
                                         error={error}
-                                        onSelectionChange={handleSelectionChange}
-                                        bulkActions={[]}
                                         columns={tableColumns}
                                         pagination={{
                                                 currentPage: data?.pagination.currentPage ?? page,
@@ -1012,10 +1010,7 @@ export default function FinancialListPage() {
                                         data={data?.transactions || []}
                                         loading={loading}
                                         error={error}
-                                        onSelectionChange={handleGridSelectionChange}
-                                        bulkActions={[]}
                                         onAction={handleTransactionAction}
-                                        selectedItems={selectedTransactions}
                                         pagination={{
                                             currentPage: data?.pagination.currentPage || 1,
                                             totalPages: data?.pagination.totalPages || 1,

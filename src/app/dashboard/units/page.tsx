@@ -234,7 +234,7 @@ const translations = {
   }
 };
 
-export default function UnitsListPage() {
+function UnitsListPage() {
     // Permission kontrolü
     const permissionCheck = usePermissionCheck();
     
@@ -875,7 +875,6 @@ export default function UnitsListPage() {
                                             data={dataHook.properties}
                                             loading={dataHook.loading}
                                             error={dataHook.error}
-                                            onSelectionChange={handleSelectionChange}
                                             bulkActions={[
                                                 {
                                                     id: 'bulk-edit',
@@ -938,7 +937,6 @@ export default function UnitsListPage() {
                                             data={dataHook.properties}
                                             loading={dataHook.loading}
                                             error={dataHook.error}
-                                            onSelectionChange={handleGridSelectionChange}
                                             bulkActions={[
                                                 {
                                                     id: 'bulk-edit',
@@ -1019,3 +1017,5 @@ export default function UnitsListPage() {
         </ProtectedRoute>
     );
 }
+
+export default UnitsListPage;
