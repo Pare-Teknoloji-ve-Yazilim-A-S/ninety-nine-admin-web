@@ -120,6 +120,7 @@ const translations = {
     missing: 'Eksik',
     upload: 'Yükle',
     view: 'Görüntüle',
+    preview: 'Önizleme',
     
     // Requests section
     requestsTitle: 'Talep Listesi',
@@ -278,6 +279,7 @@ const translations = {
     missing: 'Missing',
     upload: 'Upload',
     view: 'View',
+    preview: 'Preview',
     
     // Requests section
     requestsTitle: 'Request List',
@@ -436,6 +438,7 @@ const translations = {
     missing: 'مفقود',
     upload: 'رفع',
     view: 'عرض',
+    preview: 'معاينة',
     
     // Requests section
     requestsTitle: 'قائمة الطلبات',
@@ -1417,7 +1420,7 @@ export default function ResidentViewPage() {
                                                     </div>
                                                     <div className="space-y-6">
                                                         {/* National ID Document */}
-                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-3">
                                                                     <IdCard className="h-5 w-5 text-primary-gold" />
@@ -1464,9 +1467,33 @@ export default function ResidentViewPage() {
                                                                     )}
                                                                 </div>
                                                             </div>
+                                                            
+                                                            {/* Image Preview - Shows when hovering over the card */}
+                                                            {nationalIdDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            {t.identityDocument}
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={nationalIdDoc.url}
+                                                                                alt={t.identityDocument}
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                         {/* Ownership Document */}
-                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-3">
                                                                     <FileText className="h-5 w-5 text-primary-gold" />
@@ -1513,6 +1540,30 @@ export default function ResidentViewPage() {
                                                                     )}
                                                                 </div>
                                                             </div>
+                                                            
+                                                            {/* Image Preview - Shows when hovering over the card */}
+                                                            {ownershipDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            {t.ownershipDocument}
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={ownershipDoc.url}
+                                                                                alt={t.ownershipDocument}
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
