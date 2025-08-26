@@ -155,6 +155,7 @@ export interface OccupancyStats {
 }
 
 export interface QuickStats {
+    // Unit type counts
     apartmentUnits: {
         total: number;
         occupied: number;
@@ -175,6 +176,14 @@ export interface QuickStats {
         occupied: number;
         occupancyRate: number;
     };
+    
+    // Overall statistics
+    totalUnits: number;
+    occupiedUnits: number;
+    vacantUnits: number;
+    availableUnits: number;
+    maintenanceUnits: number;
+    occupancyRate: number;
 }
 
 export interface PropertyActivity {

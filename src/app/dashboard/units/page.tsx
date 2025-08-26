@@ -350,8 +350,26 @@ function UnitsListPage() {
                 setQuickStats({
                     totalUnits: counts.totalCount,
                     availableUnits: counts.availableCount,
-                    villaUnits: { total: counts.villaCount },
-                    apartmentUnits: { total: counts.residenceCount },
+                    villaUnits: { 
+                        total: counts.villaCount,
+                        occupied: Math.round(counts.villaCount * (counts.assignedCount / counts.totalCount)) || 0,
+                        occupancyRate: counts.totalCount > 0 ? Math.round((counts.assignedCount / counts.totalCount) * 100) : 0
+                    },
+                    apartmentUnits: { 
+                        total: counts.residenceCount,
+                        occupied: Math.round(counts.residenceCount * (counts.assignedCount / counts.totalCount)) || 0,
+                        occupancyRate: counts.totalCount > 0 ? Math.round((counts.assignedCount / counts.totalCount) * 100) : 0
+                    },
+                    commercialUnits: { 
+                        total: 0, // Will calculate from properties list if needed
+                        occupied: 0,
+                        occupancyRate: 0
+                    },
+                    parkingSpaces: { 
+                        total: 0, // Will calculate from properties list if needed
+                        occupied: 0,
+                        occupancyRate: 0
+                    },
                     occupiedUnits: counts.assignedCount,
                     vacantUnits: counts.totalCount - counts.assignedCount, // ✅ Doğru hesaplama
                     maintenanceUnits: 0, // Will calculate from properties list if needed
@@ -720,8 +738,26 @@ function UnitsListPage() {
                 setQuickStats({
                     totalUnits: counts.totalCount,
                     availableUnits: counts.availableCount,
-                    villaUnits: { total: counts.villaCount },
-                    apartmentUnits: { total: counts.residenceCount },
+                    villaUnits: { 
+                        total: counts.villaCount,
+                        occupied: Math.round(counts.villaCount * (counts.assignedCount / counts.totalCount)) || 0,
+                        occupancyRate: counts.totalCount > 0 ? Math.round((counts.assignedCount / counts.totalCount) * 100) : 0
+                    },
+                    apartmentUnits: { 
+                        total: counts.residenceCount,
+                        occupied: Math.round(counts.residenceCount * (counts.assignedCount / counts.totalCount)) || 0,
+                        occupancyRate: counts.totalCount > 0 ? Math.round((counts.assignedCount / counts.totalCount) * 100) : 0
+                    },
+                    commercialUnits: { 
+                        total: 0, // Will calculate from properties list if needed
+                        occupied: 0,
+                        occupancyRate: 0
+                    },
+                    parkingSpaces: { 
+                        total: 0, // Will calculate from properties list if needed
+                        occupied: 0,
+                        occupancyRate: 0
+                    },
                     occupiedUnits: counts.assignedCount,
                     vacantUnits: counts.totalCount - counts.assignedCount, // ✅ Doğru hesaplama
                     maintenanceUnits: 0, // Will calculate from properties list if needed
