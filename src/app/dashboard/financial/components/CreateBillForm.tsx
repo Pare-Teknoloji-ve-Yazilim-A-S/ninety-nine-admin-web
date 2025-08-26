@@ -367,6 +367,16 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           includeBills: false,
         } as any);
 
+        console.log('🔍 CreateBillForm API Response:', {
+          res,
+          hasSuccess: !!res.success,
+          hasData: !!res.data,
+          dataType: typeof res.data,
+          isDataArray: Array.isArray(res.data),
+          dataLength: Array.isArray(res.data) ? res.data.length : 'not array',
+          firstItem: Array.isArray(res.data) && res.data.length > 0 ? res.data[0] : 'no items'
+        });
+
         if (active && res.success && res.data) {
           const formattedProperties = res.data.map((property: any) => ({
             id: property.id,
@@ -378,6 +388,12 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
             tenant: property.tenant,
             __raw: property
           }));
+          
+          console.log('🔍 CreateBillForm Formatted Properties:', {
+            originalLength: res.data.length,
+            formattedLength: formattedProperties.length,
+            firstFormatted: formattedProperties[0] || 'no items'
+          });
           
           setProperties(formattedProperties);
           setFilteredProperties(formattedProperties);
@@ -529,7 +545,23 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
            search: propertySearchQuery || undefined,
            includeBills: false,
          } as any);
-                 const list = res?.data || [];
+         
+         console.log('🔍 CreateBillForm Second API Response:', {
+           res,
+           hasSuccess: !!res.success,
+           hasData: !!res.data,
+           dataType: typeof res.data,
+           isDataArray: Array.isArray(res.data),
+           dataLength: Array.isArray(res.data) ? res.data.length : 'not array'
+         });
+         
+         const list = res?.data || [];
+         console.log('🔍 CreateBillForm List:', {
+           list,
+           listLength: list.length,
+           isListArray: Array.isArray(list)
+         });
+         
          const mapped: PropertyOption[] = list.map((property: any) => ({
            id: property.id,
            value: property.id,
@@ -552,6 +584,11 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
            } : undefined,
            __raw: property,
          }));
+         
+         console.log('🔍 CreateBillForm Mapped Properties:', {
+           mappedLength: mapped.length,
+           firstMapped: mapped[0] || 'no items'
+         });
          if (!active) return;
         setProperties(mapped);
         setFilteredProperties(mapped);
@@ -991,7 +1028,16 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                         search: propertySearchQuery || undefined,
                         includeBills: false,
                       } as any);
-                                             const list = res?.data || [];
+                      
+                      console.log('🔍 CreateBillForm Scroll Loading API Response:', {
+                        res,
+                        page: next,
+                        hasSuccess: !!res.success,
+                        hasData: !!res.data,
+                        dataLength: Array.isArray(res.data) ? res.data.length : 'not array'
+                      });
+                      
+                      const list = res?.data || [];
                        const mapped: PropertyOption[] = list.map((property: any) => ({
                          id: property.id,
                          value: property.id,
@@ -1014,6 +1060,11 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                          } : undefined,
                          __raw: property,
                        }));
+                       
+                       console.log('🔍 CreateBillForm Scroll Mapped:', {
+                         mappedLength: mapped.length,
+                         totalPropertiesAfter: properties.length + mapped.length
+                       });
                       setProperties(prev => [...prev, ...mapped]);
                       setFilteredProperties(prev => [...prev, ...mapped]);
                       const totalPages = res?.pagination?.totalPages;
