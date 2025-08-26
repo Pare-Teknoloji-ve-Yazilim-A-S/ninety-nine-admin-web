@@ -453,7 +453,9 @@ export default function AnnouncementDetailPage() {
                                         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                                             <div className="flex items-center justify-between">
                                                 <h3 className="text-base font-semibold text-text-on-light dark:text-text-on-dark">Görseller</h3>
-                                                <Button variant="ghost" size="sm" onClick={refreshImages}>Yenile</Button>
+                                                <div className="flex gap-2">
+                                                    <Button variant="ghost" size="sm" onClick={refreshImages}>Yenile</Button>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="p-6">

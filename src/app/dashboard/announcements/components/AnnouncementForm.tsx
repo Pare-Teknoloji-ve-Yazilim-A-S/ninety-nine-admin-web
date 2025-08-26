@@ -581,14 +581,14 @@ export default function AnnouncementForm({
                         acceptedTypes={["image/jpeg","image/png","image/gif","image/webp"]}
                         maxSize={5}
                         selectedFiles={selectedFiles}
-                            onFileRemove={(index) => {
-                                const next = selectedFiles.filter((_, i) => i !== index);
-                                handleFilesChange(next, 'replace');
-                            }}
-                            onFilesChange={(fileList) => {
-                                const files = fileList ? Array.from(fileList) : [];
-                                handleFilesChange(files, 'append');
-                            }}
+                        onFileRemove={(index) => {
+                            const next = selectedFiles.filter((_, i) => i !== index);
+                            handleFilesChange(next, 'replace');
+                        }}
+                        onFilesChange={(fileList) => {
+                            const files = fileList ? Array.from(fileList) : [];
+                            handleFilesChange(files, 'append');
+                        }}
                         title={t.uploadImages}
                         description={t.uploadDescription}
                     />

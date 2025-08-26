@@ -55,9 +55,12 @@ export function useAnnouncementDetail({ announcementId }: UseAnnouncementDetailP
     const fetchImages = useCallback(async () => {
         if (!announcementId) return;
         try {
+            console.log('Fetching images for announcement:', announcementId);
             const imgs = await announcementService.getAnnouncementImages(announcementId);
+            console.log('Received images:', imgs);
             setImages(imgs);
         } catch (e) {
+            console.error('Error fetching images:', e);
             setImages([]);
         }
     }, [announcementId]);

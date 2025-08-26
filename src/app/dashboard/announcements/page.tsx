@@ -460,21 +460,51 @@ export default function AnnouncementsPage() {
         try {
             setNewAnnouncementLoading(true);
             
-            // Convert AnnouncementFormData to CreateAnnouncementDto
-            const createDto = {
-                title: data.title,
-                content: data.content,
-                type: data.type,
-                status: data.status,
-                publishDate: data.publishDate?.toISOString(),
-                expiryDate: data.expiryDate?.toISOString(),
-                isPinned: data.isPinned,
-                isEmergency: data.isEmergency,
-                imageUrl: data.imageUrl,
-                propertyIds: data.propertyIds
-            };
+            // Check if we have files to upload
+            const hasFiles = data.files && data.files.length > 0;
             
-            await announcementService.createAnnouncement(createDto);
+            if (hasFiles) {
+                // Use FormData for file uploads
+                const formData = new FormData();
+                formData.append('title', data.title);
+                formData.append('content', data.content);
+                formData.append('type', data.type);
+                formData.append('status', data.status);
+                if (data.publishDate) formData.append('publishDate', data.publishDate.toISOString());
+                if (data.expiryDate) formData.append('expiryDate', data.expiryDate.toISOString());
+                formData.append('isPinned', String(data.isPinned));
+                formData.append('isEmergency', String(data.isEmergency));
+                if (data.imageUrl) formData.append('imageUrl', data.imageUrl);
+                if (data.propertyIds && data.propertyIds.length > 0) {
+                    data.propertyIds.forEach(id => formData.append('propertyIds', id));
+                }
+                
+                // Append files
+                if (data.files && data.files.length > 0) {
+                    data.files.forEach(file => {
+                        formData.append('files', file);
+                    });
+                }
+                
+                await announcementService.createAnnouncement(formData);
+            } else {
+                // Use regular DTO for text-only announcements
+                const createDto = {
+                    title: data.title,
+                    content: data.content,
+                    type: data.type,
+                    status: data.status,
+                    publishDate: data.publishDate?.toISOString(),
+                    expiryDate: data.expiryDate?.toISOString(),
+                    isPinned: data.isPinned,
+                    isEmergency: data.isEmergency,
+                    imageUrl: data.imageUrl,
+                    propertyIds: data.propertyIds
+                };
+                
+                await announcementService.createAnnouncement(createDto);
+            }
+            
             addToast({
                 type: 'success',
                 title: t.success,

@@ -502,28 +502,133 @@ class AnnouncementService extends BaseService<Announcement, CreateAnnouncementDt
     async getAnnouncementImages(id: string): Promise<string[]> {
         try {
             this.logger.info(`Fetching images for announcement ID: ${id}`);
-            const response = await apiClient.get<any>(`${this.baseEndpoint}/${id}/images`);
+            
+            // Try the primary endpoint first
+            let response;
+            try {
+                response = await apiClient.get<any>(`${this.baseEndpoint}/${id}/images`);
+            } catch (primaryError) {
+                console.log('Primary endpoint failed, trying alternative endpoints...');
+                
+                // Try alternative endpoint structures
+                const alternativeEndpoints = [
+                    `${this.baseEndpoint}/${id}/attachments`,
+                    `${this.baseEndpoint}/${id}/files`,
+                    `${this.baseEndpoint}/${id}/media`
+                ];
+                
+                for (const endpoint of alternativeEndpoints) {
+                    try {
+                        console.log(`Trying alternative endpoint: ${endpoint}`);
+                        response = await apiClient.get<any>(endpoint);
+                        console.log(`Alternative endpoint ${endpoint} succeeded`);
+                        break;
+                    } catch (altError) {
+                        console.log(`Alternative endpoint ${endpoint} failed:`, altError);
+                    }
+                }
+                
+                if (!response) {
+                    throw primaryError;
+                }
+            }
+            
+            // Debug logging - log the entire response structure
+            console.log('=== IMAGE FETCH DEBUG ===');
+            console.log('Full response:', response);
+            console.log('Response status:', response.status);
+            console.log('Response data:', response.data);
+            console.log('Response data type:', typeof response.data);
+            console.log('Response data keys:', response.data ? Object.keys(response.data) : 'No data');
+            
             const payload = (response as any)?.data ?? response;
+            console.log('Payload:', payload);
+            console.log('Payload type:', typeof payload);
+            console.log('Payload keys:', payload ? Object.keys(payload) : 'No payload');
+            
             const imagesNode =
                 payload?.images ??
                 payload?.data?.images ??
+                payload?.attachments ??
+                payload?.files ??
+                payload?.media ??
                 (Array.isArray(payload?.data) ? payload?.data : undefined) ??
                 (Array.isArray(payload) ? payload : undefined);
+            
+            console.log('Images node:', imagesNode);
+            console.log('Images node type:', typeof imagesNode);
+            console.log('Images node is array:', Array.isArray(imagesNode));
+            if (Array.isArray(imagesNode)) {
+                console.log('Images node length:', imagesNode.length);
+                console.log('Images node items:', imagesNode);
+            }
+            
             let urls: string[] = [];
             if (Array.isArray(imagesNode)) {
                 // If items are objects, prefer staticUrl, fallback to relativeUrl
                 urls = imagesNode
-                    .map((item: any) => {
-                        if (typeof item === 'string') return item;
-                        return item?.staticUrl || item?.relativeUrl || item?.url || null;
+                    .map((item: any, index: number) => {
+                        console.log(`Processing item ${index}:`, item);
+                        if (typeof item === 'string') {
+                            console.log(`Item ${index} is string:`, item);
+                            return item;
+                        }
+                        const url = item?.staticUrl || item?.relativeUrl || item?.url || item?.imageUrl || null;
+                        console.log(`Item ${index} extracted URL:`, url);
+                        return url;
                     })
-                    .filter(Boolean);
+                    .filter(Boolean)
+                    .map((url, index) => {
+                        console.log(`Processing URL ${index}:`, url);
+                        // Convert relative URLs to absolute URLs if needed
+                        if (url && !url.startsWith('http') && !url.startsWith('data:')) {
+                            // If it's a relative URL, construct the full URL
+                            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ninetynineclub-api.onrender.com';
+                            const fullUrl = `${baseUrl}/api${url.startsWith('/') ? url : `/${url}`}`;
+                            console.log(`Converted relative URL ${url} to absolute URL:`, fullUrl);
+                            return fullUrl;
+                        }
+                        console.log(`URL ${url} is already absolute or data URL`);
+                        return url;
+                    });
             } else if (typeof imagesNode === 'string') {
-                urls = [imagesNode];
+                let url = imagesNode;
+                if (url && !url.startsWith('http') && !url.startsWith('data:')) {
+                    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ninetynineclub-api.onrender.com';
+                    url = `${baseUrl}/api${url.startsWith('/') ? url : `/${url}`}`;
+                }
+                urls = [url];
+            } else if (imagesNode && typeof imagesNode === 'object') {
+                // Handle case where images might be nested in a different structure
+                const possibleImageFields = ['image', 'photo', 'file', 'attachment', 'media'];
+                for (const field of possibleImageFields) {
+                    if (imagesNode[field]) {
+                        const imageUrl = imagesNode[field];
+                        if (typeof imageUrl === 'string') {
+                            let url = imageUrl;
+                            if (url && !url.startsWith('http') && !url.startsWith('data:')) {
+                                const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ninetynineclub-api.onrender.com';
+                                url = `${baseUrl}/api${url.startsWith('/') ? url : `/${url}`}`;
+                            }
+                            urls.push(url);
+                        }
+                    }
+                }
             }
+            
+            console.log('Final URLs array:', urls);
+            console.log('Final URLs length:', urls.length);
+            console.log('=== END IMAGE FETCH DEBUG ===');
+            
             this.logger.info(`Fetched ${urls.length} images`);
             return urls;
         } catch (error) {
+            console.error('=== IMAGE FETCH ERROR ===');
+            console.error('Failed to fetch announcement images:', error);
+            console.error('Error type:', typeof error);
+            console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+            console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+            console.error('=== END IMAGE FETCH ERROR ===');
             this.logger.error('Failed to fetch announcement images', error);
             return [];
         }
