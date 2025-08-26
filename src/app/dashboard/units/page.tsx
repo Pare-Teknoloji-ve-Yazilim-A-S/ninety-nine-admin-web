@@ -287,6 +287,11 @@ function UnitsListPage() {
         filters: filtersHook.filters
     });
 
+    // Quick Stats State
+    const [quickStats, setQuickStats] = useState<QuickStats | null>(null);
+    const [quickStatsLoading, setQuickStatsLoading] = useState(false);
+    const [quickStatsError, setQuickStatsError] = useState<string | null>(null);
+
     // Units actions hook
     const {
         isDeleting,
@@ -310,8 +315,76 @@ function UnitsListPage() {
         { label: t.unitsList, active: true }
     ];
 
-    // Statistics calculations from API data - MEMOIZED
+    // Fetch Quick Stats from API
+    useEffect(() => {
+        const fetchQuickStats = async () => {
+            setQuickStatsLoading(true);
+            setQuickStatsError(null);
+            try {
+                // Fetch individual count endpoints instead of quick-stats
+                const [availableCount, villaCount, residenceCount, totalCount, assignedCount] = await Promise.all([
+                    unitsService.getAvailableCount(),
+                    unitsService.getVillaCount(),
+                    unitsService.getResidenceCount(),
+                    unitsService.getTotalCount(),
+                    unitsService.getAssignedCount()
+                ]);
+
+                const counts = {
+                    availableCount: availableCount.data?.count || 0,
+                    villaCount: villaCount.data?.count || 0,
+                    residenceCount: residenceCount.data?.count || 0,
+                    totalCount: totalCount.data?.count || 0,
+                    assignedCount: assignedCount.data?.count || 0
+                };
+
+                console.log('✅ Count endpoints loaded:', counts);
+                console.log('🔍 Detailed count analysis:', {
+                    availableCount: counts.availableCount,
+                    assignedCount: counts.assignedCount,
+                    totalCount: counts.totalCount,
+                    calculatedVacant: counts.totalCount - counts.assignedCount,
+                    availableEndpoint: 'GET /admin/properties/available/count',
+                    assignedEndpoint: 'GET /admin/properties/assigned/count'
+                });
+                setQuickStats({
+                    totalUnits: counts.totalCount,
+                    availableUnits: counts.availableCount,
+                    villaUnits: { total: counts.villaCount },
+                    apartmentUnits: { total: counts.residenceCount },
+                    occupiedUnits: counts.assignedCount,
+                    vacantUnits: counts.totalCount - counts.assignedCount, // ✅ Doğru hesaplama
+                    maintenanceUnits: 0, // Will calculate from properties list if needed
+                    occupancyRate: counts.totalCount > 0 ? Math.round((counts.assignedCount / counts.totalCount) * 100) : 0
+                });
+            } catch (error: any) {
+                console.error('❌ Error loading count endpoints:', error);
+                setQuickStatsError(error.message || 'İstatistikler yüklenemedi');
+            } finally {
+                setQuickStatsLoading(false);
+            }
+        };
+
+        fetchQuickStats();
+    }, []);
+
+    // Statistics calculations - Priority: API Quick Stats > Client-side calculation
     const unitStats = useMemo(() => {
+        // Use API quick stats if available
+        if (quickStats) {
+            return {
+                totalUnits: quickStats.totalUnits || 0,
+                occupiedUnits: quickStats.occupiedUnits || 0,
+                vacantUnits: quickStats.availableUnits || 0,
+                maintenanceUnits: quickStats.maintenanceUnits || 0,
+                occupancyRate: quickStats.occupancyRate || 0,
+                apartmentUnits: quickStats.apartmentUnits?.total || 0,
+                villaUnits: quickStats.villaUnits?.total || 0,
+                commercialUnits: quickStats.commercialUnits?.total || 0
+            };
+        }
+
+        // Fallback to client-side calculation from properties list
         const list = Array.isArray(dataHook.properties) ? dataHook.properties : [];
         const totalUnits = list.length;
         const occupiedUnits = list.filter(p => p.status === 'OCCUPIED').length;
@@ -332,7 +405,7 @@ function UnitsListPage() {
             villaUnits,
             commercialUnits
         };
-    }, [dataHook.properties]);
+    }, [quickStats, dataHook.properties]);
 
     const router = useRouter();
 
@@ -613,6 +686,55 @@ function UnitsListPage() {
     // Refresh handler - FIXED
     const handleRefresh = useCallback(() => {
         dataHook.refreshData();
+        // Also refresh count endpoints
+        const fetchCounts = async () => {
+            setQuickStatsLoading(true);
+            setQuickStatsError(null);
+            try {
+                // Fetch individual count endpoints instead of quick-stats
+                const [availableCount, villaCount, residenceCount, totalCount, assignedCount] = await Promise.all([
+                    unitsService.getAvailableCount(),
+                    unitsService.getVillaCount(),
+                    unitsService.getResidenceCount(),
+                    unitsService.getTotalCount(),
+                    unitsService.getAssignedCount()
+                ]);
+
+                const counts = {
+                    availableCount: availableCount.data?.count || 0,
+                    villaCount: villaCount.data?.count || 0,
+                    residenceCount: residenceCount.data?.count || 0,
+                    totalCount: totalCount.data?.count || 0,
+                    assignedCount: assignedCount.data?.count || 0
+                };
+
+                console.log('✅ Count endpoints refreshed:', counts);
+                console.log('🔍 Detailed count analysis (refresh):', {
+                    availableCount: counts.availableCount,
+                    assignedCount: counts.assignedCount,
+                    totalCount: counts.totalCount,
+                    calculatedVacant: counts.totalCount - counts.assignedCount,
+                    availableEndpoint: 'GET /admin/properties/available/count',
+                    assignedEndpoint: 'GET /admin/properties/assigned/count'
+                });
+                setQuickStats({
+                    totalUnits: counts.totalCount,
+                    availableUnits: counts.availableCount,
+                    villaUnits: { total: counts.villaCount },
+                    apartmentUnits: { total: counts.residenceCount },
+                    occupiedUnits: counts.assignedCount,
+                    vacantUnits: counts.totalCount - counts.assignedCount, // ✅ Doğru hesaplama
+                    maintenanceUnits: 0, // Will calculate from properties list if needed
+                    occupancyRate: counts.totalCount > 0 ? Math.round((counts.assignedCount / counts.totalCount) * 100) : 0
+                });
+            } catch (error: any) {
+                console.error('❌ Error refreshing count endpoints:', error);
+                setQuickStatsError(error.message || 'İstatistikler yenilenemedi');
+            } finally {
+                setQuickStatsLoading(false);
+            }
+        };
+        fetchCounts();
     }, [dataHook]);
 
     // Search handlers - FIXED: Prevent duplicate API calls
@@ -765,42 +887,55 @@ function UnitsListPage() {
 
 
 
-{/* Quick Stats Cards */}
-{dataHook.error && (
-    <Card className="mb-4">
-        <div className="p-4 text-primary-red text-center font-medium">
-            {dataHook.error}
-        </div>
-    </Card>
-)}
+                        {/* Quick Stats Cards */}
+                        {dataHook.error && (
+                            <Card className="mb-4">
+                                <div className="p-4 text-primary-red text-center font-medium">
+                                    {dataHook.error}
+                                </div>
+                            </Card>
+                        )}
+                        
+                        {/* Units Quick Stats Component */}
                         <div className="mb-8">
-                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
-                                <StatsCard
-                                    title={t.apartmentUnit}
-                                    value={unitStats.apartmentUnits}
-                                    icon={Building}
-                                    color="primary"
-                                    loading={dataHook.loading}
-                                    size="md"
-                                />
-                                <StatsCard
-                                    title={t.villaType}
-                                    value={unitStats.villaUnits}
-                                    icon={Home}
-                                    color="success"
-                                    loading={dataHook.loading}
-                                    size="md"
-                                />
-                                <StatsCard
-                                    title={t.availableUnit}
-                                    value={unitStats.vacantUnits}
-                                    icon={Store}
-                                    color="info"
-                                    loading={dataHook.loading}
-                                    size="md"
-                                />
+                            <UnitsQuickStats 
+                                quickStats={quickStats}
+                                loading={quickStatsLoading}
+                                error={quickStatsError}
+                            />
+                        </div>
+
+                        {/* Fallback Stats Cards (if quick stats not available) */}
+                        {!quickStats && !quickStatsLoading && (
+                            <div className="mb-8">
+                                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
+                                    <StatsCard
+                                        title={t.apartmentUnit}
+                                        value={unitStats.apartmentUnits}
+                                        icon={Building}
+                                        color="primary"
+                                        loading={dataHook.loading}
+                                        size="md"
+                                    />
+                                    <StatsCard
+                                        title={t.villaType}
+                                        value={unitStats.villaUnits}
+                                        icon={Home}
+                                        color="success"
+                                        loading={dataHook.loading}
+                                        size="md"
+                                    />
+                                    <StatsCard
+                                        title={t.availableUnit}
+                                        value={unitStats.vacantUnits}
+                                        icon={Store}
+                                        color="info"
+                                        loading={dataHook.loading}
+                                        size="md"
+                                    />
+                                </div>
                             </div>
-                        </div> 
+                        )} 
 
                         {/* Search and Filters */}
                         <Card className="mb-6">

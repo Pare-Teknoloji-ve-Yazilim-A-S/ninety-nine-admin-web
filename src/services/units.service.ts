@@ -160,6 +160,96 @@ export class UnitsService extends BaseService<Property, Partial<Property>, Parti
         return response;
     }
 
+    /**
+     * Get available properties count
+     * GET /admin/properties/available/count
+     */
+    async getAvailableCount(): Promise<ApiResponse<{ count: number }>> {
+        try {
+            this.logger.info('Fetching available properties count');
+            const response = await apiClient.get<{ count: number }>(
+                apiConfig.endpoints.properties.admin.availableCount
+            );
+            this.logger.info(`Available properties count: ${response.data?.count || 0}`);
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch available properties count', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get villa properties count
+     * GET /admin/properties/villa/count
+     */
+    async getVillaCount(): Promise<ApiResponse<{ count: number }>> {
+        try {
+            this.logger.info('Fetching villa properties count');
+            const response = await apiClient.get<{ count: number }>(
+                apiConfig.endpoints.properties.admin.villaCount
+            );
+            this.logger.info(`Villa properties count: ${response.data?.count || 0}`);
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch villa properties count', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get residence properties count
+     * GET /admin/properties/residence/count
+     */
+    async getResidenceCount(): Promise<ApiResponse<{ count: number }>> {
+        try {
+            this.logger.info('Fetching residence properties count');
+            const response = await apiClient.get<{ count: number }>(
+                apiConfig.endpoints.properties.admin.residentCount
+            );
+            this.logger.info(`Residence properties count: ${response.data?.count || 0}`);
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch residence properties count', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get total properties count
+     * GET /admin/properties/count
+     */
+    async getTotalCount(): Promise<ApiResponse<{ count: number }>> {
+        try {
+            this.logger.info('Fetching total properties count');
+            const response = await apiClient.get<{ count: number }>(
+                apiConfig.endpoints.properties.admin.totalCount
+            );
+            this.logger.info(`Total properties count: ${response.data?.count || 0}`);
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch total properties count', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get assigned properties count
+     * GET /admin/properties/assigned/count
+     */
+    async getAssignedCount(): Promise<ApiResponse<{ count: number }>> {
+        try {
+            this.logger.info('Fetching assigned properties count');
+            const response = await apiClient.get<{ count: number }>(
+                apiConfig.endpoints.properties.admin.assignedCount
+            );
+            this.logger.info(`Assigned properties count: ${response.data?.count || 0}`);
+            return response;
+        } catch (error) {
+            this.logger.error('Failed to fetch assigned properties count', error);
+            throw error;
+        }
+    }
+
     async getRecentActivities(limit: number = 10, days: number = 7): Promise<ApiResponse<PropertyActivity[]>> {
         const queryParams = this.buildQueryParams({ limit, days });
         const response = await apiClient.get(`${apiConfig.endpoints.properties.admin.recentActivities}${queryParams}`);

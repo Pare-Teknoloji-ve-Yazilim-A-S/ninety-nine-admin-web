@@ -1,16 +1,18 @@
 import React from 'react';
 import { QuickStats } from '@/services/types/property.types';
 import Card from '@/app/components/ui/Card';
-import { Building, Home, Store, Car } from 'lucide-react';
+import { Building, Home, Store, Car, User } from 'lucide-react';
 
 interface UnitsQuickStatsProps {
     quickStats: QuickStats | null;
     loading: boolean;
+    error?: string | null;
 }
 
 export const UnitsQuickStats: React.FC<UnitsQuickStatsProps> = ({
     quickStats,
-    loading
+    loading,
+    error
 }) => {
     if (loading) {
         return (
@@ -32,10 +34,23 @@ export const UnitsQuickStats: React.FC<UnitsQuickStatsProps> = ({
         );
     }
 
-    const apartmentUnits = quickStats?.apartmentUnits.total || 0;
-    const villaUnits = quickStats?.villaUnits.total || 0;
-    const commercialUnits = quickStats?.commercialUnits.total || 0;
-    const parkingSpaces = quickStats?.parkingSpaces.total || 0;
+    if (error) {
+        return (
+            <Card className="p-6">
+                <div className="text-center text-primary-red">
+                    <p className="font-medium">Hata: {error}</p>
+                    <p className="text-sm text-text-light-secondary dark:text-text-secondary mt-1">
+                        İstatistikler yüklenemedi
+                    </p>
+                </div>
+            </Card>
+        );
+    }
+
+    const apartmentUnits = quickStats?.apartmentUnits?.total || 0;
+    const villaUnits = quickStats?.villaUnits?.total || 0;
+    const occupiedUnits = quickStats?.occupiedUnits || 0;
+    const vacantUnits = quickStats?.vacantUnits || 0;
 
     const statCards = [
         {
@@ -53,18 +68,18 @@ export const UnitsQuickStats: React.FC<UnitsQuickStatsProps> = ({
             bgColor: 'semantic-success-500/10 dark:bg-semantic-success-500/20'
         },
         {
-            title: 'Ticari Alan',
-            value: commercialUnits,
-            icon: Store,
+            title: 'Dolu Konut',
+            value: occupiedUnits,
+            icon: User,
             color: 'primary-blue',
             bgColor: 'primary-blue/10 dark:bg-primary-blue/20'
         },
         {
-            title: 'Otopark Alanı',
-            value: parkingSpaces,
-            icon: Car,
-            color: 'primary-red',
-            bgColor: 'primary-red/10 dark:bg-primary-red/20'
+            title: 'Boş Konut',
+            value: vacantUnits,
+            icon: Home,
+            color: 'semantic-warning-500',
+            bgColor: 'semantic-warning-500/10 dark:bg-semantic-warning-500/20'
         }
     ];
 
