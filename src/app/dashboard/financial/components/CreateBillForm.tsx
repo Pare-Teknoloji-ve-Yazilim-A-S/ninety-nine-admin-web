@@ -370,15 +370,28 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
         console.log('🔍 CreateBillForm API Response:', {
           res,
           hasSuccess: !!res.success,
-          hasData: !!res?.data?.data,
-          dataType: typeof res?.data?.data,
-          isDataArray: Array.isArray(res?.data?.data),
-          dataLength: Array.isArray(res?.data?.data) ? res.data.data.length : 'not array',
-          firstItem: Array.isArray(res?.data?.data) && res.data.data.length > 0 ? res.data.data[0] : 'no items'
+          hasData: !!res?.data,
+          dataType: typeof res?.data,
+          isDataArray: Array.isArray(res?.data),
+          dataLength: Array.isArray(res?.data) ? res.data.length : 'not array',
+          firstItem: Array.isArray(res?.data) && res.data.length > 0 ? res.data[0] : 'no items'
         });
 
-        if (active && res.success && res?.data?.data) {
-          const formattedProperties = res.data.data.map((property: any) => ({
+        // Handle response structure - unitsService returns { data: Property[], pagination: {...} }
+        let list = [];
+        if (res?.success && res?.data && Array.isArray(res.data)) {
+          list = res.data;
+        } else if (res?.data && Array.isArray(res.data)) {
+          list = res.data;
+        } else if (Array.isArray(res)) {
+          list = res;
+        } else {
+          console.warn('🚨 CreateBillForm: Unexpected API response structure:', res);
+          list = [];
+        }
+        
+        if (active && list.length > 0) {
+          const formattedProperties = list.map((property: any) => ({
             id: property.id,
             value: property.id,
             label: `${property.name} (${property.propertyNumber})`,
@@ -390,14 +403,14 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
           }));
           
           console.log('🔍 CreateBillForm Formatted Properties:', {
-            originalLength: res.data.data.length,
+            originalLength: list.length,
             formattedLength: formattedProperties.length,
             firstFormatted: formattedProperties[0] || 'no items'
           });
           
           setProperties(formattedProperties);
           setFilteredProperties(formattedProperties);
-          setHasMore(res.data.data.length >= requestedLimit);
+          setHasMore(list.length >= requestedLimit);
         }
       } catch (error) {
         console.error('Error fetching properties:', error);
@@ -556,7 +569,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
            fullResponse: JSON.stringify(res, null, 2)
          });
          
-         // Handle different response structures
+         // Handle response structure - unitsService returns { data: Property[], pagination: {...} }
          let list = [];
          if (res?.success && res?.data && Array.isArray(res.data)) {
            list = res.data;
@@ -575,43 +588,51 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
            isListArray: Array.isArray(list)
          });
          
-         const mapped: PropertyOption[] = list.map((property: any) => ({
-           id: property.id,
-           value: property.id,
-           label: `${property.propertyNumber} - ${property.name}`,
-           propertyNumber: property.propertyNumber,
-           area: property.area || 0, // Metrekare bilgisini al
-           owner: property.owner ? {
-             id: property.owner.id,
-             firstName: property.owner.firstName,
-             lastName: property.owner.lastName,
-             email: property.owner.email,
-             phone: property.owner.phone
-           } : undefined,
-           tenant: property.tenant ? {
-             id: property.tenant.id,
-             firstName: property.tenant.firstName,
-             lastName: property.tenant.lastName,
-             email: property.tenant.email,
-             phone: property.tenant.phone
-           } : undefined,
-           __raw: property,
-         }));
-         
-         console.log('🔍 CreateBillForm Mapped Properties:', {
-           mappedLength: mapped.length,
-           firstMapped: mapped[0] || 'no items'
-         });
          if (!active) return;
-        setProperties(mapped);
-        setFilteredProperties(mapped);
-        const current = res?.pagination?.page ?? 1;
-        const totalPages = res?.pagination?.totalPages;
-        setPage(current);
-        // hasMore if server says there are more pages OR if we exactly filled the page (fallback)
-        const serverHasMore = typeof totalPages === 'number' ? current < totalPages : false;
-        const filledPage = list.length === requestedLimit;
-        setHasMore(serverHasMore || filledPage);
+         
+         if (list.length > 0) {
+           const mapped: PropertyOption[] = list.map((property: any) => ({
+             id: property.id,
+             value: property.id,
+             label: `${property.propertyNumber} - ${property.name}`,
+             propertyNumber: property.propertyNumber,
+             area: property.area || 0, // Metrekare bilgisini al
+             owner: property.owner ? {
+               id: property.owner.id,
+               firstName: property.owner.firstName,
+               lastName: property.owner.lastName,
+               email: property.owner.email,
+               phone: property.owner.phone
+             } : undefined,
+             tenant: property.tenant ? {
+               id: property.tenant.id,
+               firstName: property.tenant.firstName,
+               lastName: property.tenant.lastName,
+               email: property.tenant.email,
+               phone: property.tenant.phone
+             } : undefined,
+             __raw: property,
+           }));
+           
+           console.log('🔍 CreateBillForm Mapped Properties:', {
+             mappedLength: mapped.length,
+             firstMapped: mapped[0] || 'no items'
+           });
+           
+           setProperties(mapped);
+           setFilteredProperties(mapped);
+           const current = res?.pagination?.page ?? 1;
+           const totalPages = res?.pagination?.totalPages;
+           setPage(current);
+           // hasMore if server says there are more pages OR if we exactly filled the page (fallback)
+           const serverHasMore = typeof totalPages === 'number' ? current < totalPages : false;
+           const filledPage = list.length === requestedLimit;
+           setHasMore(serverHasMore || filledPage);
+         } else {
+           setProperties([]);
+           setFilteredProperties([]);
+           setHasMore(false);
+         }
       } catch (error) {
         if (!active) return;
         console.error('Error fetching properties:', error);
@@ -1050,7 +1071,19 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                         dataLength: Array.isArray(res.data) ? res.data.length : 'not array'
                       });
                       
-                      const list = res?.data || [];
+                                             // Handle response structure - unitsService returns { data: Property[], pagination: {...} }
+                       let list = [];
+                       if (res?.success && res?.data && Array.isArray(res.data)) {
+                         list = res.data;
+                       } else if (res?.data && Array.isArray(res.data)) {
+                         list = res.data;
+                       } else if (Array.isArray(res)) {
+                         list = res;
+                       } else {
+                         console.warn('🚨 CreateBillForm Scroll: Unexpected API response structure:', res);
+                         list = [];
+                       }
+                       
                        const mapped: PropertyOption[] = list.map((property: any) => ({
                          id: property.id,
                          value: property.id,
@@ -1078,13 +1111,14 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                          mappedLength: mapped.length,
                          totalPropertiesAfter: properties.length + mapped.length
                        });
-                      setProperties(prev => [...prev, ...mapped]);
-                      setFilteredProperties(prev => [...prev, ...mapped]);
-                      const totalPages = res?.pagination?.totalPages;
-                      setPage(next);
-                      const serverHasMore = typeof totalPages === 'number' ? next < totalPages : false;
-                      const filledPage = list.length === requestedLimit;
-                      setHasMore(serverHasMore || filledPage);
+                       
+                       setProperties(prev => [...prev, ...mapped]);
+                       setFilteredProperties(prev => [...prev, ...mapped]);
+                       const totalPages = res?.pagination?.totalPages;
+                       setPage(next);
+                       const serverHasMore = typeof totalPages === 'number' ? next < totalPages : false;
+                       const filledPage = list.length === requestedLimit;
+                       setHasMore(serverHasMore || filledPage);
                     } catch (err) {
                       setHasMore(false);
                     } finally {
