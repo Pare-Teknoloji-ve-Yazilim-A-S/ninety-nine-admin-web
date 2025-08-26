@@ -37,8 +37,7 @@ import {
   Building,
   Award,
   Clock,
-  Activity,
-  Settings,
+
   FileText,
   CreditCard,
   History,
@@ -54,9 +53,7 @@ const translations = {
     pageTitle: 'Profil',
     profileSettings: 'Profil Ayarları',
     personalInfo: 'Kişisel Bilgiler',
-    securitySettings: 'Güvenlik Ayarları',
-    preferences: 'Tercihler',
-    activityLog: 'Aktivite Geçmişi',
+    securitySettings: 'İş Bilgileri',
     
     // Breadcrumb
     home: 'Ana Sayfa',
@@ -77,8 +74,8 @@ const translations = {
     lastLogin: 'Son Giriş',
     
     // Security
-    securityTitle: 'Güvenlik Ayarları',
-    securityDescription: 'Hesap güvenliğinizi yönetin',
+    securityTitle: 'İş Bilgileri',
+    securityDescription: 'İş bilgilerinizi ve güvenlik ayarlarınızı yönetin',
     currentPassword: 'Mevcut Şifre',
     newPassword: 'Yeni Şifre',
     confirmPassword: 'Şifre Tekrarı',
@@ -96,13 +93,6 @@ const translations = {
     emailNotifications: 'E-posta Bildirimleri',
     pushNotifications: 'Push Bildirimleri',
     smsNotifications: 'SMS Bildirimleri',
-    
-    // Activity
-    activityTitle: 'Aktivite Geçmişi',
-    activityDescription: 'Son aktivitelerinizi görüntüleyin',
-    recentActivity: 'Son Aktiviteler',
-    loginHistory: 'Giriş Geçmişi',
-    actionHistory: 'İşlem Geçmişi',
     
     // Actions
     saveChanges: 'Değişiklikleri Kaydet',
@@ -146,7 +136,6 @@ const translations = {
     profileSettings: 'Profile Settings',
     personalInfo: 'Personal Information',
     securitySettings: 'Security Settings',
-    preferences: 'Preferences',
     activityLog: 'Activity Log',
     
     // Breadcrumb
@@ -187,13 +176,6 @@ const translations = {
     emailNotifications: 'Email Notifications',
     pushNotifications: 'Push Notifications',
     smsNotifications: 'SMS Notifications',
-    
-    // Activity
-    activityTitle: 'Activity History',
-    activityDescription: 'View your recent activities',
-    recentActivity: 'Recent Activities',
-    loginHistory: 'Login History',
-    actionHistory: 'Action History',
     
     // Actions
     saveChanges: 'Save Changes',
@@ -237,7 +219,6 @@ const translations = {
     profileSettings: 'إعدادات الملف الشخصي',
     personalInfo: 'المعلومات الشخصية',
     securitySettings: 'إعدادات الأمان',
-    preferences: 'التفضيلات',
     activityLog: 'سجل النشاط',
     
     // Breadcrumb
@@ -278,13 +259,6 @@ const translations = {
     emailNotifications: 'إشعارات البريد الإلكتروني',
     pushNotifications: 'الإشعارات الفورية',
     smsNotifications: 'إشعارات الرسائل النصية',
-    
-    // Activity
-    activityTitle: 'سجل النشاط',
-    activityDescription: 'عرض أنشطتك الأخيرة',
-    recentActivity: 'الأنشطة الأخيرة',
-    loginHistory: 'سجل تسجيل الدخول',
-    actionHistory: 'سجل الإجراءات',
     
     // Actions
     saveChanges: 'حفظ التغييرات',
@@ -336,11 +310,11 @@ export default function ProfilePage() {
   
   // Form states
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    position: user?.role?.name || '',
+    firstName: 'Talat',
+    lastName: 'Abdel Wahab',
+    email: 'talatafandy@3steps.com.iq',
+    phone: '',
+    position: 'Admin',
     department: 'IT Department',
     location: 'Istanbul, Turkey',
     bio: 'System Administrator with expertise in property management systems.',
@@ -352,70 +326,20 @@ export default function ProfilePage() {
     confirmPassword: '',
   });
   
-  const [preferences, setPreferences] = useState({
-    language: 'tr',
-    theme: 'system',
+  const [securitySettings, setSecuritySettings] = useState({
+    twoFactorAuth: false,
+    sessionTimeout: 30,
+  });
+  
+  const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
     pushNotifications: true,
     smsNotifications: false,
-    twoFactorAuth: false,
-    sessionTimeout: 30,
   });
 
   const t = translations[locale as keyof typeof translations];
 
-  // Mock activity data
-  const recentActivities = [
-    {
-      id: 1,
-      action: 'Giriş yapıldı',
-      description: 'Dashboard\'a başarıyla giriş yapıldı',
-      timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-      type: 'login',
-      icon: Activity,
-    },
-    {
-      id: 2,
-      action: 'Profil güncellendi',
-      description: 'Kişisel bilgiler güncellendi',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      type: 'update',
-      icon: Edit,
-    },
-    {
-      id: 3,
-      action: 'Şifre değiştirildi',
-      description: 'Hesap şifresi güncellendi',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      type: 'security',
-      icon: Lock,
-    },
-  ];
-
-  // Tab items for the Tabs component
-  const tabItems = [
-    {
-      id: 'personal',
-      label: t.personalInfo,
-      icon: User,
-    },
-    {
-      id: 'security',
-      label: t.securitySettings,
-      icon: Shield,
-    },
-    {
-      id: 'preferences',
-      label: t.preferences,
-      icon: Settings,
-    },
-    {
-      id: 'activity',
-      label: t.activityLog,
-      icon: Activity,
-    },
-  ];
-
+  // Handler functions
   const handleSaveProfile = async () => {
     try {
       // Simulate API call
@@ -458,6 +382,308 @@ export default function ProfilePage() {
       minute: '2-digit',
     }).format(date);
   };
+
+  // Tab items for the Tabs component
+  const tabItems = [
+    {
+      id: 'personal',
+      label: t.personalInfo,
+      icon: User,
+      content: (
+        <Card className="shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-text-on-light dark:text-text-on-dark">
+                  {t.personalInfoTitle}
+                </CardTitle>
+                <p className="text-text-light-secondary dark:text-text-secondary">
+                  {t.personalInfoDescription}
+                </p>
+              </div>
+              <Button
+                variant={isEditing ? "outline" : "primary"}
+                size="sm"
+                onClick={() => setIsEditing(!isEditing)}
+              >
+                {isEditing ? (
+                  <>
+                    <X className="h-4 w-4 mr-2" />
+                    {t.cancel}
+                  </>
+                ) : (
+                  <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    {t.edit}
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardBody className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">{t.firstName}</Label>
+                <Input
+                  id="firstName"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  placeholder={t.enterFirstName}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">{t.lastName}</Label>
+                <Input
+                  id="lastName"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  placeholder={t.enterLastName}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">{t.email}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder={t.enterEmail}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">{t.phone}</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder={t.enterPhone}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="position">{t.position}</Label>
+                <Input
+                  id="position"
+                  value={formData.position}
+                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="department">{t.department}</Label>
+                <Input
+                  id="department"
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="location">{t.location}</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="bio">{t.bio}</Label>
+              <TextArea
+                 id="bio"
+                 value={formData.bio}
+                 onChange={(value) => setFormData({ ...formData, bio: value })}
+                 placeholder={t.enterBio}
+                 disabled={!isEditing}
+                 rows={4}
+               />
+            </div>
+            {isEditing && (
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                >
+                  {t.cancel}
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSaveProfile}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {t.saveChanges}
+                </Button>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      )
+    },
+    {
+      id: 'security',
+      label: t.securitySettings,
+      icon: Shield,
+      content: (
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-text-on-light dark:text-text-on-dark">
+              {t.securityTitle}
+            </CardTitle>
+            <p className="text-text-light-secondary dark:text-text-secondary">
+              {t.securityDescription}
+            </p>
+          </CardHeader>
+          <CardBody className="space-y-6">
+            {/* Password Change Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
+                  {t.changePassword}
+                </h3>
+                <Button
+                  variant={isChangingPassword ? "outline" : "primary"}
+                  size="sm"
+                  onClick={() => setIsChangingPassword(!isChangingPassword)}
+                >
+                  {isChangingPassword ? (
+                    <>
+                      <X className="h-4 w-4 mr-2" />
+                      {t.cancel}
+                    </>
+                  ) : (
+                    <>
+                      <Key className="h-4 w-4 mr-2" />
+                      {t.changePassword}
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              {isChangingPassword && (
+                <div className="grid grid-cols-1 gap-4 p-4 bg-background-secondary rounded-lg">
+                  <div>
+                    <Label htmlFor="currentPassword">{t.currentPassword}</Label>
+                    <div className="relative">
+                      <Input
+                        id="currentPassword"
+                        type={showPassword ? "text" : "password"}
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        placeholder={t.enterCurrentPassword}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-light-secondary hover:text-text-primary"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="newPassword">{t.newPassword}</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      placeholder={t.enterNewPassword}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      placeholder={t.confirmNewPassword}
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsChangingPassword(false)}
+                    >
+                      {t.cancel}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={handleChangePassword}
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {t.update}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Security Settings */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
+                Security Settings
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-background-secondary rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-5 w-5 text-primary-gold" />
+                    <div>
+                      <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                        {t.twoFactorAuth}
+                      </p>
+                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                        {t.twoFactorAuthDescription}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={securitySettings.twoFactorAuth}
+                    onCheckedChange={(checked) => setSecuritySettings({ ...securitySettings, twoFactorAuth: checked })}
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between p-4 bg-background-secondary rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Clock className="h-5 w-5 text-primary-gold" />
+                    <div>
+                      <p className="font-medium text-text-on-light dark:text-text-on-dark">
+                        {t.sessionTimeout}
+                      </p>
+                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                        {t.sessionTimeoutDescription}
+                      </p>
+                    </div>
+                  </div>
+                  <select
+                    value={securitySettings.sessionTimeout}
+                    onChange={(e) => setSecuritySettings({ ...securitySettings, sessionTimeout: parseInt(e.target.value) })}
+                    className="px-3 py-2 border border-primary-gold/30 rounded-md bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold/50"
+                  >
+                    <option value={15}>15 minutes</option>
+                    <option value={30}>30 minutes</option>
+                    <option value={60}>1 hour</option>
+                    <option value={120}>2 hours</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      )
+    },
+  ];
+
+
 
   return (
     <ProtectedRoute>
@@ -517,10 +743,10 @@ export default function ProfilePage() {
 
                       {/* User Info */}
                       <h2 className="text-xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
-                        {`${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Admin User'}
+                        Talat Abdel Wahab
                       </h2>
                       <p className="text-text-light-secondary dark:text-text-secondary mb-3">
-                        {user?.role?.name || 'System Administrator'}
+                        Admin
                       </p>
 
                       {/* Status Badges */}
@@ -564,398 +790,7 @@ export default function ProfilePage() {
                   value={activeTab} 
                   onValueChange={setActiveTab}
                   className="space-y-6"
-                >
-                  {/* Personal Information Tab */}
-                  {activeTab === 'personal' && (
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <CardTitle className="text-text-on-light dark:text-text-on-dark">
-                              {t.personalInfoTitle}
-                            </CardTitle>
-                            <p className="text-text-light-secondary dark:text-text-secondary">
-                              {t.personalInfoDescription}
-                            </p>
-                          </div>
-                          <Button
-                            variant={isEditing ? "outline" : "primary"}
-                            size="sm"
-                            onClick={() => setIsEditing(!isEditing)}
-                          >
-                            {isEditing ? (
-                              <>
-                                <X className="h-4 w-4 mr-2" />
-                                {t.cancel}
-                              </>
-                            ) : (
-                              <>
-                                <Edit className="h-4 w-4 mr-2" />
-                                {t.edit}
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardBody className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="firstName">{t.firstName}</Label>
-                            <Input
-                              id="firstName"
-                              value={formData.firstName}
-                              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                              placeholder={t.enterFirstName}
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="lastName">{t.lastName}</Label>
-                            <Input
-                              id="lastName"
-                              value={formData.lastName}
-                              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                              placeholder={t.enterLastName}
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="email">{t.email}</Label>
-                            <Input
-                              id="email"
-                              type="email"
-                              value={formData.email}
-                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                              placeholder={t.enterEmail}
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="phone">{t.phone}</Label>
-                            <Input
-                              id="phone"
-                              value={formData.phone}
-                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                              placeholder={t.enterPhone}
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="position">{t.position}</Label>
-                            <Input
-                              id="position"
-                              value={formData.position}
-                              onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="department">{t.department}</Label>
-                            <Input
-                              id="department"
-                              value={formData.department}
-                              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                              disabled={!isEditing}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="location">{t.location}</Label>
-                          <Input
-                            id="location"
-                            value={formData.location}
-                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                            disabled={!isEditing}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="bio">{t.bio}</Label>
-                          <TextArea
-                            id="bio"
-                            value={formData.bio}
-                            onChange={(value) => setFormData({ ...formData, bio: value })}
-                            placeholder={t.enterBio}
-                            disabled={!isEditing}
-                            rows={3}
-                          />
-                        </div>
-                        {isEditing && (
-                          <div className="flex justify-end gap-2 pt-4">
-                            <Button variant="outline" onClick={() => setIsEditing(false)}>
-                              {t.cancel}
-                            </Button>
-                            <Button onClick={handleSaveProfile}>
-                              <Save className="h-4 w-4 mr-2" />
-                              {t.saveChanges}
-                            </Button>
-                          </div>
-                        )}
-                      </CardBody>
-                    </Card>
-                  )}
-
-                  {/* Security Settings Tab */}
-                  {activeTab === 'security' && (
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="text-text-on-light dark:text-text-on-dark">
-                          {t.securityTitle}
-                        </CardTitle>
-                        <p className="text-text-light-secondary dark:text-text-secondary">
-                          {t.securityDescription}
-                        </p>
-                      </CardHeader>
-                      <CardBody className="space-y-6">
-                        {/* Password Change */}
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-semibold text-text-on-light dark:text-text-on-dark">
-                                {t.changePassword}
-                              </h3>
-                              <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                Güvenliğiniz için düzenli olarak şifrenizi değiştirin
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setIsChangingPassword(!isChangingPassword)}
-                            >
-                              {isChangingPassword ? t.cancel : t.changePassword}
-                            </Button>
-                          </div>
-                          
-                          {isChangingPassword && (
-                            <div className="space-y-4 p-4 bg-background-light-soft dark:bg-background-soft rounded-lg">
-                              <div>
-                                <Label htmlFor="currentPassword">{t.currentPassword}</Label>
-                                <div className="relative">
-                                  <Input
-                                    id="currentPassword"
-                                    type={showPassword ? "text" : "password"}
-                                    value={passwordData.currentPassword}
-                                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                    placeholder={t.enterCurrentPassword}
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-light-secondary dark:text-text-secondary"
-                                  >
-                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                  </button>
-                                </div>
-                              </div>
-                              <div>
-                                <Label htmlFor="newPassword">{t.newPassword}</Label>
-                                <Input
-                                  id="newPassword"
-                                  type="password"
-                                  value={passwordData.newPassword}
-                                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                  placeholder={t.enterNewPassword}
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
-                                <Input
-                                  id="confirmPassword"
-                                  type="password"
-                                  value={passwordData.confirmPassword}
-                                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                  placeholder={t.confirmNewPassword}
-                                />
-                              </div>
-                              <div className="flex justify-end gap-2">
-                                <Button variant="outline" onClick={() => setIsChangingPassword(false)}>
-                                  {t.cancel}
-                                </Button>
-                                <Button onClick={handleChangePassword}>
-                                  <Key className="h-4 w-4 mr-2" />
-                                  {t.update}
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        <Separator />
-
-                        {/* Two-Factor Authentication */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-text-on-light dark:text-text-on-dark">
-                              {t.twoFactorAuth}
-                            </h3>
-                            <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                              {t.twoFactorAuthDescription}
-                            </p>
-                          </div>
-                          <Switch
-                            checked={preferences.twoFactorAuth}
-                            onCheckedChange={(checked) => setPreferences({ ...preferences, twoFactorAuth: checked })}
-                          />
-                        </div>
-
-                        {/* Session Timeout */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-text-on-light dark:text-text-on-dark">
-                              {t.sessionTimeout}
-                            </h3>
-                            <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                              {t.sessionTimeoutDescription}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              value={preferences.sessionTimeout}
-                              onChange={(e) => setPreferences({ ...preferences, sessionTimeout: parseInt(e.target.value) })}
-                              className="w-20"
-                              min="5"
-                              max="120"
-                            />
-                            <span className="text-sm text-text-light-secondary dark:text-text-secondary">dakika</span>
-                          </div>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  )}
-
-                  {/* Preferences Tab */}
-                  {activeTab === 'preferences' && (
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="text-text-on-light dark:text-text-on-dark">
-                          {t.preferencesTitle}
-                        </CardTitle>
-                        <p className="text-text-light-secondary dark:text-text-secondary">
-                          {t.preferencesDescription}
-                        </p>
-                      </CardHeader>
-                      <CardBody className="space-y-6">
-                        {/* Language */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-text-on-light dark:text-text-on-dark">
-                              {t.language}
-                            </h3>
-                            <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                              Uygulama dilini seçin
-                            </p>
-                          </div>
-                          <select
-                            value={preferences.language}
-                            onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
-                            className="px-3 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark"
-                          >
-                            <option value="tr">Türkçe</option>
-                            <option value="en">English</option>
-                            <option value="ar">العربية</option>
-                          </select>
-                        </div>
-
-                        <Separator />
-
-                        {/* Notifications */}
-                        <div className="space-y-4">
-                          <h3 className="font-semibold text-text-on-light dark:text-text-on-dark">
-                            {t.notifications}
-                          </h3>
-                          
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-medium text-text-on-light dark:text-text-on-dark">
-                                {t.emailNotifications}
-                              </h4>
-                              <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                E-posta ile bildirim al
-                              </p>
-                            </div>
-                            <Switch
-                              checked={preferences.emailNotifications}
-                              onCheckedChange={(checked) => setPreferences({ ...preferences, emailNotifications: checked })}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-medium text-text-on-light dark:text-text-on-dark">
-                                {t.pushNotifications}
-                              </h4>
-                              <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                Tarayıcı bildirimleri al
-                              </p>
-                            </div>
-                            <Switch
-                              checked={preferences.pushNotifications}
-                              onCheckedChange={(checked) => setPreferences({ ...preferences, pushNotifications: checked })}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h4 className="font-medium text-text-on-light dark:text-text-on-dark">
-                                {t.smsNotifications}
-                              </h4>
-                              <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                SMS ile bildirim al
-                              </p>
-                            </div>
-                            <Switch
-                              checked={preferences.smsNotifications}
-                              onCheckedChange={(checked) => setPreferences({ ...preferences, smsNotifications: checked })}
-                            />
-                          </div>
-                        </div>
-                      </CardBody>
-                    </Card>
-                  )}
-
-                  {/* Activity Log Tab */}
-                  {activeTab === 'activity' && (
-                    <Card className="shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="text-text-on-light dark:text-text-on-dark">
-                          {t.activityTitle}
-                        </CardTitle>
-                        <p className="text-text-light-secondary dark:text-text-secondary">
-                          {t.activityDescription}
-                        </p>
-                      </CardHeader>
-                      <CardBody>
-                        <div className="space-y-4">
-                          {recentActivities.map((activity) => {
-                            const IconComponent = activity.icon;
-                            return (
-                              <div
-                                key={activity.id}
-                                className="flex items-start gap-3 p-3 rounded-lg bg-background-light-soft dark:bg-background-soft hover:bg-background-light-secondary dark:hover:bg-background-secondary transition-colors"
-                              >
-                                <div className="p-2 rounded-lg bg-primary-gold/10 dark:bg-primary-gold/20">
-                                  <IconComponent className="h-4 w-4 text-primary-gold" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-text-on-light dark:text-text-on-dark">
-                                    {activity.action}
-                                  </h4>
-                                  <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                                    {activity.description}
-                                  </p>
-                                  <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
-                                    {formatDate(activity.timestamp)}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </CardBody>
-                    </Card>
-                  )}
-                </Tabs>
+                />
               </div>
             </div>
           </main>
