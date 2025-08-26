@@ -496,9 +496,7 @@ export default function CreateTicketModal({
                 
                 // Handle response structure - unitsService returns { data: Property[], pagination: {...} }
                 let list = [];
-                if (res?.success && res?.data && Array.isArray(res.data)) {
-                    list = res.data;
-                } else if (res?.data && Array.isArray(res.data)) {
+                if (res?.data && Array.isArray(res.data)) {
                     list = res.data;
                 } else if (Array.isArray(res)) {
                     list = res;
@@ -509,13 +507,13 @@ export default function CreateTicketModal({
                 
                 console.log('🔍 CreateTicketModal API Response:', {
                     res,
-                    hasSuccess: !!res?.success,
                     hasData: !!res?.data,
                     dataType: typeof res?.data,
                     isDataArray: Array.isArray(res?.data),
                     dataLength: Array.isArray(res?.data) ? res.data.length : 'not array',
                     list,
-                    listLength: list.length
+                    listLength: list.length,
+                    fullResponse: JSON.stringify(res, null, 2)
                 });
                 
                 const mapped: PropertyOption[] = list.map((property: any) => ({
@@ -565,7 +563,7 @@ export default function CreateTicketModal({
             active = false; 
             clearTimeout(timeoutId);
         };
-    }, [propertySearchQuery]); // propertyDropdownOpen'ı dependency'den çıkardık
+    }, [propertyDropdownOpen, propertySearchQuery]); // propertyDropdownOpen'ı dependency olarak ekledik
 
     // Show existing properties when dropdown opens and keep it open
     useEffect(() => {
@@ -1037,9 +1035,7 @@ export default function CreateTicketModal({
                                                         
                                                         // Handle response structure - unitsService returns { data: Property[], pagination: {...} }
                                                         let list = [];
-                                                        if (res?.success && res?.data && Array.isArray(res.data)) {
-                                                            list = res.data;
-                                                        } else if (res?.data && Array.isArray(res.data)) {
+                                                        if (res?.data && Array.isArray(res.data)) {
                                                             list = res.data;
                                                         } else if (Array.isArray(res)) {
                                                             list = res;
@@ -1051,9 +1047,9 @@ export default function CreateTicketModal({
                                                         console.log('🔍 CreateTicketModal Scroll API Response:', {
                                                             res,
                                                             page: next,
-                                                            hasSuccess: !!res?.success,
                                                             hasData: !!res?.data,
-                                                            dataLength: list.length
+                                                            dataLength: list.length,
+                                                            fullResponse: JSON.stringify(res, null, 2)
                                                         });
                                                         
                                                         const mapped: PropertyOption[] = list.map((property: any) => ({

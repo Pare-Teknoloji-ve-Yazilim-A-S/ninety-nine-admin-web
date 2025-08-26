@@ -29,10 +29,7 @@ import type { ResponseBillDto } from '@/services/types/billing.types';
 import billingService from '@/services/billing.service';
 import { enumsService } from '@/services/enums.service';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
-import { 
-  UPDATE_PAYMENT_PERMISSION_ID, 
-  UPDATE_PAYMENT_PERMISSION_NAME 
-} from '@/app/components/ui/Sidebar';
+
 
 // Dil çevirileri
 const translations = {
@@ -64,7 +61,7 @@ const translations = {
     recordingPayment: 'Ödeme Kaydediliyor...',
     permissionLoading: 'İzinler kontrol ediliyor...',
     noPermission: 'Bu sayfaya erişim izniniz bulunmamaktadır.',
-    requiredPermission: 'Gerekli İzin: Ödeme Güncelleme'
+    requiredPermission: 'Gerekli İzin: Ödeme Oluşturma'
   },
   en: {
     // Form header
@@ -94,7 +91,7 @@ const translations = {
     recordingPayment: 'Recording Payment...',
     permissionLoading: 'Checking permissions...',
     noPermission: 'You do not have permission to access this page.',
-    requiredPermission: 'Required Permission: Update Payment'
+    requiredPermission: 'Required Permission: Create Payment'
   },
   ar: {
     // Form header
@@ -124,7 +121,7 @@ const translations = {
     recordingPayment: 'جاري تسجيل الدفع...',
     permissionLoading: 'جاري فحص الأذونات...',
     noPermission: 'ليس لديك إذن للوصول إلى هذه الصفحة.',
-    requiredPermission: 'الإذن المطلوب: تحديث الدفع'
+    requiredPermission: 'الإذن المطلوب: إنشاء الدفع'
   }
 };
 
@@ -286,7 +283,8 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
     return renderPermissionLoading();
   }
 
-  if (!hasPermission(UPDATE_PAYMENT_PERMISSION_ID)) {
+  // Ödeme oluşturma için Create Payment izni yeterli
+  if (!hasPermission('fb1d69ae-ba26-47b8-b366-2da6a1a1c83d')) { // Create Payment permission ID
     return renderNoPermission();
   }
 
