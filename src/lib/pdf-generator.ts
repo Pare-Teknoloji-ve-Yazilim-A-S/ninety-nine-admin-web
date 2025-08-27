@@ -1065,7 +1065,7 @@ export const generateHTMLReceiptPDF = async (
 
       // Create a temporary div element to render the HTML
       const receiptDiv = document.createElement('div');
-      receiptDiv.innerHTML = htmlContent;
+      receiptDiv.innerHTML = html;
       receiptDiv.style.position = 'absolute';
       receiptDiv.style.left = '-9999px';
       receiptDiv.style.top = '-9999px';
@@ -1073,6 +1073,8 @@ export const generateHTMLReceiptPDF = async (
       receiptDiv.style.height = 'auto';
       document.body.appendChild(receiptDiv);
 
+      const opt = options || {};
+      
       try {
         if (opt.print) {
           // For printing, create a new window with the content
@@ -1092,7 +1094,7 @@ export const generateHTMLReceiptPDF = async (
                   </style>
                 </head>
                 <body>
-                  ${htmlContent}
+                  ${html}
                 </body>
               </html>
             `);
@@ -1106,12 +1108,11 @@ export const generateHTMLReceiptPDF = async (
         if (opt.download) {
           // For download, use html2canvas and jsPDF
           const canvas = await html2canvas(receiptDiv, {
-            scale: 2,
             useCORS: true,
             allowTaint: true,
-            backgroundColor: '#ffffff',
-            width: receiptDiv.scrollWidth,
-            height: receiptDiv.scrollHeight
+            background: '#ffffff',
+            width: receiptDiv.scrollWidth * 2,
+            height: receiptDiv.scrollHeight * 2
           });
 
           const imgData = canvas.toDataURL('image/png');
@@ -1138,7 +1139,7 @@ export const generateHTMLReceiptPDF = async (
             heightLeft -= pageHeight;
           }
 
-          pdf.save(opt.filename);
+          pdf.save(opt.fileName || 'receipt.pdf');
         }
       } catch (error) {
         console.error('Error generating PDF:', error);
@@ -1308,8 +1309,9 @@ export const generateHTMLBillPDF = async (
         const canvas = await html2canvas(tempDiv, {
           useCORS: true,
           allowTaint: true,
-          backgroundColor: '#ffffff',
-          scale: 2
+          background: '#ffffff',
+          width: tempDiv.scrollWidth * 2,
+          height: tempDiv.scrollHeight * 2
         });
         
         const imgData = canvas.toDataURL('image/png');
