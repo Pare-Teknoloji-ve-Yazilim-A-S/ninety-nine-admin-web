@@ -98,7 +98,7 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
         const orientationClasses = {
             horizontal: {
                 container: 'flex-col',
-                tabList: `flex ${scrollable ? 'overflow-x-auto' : ''} ${centered ? 'justify-center' : ''} ${fullWidth ? 'w-full' : ''}`,
+                tabList: `grid grid-cols-1 ${scrollable ? 'overflow-x-auto' : ''} ${centered ? 'justify-center' : ''} ${fullWidth ? 'w-full' : ''}`,
                 tab: fullWidth ? 'flex-1' : '',
                 content: 'mt-4'
             },

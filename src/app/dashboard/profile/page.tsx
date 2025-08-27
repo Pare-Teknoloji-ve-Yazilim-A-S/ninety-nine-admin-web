@@ -6,63 +6,32 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import { useAuth } from '@/app/components/auth/AuthProvider';
 import { useToast } from '@/hooks/useToast';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import Card, { CardHeader, CardTitle, CardBody } from '@/app/components/ui/Card';
-import Button from '@/app/components/ui/Button';
 import Badge from '@/app/components/ui/Badge';
 import Avatar from '@/app/components/ui/Avatar';
 import Tabs from '@/app/components/ui/Tabs';
 import Input from '@/app/components/ui/Input';
 import Label from '@/app/components/ui/Label';
 import TextArea from '@/app/components/ui/TextArea';
-import Switch from '@/app/components/ui/Switch';
-import Separator from '@/app/components/ui/Separator';
+import Skeleton from '@/app/components/ui/Skeleton';
 import {
   User,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Shield,
-  Bell,
-  Lock,
   Camera,
-  Edit,
-  Save,
-  X,
-  Eye,
-  EyeOff,
-  Key,
-  Smartphone,
-  Globe,
-  Building,
-  Award,
-  Clock,
-
-  FileText,
-  CreditCard,
-  History,
-  CheckCircle,
   AlertCircle,
-  Info
+  RefreshCw
 } from 'lucide-react';
-import { authService } from '@/services/auth.service';
 
 // Dil çevirileri
 const translations = {
   tr: {
-    // Page titles
     pageTitle: 'Profil',
     profileSettings: 'Profil Ayarları',
     personalInfo: 'Kişisel Bilgiler',
-    securitySettings: 'İş Bilgileri',
-    
-    // Breadcrumb
     home: 'Ana Sayfa',
     profile: 'Profil',
-    
-    // Personal Info
     personalInfoTitle: 'Kişisel Bilgiler',
-    personalInfoDescription: 'Hesap bilgilerinizi güncelleyin',
+    personalInfoDescription: 'Hesap bilgilerinizi görüntüleyin',
     firstName: 'Ad',
     lastName: 'Soyad',
     email: 'E-posta',
@@ -73,79 +42,23 @@ const translations = {
     bio: 'Hakkımda',
     joinDate: 'Katılım Tarihi',
     lastLogin: 'Son Giriş',
-    
-    // Security
-    securityTitle: 'İş Bilgileri',
-    securityDescription: 'İş bilgilerinizi ve güvenlik ayarlarınızı yönetin',
-    currentPassword: 'Mevcut Şifre',
-    newPassword: 'Yeni Şifre',
-    confirmPassword: 'Şifre Tekrarı',
-    twoFactorAuth: 'İki Faktörlü Kimlik Doğrulama',
-    twoFactorAuthDescription: 'Hesabınızı daha güvenli hale getirin',
-    sessionTimeout: 'Oturum Zaman Aşımı',
-    sessionTimeoutDescription: 'Oturumunuzun ne kadar süre açık kalacağını belirleyin',
-    
-    // Preferences
-    preferencesTitle: 'Tercihler',
-    preferencesDescription: 'Uygulama tercihlerinizi özelleştirin',
-    language: 'Dil',
-    theme: 'Tema',
-    notifications: 'Bildirimler',
-    emailNotifications: 'E-posta Bildirimleri',
-    pushNotifications: 'Push Bildirimleri',
-    smsNotifications: 'SMS Bildirimleri',
-    
-    // Actions
-    saveChanges: 'Değişiklikleri Kaydet',
-    cancel: 'İptal',
-    edit: 'Düzenle',
-    update: 'Güncelle',
-    changePassword: 'Şifre Değiştir',
-    enable2FA: '2FA Etkinleştir',
-    disable2FA: '2FA Devre Dışı Bırak',
-    uploadPhoto: 'Fotoğraf Yükle',
-    removePhoto: 'Fotoğrafı Kaldır',
-    
-    // Status
     active: 'Aktif',
-    inactive: 'Pasif',
     verified: 'Doğrulanmış',
-    unverified: 'Doğrulanmamış',
-    enabled: 'Etkin',
-    disabled: 'Devre Dışı',
-    
-    // Messages
-    profileUpdated: 'Profil başarıyla güncellendi',
-    passwordChanged: 'Şifre başarıyla değiştirildi',
     photoUploaded: 'Fotoğraf başarıyla yüklendi',
-    changesSaved: 'Değişiklikler kaydedildi',
-    errorOccurred: 'Bir hata oluştu',
-    
-    // Placeholders
     enterFirstName: 'Adınızı girin',
     enterLastName: 'Soyadınızı girin',
     enterEmail: 'E-posta adresinizi girin',
     enterPhone: 'Telefon numaranızı girin',
     enterBio: 'Kendiniz hakkında kısa bir açıklama yazın',
-    enterCurrentPassword: 'Mevcut şifrenizi girin',
-    enterNewPassword: 'Yeni şifrenizi girin',
-    confirmNewPassword: 'Yeni şifrenizi tekrar girin',
   },
   en: {
-    // Page titles
     pageTitle: 'Profile',
     profileSettings: 'Profile Settings',
     personalInfo: 'Personal Information',
-    securitySettings: 'Security Settings',
-    activityLog: 'Activity Log',
-    
-    // Breadcrumb
     home: 'Home',
     profile: 'Profile',
-    
-    // Personal Info
     personalInfoTitle: 'Personal Information',
-    personalInfoDescription: 'Update your account information',
+    personalInfoDescription: 'View your account information',
     firstName: 'First Name',
     lastName: 'Last Name',
     email: 'Email',
@@ -156,221 +69,55 @@ const translations = {
     bio: 'Bio',
     joinDate: 'Join Date',
     lastLogin: 'Last Login',
-    
-    // Security
-    securityTitle: 'Security Settings',
-    securityDescription: 'Manage your account security',
-    currentPassword: 'Current Password',
-    newPassword: 'New Password',
-    confirmPassword: 'Confirm Password',
-    twoFactorAuth: 'Two-Factor Authentication',
-    twoFactorAuthDescription: 'Make your account more secure',
-    sessionTimeout: 'Session Timeout',
-    sessionTimeoutDescription: 'Set how long your session stays active',
-    
-    // Preferences
-    preferencesTitle: 'Preferences',
-    preferencesDescription: 'Customize your application preferences',
-    language: 'Language',
-    theme: 'Theme',
-    notifications: 'Notifications',
-    emailNotifications: 'Email Notifications',
-    pushNotifications: 'Push Notifications',
-    smsNotifications: 'SMS Notifications',
-    
-    // Actions
-    saveChanges: 'Save Changes',
-    cancel: 'Cancel',
-    edit: 'Edit',
-    update: 'Update',
-    changePassword: 'Change Password',
-    enable2FA: 'Enable 2FA',
-    disable2FA: 'Disable 2FA',
-    uploadPhoto: 'Upload Photo',
-    removePhoto: 'Remove Photo',
-    
-    // Status
     active: 'Active',
-    inactive: 'Inactive',
     verified: 'Verified',
-    unverified: 'Unverified',
-    enabled: 'Enabled',
-    disabled: 'Disabled',
-    
-    // Messages
-    profileUpdated: 'Profile updated successfully',
-    passwordChanged: 'Password changed successfully',
     photoUploaded: 'Photo uploaded successfully',
-    changesSaved: 'Changes saved successfully',
-    errorOccurred: 'An error occurred',
-    
-    // Placeholders
     enterFirstName: 'Enter your first name',
     enterLastName: 'Enter your last name',
     enterEmail: 'Enter your email address',
     enterPhone: 'Enter your phone number',
     enterBio: 'Write a short description about yourself',
-    enterCurrentPassword: 'Enter your current password',
-    enterNewPassword: 'Enter your new password',
-    confirmNewPassword: 'Confirm your new password',
-  },
-  ar: {
-    // Page titles
-    pageTitle: 'الملف الشخصي',
-    profileSettings: 'إعدادات الملف الشخصي',
-    personalInfo: 'المعلومات الشخصية',
-    securitySettings: 'إعدادات الأمان',
-    activityLog: 'سجل النشاط',
-    
-    // Breadcrumb
-    home: 'الرئيسية',
-    profile: 'الملف الشخصي',
-    
-    // Personal Info
-    personalInfoTitle: 'المعلومات الشخصية',
-    personalInfoDescription: 'تحديث معلومات حسابك',
-    firstName: 'الاسم الأول',
-    lastName: 'اسم العائلة',
-    email: 'البريد الإلكتروني',
-    phone: 'الهاتف',
-    position: 'المنصب',
-    department: 'القسم',
-    location: 'الموقع',
-    bio: 'السيرة الذاتية',
-    joinDate: 'تاريخ الانضمام',
-    lastLogin: 'آخر تسجيل دخول',
-    
-    // Security
-    securityTitle: 'إعدادات الأمان',
-    securityDescription: 'إدارة أمان حسابك',
-    currentPassword: 'كلمة المرور الحالية',
-    newPassword: 'كلمة المرور الجديدة',
-    confirmPassword: 'تأكيد كلمة المرور',
-    twoFactorAuth: 'المصادقة الثنائية',
-    twoFactorAuthDescription: 'اجعل حسابك أكثر أماناً',
-    sessionTimeout: 'انتهاء صلاحية الجلسة',
-    sessionTimeoutDescription: 'حدد مدة بقاء جلستك نشطة',
-    
-    // Preferences
-    preferencesTitle: 'التفضيلات',
-    preferencesDescription: 'تخصيص تفضيلات التطبيق',
-    language: 'اللغة',
-    theme: 'المظهر',
-    notifications: 'الإشعارات',
-    emailNotifications: 'إشعارات البريد الإلكتروني',
-    pushNotifications: 'الإشعارات الفورية',
-    smsNotifications: 'إشعارات الرسائل النصية',
-    
-    // Actions
-    saveChanges: 'حفظ التغييرات',
-    cancel: 'إلغاء',
-    edit: 'تعديل',
-    update: 'تحديث',
-    changePassword: 'تغيير كلمة المرور',
-    enable2FA: 'تفعيل المصادقة الثنائية',
-    disable2FA: 'إلغاء تفعيل المصادقة الثنائية',
-    uploadPhoto: 'رفع صورة',
-    removePhoto: 'إزالة الصورة',
-    
-    // Status
-    active: 'نشط',
-    inactive: 'غير نشط',
-    verified: 'متحقق',
-    unverified: 'غير متحقق',
-    enabled: 'مفعل',
-    disabled: 'معطل',
-    
-    // Messages
-    profileUpdated: 'تم تحديث الملف الشخصي بنجاح',
-    passwordChanged: 'تم تغيير كلمة المرور بنجاح',
-    photoUploaded: 'تم رفع الصورة بنجاح',
-    changesSaved: 'تم حفظ التغييرات بنجاح',
-    errorOccurred: 'حدث خطأ',
-    
-    // Placeholders
-    enterFirstName: 'أدخل اسمك الأول',
-    enterLastName: 'أدخل اسم العائلة',
-    enterEmail: 'أدخل عنوان بريدك الإلكتروني',
-    enterPhone: 'أدخل رقم هاتفك',
-    enterBio: 'اكتب وصفاً قصيراً عن نفسك',
-    enterCurrentPassword: 'أدخل كلمة المرور الحالية',
-    enterNewPassword: 'أدخل كلمة المرور الجديدة',
-    confirmNewPassword: 'أكد كلمة المرور الجديدة',
   }
 };
 
 export default function ProfilePage() {
-  const { user } = useAuth();
-  const { success, error: showError, warning, info } = useToast();
+  const { user: authUser } = useAuth();
+  const { user: profileUser, loading, error, refetch } = useUserProfile();
+  const { success } = useToast();
   const [locale, setLocale] = useState('tr');
-  const [isEditing, setIsEditing] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  // Form states
+  // Form states - populated from API data
   const [formData, setFormData] = useState({
-    firstName: 'Talat',
-    lastName: 'Abdel Wahab',
-    email: 'talatafandy@3steps.com.iq',
+    firstName: '',
+    lastName: '',
+    email: '',
     phone: '',
-    position: 'Admin',
-    department: 'IT Department',
-    location: 'Istanbul, Turkey',
-    bio: 'System Administrator with expertise in property management systems.',
+    position: '',
+    location: '',
+    bio: '',
   });
-  
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-  
-  const [securitySettings, setSecuritySettings] = useState({
-    twoFactorAuth: false,
-    sessionTimeout: 30,
-  });
-  
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
-    smsNotifications: false,
-  });
+
+  // Update form data when profile user data is loaded
+  useEffect(() => {
+    if (profileUser) {
+      setFormData({
+        firstName: profileUser.firstName || '',
+        lastName: profileUser.lastName || '',
+        email: profileUser.email || '',
+        phone: profileUser.phone || '',
+        position: profileUser.role?.name || '',
+        location: 'Istanbul, Turkey', // Default value as this field might not be in API
+        bio: 'System Administrator with expertise in property management systems.', // Default value
+      });
+    }
+  }, [profileUser]);
 
   const t = translations[locale as keyof typeof translations];
 
   // Handler functions
-  const handleSaveProfile = async () => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setIsEditing(false);
-      success(t.profileUpdated);
-    } catch (error) {
-      showError(t.errorOccurred);
-    }
-  };
-
-  const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showError('Şifreler eşleşmiyor');
-      return;
-    }
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setIsChangingPassword(false);
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      success(t.passwordChanged);
-    } catch (error) {
-      showError(t.errorOccurred);
-    }
-  };
-
   const handlePhotoUpload = () => {
-    // Simulate photo upload
     success(t.photoUploaded);
   };
 
@@ -393,32 +140,13 @@ export default function ProfilePage() {
       content: (
         <Card className="shadow-lg">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-text-on-light dark:text-text-on-dark">
-                  {t.personalInfoTitle}
-                </CardTitle>
-                <p className="text-text-light-secondary dark:text-text-secondary">
-                  {t.personalInfoDescription}
-                </p>
-              </div>
-              <Button
-                variant={isEditing ? "outline" : "primary"}
-                size="sm"
-                onClick={() => setIsEditing(!isEditing)}
-              >
-                {isEditing ? (
-                  <>
-                    <X className="h-4 w-4 mr-2" />
-                    {t.cancel}
-                  </>
-                ) : (
-                  <>
-                    <Edit className="h-4 w-4 mr-2" />
-                    {t.edit}
-                  </>
-                )}
-              </Button>
+            <div>
+              <CardTitle className="text-text-on-light dark:text-text-on-dark">
+                {t.personalInfoTitle}
+              </CardTitle>
+              <p className="text-text-light-secondary dark:text-text-secondary">
+                {t.personalInfoDescription}
+              </p>
             </div>
           </CardHeader>
           <CardBody className="space-y-4">
@@ -430,7 +158,7 @@ export default function ProfilePage() {
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   placeholder={t.enterFirstName}
-                  disabled={!isEditing}
+                  disabled={true}
                 />
               </div>
               <div>
@@ -440,7 +168,7 @@ export default function ProfilePage() {
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   placeholder={t.enterLastName}
-                  disabled={!isEditing}
+                  disabled={true}
                 />
               </div>
               <div>
@@ -451,7 +179,7 @@ export default function ProfilePage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder={t.enterEmail}
-                  disabled={!isEditing}
+                  disabled={true}
                 />
               </div>
               <div>
@@ -461,7 +189,7 @@ export default function ProfilePage() {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder={t.enterPhone}
-                  disabled={!isEditing}
+                  disabled={true}
                 />
               </div>
               <div>
@@ -470,213 +198,30 @@ export default function ProfilePage() {
                   id="position"
                   value={formData.position}
                   onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                  disabled={!isEditing}
+                  disabled={true}
                 />
               </div>
-              <div>
-                <Label htmlFor="department">{t.department}</Label>
-                <Input
-                  id="department"
-                  value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  disabled={!isEditing}
-                />
-              </div>
+
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="location">{t.location}</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  disabled={!isEditing}
-                />
-              </div>
+            <div>
+              <Label htmlFor="location">{t.location}</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                disabled={true}
+              />
             </div>
             <div>
               <Label htmlFor="bio">{t.bio}</Label>
               <TextArea
-                 id="bio"
-                 value={formData.bio}
-                 onChange={(value) => setFormData({ ...formData, bio: value })}
-                 placeholder={t.enterBio}
-                 disabled={!isEditing}
-                 rows={4}
-               />
-            </div>
-            {isEditing && (
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditing(false)}
-                >
-                  {t.cancel}
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleSaveProfile}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {t.saveChanges}
-                </Button>
-              </div>
-            )}
-          </CardBody>
-        </Card>
-      )
-    },
-    {
-      id: 'security',
-      label: t.securitySettings,
-      icon: Shield,
-      content: (
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-text-on-light dark:text-text-on-dark">
-              {t.securityTitle}
-            </CardTitle>
-            <p className="text-text-light-secondary dark:text-text-secondary">
-              {t.securityDescription}
-            </p>
-          </CardHeader>
-          <CardBody className="space-y-6">
-            {/* Password Change Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-                  {t.changePassword}
-                </h3>
-                <Button
-                  variant={isChangingPassword ? "outline" : "primary"}
-                  size="sm"
-                  onClick={() => setIsChangingPassword(!isChangingPassword)}
-                >
-                  {isChangingPassword ? (
-                    <>
-                      <X className="h-4 w-4 mr-2" />
-                      {t.cancel}
-                    </>
-                  ) : (
-                    <>
-                      <Key className="h-4 w-4 mr-2" />
-                      {t.changePassword}
-                    </>
-                  )}
-                </Button>
-              </div>
-              
-              {isChangingPassword && (
-                <div className="grid grid-cols-1 gap-4 p-4 bg-background-secondary rounded-lg">
-                  <div>
-                    <Label htmlFor="currentPassword">{t.currentPassword}</Label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        type={showPassword ? "text" : "password"}
-                        value={passwordData.currentPassword}
-                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                        placeholder={t.enterCurrentPassword}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-light-secondary hover:text-text-primary"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="newPassword">{t.newPassword}</Label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                      placeholder={t.enterNewPassword}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                      placeholder={t.confirmNewPassword}
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-3 pt-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsChangingPassword(false)}
-                    >
-                      {t.cancel}
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={handleChangePassword}
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      {t.update}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Security Settings */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
-                Security Settings
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-background-secondary rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Shield className="h-5 w-5 text-primary-gold" />
-                    <div>
-                      <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                        {t.twoFactorAuth}
-                      </p>
-                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                        {t.twoFactorAuthDescription}
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={securitySettings.twoFactorAuth}
-                    onCheckedChange={(checked) => setSecuritySettings({ ...securitySettings, twoFactorAuth: checked })}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between p-4 bg-background-secondary rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Clock className="h-5 w-5 text-primary-gold" />
-                    <div>
-                      <p className="font-medium text-text-on-light dark:text-text-on-dark">
-                        {t.sessionTimeout}
-                      </p>
-                      <p className="text-sm text-text-light-secondary dark:text-text-secondary">
-                        {t.sessionTimeoutDescription}
-                      </p>
-                    </div>
-                  </div>
-                  <select
-                    value={securitySettings.sessionTimeout}
-                    onChange={(e) => setSecuritySettings({ ...securitySettings, sessionTimeout: parseInt(e.target.value) })}
-                    className="px-3 py-2 border border-primary-gold/30 rounded-md bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold/50"
-                  >
-                    <option value={15}>15 minutes</option>
-                    <option value={30}>30 minutes</option>
-                    <option value={60}>1 hour</option>
-                    <option value={120}>2 hours</option>
-                  </select>
-                </div>
-              </div>
+                id="bio"
+                value={formData.bio}
+                onChange={(value) => setFormData({ ...formData, bio: value })}
+                placeholder={t.enterBio}
+                disabled={true}
+                rows={4}
+              />
             </div>
           </CardBody>
         </Card>
@@ -684,23 +229,17 @@ export default function ProfilePage() {
     },
   ];
 
-
-
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background-primary">
-        {/* Sidebar */}
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
 
-        {/* Main Content Area */}
         <div className="lg:ml-72">
-          {/* Header */}
           <DashboardHeader />
           
-          {/* Main Content */}
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Breadcrumb */}
             <div className="mb-6">
@@ -725,18 +264,107 @@ export default function ProfilePage() {
               {/* Profile Card */}
               <div className="lg:col-span-1">
                 <Card className="shadow-lg">
-                  <CardBody className="p-6">
-                    <div className="text-center">
-                      {/* Avatar */}
-                      <div className="relative inline-block mb-4">
-                        <Avatar
-                          size="xl"
-                          fallback={`${user?.firstName?.[0] || 'A'}${user?.lastName?.[0] || 'U'}`}
-                        />
-                      </div>
-                    </div>
-                  </CardBody>
-                </Card>
+                   <CardBody className="p-6">
+                     {loading ? (
+                       <div className="text-center">
+                         <div className="relative inline-block mb-4">
+                           <Skeleton className="w-24 h-24 rounded-full" />
+                         </div>
+                         <Skeleton className="h-6 w-32 mb-1 mx-auto" />
+                         <Skeleton className="h-4 w-24 mb-2 mx-auto" />
+                         <Skeleton className="h-4 w-20 mb-4 mx-auto" />
+                         <div className="flex flex-wrap gap-2 justify-center mb-4">
+                           <Skeleton className="h-6 w-16" />
+                           <Skeleton className="h-6 w-20" />
+                         </div>
+                         <div className="space-y-3">
+                           <Skeleton className="h-4 w-full" />
+                           <Skeleton className="h-4 w-full" />
+                         </div>
+                       </div>
+                     ) : error ? (
+                       <div className="flex flex-col items-center justify-center py-8">
+                         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+                         <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark mb-2">Failed to load profile</h3>
+                         <p className="text-text-light-secondary dark:text-text-secondary mb-4">{error}</p>
+                         <button
+                           onClick={refetch}
+                           className="flex items-center gap-2 px-4 py-2 bg-primary-gold text-white rounded-lg hover:bg-primary-gold/90 transition-colors"
+                         >
+                           <RefreshCw className="h-4 w-4" />
+                           Retry
+                         </button>
+                       </div>
+                     ) : (
+                       <div className="text-center">
+                         <div className="relative inline-block mb-4">
+                           <Avatar
+                             size="xl"
+                             fallback={`${profileUser?.firstName?.[0] || 'A'}${profileUser?.lastName?.[0] || 'U'}`}
+                           />
+                           <button
+                             onClick={handlePhotoUpload}
+                             className="absolute bottom-0 right-0 p-2 bg-primary-gold text-white rounded-full hover:bg-primary-gold/90 transition-colors"
+                           >
+                             <Camera className="h-4 w-4" />
+                           </button>
+                         </div>
+                         
+                         <h3 className="text-xl font-semibold text-text-on-light dark:text-text-on-dark mb-1">
+                           {formData.firstName} {formData.lastName}
+                         </h3>
+                         <p className="text-text-light-secondary dark:text-text-secondary mb-4">
+                           {formData.position}
+                         </p>
+                         
+                         <div className="flex flex-wrap gap-2 justify-center mb-4">
+                           <Badge variant="soft" color="gold">
+                             {t.active}
+                           </Badge>
+                           <Badge variant="soft" color="primary">
+                             {t.verified}
+                           </Badge>
+                           {profileUser?.status && (
+                             <Badge variant="soft" color={profileUser.status === 'ACTIVE' ? 'success' : 'warning'}>
+                               {profileUser.status}
+                             </Badge>
+                           )}
+                         </div>
+                         
+                         <div className="space-y-3 text-left">
+                           <div className="flex items-center justify-between">
+                             <span className="text-sm text-text-light-secondary dark:text-text-secondary">
+                               {t.joinDate}
+                             </span>
+                             <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
+                               {profileUser?.createdAt ? formatDate(new Date(profileUser.createdAt)) : formatDate(new Date('2024-01-15'))}
+                             </span>
+                           </div>
+                           <div className="flex items-center justify-between">
+                             <span className="text-sm text-text-light-secondary dark:text-text-secondary">
+                               {t.lastLogin}
+                             </span>
+                             <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
+                               {profileUser?.updatedAt ? formatDate(new Date(profileUser.updatedAt)) : formatDate(new Date())}
+                             </span>
+                           </div>
+                         </div>
+                       </div>
+                     )}
+                   </CardBody>
+                 </Card>
+              </div>
+
+              {/* Main Content Tabs */}
+              <div className="lg:col-span-2">
+                <Tabs
+                  items={tabItems}
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  variant="default"
+                  fullWidth={true}
+                  className="w-full"
+                />
               </div>
             </div>
           </main>
