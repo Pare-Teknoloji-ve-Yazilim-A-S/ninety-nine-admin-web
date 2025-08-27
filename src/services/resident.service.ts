@@ -115,16 +115,16 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
     /**
      * Get all residents with pagination and filtering (admin)
-     * GET /admin/users?type=resident
+     * GET /admin/users?type=resident,property_manager
      */
     async getAllResidents(params?: ResidentFilterParams): Promise<PaginatedResponse<Resident>> {
         try {
             this.logger.info('Fetching all residents (admin)', params);
 
-            // type=resident parametresini otomatik olarak ekle
+            // Hem resident hem de property_manager tipindeki kullanıcıları getir
             const residentParams = {
                 ...params,
-                type: 'resident'
+                type: 'resident,property_manager'
             };
 
             const queryParams = this.buildQueryParams(residentParams);
@@ -144,7 +144,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
                 totalPages: 1
             };
 
-            this.logger.info(`Fetched ${users.length} residents`);
+            this.logger.info(`Fetched ${users.length} residents and property managers`);
             return {
                 data: users,
                 pagination: pagination,
@@ -183,16 +183,16 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
     /**
      * Get pending residents
-     * GET /admin/users/pending-verification?type=resident
+     * GET /admin/users/pending-verification?type=resident,property_manager
      */
     async getPendingResidents(params?: ResidentFilterParams): Promise<PaginatedResponse<Resident>> {
         try {
             this.logger.info('Fetching pending residents', params);
 
-            // type=resident parametresini otomatik olarak ekle
+            // Hem resident hem de property_manager tipindeki kullanıcıları getir
             const residentParams = {
                 ...params,
-                type: 'resident'
+                type: 'resident,property_manager'
             };
 
             const queryParams = this.buildQueryParams(residentParams);
@@ -202,7 +202,7 @@ class ResidentService extends BaseService<Resident, CreateResidentDto, UpdateRes
 
             // API response yapısını kontrol edelim
             const users =  response.data || [];
-            const pagination = response.data.pagination || {
+            const pagination = response.data.pagination || response.pagination || {
                 total: Array.isArray(users) ? users.length : 0,
                 page: params?.page || 1,
                 limit: params?.limit || 10,

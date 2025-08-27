@@ -18,6 +18,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../hooks/useTransactionDetail';
 import { billingService, paymentService } from '@/services';
+import { generatePaymentPDF, generateBillPDF, generatePaymentPDFForPrint, generateBillPDFForPrint, generateHTMLReceiptPDF, generateHTMLBillPDF } from '@/lib/pdf-generator';
 
 // Dil çevirileri
 const translations = {
@@ -57,7 +58,7 @@ const translations = {
     
     // Feature messages
     printFeature: 'Makbuz yazdırma özelliği yakında aktif olacak.',
-    downloadFeature: 'Makbuz indirme özelliği yakında aktif olacak.',
+    downloadFeature: 'Makbuz İndir',
     emailFeature: 'E-posta gönderme özelliği yakında aktif olacak.'
   },
   en: {
@@ -96,7 +97,7 @@ const translations = {
     
     // Feature messages
     printFeature: 'Print receipt feature will be available soon.',
-    downloadFeature: 'Download receipt feature will be available soon.',
+    downloadFeature: 'Download Receipt',
     emailFeature: 'Email receipt feature will be available soon.'
   },
   ar: {
@@ -135,7 +136,7 @@ const translations = {
     
     // Feature messages
     printFeature: 'ميزة طباعة الإيصال ستكون متاحة قريباً.',
-    downloadFeature: 'ميزة تحميل الإيصال ستكون متاحة قريباً.',
+    downloadFeature: 'تحميل الإيصال',
     emailFeature: 'ميزة إرسال الإيصال بالبريد ستكون متاحة قريباً.'
   }
 };
@@ -163,6 +164,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
 
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
 
   // Check if transaction can be edited
@@ -241,17 +243,194 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
   };
 
   // Handle print receipt
-  const handlePrintReceipt = () => {
-    // In a real app, this would generate and print a receipt
-    console.log('Printing receipt for transaction:', transaction.id);
-    alert(t.printFeature);
+  const handlePrintReceipt = async () => {
+    try {
+      if (isPaymentTransaction(transaction)) {
+        const paymentData = transaction.data;
+        const paymentDetails = {
+          invoiceNumber: paymentData.receiptNumber || paymentData.id,
+          status: paymentData.status,
+          description: paymentData.description || 'Payment',
+          notes: paymentData.notes || '',
+          date: new Date(paymentData.paymentDate || paymentData.createdAt).toLocaleDateString('tr-TR'),
+          transactionId: paymentData.transactionId || paymentData.id,
+          receiptNumber: paymentData.receiptNumber || paymentData.id,
+          paymentMethod: paymentData.paymentMethod,
+          amount: paymentData.amount.toString(),
+          currency: 'IQD'
+        };
+        
+        // Generate HTML-based PDF and open print dialog
+        await generateHTMLReceiptPDF(paymentDetails, {
+          payments: {
+            detail: {
+              invoice: 'Invoice',
+              companyInfo: 'Company Information',
+              taxOffice: 'Tax Office',
+              taxNumber: 'Tax Number',
+              invoiceDate: 'Invoice Date',
+              transactionId: 'Transaction ID',
+              receiptNumber: 'Receipt Number',
+              paymentStatus: 'Payment Status',
+              paymentMethod: 'Payment Method',
+              totalAmount: 'Total Amount',
+              invoiceFooter: 'Thank you for your business!',
+              contactInfo: 'For any questions, please contact us',
+              customerService: 'Customer Service'
+            },
+            status: {
+              completed: 'Completed',
+              pending: 'Pending'
+            }
+          }
+        }, { print: true, download: false });
+      } else if (isBillTransaction(transaction)) {
+        const billData = transaction.data;
+        const billDetails = {
+          invoiceNumber: billData.documentNumber || billData.id,
+          status: billData.status,
+          title: billData.title,
+          description: billData.description,
+          dueDate: new Date(billData.dueDate).toLocaleDateString('tr-TR'),
+          billType: billData.billType,
+          amount: billData.amount,
+          currency: 'IQD',
+          propertyName: billData.property?.name,
+          assignedToName: billData.assignedTo ? `${billData.assignedTo.firstName} ${billData.assignedTo.lastName}` : undefined
+        };
+        
+        // Generate HTML-based PDF and open print dialog
+        await generateHTMLBillPDF(billDetails, {
+          bills: {
+            detail: {
+              invoice: 'Invoice',
+              companyInfo: 'Company Information',
+              taxOffice: 'Tax Office',
+              taxNumber: 'Tax Number',
+              dueDate: 'Due Date',
+              billType: 'Bill Type',
+              documentNumber: 'Document Number',
+              billStatus: 'Bill Status',
+              property: 'Property',
+              assignedTo: 'Assigned To',
+              totalAmount: 'Total Amount',
+              invoiceFooter: 'Thank you for your business!',
+              contactInfo: 'For any questions, please contact us',
+              customerService: 'Customer Service'
+            },
+            status: {
+              paid: 'Paid',
+              pending: 'Pending'
+            }
+          }
+        }, { print: true, download: false });
+      }
+    } catch (error) {
+      console.error('Error generating PDF for print:', error);
+      const errorMessage = currentLanguage === 'tr' 
+        ? 'PDF yazdırma için oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'
+        : currentLanguage === 'ar'
+        ? 'حدث خطأ أثناء إنشاء PDF للطباعة. يرجى المحاولة مرة أخرى.'
+        : 'An error occurred while generating the PDF for printing. Please try again.';
+      alert(errorMessage);
+    }
   };
 
   // Handle download receipt
-  const handleDownloadReceipt = () => {
-    // In a real app, this would generate and download a PDF receipt
-    console.log('Downloading receipt for transaction:', transaction.id);
-    alert(t.downloadFeature);
+  const handleDownloadReceipt = async () => {
+    setIsDownloading(true);
+    try {
+      if (isPaymentTransaction(transaction)) {
+        const paymentData = transaction.data;
+        const paymentDetails = {
+          invoiceNumber: paymentData.receiptNumber || paymentData.id,
+          status: paymentData.status,
+          description: paymentData.description || 'Payment',
+          notes: paymentData.notes || '',
+          date: new Date(paymentData.paymentDate || paymentData.createdAt).toLocaleDateString('tr-TR'),
+          transactionId: paymentData.transactionId || paymentData.id,
+          receiptNumber: paymentData.receiptNumber || paymentData.id,
+          paymentMethod: paymentData.paymentMethod,
+          amount: paymentData.amount.toString(),
+          currency: 'IQD'
+        };
+        
+        // Generate HTML-based PDF and download
+        await generateHTMLReceiptPDF(paymentDetails, {
+          payments: {
+            detail: {
+              invoice: 'Invoice',
+              companyInfo: 'Company Information',
+              taxOffice: 'Tax Office',
+              taxNumber: 'Tax Number',
+              invoiceDate: 'Invoice Date',
+              transactionId: 'Transaction ID',
+              receiptNumber: 'Receipt Number',
+              paymentStatus: 'Payment Status',
+              paymentMethod: 'Payment Method',
+              totalAmount: 'Total Amount',
+              invoiceFooter: 'Thank you for your business!',
+              contactInfo: 'For any questions, please contact us',
+              customerService: 'Customer Service'
+            },
+            status: {
+              completed: 'Completed',
+              pending: 'Pending'
+            }
+          }
+        }, { print: false, download: true });
+      } else if (isBillTransaction(transaction)) {
+        const billData = transaction.data;
+        const billDetails = {
+          invoiceNumber: billData.documentNumber || billData.id,
+          status: billData.status,
+          title: billData.title,
+          description: billData.description,
+          dueDate: new Date(billData.dueDate).toLocaleDateString('tr-TR'),
+          billType: billData.billType,
+          amount: billData.amount,
+          currency: 'IQD',
+          propertyName: billData.property?.name,
+          assignedToName: billData.assignedTo ? `${billData.assignedTo.firstName} ${billData.assignedTo.lastName}` : undefined
+        };
+        
+        // Generate HTML-based PDF and download
+        await generateHTMLBillPDF(billDetails, {
+          bills: {
+            detail: {
+              invoice: 'Invoice',
+              companyInfo: 'Company Information',
+              taxOffice: 'Tax Office',
+              taxNumber: 'Tax Number',
+              dueDate: 'Due Date',
+              billType: 'Bill Type',
+              documentNumber: 'Document Number',
+              billStatus: 'Bill Status',
+              property: 'Property',
+              assignedTo: 'Assigned To',
+              totalAmount: 'Total Amount',
+              invoiceFooter: 'Thank you for your business!',
+              contactInfo: 'For any questions, please contact us',
+              customerService: 'Customer Service'
+            },
+            status: {
+              paid: 'Paid',
+              pending: 'Pending'
+            }
+          }
+        }, { print: false, download: true });
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      const errorMessage = currentLanguage === 'tr' 
+        ? 'PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'
+        : currentLanguage === 'ar'
+        ? 'حدث خطأ أثناء إنشاء PDF. يرجى المحاولة مرة أخرى.'
+        : 'An error occurred while generating the PDF. Please try again.';
+      alert(errorMessage);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // Handle email receipt
@@ -312,7 +491,8 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
             size="md"
             icon={Download}
             onClick={handleDownloadReceipt}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isDownloading}
+            isLoading={isDownloading}
             className="w-full justify-start"
           >
             {t.downloadReceipt}

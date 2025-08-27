@@ -89,6 +89,7 @@ const translations = {
     ownerType: 'Malik',
     tenantType: 'Kiracı',
     guest: 'Misafir',
+    propertyManager: 'Mülk Yöneticisi',
     
     // Action buttons
     call: 'Ara',
@@ -168,6 +169,7 @@ const translations = {
     ownerType: 'Owner',
     tenantType: 'Tenant',
     guest: 'Guest',
+    propertyManager: 'Property Manager',
     
     // Action buttons
     call: 'Call',
@@ -247,6 +249,7 @@ const translations = {
     ownerType: 'مالك',
     tenantType: 'مستأجر',
     guest: 'ضيف',
+    propertyManager: 'مدير العقار',
     
     // Action buttons
     call: 'اتصال',
@@ -605,6 +608,7 @@ export default function ResidentsPage() {
                 { id: 'owner', label: t.owner, value: 'resident' },
                 { id: 'tenant', label: t.tenant, value: 'tenant' },
                 { id: 'guest', label: t.guest, value: 'guest' },
+                { id: 'property_manager', label: t.propertyManager, value: 'property_manager' },
             ],
         },
     ], [t]);

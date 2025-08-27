@@ -45,6 +45,7 @@ import {
   AlertCircle,
   Info
 } from 'lucide-react';
+import { authService } from '@/services/auth.service';
 
 // Dil çevirileri
 const translations = {
@@ -731,66 +732,11 @@ export default function ProfilePage() {
                         <Avatar
                           size="xl"
                           fallback={`${user?.firstName?.[0] || 'A'}${user?.lastName?.[0] || 'U'}`}
-                          className="w-24 h-24 mx-auto"
                         />
-                        <button
-                          onClick={handlePhotoUpload}
-                          className="absolute bottom-0 right-0 p-2 bg-primary-gold rounded-full text-white hover:bg-primary-gold/90 transition-colors"
-                        >
-                          <Camera className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      {/* User Info */}
-                      <h2 className="text-xl font-bold text-text-on-light dark:text-text-on-dark mb-1">
-                        Talat Abdel Wahab
-                      </h2>
-                      <p className="text-text-light-secondary dark:text-text-secondary mb-3">
-                        Admin
-                      </p>
-
-                      {/* Status Badges */}
-                      <div className="flex justify-center gap-2 mb-4">
-                        <Badge variant="soft" color="gold">
-                          {t.active}
-                        </Badge>
-                        <Badge variant="soft" color="primary">
-                          {t.verified}
-                        </Badge>
-                      </div>
-
-                      {/* Quick Stats */}
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-text-light-secondary dark:text-text-secondary">
-                            {t.joinDate}
-                          </span>
-                          <span className="text-text-on-light dark:text-text-on-dark font-medium">
-                            {formatDate(new Date('2024-01-15'))}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-text-light-secondary dark:text-text-secondary">
-                            {t.lastLogin}
-                          </span>
-                          <span className="text-text-on-light dark:text-text-on-dark font-medium">
-                            {formatDate(new Date())}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </CardBody>
                 </Card>
-              </div>
-
-              {/* Main Content */}
-              <div className="lg:col-span-2">
-                <Tabs 
-                  items={tabItems}
-                  value={activeTab} 
-                  onValueChange={setActiveTab}
-                  className="space-y-6"
-                />
               </div>
             </div>
           </main>
