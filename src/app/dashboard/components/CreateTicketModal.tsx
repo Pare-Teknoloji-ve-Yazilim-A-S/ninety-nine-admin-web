@@ -456,20 +456,32 @@ export default function CreateTicketModal({
         }
     });
 
-    // Watch priority for debugging
-    const watchedPriority = watch('priority');
+         // Watch priority for debugging
+     const watchedPriority = watch('priority');
+     
+     // Watch assigneeId for debugging
+     const watchedAssigneeId = watch('assigneeId');
+     console.log('Current assigneeId value:', watchedAssigneeId);
 
     // Load users when modal opens
     useEffect(() => {
+        console.log('useEffect triggered - isOpen:', isOpen, 'defaultAssigneeId:', defaultAssigneeId, 'user?.id:', user?.id);
         if (isOpen) {
             loadUsers();
             // Set current user as creator
             if (user?.id) {
-                setValue('creatorId', typeof user.id === 'string' ? user.id : String(user.id));
+                const creatorId = typeof user.id === 'string' ? user.id : String(user.id);
+                console.log('Setting creatorId:', creatorId);
+                setValue('creatorId', creatorId, { shouldValidate: true });
             }
             // Set default assignee if provided
             if (defaultAssigneeId) {
-                setValue('assigneeId', defaultAssigneeId);
+                console.log('Setting assigneeId from defaultAssigneeId:', defaultAssigneeId);
+                setValue('assigneeId', defaultAssigneeId, { shouldValidate: true });
+            }
+            // If no default assignee, don't set assigneeId - user must select from dropdown
+            else {
+                console.log('No default assignee - user must select from dropdown');
             }
         }
     }, [isOpen, user, defaultAssigneeId]);
@@ -597,6 +609,7 @@ export default function CreateTicketModal({
 
 
     const loadUsers = async () => {
+        console.log('loadUsers function called');
         setLoadingUsers(true);
         try {
             const response = await fetch('/api/proxy/admin/staff/maintenance/on-duty', {
@@ -606,12 +619,14 @@ export default function CreateTicketModal({
             });
             if (response.ok) {
                 const data = await response.json();
+                console.log('Staff data received:', data);
                 const userOptions = (data.data || []).map((staff: any) => ({
                     value: staff.id,
                     label: staff.positionTitle
                         ? `${staff.firstName} ${staff.lastName} - ${staff.department} - ${staff.positionTitle}`
                         : `${staff.firstName} ${staff.lastName} - ${staff.department}`
                 }));
+                console.log('User options created:', userOptions);
                 setUsers(userOptions);
             }
         } catch (error) {
@@ -722,7 +737,20 @@ export default function CreateTicketModal({
             if (data.category) ticketPayload.category = data.category;
 
             if (data.creatorId) ticketPayload.creatorId = data.creatorId;
-            if (data.assigneeId) ticketPayload.assigneeId = data.assigneeId;
+            
+            // Always include assigneeId - it's required for ticket assignment
+            console.log('DEBUG - assigneeId values:', {
+                dataAssigneeId: data.assigneeId,
+                defaultAssigneeId: defaultAssigneeId,
+                userId: user?.id
+            });
+            
+            const finalAssigneeId = data.assigneeId || defaultAssigneeId;
+            console.log('Final assignee ID determined:', finalAssigneeId);
+            
+            // Always include assigneeId in payload, even if undefined (backend will handle)
+            ticketPayload.assigneeId = finalAssigneeId;
+            
             if (data.propertyId) ticketPayload.propertyId = data.propertyId;
             if (data.initialComment) ticketPayload.initialComment = data.initialComment;
             if (data.isInternalComment !== undefined) ticketPayload.isInternalComment = data.isInternalComment;
@@ -741,6 +769,7 @@ export default function CreateTicketModal({
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.log('Backend error response:', errorData);
                 throw new Error(errorData.message || t.ticketCreationFailed);
             }
 
@@ -1160,7 +1189,7 @@ export default function CreateTicketModal({
                             {defaultAssigneeId && defaultAssigneeName ? (
                                 <div>
                                     <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                        {t.assignee}
+                                        {t.assignee} *
                                     </label>
                                     <div className="p-3 bg-primary-gold-light/20 border border-primary-gold/30 rounded-lg">
                                         <div className="flex items-center gap-2">
@@ -1179,10 +1208,14 @@ export default function CreateTicketModal({
                             ) : (
                                 <div>
                                     <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
-                                        {t.assignee}
+                                        {t.assignee} *
                                     </label>
                                     <Select
-                                        {...register('assigneeId')}
+                                        value={watch('assigneeId') || ''}
+                                        onValueChange={(value) => {
+                                            console.log('Assignee selected:', value);
+                                            setValue('assigneeId', value, { shouldValidate: true });
+                                        }}
                                         options={[{ value: '', label: loadingUsers ? t.loading : t.select }, ...users]}
                                         disabled={loadingUsers}
                                         error={errors.assigneeId?.message}
@@ -1270,7 +1303,16 @@ export default function CreateTicketModal({
                         type="submit"
                         variant="primary"
                         isLoading={isLoading}
-                        disabled={isLoading || !watch('title') || !watch('description')}
+                                                 disabled={isLoading || !watch('title') || !watch('description') || !watch('assigneeId')}
+                         onClick={() => {
+                             console.log('Submit button clicked!');
+                             console.log('Form values at click:', {
+                                 title: watch('title'),
+                                 description: watch('description'),
+                                 assigneeId: watch('assigneeId')
+                             });
+                             console.log('Form errors at click:', errors);
+                         }}
                         icon={Plus}
                     >
                         {isLoading ? t.creating : t.create}
