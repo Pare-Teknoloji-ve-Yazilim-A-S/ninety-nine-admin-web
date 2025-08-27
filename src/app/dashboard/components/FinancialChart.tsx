@@ -198,13 +198,13 @@ export default function FinancialChart({
     },
     yaxis: {
       labels: {
-        formatter: (val: number) => `${Math.round(val)}₺`,
+        formatter: (val: number) => `${Math.round(val)} IQD`,
         style: { colors: textSecondary },
       },
     },
     tooltip: {
       theme: 'light',
-      y: { formatter: (val: number) => `${Math.round(val)}₺` },
+      y: { formatter: (val: number) => `${Math.round(val)} IQD` },
     },
     legend: { show: false },
     markers: { size: 0 },

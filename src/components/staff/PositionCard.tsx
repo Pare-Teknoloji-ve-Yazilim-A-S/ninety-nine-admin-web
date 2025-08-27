@@ -53,7 +53,7 @@ export function PositionCard({
     if (!amount) return 'Belirtilmemiş'
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
-      currency: 'TRY',
+      currency: 'IQD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount)

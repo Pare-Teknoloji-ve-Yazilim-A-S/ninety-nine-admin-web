@@ -2030,7 +2030,7 @@ export default function DashboardSettingsPage() {
                            </div>
                          ) : (
                            <div className="w-full p-2 text-sm bg-white dark:bg-gray-600 rounded-md text-text-on-light dark:text-text-on-dark border border-gray-300 dark:border-gray-600">
-                             {unitPriceSettings[type.value as keyof typeof unitPriceSettings]?.price || 0} ₺
+                             {unitPriceSettings[type.value as keyof typeof unitPriceSettings]?.price || 0} IQD
                            </div>
                          )}
                        </div>

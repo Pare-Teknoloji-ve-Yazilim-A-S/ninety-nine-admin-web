@@ -69,7 +69,7 @@ const PaymentHistoryModal: React.FC<PaymentHistoryModalProps> = ({
                 )}
               </div>
               <div className="flex flex-col items-end min-w-[100px]">
-                <span className="font-semibold text-lg text-primary-gold">₺{Number(bill.amount).toLocaleString('tr-TR')}</span>
+                <span className="font-semibold text-lg text-primary-gold">{Number(bill.amount).toLocaleString('tr-TR')} IQD</span>
               </div>
             </div>
           ))}

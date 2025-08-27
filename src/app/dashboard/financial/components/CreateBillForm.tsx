@@ -884,7 +884,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600 dark:text-gray-400">{t.dues}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {parseFloat(getUnitPriceByType('DUES')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('DUES')?.unit}
+                    {parseFloat(getUnitPriceByType('DUES')?.unitPrice || '0').toFixed(2)} IQD/{getUnitPriceByType('DUES')?.unit}
                   </span>
                 </div>
               )}
@@ -892,7 +892,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600 dark:text-gray-400">{t.electricity}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {parseFloat(getUnitPriceByType('ELECTRICITY')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('ELECTRICITY')?.unit}
+                    {parseFloat(getUnitPriceByType('ELECTRICITY')?.unitPrice || '0').toFixed(2)} IQD/{getUnitPriceByType('ELECTRICITY')?.unit}
                   </span>
                 </div>
               )}
@@ -900,7 +900,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600 dark:text-gray-400">{t.water}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {parseFloat(getUnitPriceByType('WATER')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('WATER')?.unit}
+                    {parseFloat(getUnitPriceByType('WATER')?.unitPrice || '0').toFixed(2)} IQD/{getUnitPriceByType('WATER')?.unit}
                   </span>
                 </div>
               )}
@@ -908,7 +908,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-600 dark:text-gray-400">{t.gas}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
-                    {parseFloat(getUnitPriceByType('GAS')?.unitPrice || '0').toFixed(2)} ₺/{getUnitPriceByType('GAS')?.unit}
+                    {parseFloat(getUnitPriceByType('GAS')?.unitPrice || '0').toFixed(2)} IQD/{getUnitPriceByType('GAS')?.unit}
                   </span>
                 </div>
               )}
@@ -1274,7 +1274,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                        if (selectedProperty?.area && duesPrice) {
                          const unitPrice = parseFloat(duesPrice.unitPrice);
                          const area = selectedProperty.area;
-                         return `${unitPrice.toFixed(2)} ₺/m² × ${area} m² = ${(unitPrice * area).toFixed(2)} ₺`;
+                         return `${unitPrice.toFixed(2)} IQD/m² × ${area} m² = ${(unitPrice * area).toFixed(2)} IQD`;
                        }
                        return t.calculationFailed;
                      })()}

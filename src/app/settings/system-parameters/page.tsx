@@ -223,9 +223,9 @@ function FinancialTab({
     value: currency,
     label: currency.toUpperCase()
   })) || [
-    { value: 'TRY', label: 'TRY' },
-    { value: 'USD', label: 'USD' },
-    { value: 'EUR', label: 'EUR' }
+            { value: 'IQD', label: 'IQD' },
+        { value: 'USD', label: 'USD' },
+        { value: 'EUR', label: 'EUR' }
   ];
 
   return (

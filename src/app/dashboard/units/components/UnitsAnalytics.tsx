@@ -106,7 +106,7 @@ export const UnitsAnalytics: React.FC<UnitsAnalyticsProps> = ({
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-text-light-secondary dark:text-text-secondary">Toplam:</span>
-                                <span className="text-text-on-light dark:text-text-on-dark">4.2M ₺</span>
+                                <span className="text-text-on-light dark:text-text-on-dark">4.2M IQD</span>
                             </div>
                         </div>
                     </div>

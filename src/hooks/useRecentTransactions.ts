@@ -45,7 +45,7 @@ export function useRecentTransactions(limit: number = 5): UseRecentTransactionsR
           date: payment.createdAt || payment.paymentDate,
           type: 'Ödeme',
           unit: payment.property?.propertyNumber || payment.bill?.property?.propertyNumber || 'N/A',
-          amount: `₺${payment.amount?.toLocaleString('tr-TR') || '0'}`,
+          amount: `${payment.amount?.toLocaleString('tr-TR') || '0'} IQD`,
           status: payment.status === 'completed' ? 'Ödendi' : 
                  payment.status === 'pending' ? 'Bekliyor' : 'Gecikmiş'
         });
@@ -58,7 +58,7 @@ export function useRecentTransactions(limit: number = 5): UseRecentTransactionsR
           date: bill.createdAt || bill.dueDate,
           type: bill.billType || 'Fatura',
           unit: bill.property?.propertyNumber || 'N/A',
-          amount: `₺${bill.amount?.toLocaleString('tr-TR') || '0'}`,
+          amount: `${bill.amount?.toLocaleString('tr-TR') || '0'} IQD`,
           status: bill.status === 'paid' ? 'Ödendi' : 
                  bill.status === 'pending' ? 'Bekliyor' : 'Gecikmiş'
         });
@@ -76,11 +76,11 @@ export function useRecentTransactions(limit: number = 5): UseRecentTransactionsR
       
       // Fallback to default data on error
       const defaultTransactions: Transaction[] = [
-        { id: '1', date: '2024-01-15', type: 'Aidat', unit: 'A-101', amount: '₺1,200', status: 'Ödendi' },
-        { id: '2', date: '2024-01-15', type: 'Bakım', unit: 'B-205', amount: '₺350', status: 'Bekliyor' },
-        { id: '3', date: '2024-01-14', type: 'Aidat', unit: 'C-301', amount: '₺1,200', status: 'Ödendi' },
-        { id: '4', date: '2024-01-14', type: 'Elektrik', unit: 'A-105', amount: '₺180', status: 'Gecikmiş' },
-        { id: '5', date: '2024-01-13', type: 'Aidat', unit: 'B-102', amount: '₺1,200', status: 'Ödendi' },
+        { id: '1', date: '2024-01-15', type: 'Aidat', unit: 'A-101', amount: '1,200 IQD', status: 'Ödendi' },
+        { id: '2', date: '2024-01-15', type: 'Bakım', unit: 'B-205', amount: '350 IQD', status: 'Bekliyor' },
+        { id: '3', date: '2024-01-14', type: 'Aidat', unit: 'C-301', amount: '1,200 IQD', status: 'Ödendi' },
+        { id: '4', date: '2024-01-14', type: 'Elektrik', unit: 'A-105', amount: '180 IQD', status: 'Gecikmiş' },
+        { id: '5', date: '2024-01-13', type: 'Aidat', unit: 'B-102', amount: '1,200 IQD', status: 'Ödendi' },
       ];
       setTransactions(defaultTransactions);
     } finally {

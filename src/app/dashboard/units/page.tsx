@@ -558,7 +558,7 @@ function UnitsListPage() {
                     return unit.debtStatus.hasDebt ? (
                         <div className="flex items-center gap-2">
                             <span className="text-primary-red font-medium">
-                                {unit.debtStatus.totalDebt.toLocaleString('tr-TR')} ₺
+                                {unit.debtStatus.totalDebt.toLocaleString('tr-TR')} IQD
                             </span>
                             {unit.debtStatus.overdueBills > 0 && (
                                 <Badge variant="soft" color="red" className="text-xs">

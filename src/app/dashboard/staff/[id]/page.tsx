@@ -267,7 +267,7 @@ export default function StaffDetailPage() {
                       <div className="flex items-center justify-between">
                         <div className="text-text-light-muted dark:text-text-muted">Maaş</div>
                         <div className="font-bold text-text-on-light dark:text-text-on-dark">
-                          {typeof staff.salary === 'number' ? `${staff.salary.toLocaleString('tr-TR')} ₺` : '-'}
+                          {typeof staff.salary === 'number' ? `${staff.salary.toLocaleString('tr-TR')} IQD` : '-'}
                         </div>
                       </div>
                     </div>

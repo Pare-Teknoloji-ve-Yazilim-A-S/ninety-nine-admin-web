@@ -146,7 +146,7 @@ const ResidentRow: React.FC<ResidentRowProps> = ({
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('tr-TR', {
             style: 'currency',
-            currency: 'TRY',
+            currency: 'IQD',
         }).format(amount);
     };
 

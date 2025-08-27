@@ -176,7 +176,7 @@ export class ResidentActionHandlers {
         
         this.toast.info(
             'Ödeme Geçmişi', 
-            `${resident.fullName} - Borç: ₺${debt.toLocaleString()}, Bakiye: ₺${balance.toLocaleString()}`
+            `${resident.fullName} - Borç: ${debt.toLocaleString()} IQD, Bakiye: ${balance.toLocaleString()} IQD`
         );
     };
 

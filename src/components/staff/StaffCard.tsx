@@ -66,7 +66,7 @@ export function StaffCard({
   const formatSalary = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
-      currency: 'TRY'
+      currency: 'IQD'
     }).format(amount)
   }
 

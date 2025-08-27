@@ -160,7 +160,7 @@ export function StaffStats({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
-      currency: 'TRY',
+      currency: 'IQD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount)

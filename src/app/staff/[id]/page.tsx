@@ -194,7 +194,7 @@ function StaffDetailPage () {
               <div className="flex items-center space-x-2">
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">
-                  Maaş: {staff.salary.toLocaleString('tr-TR')} ₺
+                  Maaş: {staff.salary.toLocaleString('tr-TR')} IQD
                 </span>
               </div>
             )}

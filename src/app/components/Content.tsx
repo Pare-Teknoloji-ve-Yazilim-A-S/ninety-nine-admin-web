@@ -25,7 +25,7 @@ export default function Content() {
         },
         {
             title: 'Toplam Gelir',
-            value: '₺125,000',
+            value: '125,000 IQD',
             change: '+15%',
             changeType: 'positive',
             icon: DollarSign,
@@ -87,11 +87,11 @@ export default function Content() {
 
     // Son siparişler verisi
     const recentOrders = [
-        { orderId: '#1001', customer: 'Zeynep Demir', date: '2024-07-26', status: 'Tamamlandı', total: '₺150' },
-        { orderId: '#1002', customer: 'Emre Yılmaz', date: '2024-07-25', status: 'Gönderildi', total: '₺200' },
-        { orderId: '#1003', customer: 'Deniz Kaya', date: '2024-07-24', status: 'İşleniyor', total: '₺100' },
-        { orderId: '#1004', customer: 'Can Ahmet', date: '2024-07-23', status: 'Tamamlandı', total: '₺300' },
-        { orderId: '#1005', customer: 'Ayşe Aksoy', date: '2024-07-22', status: 'Gönderildi', total: '₺250' }
+              { orderId: '#1001', customer: 'Zeynep Demir', date: '2024-07-26', status: 'Tamamlandı', total: '150 IQD' },
+      { orderId: '#1002', customer: 'Emre Yılmaz', date: '2024-07-25', status: 'Gönderildi', total: '200 IQD' },
+      { orderId: '#1003', customer: 'Deniz Kaya', date: '2024-07-24', status: 'İşleniyor', total: '100 IQD' },
+      { orderId: '#1004', customer: 'Can Ahmet', date: '2024-07-23', status: 'Tamamlandı', total: '300 IQD' },
+      { orderId: '#1005', customer: 'Ayşe Aksoy', date: '2024-07-22', status: 'Gönderildi', total: '250 IQD' }
     ];
 
     // Performans metrikleri
