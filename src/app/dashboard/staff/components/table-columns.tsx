@@ -17,7 +17,6 @@ const translations = {
     status: 'Durum',
     employmentType: 'İstihdam Türü',
     startDate: 'İşe Başlama',
-    salary: 'Maaş',
     
     // Tooltips
     detail: 'Detay'
@@ -30,7 +29,6 @@ const translations = {
     status: 'Status',
     employmentType: 'Employment Type',
     startDate: 'Start Date',
-    salary: 'Salary',
     
     // Tooltips
     detail: 'Detail'
@@ -43,7 +41,6 @@ const translations = {
     status: 'الحالة',
     employmentType: 'نوع التوظيف',
     startDate: 'تاريخ البدء',
-    salary: 'الراتب',
     
     // Tooltips
     detail: 'التفاصيل'
@@ -60,7 +57,6 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
   const employmentTypeConfig = getEmploymentTypeConfig(currentLanguage);
 
   const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('tr-TR') : '-')
-  const formatSalary = (n?: number) => (typeof n === 'number' ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0 }).format(n) : '-')
 
   return [
     {
@@ -122,14 +118,6 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
       accessor: (row: Staff) => row.startDate,
       render: (value: string) => formatDate(value),
       minWidth: '100px'
-    },
-    {
-      id: 'salary',
-      header: t.salary,
-      accessor: (row: Staff) => row.salary,
-      render: (value: number) => formatSalary(value),
-      minWidth: '100px',
-      align: 'right'
     },
     {
       id: 'actions',
