@@ -1,3 +1,5 @@
+const withNextIntl = require('next-intl/plugin')('./src/i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
@@ -7,4 +9,4 @@ const nextConfig = {
   // CORS headers'ları da proxy handler'da yönetiliyor
 }
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);

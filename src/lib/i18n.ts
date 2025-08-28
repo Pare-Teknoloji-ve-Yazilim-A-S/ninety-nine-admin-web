@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getRequestConfig } from 'next-intl/server';
 
 // Desteklenen diller
-export const locales = ['tr', 'en'] as const;
+export const locales = ['tr', 'en', 'ar'] as const;
 export type Locale = (typeof locales)[number];
 
 // Varsayılan dil

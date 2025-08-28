@@ -1,13 +1,14 @@
-import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
-export default function HomePage({
+export default async function SettingsLayout({
+  children,
   params: { locale }
 }: {
+  children: React.ReactNode;
   params: { locale: string };
 }) {
   // Enable static rendering
   setRequestLocale(locale);
-  
-  redirect(`/${locale}/dashboard`);
+
+  return children;
 }

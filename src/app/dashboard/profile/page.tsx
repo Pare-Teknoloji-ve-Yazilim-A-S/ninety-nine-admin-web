@@ -7,6 +7,7 @@ import Sidebar from '@/app/components/ui/Sidebar';
 import { useAuth } from '@/app/components/auth/AuthProvider';
 import { useToast } from '@/hooks/useToast';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useTranslations, useLocale } from 'next-intl';
 import Card, { CardHeader, CardTitle, CardBody } from '@/app/components/ui/Card';
 import Badge from '@/app/components/ui/Badge';
 import Avatar from '@/app/components/ui/Avatar';
@@ -22,69 +23,14 @@ import {
   RefreshCw
 } from 'lucide-react';
 
-// Dil çevirileri
-const translations = {
-  tr: {
-    pageTitle: 'Profil',
-    profileSettings: 'Profil Ayarları',
-    personalInfo: 'Kişisel Bilgiler',
-    home: 'Ana Sayfa',
-    profile: 'Profil',
-    personalInfoTitle: 'Kişisel Bilgiler',
-    personalInfoDescription: 'Hesap bilgilerinizi görüntüleyin',
-    firstName: 'Ad',
-    lastName: 'Soyad',
-    email: 'E-posta',
-    phone: 'Telefon',
-    position: 'Pozisyon',
-    department: 'Departman',
-    location: 'Konum',
-    bio: 'Hakkımda',
-    joinDate: 'Katılım Tarihi',
-    lastLogin: 'Son Giriş',
-    active: 'Aktif',
-    verified: 'Doğrulanmış',
-    photoUploaded: 'Fotoğraf başarıyla yüklendi',
-    enterFirstName: 'Adınızı girin',
-    enterLastName: 'Soyadınızı girin',
-    enterEmail: 'E-posta adresinizi girin',
-    enterPhone: 'Telefon numaranızı girin',
-    enterBio: 'Kendiniz hakkında kısa bir açıklama yazın',
-  },
-  en: {
-    pageTitle: 'Profile',
-    profileSettings: 'Profile Settings',
-    personalInfo: 'Personal Information',
-    home: 'Home',
-    profile: 'Profile',
-    personalInfoTitle: 'Personal Information',
-    personalInfoDescription: 'View your account information',
-    firstName: 'First Name',
-    lastName: 'Last Name',
-    email: 'Email',
-    phone: 'Phone',
-    position: 'Position',
-    department: 'Department',
-    location: 'Location',
-    bio: 'Bio',
-    joinDate: 'Join Date',
-    lastLogin: 'Last Login',
-    active: 'Active',
-    verified: 'Verified',
-    photoUploaded: 'Photo uploaded successfully',
-    enterFirstName: 'Enter your first name',
-    enterLastName: 'Enter your last name',
-    enterEmail: 'Enter your email address',
-    enterPhone: 'Enter your phone number',
-    enterBio: 'Write a short description about yourself',
-  }
-};
+
 
 export default function ProfilePage() {
   const { user: authUser } = useAuth();
   const { user: profileUser, loading, error, refetch } = useUserProfile();
-  const { success } = useToast();
-  const [locale, setLocale] = useState('tr');
+  const { success: showToast } = useToast();
+  const t = useTranslations('profile');
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState('personal');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
@@ -114,11 +60,9 @@ export default function ProfilePage() {
     }
   }, [profileUser]);
 
-  const t = translations[locale as keyof typeof translations];
-
   // Handler functions
   const handlePhotoUpload = () => {
-    success(t.photoUploaded);
+    showToast(t('photoUploaded'), 'success');
   };
 
   const formatDate = (date: Date) => {
@@ -135,65 +79,65 @@ export default function ProfilePage() {
   const tabItems = [
     {
       id: 'personal',
-      label: t.personalInfo,
+      label: t('personalInfo'),
       icon: User,
       content: (
         <Card className="shadow-lg">
           <CardHeader>
             <div>
               <CardTitle className="text-text-on-light dark:text-text-on-dark">
-                {t.personalInfoTitle}
+                {t('personalInfoTitle')}
               </CardTitle>
               <p className="text-text-light-secondary dark:text-text-secondary">
-                {t.personalInfoDescription}
+                {t('personalInfoDescription')}
               </p>
             </div>
           </CardHeader>
           <CardBody className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName">{t.firstName}</Label>
+                <Label htmlFor="firstName">{t('firstName')}</Label>
                 <Input
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder={t.enterFirstName}
+                  placeholder={t('enterFirstName')}
                   disabled={true}
                 />
               </div>
               <div>
-                <Label htmlFor="lastName">{t.lastName}</Label>
+                <Label htmlFor="lastName">{t('lastName')}</Label>
                 <Input
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder={t.enterLastName}
+                  placeholder={t('enterLastName')}
                   disabled={true}
                 />
               </div>
               <div>
-                <Label htmlFor="email">{t.email}</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder={t.enterEmail}
+                  placeholder={t('enterEmail')}
                   disabled={true}
                 />
               </div>
               <div>
-                <Label htmlFor="phone">{t.phone}</Label>
+                <Label htmlFor="phone">{t('phone')}</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder={t.enterPhone}
+                  placeholder={t('enterPhone')}
                   disabled={true}
                 />
               </div>
               <div>
-                <Label htmlFor="position">{t.position}</Label>
+                <Label htmlFor="position">{t('position')}</Label>
                 <Input
                   id="position"
                   value={formData.position}
@@ -204,7 +148,7 @@ export default function ProfilePage() {
 
             </div>
             <div>
-              <Label htmlFor="location">{t.location}</Label>
+              <Label htmlFor="location">{t('location')}</Label>
               <Input
                 id="location"
                 value={formData.location}
@@ -213,12 +157,12 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <Label htmlFor="bio">{t.bio}</Label>
+              <Label htmlFor="bio">{t('bio')}</Label>
               <TextArea
                 id="bio"
                 value={formData.bio}
                 onChange={(value) => setFormData({ ...formData, bio: value })}
-                placeholder={t.enterBio}
+                placeholder={t('enterBio')}
                 disabled={true}
                 rows={4}
               />
@@ -244,19 +188,19 @@ export default function ProfilePage() {
             {/* Breadcrumb */}
             <div className="mb-6">
               <nav className="flex items-center space-x-2 text-sm text-text-light-secondary dark:text-text-secondary">
-                <span>{t.home}</span>
+                <span>{t('home')}</span>
                 <span>/</span>
-                <span className="text-text-on-light dark:text-text-on-dark font-medium">{t.profile}</span>
+                <span className="text-text-on-light dark:text-text-on-dark font-medium">{t('profile')}</span>
               </nav>
             </div>
 
             {/* Page Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-text-on-light dark:text-text-on-dark mb-2">
-                {t.pageTitle}
+                {t('pageTitle')}
               </h1>
               <p className="text-text-light-secondary dark:text-text-secondary">
-                {t.profileSettings}
+                {t('profileSettings')}
               </p>
             </div>
 
@@ -319,10 +263,10 @@ export default function ProfilePage() {
                          
                          <div className="flex flex-wrap gap-2 justify-center mb-4">
                            <Badge variant="soft" color="gold">
-                             {t.active}
+                             {t('active')}
                            </Badge>
                            <Badge variant="soft" color="primary">
-                             {t.verified}
+                             {t('verified')}
                            </Badge>
                            {profileUser?.status && (
                              <Badge variant="soft" color={profileUser.status === 'ACTIVE' ? 'success' : 'warning'}>
@@ -334,7 +278,7 @@ export default function ProfilePage() {
                          <div className="space-y-3 text-left">
                            <div className="flex items-center justify-between">
                              <span className="text-sm text-text-light-secondary dark:text-text-secondary">
-                               {t.joinDate}
+                               {t('joinDate')}
                              </span>
                              <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
                                {profileUser?.createdAt ? formatDate(new Date(profileUser.createdAt)) : formatDate(new Date('2024-01-15'))}
@@ -342,7 +286,7 @@ export default function ProfilePage() {
                            </div>
                            <div className="flex items-center justify-between">
                              <span className="text-sm text-text-light-secondary dark:text-text-secondary">
-                               {t.lastLogin}
+                               {t('lastLogin')}
                              </span>
                              <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
                                {profileUser?.updatedAt ? formatDate(new Date(profileUser.updatedAt)) : formatDate(new Date())}
