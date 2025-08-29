@@ -71,34 +71,39 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
             default: {
                 tab: 'border-b-2 border-transparent hover:border-primary-gold/50 hover:text-text-primary',
                 activeTab: 'border-primary-gold text-primary-gold font-semibold',
-                container: 'border-b border-primary-gold/20'
+                container: 'border-b border-primary-gold/20',
+                tabList: ''
             },
             pills: {
                 tab: 'rounded-lg hover:bg-primary-gold/10 hover:text-text-primary',
                 activeTab: 'bg-primary-gold text-primary-dark-gray font-semibold',
-                container: ''
+                container: '',
+                tabList: ''
             },
             'soft-pills': {
                 tab: 'rounded-lg hover:bg-primary-gold/10 hover:text-text-primary focus:outline-none focus-visible:ring-0',
                 activeTab: 'bg-primary-gold/15 text-primary-gold font-semibold border border-primary-gold/30 ring-0 ring-offset-0',
-                container: ''
+                container: '',
+                tabList: ''
             },
             underline: {
                 tab: 'border-b-2 border-transparent hover:border-primary-gold/50 hover:text-text-primary',
                 activeTab: 'border-primary-gold text-primary-gold font-semibold',
-                container: 'border-b border-primary-gold/20'
+                container: 'border-b border-primary-gold/20',
+                tabList: ''
             },
             cards: {
                 tab: 'border border-transparent rounded-t-lg hover:bg-primary-gold/10 hover:text-text-primary',
                 activeTab: 'border-primary-gold/30 bg-background-card text-text-primary font-semibold border-b-background-card',
-                container: 'border-b border-primary-gold/20'
+                container: 'border-b border-primary-gold/20',
+                tabList: 'flex space-x-1'
             }
         }
 
         const orientationClasses = {
             horizontal: {
                 container: 'flex-col',
-                tabList: `grid grid-cols-1 ${scrollable ? 'overflow-x-auto' : ''} ${centered ? 'justify-center' : ''} ${fullWidth ? 'w-full' : ''}`,
+                tabList: `flex ${scrollable ? 'overflow-x-auto' : ''} ${centered ? 'justify-center' : ''} ${fullWidth ? 'w-full' : ''} space-x-1`,
                 tab: fullWidth ? 'flex-1' : '',
                 content: 'mt-4'
             },
@@ -140,7 +145,7 @@ const Tabs = forwardRef<HTMLDivElement, TabsProps>(
             >
                 {/* Tab List */}
                 <div
-                    className={`${orientationClasses[orientation].tabList} ${variantClasses[variant].container}`}
+                    className={`${variantClasses[variant].tabList || orientationClasses[orientation].tabList} ${variantClasses[variant].container}`}
                     role="tablist"
                 >
                     {items.map((item) => {

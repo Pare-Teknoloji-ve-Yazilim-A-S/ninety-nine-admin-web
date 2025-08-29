@@ -146,20 +146,52 @@ class RoleService {
    * Yeni rol oluştur
    */
   async createRole(data: CreateRoleRequest): Promise<Role> {
-    // Slug'ı otomatik oluştur
-    const requestData = {
-      ...data,
-      slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    };
-    
-    const response = await apiClient.post(this.baseUrl, requestData);
-    
-    // Response'u kontrol et ve güvenli hale getir
-    if (response.data && response.data.id) {
-      return response.data;
-    } else {
-      console.error('Invalid create role response:', response.data);
-      throw new Error('Rol oluşturuldu ancak geçersiz response alındı');
+    try {
+      // Slug'ı otomatik oluştur
+      const requestData = {
+        ...data,
+        slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      };
+      
+      console.log('🚀 Creating role with data:', requestData);
+      console.log('📍 API Endpoint:', this.baseUrl);
+      
+      const response = await apiClient.post(this.baseUrl, requestData);
+      
+      console.log('✅ Role creation response:', response);
+      console.log('📊 Response status:', response.status);
+      console.log('📋 Response data:', response.data);
+      console.log('🔍 Response type:', typeof response.data);
+      console.log('🔍 Response keys:', response.data ? Object.keys(response.data) : 'No data');
+      console.log('🔍 Response is array:', Array.isArray(response.data));
+      console.log('🔍 Response is object:', response.data && typeof response.data === 'object');
+      console.log('🔍 Response has id:', response.data && response.data.id);
+      console.log('🔍 Response id value:', response.data ? response.data.id : 'No ID');
+      
+      // Response'u parse et ve güvenli hale getir
+      let roleData = response.data;
+      
+      // Eğer response.data yoksa, response'u direkt kullan
+      if (!roleData && response) {
+        console.log('⚠️ response.data is empty, using response directly');
+        roleData = response;
+      }
+      
+      // Eğer hala data yoksa, hata fırlat
+      if (!roleData) {
+        console.error('❌ No data in response');
+        throw new Error('Rol oluşturuldu ancak response boş');
+      }
+      
+      console.log('✅ Role created successfully, returning roleData');
+      console.log('📤 Final return value:', roleData);
+      return roleData;
+      
+    } catch (error) {
+      console.error('❌ Error in createRole:', error);
+      console.error('❌ Error type:', typeof error);
+      console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error');
+      throw error;
     }
   }
 

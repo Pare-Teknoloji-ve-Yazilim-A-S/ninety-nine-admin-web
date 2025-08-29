@@ -1222,24 +1222,33 @@ export default function DashboardSettingsPage() {
 
   // Role Management Functions
   const handleAddRole = async () => {
+    console.log('🎯 handleAddRole: Starting role creation...');
+    
     if (!newRoleName.trim()) {
+      console.log('❌ handleAddRole: Role name is empty');
       setActionMessage('Rol adı boş olamaz');
       setShowActionMessage(true);
       setTimeout(() => setShowActionMessage(false), 3000);
       return;
     }
 
+    console.log('✅ handleAddRole: Role name is valid:', newRoleName.trim());
     setIsAddingRole(true);
+    
     try {
-      await createRole({
+      console.log('🚀 handleAddRole: Calling createRole...');
+      const result = await createRole({
         name: newRoleName.trim(),
         description: newRoleDescription.trim() || undefined
       });
       
-      // Rol oluşturduktan sonra listeyi yenile
+      console.log('✅ handleAddRole: createRole succeeded, result:', result);
+      
+      // Rol oluşturduktan sonra listeyi yenile - daha kısa bir gecikme ile
+      console.log('🔄 handleAddRole: Refreshing roles list...');
       setTimeout(() => {
         refreshRoles();
-      }, 500);
+      }, 100); // 500ms yerine 100ms
       
       setActionMessage('Rol başarıyla eklendi');
       setShowActionMessage(true);
@@ -1248,12 +1257,21 @@ export default function DashboardSettingsPage() {
       setShowAddRoleModal(false);
       setNewRoleName('');
       setNewRoleDescription('');
+      
+      console.log('✅ handleAddRole: Role creation completed successfully');
     } catch (error) {
+      console.error('❌ handleAddRole: Error occurred:', error);
+      console.error('❌ handleAddRole: Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        error: error
+      });
+      
       setActionMessage('Rol eklenirken hata oluştu');
       setShowActionMessage(true);
       setTimeout(() => setShowActionMessage(false), 3000);
     } finally {
       setIsAddingRole(false);
+      console.log('🏁 handleAddRole: Function completed');
     }
   };
 
@@ -1397,55 +1415,58 @@ export default function DashboardSettingsPage() {
                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
                  <p className="text-red-800 dark:text-red-200 text-sm">{rolesError}</p>
                </div>
-                                         ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                  {roles && roles.length > 0 ? (
-                    roles.map((role) => {
-                      // Güvenli kontrol - role objesi ve gerekli alanları var mı?
-                      if (!role || !role.id || !role.name || !role.slug) {
-                        console.warn('Invalid role object:', role);
-                        return null;
-                      }
-                      
-                      return (
-                        <div key={role.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500">
-                          <div className="flex items-center space-x-2 flex-1">
-                            <input
-                              type="radio"
-                              id={role.id}
-                              name="selectedRole"
-                              value={role.slug}
-                              checked={selectedRole === role.slug}
-                              onChange={(e) => setSelectedRole(e.target.value)}
-                              className="text-primary-gold focus:ring-primary-gold"
-                            />
-                            <div className="flex flex-col">
-                              <label htmlFor={role.id} className="text-sm font-medium text-text-on-light dark:text-text-on-dark cursor-pointer">
-                                {role.name}
-                              </label>
-                              {role.description && (
-                                <span className="text-xs text-text-light-secondary dark:text-text-secondary">
-                                  {role.description}
-                                </span>
-                              )}
-                              {role.isSystem && (
-                                <span className="text-xs text-primary-gold bg-primary-gold-light/20 px-2 py-0.5 rounded-full">
-                                  Sistem Rolü
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                                                     <div className="flex items-center ml-auto space-x-2">
+                                                      ) : (
+               <div className="max-h-96 overflow-y-auto">
+                 <div className="space-y-2">
+                   {roles && roles.length > 0 ? (
+                     roles.map((role) => {
+                       // Güvenli kontrol - role objesi ve gerekli alanları var mı?
+                       if (!role || !role.id || !role.name || !role.slug) {
+                         console.warn('Invalid role object:', role);
+                         return null;
+                       }
+                       
+                       return (
+                         <div key={role.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500">
+                           <div className="flex items-center space-x-3 flex-1 min-w-0">
+                             <input
+                               type="radio"
+                               id={role.id}
+                               name="selectedRole"
+                               value={role.slug}
+                               checked={selectedRole === role.slug}
+                               onChange={(e) => setSelectedRole(e.target.value)}
+                               className="text-primary-gold focus:ring-primary-gold flex-shrink-0"
+                             />
+                             <div className="flex flex-col min-w-0 flex-1">
+                               <div className="flex items-center space-x-2">
+                                 <label htmlFor={role.id} className="text-sm font-medium text-text-on-light dark:text-text-on-dark cursor-pointer truncate">
+                                   {role.name}
+                                 </label>
+                                 {role.isSystem && (
+                                   <span className="text-xs text-primary-gold bg-primary-gold-light/20 px-2 py-0.5 rounded-full flex-shrink-0">
+                                     Sistem
+                                   </span>
+                                 )}
+                               </div>
+                               {role.description && (
+                                 <span className="text-xs text-text-light-secondary dark:text-text-secondary truncate">
+                                   {role.description}
+                                 </span>
+                               )}
+                             </div>
+                           </div>
+                           <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                              <button
                                onClick={() => handleManageRolePermissions(role)}
-                               className="text-primary-gold hover:text-primary-gold/80 transition-colors"
+                               className="p-1.5 text-primary-gold hover:text-primary-gold/80 hover:bg-primary-gold/10 rounded-md transition-colors"
                                title="İzinleri Yönet"
                              >
                                <Key className="w-4 h-4" />
                              </button>
                              <button
                                onClick={() => handleEditRole(role)}
-                               className="text-primary-blue hover:text-primary-blue/80 transition-colors"
+                               className="p-1.5 text-primary-blue hover:text-primary-blue/80 hover:bg-primary-blue/10 rounded-md transition-colors"
                                title="Rolü Düzenle"
                              >
                                <Edit className="w-4 h-4" />
@@ -1453,25 +1474,26 @@ export default function DashboardSettingsPage() {
                              {!role.isSystem && (
                                <button
                                  onClick={() => handleDeleteRole(role.id)}
-                                 className="text-red-500 hover:text-red-700 transition-colors"
+                                 className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
                                  title="Rolü Sil"
                                >
                                  <Trash2 className="w-4 h-4" />
                                </button>
                              )}
                            </div>
-                        </div>
-                      );
-                    }).filter(Boolean) // null değerleri filtrele
-                  ) : (
-                    <div className="col-span-full text-center py-8">
-                      <p className="text-text-light-secondary dark:text-text-secondary">
-                        Henüz rol bulunmuyor
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+                         </div>
+                       );
+                     }).filter(Boolean) // null değerleri filtrele
+                   ) : (
+                     <div className="text-center py-8">
+                       <p className="text-text-light-secondary dark:text-text-secondary">
+                         Henüz rol bulunmuyor
+                       </p>
+                     </div>
+                   )}
+                 </div>
+               </div>
+             )}
                        </div>
 
                          {/* Permission Management */}

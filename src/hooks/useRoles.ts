@@ -80,23 +80,52 @@ export const useRoles = (initialFilters?: Partial<RoleFilters>) => {
 
   // Rol oluştur
   const createRole = useCallback(async (data: { name: string; description?: string }) => {
+    console.log('🎯 useRoles: Creating role with data:', data);
+    
     try {
+      console.log('🚀 useRoles: Calling roleService.createRole...');
       const newRole = await roleService.createRole(data);
+      console.log('✅ useRoles: Role created successfully:', newRole);
       
-      // Yeni rolü listeye ekle
-      setRoles(prev => [newRole, ...prev]);
-      
-      // Pagination'ı güncelle
-      setPagination(prev => ({
-        ...prev,
-        total: prev.total + 1
-      }));
-      
-      showSuccessToast('Rol başarıyla oluşturuldu');
-      return newRole;
+      // Yeni rolü listeye ekle - güvenli bir şekilde
+      if (newRole && typeof newRole === 'object') {
+        setRoles(prev => {
+          console.log('🔄 useRoles: Updating roles state, prev roles:', prev);
+          // Eğer rol zaten varsa ekleme
+          const roleExists = prev.some(role => role.id === newRole.id);
+          if (roleExists) {
+            console.log('⚠️ useRoles: Role already exists in state, not adding duplicate');
+            return prev;
+          }
+          const updatedRoles = [newRole, ...prev];
+          console.log('🔄 useRoles: Updated roles:', updatedRoles);
+          return updatedRoles;
+        });
+        
+        // Pagination'ı güncelle
+        setPagination(prev => ({
+          ...prev,
+          total: prev.total + 1
+        }));
+        
+        console.log('✅ useRoles: Success toast will be shown');
+        showSuccessToast('Rol başarıyla oluşturuldu');
+        return newRole;
+      } else {
+        throw new Error('Geçersiz rol verisi alındı');
+      }
     } catch (err: any) {
-      console.error('Create role error:', err);
-      const errorMessage = err.response?.data?.message || 'Rol oluşturulurken hata oluştu';
+      console.error('❌ useRoles: Create role error:', err);
+      console.error('❌ useRoles: Error details:', {
+        message: err.message,
+        response: err.response,
+        responseData: err.response?.data,
+        status: err.response?.status
+      });
+      
+      const errorMessage = err.response?.data?.message || err.message || 'Rol oluşturulurken hata oluştu';
+      console.error('❌ useRoles: Error message to show:', errorMessage);
+      
       showErrorToast(errorMessage);
       throw err;
     }
@@ -104,6 +133,7 @@ export const useRoles = (initialFilters?: Partial<RoleFilters>) => {
 
   // Rolleri yenile (rol oluşturduktan sonra kullanılabilir)
   const refreshRoles = useCallback(() => {
+    console.log('🔄 useRoles: refreshRoles called');
     fetchRoles();
   }, [fetchRoles]);
 
