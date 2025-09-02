@@ -491,11 +491,9 @@ export default function OwnerInfoSection({
                <User className="h-5 w-5 text-primary-gold" />
                {getTranslatedTitle(ownerInfo.title)}
              </h3>
-            {canEdit && canAssign && (
-              <Button variant="primary" size="sm" icon={Edit} onClick={handleEdit}>
-                {t.owner} Ekle
-              </Button>
-            )}
+            <Button variant="primary" size="sm" icon={Edit} onClick={handleEdit}>
+              {t.owner} Ekle
+            </Button>
           </div>
           <div className="text-center py-8">
             <User className="h-12 w-12 text-text-light-muted dark:text-text-muted mx-auto mb-4" />
@@ -517,28 +515,26 @@ export default function OwnerInfoSection({
                <User className="h-5 w-5 text-primary-gold" />
                {getTranslatedTitle(ownerInfo.title)}
              </h3>
-            {canEdit && (
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={UserX}
-                  onClick={onRemove}
-                  disabled={loading}
-                >
-                  {t.remove}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={Edit}
-                  onClick={handleEdit}
-                  disabled={loading}
-                >
-                  {t.edit}
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={UserX}
+                onClick={onRemove}
+                disabled={loading}
+              >
+                {t.remove}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={Edit}
+                onClick={handleEdit}
+                disabled={loading}
+              >
+                {t.edit}
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-start gap-4">

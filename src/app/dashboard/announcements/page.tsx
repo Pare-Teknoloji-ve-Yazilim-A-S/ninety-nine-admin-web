@@ -18,7 +18,7 @@ import { ToastContainer } from '@/app/components/ui/Toast';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 import { useToast } from '@/hooks/useToast';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
-import { CREATE_ANNOUNCEMENT_PERMISSION_ID, CREATE_ANNOUNCEMENT_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
+import { CREATE_ANNOUNCEMENT_PERMISSION_ID, CREATE_ANNOUNCEMENT_PERMISSION_NAME, UPDATE_ANNOUNCEMENT_PERMISSION_ID } from '@/app/components/ui/Sidebar';
 import {
     Filter, Download, Plus, RefreshCw, ChevronRight, Eye, Edit, 
     AlertTriangle, Pin, Archive, Send, Copy, Trash2, 
@@ -249,6 +249,10 @@ export default function AnnouncementsPage() {
 
     // Çevirileri al
     const t = translations[currentLanguage as keyof typeof translations];
+
+    // Permission: detay butonunu sadece güncelleme izni olanlar görsün
+    const { hasPermission } = usePermissionCheck();
+    const canViewDetail = hasPermission(UPDATE_ANNOUNCEMENT_PERMISSION_ID);
 
     const router = useRouter();
     const { toasts, addToast, removeToast } = useToast();
@@ -683,14 +687,16 @@ export default function AnnouncementsPage() {
     // Wrapper: ActionMenuComponent tipi { row: Announcement }
     const AnnouncementActionMenuWrapper: React.FC<{ row: Announcement }> = ({ row }) => (
         <div className="flex items-center justify-end">
-            <button
-                className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
-                onClick={() => handleAnnouncementAction('view', row)}
-                type="button"
-                title={t.detail}
-            >
-                <ChevronRight className="w-5 h-5" />
-            </button>
+            {canViewDetail && (
+                <button
+                    className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-center"
+                    onClick={() => handleAnnouncementAction('view', row)}
+                    type="button"
+                    title={t.detail}
+                >
+                    <ChevronRight className="w-5 h-5" />
+                </button>
+            )}
         </div>
     );
 

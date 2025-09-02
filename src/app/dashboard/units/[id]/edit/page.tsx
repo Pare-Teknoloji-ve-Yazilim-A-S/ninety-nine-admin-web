@@ -14,12 +14,10 @@ import Label from '@/app/components/ui/Label';
 import { unitsService, Property } from '@/services';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { UPDATE_UNIT_PERMISSION_ID } from '@/app/components/ui/Sidebar';
+
 import { ArrowLeft, Save, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
-
-// Permission constants
-const UPDATE_PROPERTY_PERMISSION_ID = 'Update Property';
-const UPDATE_PROPERTY_PERMISSION_NAME = 'Update Property';
 
 export default function EditUnitPage() {
     const router = useRouter();
@@ -39,9 +37,9 @@ export default function EditUnitPage() {
         }
     });
 
-    // Permission check
+    // Permission: update unit
     const { hasPermission } = usePermissionCheck();
-    const hasUpdatePropertyPermission = hasPermission(UPDATE_PROPERTY_PERMISSION_ID);
+    const hasUpdatePropertyPermission = hasPermission(UPDATE_UNIT_PERMISSION_ID);
 
     const breadcrumbItems = [
         { label: 'Ana Sayfa', href: '/dashboard' },
@@ -79,12 +77,7 @@ export default function EditUnitPage() {
         }
     }, [unitId, router]);
 
-    // Permission check - redirect if no permission
-    useEffect(() => {
-        if (!hasUpdatePropertyPermission) {
-            router.push('/dashboard/units');
-        }
-    }, [hasUpdatePropertyPermission, router]);
+
 
     const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));

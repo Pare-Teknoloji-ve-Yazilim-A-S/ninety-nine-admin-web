@@ -13,6 +13,8 @@ import Badge from '@/app/components/ui/Badge'
 import EmptyState from '@/app/components/ui/EmptyState'
 import Skeleton from '@/app/components/ui/Skeleton'
 import { getTableColumns } from './table-columns'
+import { usePermissionCheck } from '@/hooks/usePermissionCheck'
+import { UPDATE_STAFF_PERMISSION_ID } from '@/app/components/ui/Sidebar'
 
 // Dil çevirileri
 const translations = {
@@ -82,8 +84,11 @@ export default function ContentArea({
 
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
+  // Permission: show details chevron only if user can update staff
+  const { hasPermission } = usePermissionCheck()
+  const canViewDetail = hasPermission(UPDATE_STAFF_PERMISSION_ID)
 
-  const columns = getTableColumns({ onView })
+  const columns = getTableColumns({ onView, canViewDetail })
 
   const data = Array.isArray(staff) ? staff : []
 

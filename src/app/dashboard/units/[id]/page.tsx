@@ -11,6 +11,7 @@ import Button from "@/app/components/ui/Button";
 import Badge from "@/app/components/ui/Badge";
 import { useUnitDetail } from "@/hooks/useUnitDetail";
 import { useToast } from "@/hooks/useToast";
+
 import { ToastContainer } from "@/app/components/ui/Toast";
 import BasicInfoSection from "./components/BasicInfoSection";
 import OwnerInfoSection from "./components/OwnerInfoSection";
@@ -46,13 +47,7 @@ import Modal from "@/app/components/ui/Modal";
 import { UpdateBasicInfoDto, UpdateOwnerInfoDto, UpdateTenantInfoDto } from "@/services/types/unit-detail.types";
 import propertyService from "@/services/property.service";
 import { userService } from "@/services/user.service";
-import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 
-// Property permission constants
-const UPDATE_PROPERTY_PERMISSION_ID = 'Update Property';
-const UPDATE_PROPERTY_PERMISSION_NAME = 'Update Property';
-const ASSIGN_PROPERTY_PERMISSION_ID = 'Assign Property';
-const ASSIGN_PROPERTY_PERMISSION_NAME = 'Assign Property';
 
 // Dil çevirileri
 const translations = {
@@ -285,18 +280,9 @@ export default function UnitDetailPage() {
   const unitId = params.id as string;
   const [currentLanguage, setCurrentLanguage] = useState('tr');
   
-  // Permission checks
-  const { hasPermission } = usePermissionCheck();
-  const hasUpdatePropertyPermission = hasPermission(UPDATE_PROPERTY_PERMISSION_ID);
-  const hasAssignPropertyPermission = hasPermission(ASSIGN_PROPERTY_PERMISSION_ID);
 
-  // Debug: Console log permission values
-  console.log('Unit Detail Page Debug:', {
-    hasUpdatePropertyPermission,
-    hasAssignPropertyPermission,
-    UPDATE_PROPERTY_PERMISSION_ID,
-    ASSIGN_PROPERTY_PERMISSION_ID
-  });
+  
+
   
   // Debug: localStorage'daki izinleri kontrol et
   React.useEffect(() => {
@@ -1076,6 +1062,8 @@ export default function UnitDetailPage() {
     return parts.map(part => part.charAt(0)).join('').toUpperCase().slice(0, 2);
   };
 
+  // Permission kontrolü kaldırıldı - herkes erişebilir
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -1176,16 +1164,14 @@ export default function UnitDetailPage() {
                 </div>
               </div>
 
-              {hasUpdatePropertyPermission && (
-                <div className="flex gap-3">
-                  <Button variant="secondary" icon={Phone}>
-                    İletişim
-                  </Button>
-                  <Button variant="secondary" icon={MessageSquare}>
-                    Note Ekle
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-3">
+                <Button variant="secondary" icon={Phone}>
+                  İletişim
+                </Button>
+                <Button variant="secondary" icon={MessageSquare}>
+                  Note Ekle
+                </Button>
+              </div>
             </div>
 
             {/* Main Content Grid */}
@@ -1249,7 +1235,7 @@ export default function UnitDetailPage() {
                     basicInfo={unit.basicInfo}
                     onUpdate={handleUpdateBasicInfo}
                     loading={loading}
-                    canEdit={unit.permissions.canEdit && hasUpdatePropertyPermission}
+                    canEdit={true}
                   />
                 )}
 
@@ -1288,7 +1274,7 @@ export default function UnitDetailPage() {
                         <ResidentsSection
                           residents={unit.residents}
                           loading={loading}
-                          canEdit={unit.permissions.canManageResidents}
+                          canEdit={true}
                         />
                       )}
                       {activeTab === "financial" && (
@@ -1362,8 +1348,8 @@ export default function UnitDetailPage() {
                     onAddOwner={handleAddOwnerRequest}
                     onOpenAddOwnerModal={() => setShowAddOwnerModal(true)}
                     loading={loading || removingOwner}
-                    canEdit={unit.permissions.canEdit && hasUpdatePropertyPermission}
-                    canAssign={hasAssignPropertyPermission}
+                    canEdit={true}
+                    canAssign={true}
                     residentId={unit.ownerId}
                     propertyId={unitId}
                   />
@@ -1374,8 +1360,8 @@ export default function UnitDetailPage() {
                   tenantInfo={unit?.tenantInfo}
                   onUpdate={handleUpdateTenantInfo}
                   loading={loading || removingTenant}
-                  canEdit={unit?.permissions.canEdit && hasUpdatePropertyPermission}
-                  canAssign={hasAssignPropertyPermission}
+                  canEdit={true}
+                  canAssign={true}
                   onRemove={handleRemoveTenantRequest}
                   onAddTenant={handleAddTenantRequest}
                 />

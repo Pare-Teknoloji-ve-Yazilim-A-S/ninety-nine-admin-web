@@ -107,16 +107,19 @@ const translations = {
 };
 
 // Permission constants
-const READ_PROPERTY_PERMISSION_ID = 'b2c8f4e1-9a7d-4f3e-8b5c-1d2e3f4a5b6c'; // UUID for Read Property permission
-const READ_PROPERTY_PERMISSION_NAME = 'Read Property'; // Name for backward compatibility
+const READ_PROPERTY_PERMISSION_ID = '0996201f-5a5c-43df-917e-fbd75778b018'; // UUID for Read Property permission
 
-const VIEW_USER_PERMISSION_ID = 'a1b2c3d4-5e6f-7g8h-9i0j-1k2l3m4n5o6p'; // UUID for View User permission
-const VIEW_USER_PERMISSION_NAME = 'View User'; // Name for backward compatibility
+const CREATE_UNIT_PERMISSION_ID = 'b3da94e4-f732-473b-b6ea-0b7ae56e179d'; // UUID for Create Unit permission
 
-const READ_TICKET_PERMISSION_ID = 'c2d3e4f5-6g7h-8i9j-0k1l-2m3n4o5p6q7r'; // UUID for Read Ticket permission
-const READ_TICKET_PERMISSION_NAME = 'Read Ticket'; // Name for backward compatibility
+const READ_UNIT_DETAIL_PERMISSION_ID = '48403acc-7b9a-445d-b014-5677143bdc9f'; // UUID for Read Unit Detail permission
 
-const READ_BILLING_PERMISSION_ID = 'd3e4f5g6-7h8i-9j0k-1l2m-3n4o5p6q7r8s'; // UUID for Read Billing permission
+const UPDATE_UNIT_PERMISSION_ID = '48403acc-7b9a-445d-b014-5677143bdc9f'; // UUID for Update Unit permission
+
+const VIEW_USER_PERMISSION_ID = '43d16f31-d6d8-4635-a068-8be1b4501fc3'; // UUID for View User permission
+
+const READ_TICKET_PERMISSION_ID = 'e7a003db-3312-4549-97e3-1947a2af92a9'; // UUID for Read Ticket permission
+
+const READ_BILLING_PERMISSION_ID = 'e71a2cd0-bf8f-4457-a61a-fd4d50492f49'; // UUID for Read Billing permission
 const READ_BILLING_PERMISSION_NAME = 'Read Billing'; // Name for backward compatibility
 
 const READ_STAFF_PERMISSION_ID = 'be598b8a-4d77-4373-993e-62907b5f59e7'; // UUID for Read Staff permission
@@ -364,17 +367,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     // Permission kontrolü için usePermissionCheck hook'unu kullan
     const permissionCheck = usePermissionCheck()
     
-    // Read Property izni kontrolü - hem ID hem de name ile kontrol et
-    const hasReadPropertyPermission = permissionCheck.hasPermission(READ_PROPERTY_PERMISSION_ID) || permissionCheck.hasPermission(READ_PROPERTY_PERMISSION_NAME)
+    // Read Property izni kontrolü - sadece ID ile kontrol et
+    const hasReadPropertyPermission = permissionCheck.hasPermission(READ_PROPERTY_PERMISSION_ID)
     
-    // View User izni kontrolü - hem ID hem de name ile kontrol et
-    const hasViewUserPermission = permissionCheck.hasPermission(VIEW_USER_PERMISSION_ID) || permissionCheck.hasPermission(VIEW_USER_PERMISSION_NAME)
+    // View User izni kontrolü - sadece ID ile kontrol et
+    const hasViewUserPermission = permissionCheck.hasPermission(VIEW_USER_PERMISSION_ID)
     
-    // Read Ticket izni kontrolü - hem ID hem de name ile kontrol et
-    const hasReadTicketPermission = permissionCheck.hasPermission(READ_TICKET_PERMISSION_ID) || permissionCheck.hasPermission(READ_TICKET_PERMISSION_NAME)
+    // Read Ticket izni kontrolü - sadece ID ile kontrol et
+    const hasReadTicketPermission = permissionCheck.hasPermission(READ_TICKET_PERMISSION_ID)
     
-    // Read Billing izni kontrolü - hem ID hem de name ile kontrol et
-    const hasReadBillingPermission = permissionCheck.hasPermission(READ_BILLING_PERMISSION_ID) || permissionCheck.hasPermission(READ_BILLING_PERMISSION_NAME)
+    // Read Billing izni kontrolü - sadece ID ile kontrol et
+    const hasReadBillingPermission = permissionCheck.hasPermission(READ_BILLING_PERMISSION_ID)
     
     // Read Staff izni kontrolü - hem ID hem de name ile kontrol et
     const hasReadStaffPermission = permissionCheck.hasPermission(READ_STAFF_PERMISSION_ID) || permissionCheck.hasPermission(READ_STAFF_PERMISSION_NAME)
@@ -386,16 +389,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const hasReadRolePermission = permissionCheck.hasPermission(READ_ROLE_PERMISSION_ID) || permissionCheck.hasPermission(READ_ROLE_PERMISSION_NAME)
     
     console.log('Sidebar - READ_PROPERTY_PERMISSION_ID:', READ_PROPERTY_PERMISSION_ID)
-    console.log('Sidebar - READ_PROPERTY_PERMISSION_NAME:', READ_PROPERTY_PERMISSION_NAME)
     console.log('Sidebar - hasReadPropertyPermission:', hasReadPropertyPermission)
     console.log('Sidebar - VIEW_USER_PERMISSION_ID:', VIEW_USER_PERMISSION_ID)
-    console.log('Sidebar - VIEW_USER_PERMISSION_NAME:', VIEW_USER_PERMISSION_NAME)
     console.log('Sidebar - hasViewUserPermission:', hasViewUserPermission)
     console.log('Sidebar - READ_TICKET_PERMISSION_ID:', READ_TICKET_PERMISSION_ID)
-    console.log('Sidebar - READ_TICKET_PERMISSION_NAME:', READ_TICKET_PERMISSION_NAME)
     console.log('Sidebar - hasReadTicketPermission:', hasReadTicketPermission)
     console.log('Sidebar - READ_BILLING_PERMISSION_ID:', READ_BILLING_PERMISSION_ID)
-    console.log('Sidebar - READ_BILLING_PERMISSION_NAME:', READ_BILLING_PERMISSION_NAME)
     console.log('Sidebar - hasReadBillingPermission:', hasReadBillingPermission)
     console.log('Sidebar - READ_STAFF_PERMISSION_ID:', READ_STAFF_PERMISSION_ID)
     console.log('Sidebar - READ_STAFF_PERMISSION_NAME:', READ_STAFF_PERMISSION_NAME)
@@ -546,6 +545,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
 // Export permission constants for use in other components
 export {
+    READ_PROPERTY_PERMISSION_ID,
+    CREATE_UNIT_PERMISSION_ID,
+    READ_UNIT_DETAIL_PERMISSION_ID,
+    UPDATE_UNIT_PERMISSION_ID,
+    VIEW_USER_PERMISSION_ID,
+    READ_TICKET_PERMISSION_ID,
     CREATE_TICKET_PERMISSION_ID,
     CREATE_TICKET_PERMISSION_NAME,
     UPDATE_TICKET_PERMISSION_ID,
@@ -570,12 +575,18 @@ export {
     UPDATE_ANNOUNCEMENT_PERMISSION_NAME,
     DELETE_ANNOUNCEMENT_PERMISSION_ID,
     DELETE_ANNOUNCEMENT_PERMISSION_NAME,
+    READ_ANNOUNCEMENT_PERMISSION_ID,
+    READ_ANNOUNCEMENT_PERMISSION_NAME,
     CREATE_STAFF_PERMISSION_ID,
     CREATE_STAFF_PERMISSION_NAME,
     UPDATE_STAFF_PERMISSION_ID,
     UPDATE_STAFF_PERMISSION_NAME,
     DELETE_STAFF_PERMISSION_ID,
-    DELETE_STAFF_PERMISSION_NAME
+    DELETE_STAFF_PERMISSION_NAME,
+    READ_STAFF_PERMISSION_ID,
+    READ_STAFF_PERMISSION_NAME,
+    READ_ROLE_PERMISSION_ID,
+    READ_ROLE_PERMISSION_NAME
 };
 
 // Delete Ticket permission constants

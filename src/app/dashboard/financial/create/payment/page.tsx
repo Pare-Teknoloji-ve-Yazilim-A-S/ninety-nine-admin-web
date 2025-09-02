@@ -31,7 +31,7 @@ import type { ResponseBillDto } from '@/services/types/billing.types';
 import TablePagination from '@/app/components/ui/TablePagination';
 import { PAYMENT_METHOD_OPTIONS, PaymentMethod } from '@/services/types/billing.types';
 import { enumsService } from '@/services/enums.service';
-import usePermissionCheck from '@/hooks/usePermissionCheck';
+
 
 // Dil çevirileri
 const translations = {
@@ -217,7 +217,7 @@ const translations = {
 export default function CreatePaymentPage() {
   // All hooks must be called at the top level - BEFORE any conditional returns
   const [currentLanguage, setCurrentLanguage] = useState('tr');
-  const { hasPermission, loading: permissionLoading } = usePermissionCheck();
+  // Permission kontrolü kaldırıldı
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -375,53 +375,7 @@ export default function CreatePaymentPage() {
     }));
   })();
 
-  // Permission loading durumu - koşullu render JSX içinde yapılacak
-  const renderPermissionLoading = () => (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-background-primary flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">{t.permissionLoading}</p>
-        </div>
-      </div>
-    </ProtectedRoute>
-  );
-
-  // Permission kontrolü - koşullu render JSX içinde yapılacak
-  const renderNoPermission = () => (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-background-primary flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-full w-fit mx-auto mb-4">
-            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            {t.noPermission}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t.requiredPermission}
-          </p>
-          <Button
-            onClick={() => router.back()}
-            variant="outline"
-            className="w-full"
-          >
-            {t.goBack}
-          </Button>
-        </div>
-      </div>
-    </ProtectedRoute>
-  );
-
-  // Koşullu render kontrolü
-  if (permissionLoading) {
-    return renderPermissionLoading();
-  }
-
-  // Ödeme oluşturma sayfası için Create Payment izni yeterli
-  if (!hasPermission('fb1d69ae-ba26-47b8-b366-2da6a1a1c83d')) { // Create Payment permission ID
-    return renderNoPermission();
-  }
+  // Permission kontrolü kaldırıldı - artık herkes erişebilir
 
   return (
     <ProtectedRoute>

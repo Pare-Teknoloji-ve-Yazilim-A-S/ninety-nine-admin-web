@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { CREATE_UNIT_PERMISSION_ID, UPDATE_UNIT_PERMISSION_ID } from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import {
@@ -58,11 +60,7 @@ import { useUnitsData } from '@/hooks/useUnitsData';
 import { useUnitsFilters } from '@/hooks/useUnitsFilters';
 import { useUnitsActions } from '@/hooks/useUnitsActions';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
-import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 
-// Create Property izni için sabitler
-const CREATE_PROPERTY_PERMISSION_ID = 'create-property-permission-id';
-const CREATE_PROPERTY_PERMISSION_NAME = 'Create Property';
 
 
 // Dil çevirileri
@@ -235,18 +233,17 @@ const translations = {
 };
 
 function UnitsListPage() {
-    // Permission kontrolü
+    
+    // Permission check
     const permissionCheck = usePermissionCheck();
+    const hasCreateUnitPermission = permissionCheck.hasPermission(CREATE_UNIT_PERMISSION_ID);
+    const hasUpdateUnitPermission = permissionCheck.hasPermission(UPDATE_UNIT_PERMISSION_ID);
     
-    // Create Property izni kontrolü - hem ID hem de name ile kontrol et
-    const hasCreatePropertyPermission = permissionCheck.hasPermission(CREATE_PROPERTY_PERMISSION_ID) || permissionCheck.hasPermission(CREATE_PROPERTY_PERMISSION_NAME);
-    
-    // Debug: Create Property izni kontrolü
-    console.log('=== Create Property Permission Debug ===');
-    console.log('CREATE_PROPERTY_PERMISSION_ID:', CREATE_PROPERTY_PERMISSION_ID);
-    console.log('CREATE_PROPERTY_PERMISSION_NAME:', CREATE_PROPERTY_PERMISSION_NAME);
-    console.log('hasCreatePropertyPermission:', hasCreatePropertyPermission);
-    console.log('=== End Create Property Permission Debug ===');
+    // Debug: Create Unit permission check
+    console.log('🔐 Units Page - CREATE_UNIT_PERMISSION_ID:', CREATE_UNIT_PERMISSION_ID);
+    console.log('🔐 Units Page - hasCreateUnitPermission:', hasCreateUnitPermission);
+    console.log('🔐 Units Page - UPDATE_UNIT_PERMISSION_ID:', UPDATE_UNIT_PERMISSION_ID);
+    console.log('🔐 Units Page - hasUpdateUnitPermission:', hasUpdateUnitPermission);
     
     // UI State
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -604,6 +601,11 @@ function UnitsListPage() {
             onAction('view', unit);
         };
 
+        // Eğer update permission yoksa action menu'yü gösterme
+        if (!hasUpdateUnitPermission) {
+            return null;
+        }
+
         return (
             <div className="flex items-center justify-center">
                 <button
@@ -620,7 +622,7 @@ function UnitsListPage() {
 
     const UnitActionMenuWrapper: React.FC<{ row: Property }> = useMemo(() =>
         ({ row }) => <UnitActionMenu unit={row} onAction={handleUnitAction} />
-        , [handleUnitAction, t]);
+        , [handleUnitAction, t, hasUpdateUnitPermission]);
 
     // Unit card renderer for grid view - MEMOIZED
     const renderUnitCard = useCallback((unit: Property, selectedItems: Array<string | number>, onSelect: (id: string | number) => void, ui: any, ActionMenu?: React.ComponentType<{ row: Property }>) => {
@@ -657,7 +659,7 @@ function UnitsListPage() {
                             )}
                         </div>
                     </div>
-                    {ActionMenu && <ActionMenu row={unit} />}
+                    {ActionMenu && hasUpdateUnitPermission && <ActionMenu row={unit} />}
                 </div>
 
                 <div className="space-y-2 mb-4">
@@ -694,7 +696,7 @@ function UnitsListPage() {
                 )}
             </ui.Card>
         );
-    }, [statusConfig, t]);
+    }, [statusConfig, t, hasUpdateUnitPermission]);
 
     const handleExport = useCallback(() => {
         console.log('Export triggered');
@@ -911,7 +913,7 @@ function UnitsListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={handleRefresh}>
                                     {t.refresh}
                                 </Button>
-                                {hasCreatePropertyPermission && (
+                                {hasCreateUnitPermission && (
                                     <Link href="/dashboard/units/add">
                                         <Button variant="primary" size="md" icon={Plus}>
                                             {t.newUnit}

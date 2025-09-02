@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ServiceRequest } from '@/services/types/request-list.types';
 import Badge from '@/app/components/ui/Badge';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { 
     Eye, 
     MoreVertical,
@@ -13,6 +14,9 @@ import {
     Phone,
     Calendar
 } from 'lucide-react';
+
+// Ticket action menu için permission
+const TICKET_ACTION_MENU_PERMISSION_ID = '0b1f9132-b494-4780-8644-ead57df5d523';
 
 // Dil çevirileri
 const translations = {
@@ -173,6 +177,19 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
             setCurrentLanguage(savedLanguage);
         }
     }, []);
+
+    // Permission kontrolü
+    const { hasPermission } = usePermissionCheck();
+    const hasTicketActionMenuPermission = hasPermission(TICKET_ACTION_MENU_PERMISSION_ID);
+
+    // Debug log
+    console.log('Ticket Action Menu - TICKET_ACTION_MENU_PERMISSION_ID:', TICKET_ACTION_MENU_PERMISSION_ID);
+    console.log('Ticket Action Menu - hasTicketActionMenuPermission:', hasTicketActionMenuPermission);
+
+    // Permission yoksa hiçbir şey gösterme
+    if (!hasTicketActionMenuPermission) {
+        return null;
+    }
 
     // Çevirileri al
     const t = translations[currentLanguage as keyof typeof translations];

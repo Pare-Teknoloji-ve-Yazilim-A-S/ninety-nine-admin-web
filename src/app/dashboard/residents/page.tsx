@@ -26,10 +26,8 @@ import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { generateStatsCardsDataFromCounts } from './utils/stats';
 
 // Sakin oluşturma izinleri için sabitler
-const CREATE_RESIDENT_PERMISSION_ID = 'da1b5308-72ee-4b07-9a59-5a4bb99e0ce9';
-const CREATE_RESIDENT_PERMISSION_NAME = 'Kullanıcı Oluştur';
-const MANAGE_RESIDENTS_PERMISSION_ID = '27c9019e-5b8e-4dd7-a702-db47d3fc6bca';
-const MANAGE_RESIDENTS_PERMISSION_NAME = 'Create User';
+const CREATE_RESIDENT_PERMISSION_ID = '27c9019e-5b8e-4dd7-a702-db47d3fc6bca';
+const MANAGE_RESIDENTS_PERMISSION_ID = '3d8f24d4-ed20-43b9-b6c8-11ab8e33a42f';
 import {
     Filter, Download, Plus, RefreshCw,
     ChevronRight, Eye, Edit, Phone, MessageSquare, QrCode, StickyNote, History, CreditCard, Trash2, UserCheck, UserX, CheckCircle, Users, Home, DollarSign, Calendar
@@ -320,8 +318,8 @@ export default function ResidentsPage() {
     
     // İzin kontrolleri
     const { hasPermission } = usePermissionCheck();
-    const hasCreateResidentPermission = hasPermission(CREATE_RESIDENT_PERMISSION_ID) || hasPermission(CREATE_RESIDENT_PERMISSION_NAME);
-    const hasManageResidentsPermission = hasPermission(MANAGE_RESIDENTS_PERMISSION_ID) || hasPermission(MANAGE_RESIDENTS_PERMISSION_NAME);
+    const hasCreateResidentPermission = hasPermission(CREATE_RESIDENT_PERMISSION_ID);
+    const hasManageResidentsPermission = hasPermission(MANAGE_RESIDENTS_PERMISSION_ID);
     
     // Kullanıcı bu iki izinden birine sahip olmalı
     const canCreateResident = hasCreateResidentPermission || hasManageResidentsPermission;
@@ -332,9 +330,7 @@ export default function ResidentsPage() {
         hasManageResidentsPermission,
         canCreateResident,
         CREATE_RESIDENT_PERMISSION_ID,
-        CREATE_RESIDENT_PERMISSION_NAME,
-        MANAGE_RESIDENTS_PERMISSION_ID,
-        MANAGE_RESIDENTS_PERMISSION_NAME
+        MANAGE_RESIDENTS_PERMISSION_ID
     });
 
     // Dil tercihini localStorage'dan al
@@ -714,7 +710,7 @@ export default function ResidentsPage() {
                             })()}
                         </div>
                     </div>
-                    {ActionMenu && <ActionMenu row={resident} />}
+                    {ActionMenu && hasManageResidentsPermission && <ActionMenu row={resident} />}
                 </div>
                 
                 {/* Status and Type Badges */}
@@ -827,6 +823,11 @@ export default function ResidentsPage() {
             e.stopPropagation();
             onAction('view', resident);
         };
+
+        // Eğer MANAGE_RESIDENTS_PERMISSION_ID yoksa action menu'yu gösterme
+        if (!hasManageResidentsPermission) {
+            return null;
+        }
 
         return (
             <div className="flex items-center justify-center">

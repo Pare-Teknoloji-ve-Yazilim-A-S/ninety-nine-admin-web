@@ -15,6 +15,7 @@
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-slot": "^1.2.3",
+    "@sentry/react": "^10.8.0",
     "apexcharts": "^5.3.2",
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",

@@ -5,6 +5,9 @@ import { TicketSummary } from '../hooks/useTicketSummary';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { CREATE_TICKET_PERMISSION_ID, CREATE_TICKET_PERMISSION_NAME } from '@/app/components/ui/Sidebar';
 
+// New Request butonu için permission
+const CREATE_REQUEST_PERMISSION_ID = '7b9ef408-4452-4a11-ad99-10682afabff6';
+
 // Dil çevirileri
 const translations = {
   tr: {
@@ -82,6 +85,13 @@ export default function RequestsPageHeader({
   // Create Ticket izin kontrolü
   const { hasPermission } = usePermissionCheck();
   const hasCreateTicketPermission = hasPermission(CREATE_TICKET_PERMISSION_NAME);
+  
+  // New Request butonu için permission kontrolü
+  const hasCreateRequestPermission = hasPermission(CREATE_REQUEST_PERMISSION_ID);
+
+  // Debug log
+  console.log('Requests Page Header - CREATE_REQUEST_PERMISSION_ID:', CREATE_REQUEST_PERMISSION_ID);
+  console.log('Requests Page Header - hasCreateRequestPermission:', hasCreateRequestPermission);
 
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
@@ -161,7 +171,7 @@ export default function RequestsPageHeader({
         >
           {t.refresh}
         </Button>
-        {hasCreateTicketPermission && (
+        {hasCreateRequestPermission && (
           <Button
             variant="primary"
             size="md"

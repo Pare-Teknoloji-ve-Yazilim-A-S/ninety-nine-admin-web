@@ -28,7 +28,7 @@ import { paymentService } from '@/services';
 import type { ResponseBillDto } from '@/services/types/billing.types';
 import billingService from '@/services/billing.service';
 import { enumsService } from '@/services/enums.service';
-import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+
 
 
 // Dil çevirileri
@@ -155,7 +155,6 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
 }) => {
   // BEFORE any conditional returns - Tüm hook'ları en üste taşı
   const [mounted, setMounted] = useState(false);
-  const { hasPermission, loading: permissionLoading } = usePermissionCheck();
   
   // Client-side mount kontrolü
   useEffect(() => {
@@ -254,38 +253,14 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
 
-  // Permission kontrolü - koşullu render fonksiyonları
-  const renderPermissionLoading = () => (
-    <div className="flex items-center justify-center p-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span className="ml-2 text-gray-600">{t.permissionLoading}</span>
-    </div>
-  );
-
-  const renderNoPermission = () => (
-    <Card className="p-6 text-center">
-      <div className="flex flex-col items-center space-y-4">
-        <AlertCircle className="h-12 w-12 text-red-500" />
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">İzin Yok</h3>
-          <p className="text-gray-600 mb-2">{t.noPermission}</p>
-          <p className="text-sm text-gray-500">{t.requiredPermission}</p>
-        </div>
-        <Button onClick={onCancel} variant="outline">
-          {t.cancel}
-        </Button>
+  // SSR kontrolü
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-gray-600">Yükleniyor...</span>
       </div>
-    </Card>
-  );
-
-  // SSR ve permission kontrolü
-  if (!mounted || permissionLoading) {
-    return renderPermissionLoading();
-  }
-
-  // Ödeme oluşturma için Create Payment izni yeterli
-  if (!hasPermission('fb1d69ae-ba26-47b8-b366-2da6a1a1c83d')) { // Create Payment permission ID
-    return renderNoPermission();
+    );
   }
 
 

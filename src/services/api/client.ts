@@ -4,6 +4,7 @@ import { apiConfig, features } from '../config/api.config';
 import { ApiResponse, ApiError, RequestConfig } from '../core/types';
 import { TokenManager } from '../utils/token-manager';
 import { Logger } from '../utils/logger';
+import { captureException, addBreadcrumb, setContext } from '@/lib/sentry';
 
 class ApiClient {
     private client: AxiosInstance;
@@ -46,6 +47,18 @@ class ApiClient {
                         data: config.data,
                     });
                 }
+
+                // Add breadcrumb for Sentry
+                addBreadcrumb({
+                    message: `API Request: ${config.method?.toUpperCase()} ${config.url}`,
+                    level: 'info',
+                    category: 'http',
+                    data: {
+                        method: config.method?.toUpperCase(),
+                        url: config.url,
+                        requestId: config.headers['X-Request-ID'],
+                    },
+                });
 
                 return config;
             },
@@ -94,6 +107,9 @@ class ApiClient {
                 // Transform error
                 const apiError = this.transformError(error);
                 this.logger.error('API Error:', apiError);
+
+                // Send API errors to Sentry
+                this.reportApiErrorToSentry(error, apiError);
 
                 return Promise.reject(apiError);
             }
@@ -153,6 +169,49 @@ class ApiClient {
         if (typeof window !== 'undefined') {
             window.location.href = '/login';
         }
+    }
+
+    private reportApiErrorToSentry(axiosError: AxiosError, apiError: ApiError): void {
+        // Don't report 401 errors (authentication issues)
+        if (apiError.status === 401) {
+            return;
+        }
+
+        // Don't report network errors in development
+        if (process.env.NODE_ENV === 'development' && apiError.code === 'NETWORK_ERROR') {
+            return;
+        }
+
+        // Create enhanced error for Sentry
+        const sentryError = new Error(`API Error: ${apiError.message}`);
+        sentryError.name = 'ApiError';
+
+        // Set context for Sentry
+        setContext('api_error', {
+            status: apiError.status,
+            code: apiError.code,
+            message: apiError.message,
+            details: apiError.details,
+            url: axiosError.config?.url,
+            method: axiosError.config?.method?.toUpperCase(),
+            requestId: axiosError.config?.headers?.['X-Request-ID'],
+        });
+
+        // Add breadcrumb
+        addBreadcrumb({
+            message: `API Error: ${apiError.status} ${apiError.message}`,
+            level: 'error',
+            category: 'http',
+            data: {
+                status: apiError.status,
+                code: apiError.code,
+                url: axiosError.config?.url,
+                method: axiosError.config?.method?.toUpperCase(),
+            },
+        });
+
+        // Capture exception
+        captureException(sentryError);
     }
 
     // Public API methods

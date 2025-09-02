@@ -11,8 +11,7 @@ import Card from '@/app/components/ui/Card';
 import Button from '@/app/components/ui/Button';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import {
-  CREATE_BILLING_PERMISSION_ID,
-  CREATE_PAYMENT_PERMISSION_ID
+  CREATE_BILLING_PERMISSION_ID
 } from '@/app/components/ui/Sidebar';
 
 // Dil çevirileri
@@ -91,10 +90,10 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
   const [currentLanguage, setCurrentLanguage] = useState('tr');
   const router = useRouter();
 
-  // Permission kontrolü
+  // Permission kontrolü - sadece billing için
   const { hasPermission } = usePermissionCheck();
   const hasCreateBillingPermission = hasPermission(CREATE_BILLING_PERMISSION_ID);
-  const hasCreatePaymentPermission = hasPermission(CREATE_PAYMENT_PERMISSION_ID);
+  // Payment permission kontrolü kaldırıldı - artık herkes erişebilir
 
   // Dil tercihini localStorage'dan al
   useEffect(() => {
@@ -127,13 +126,13 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
     }
   ];
 
-  // İzinlere göre filtreleme
+  // İzinlere göre filtreleme - payment artık her zaman görünür
   const transactionTypes = allTransactionTypes.filter(type => {
     if (type.id === 'bill') {
       return hasCreateBillingPermission;
     }
     if (type.id === 'payment') {
-      return hasCreatePaymentPermission;
+      return true; // Payment artık her zaman görünür
     }
     return false;
   });

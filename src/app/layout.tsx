@@ -6,6 +6,8 @@ import { AuthProvider as AuthContextProvider } from '@/contexts/AuthContext'
 import { PermissionProvider } from '@/contexts/PermissionContext'
 import EnumsProvider from './components/providers/EnumsProvider'
 import ToastProvider from './components/providers/ToastProvider'
+import SentryProvider from './components/providers/SentryProvider'
+import ErrorBoundary from './components/ui/ErrorBoundary'
 
 // Google Fonts - Inter
 const inter = Inter({
@@ -27,17 +29,21 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${inter.variable} font-sans antialiased bg-background-primary overflow-x-hidden dark`}>
-        <AuthContextProvider>
-          <PermissionProvider>
-            <AuthProvider>
-              <EnumsProvider>
-                <ToastProvider>
-                  {children}
-                </ToastProvider>
-              </EnumsProvider>
-            </AuthProvider>
-          </PermissionProvider>
-        </AuthContextProvider>
+        <SentryProvider>
+          <ErrorBoundary>
+            <AuthContextProvider>
+              <PermissionProvider>
+                <AuthProvider>
+                  <EnumsProvider>
+                    <ToastProvider>
+                      {children}
+                    </ToastProvider>
+                  </EnumsProvider>
+                </AuthProvider>
+              </PermissionProvider>
+            </AuthContextProvider>
+          </ErrorBoundary>
+        </SentryProvider>
       </body>
     </html>
   )

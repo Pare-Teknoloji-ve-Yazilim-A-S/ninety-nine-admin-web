@@ -51,6 +51,13 @@ import { useRouter } from 'next/navigation';
 import { useFinancialList } from './hooks/useFinancialList';
 import billingService from '@/services/billing.service';
 import { unitPricesService, UnitPrice } from '@/services/unit-prices.service';
+import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+
+// New Transaction butonu için permission
+const CREATE_TRANSACTION_PERMISSION_ID = '8d8f0454-7d81-4903-9106-d64a73ba9dc6';
+
+// Transaction detay sayfasına erişim için permission
+const VIEW_TRANSACTION_DETAIL_PERMISSION_ID = '6bbd26f0-3890-4418-9901-065ad3547d34';
 
 // Dil çevirileri
 const translations = {
@@ -308,6 +315,17 @@ export default function FinancialListPage() {
     const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
 
     const router = useRouter();
+
+    // Permission kontrolü
+    const { hasPermission } = usePermissionCheck();
+    const hasCreateTransactionPermission = hasPermission(CREATE_TRANSACTION_PERMISSION_ID);
+    const hasViewTransactionDetailPermission = hasPermission(VIEW_TRANSACTION_DETAIL_PERMISSION_ID);
+
+    // Debug log
+    console.log('Financial Page - CREATE_TRANSACTION_PERMISSION_ID:', CREATE_TRANSACTION_PERMISSION_ID);
+    console.log('Financial Page - hasCreateTransactionPermission:', hasCreateTransactionPermission);
+    console.log('Financial Page - VIEW_TRANSACTION_DETAIL_PERMISSION_ID:', VIEW_TRANSACTION_DETAIL_PERMISSION_ID);
+    console.log('Financial Page - hasViewTransactionDetailPermission:', hasViewTransactionDetailPermission);
 
     // Use the financial list hook
     const {
@@ -638,6 +656,11 @@ export default function FinancialListPage() {
 
     // Transaction Action Menu
     const TransactionActionMenu: React.FC<{ transaction: any; onAction: (action: string, transaction: any) => void }> = React.memo(({ transaction, onAction }) => {
+        // Permission kontrolü - detay sayfasına erişim yoksa hiçbir şey gösterme
+        if (!hasViewTransactionDetailPermission) {
+            return null;
+        }
+
         const handleGoDetail = (e: React.MouseEvent) => {
             e.stopPropagation();
             onAction('view', transaction);
@@ -655,7 +678,7 @@ export default function FinancialListPage() {
                     <span className="text-xl leading-none">›</span>
                 </button>
             </div>
-        );
+            );
     });
 
     const TransactionActionMenuWrapper: React.FC<{ row: any }> = useMemo(() =>
@@ -854,14 +877,16 @@ export default function FinancialListPage() {
                                 <Button variant="ghost" size="md" icon={RefreshCw} onClick={refetch}>
                                     {t.refresh}
                                 </Button>
-                                <Button 
-                                    variant="primary" 
-                                    size="md" 
-                                    icon={Plus}
-                                    onClick={handleNewTransactionClick}
-                                >
-                                    {t.newTransaction}
-                                </Button>
+                                {hasCreateTransactionPermission && (
+                                    <Button 
+                                        variant="primary" 
+                                        size="md" 
+                                        icon={Plus}
+                                        onClick={handleNewTransactionClick}
+                                    >
+                                        {t.newTransaction}
+                                    </Button>
+                                )}
                             </div>
                         </div>
 

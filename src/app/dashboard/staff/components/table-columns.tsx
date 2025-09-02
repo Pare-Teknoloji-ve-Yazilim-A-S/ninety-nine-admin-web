@@ -47,7 +47,7 @@ const translations = {
   }
 };
 
-export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Column[] {
+export function getTableColumns({ onView, canViewDetail = true }: { onView: (s: Staff) => void, canViewDetail?: boolean }): Column[] {
   // Dil tercihini localStorage'dan al
   const currentLanguage = typeof window !== 'undefined' ? localStorage.getItem('preferredLanguage') || 'tr' : 'tr';
   const t = translations[currentLanguage as keyof typeof translations];
@@ -125,6 +125,9 @@ export function getTableColumns({ onView }: { onView: (s: Staff) => void }): Col
       accessor: (row: Staff) => row,
       minWidth: '80px',
       render: (_: any, row: Staff) => {
+        if (!canViewDetail) {
+          return <div className="flex items-center justify-end" />
+        }
         const targetId = String((row as any)?.id ?? (row as any)?.employeeId)
         return (
           <div className="flex items-center justify-end">

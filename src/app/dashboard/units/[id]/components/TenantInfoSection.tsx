@@ -246,7 +246,7 @@ export default function TenantInfoSection({
               <Home className="h-5 w-5 text-primary-gold" />
               {t.tenantInfoTitle}
             </h3>
-            {canEdit && canAssign && onAddTenant && (
+            {onAddTenant && (
               <Button variant="primary" size="sm" icon={UserPlus} onClick={onAddTenant}>
                 {t.addTenant}
               </Button>
@@ -277,28 +277,26 @@ export default function TenantInfoSection({
                  {getTranslatedTitle(tenantInfo.title)}
                </h3>
             </div>
-            {canEdit && (
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={UserX}
-                  onClick={handleRemoveTenant}
-                  disabled={loading}
-                >
-                  {t.remove}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={Edit}
-                  onClick={handleEdit}
-                  disabled={loading}
-                >
-                  {t.edit}
-                </Button>
-              </div>
-            )}
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={UserX}
+                onClick={handleRemoveTenant}
+                disabled={loading}
+              >
+                {t.remove}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={Edit}
+                onClick={handleEdit}
+                disabled={loading}
+              >
+                {t.edit}
+              </Button>
+            </div>
           </div>
 
           <div className="flex items-start gap-4">
