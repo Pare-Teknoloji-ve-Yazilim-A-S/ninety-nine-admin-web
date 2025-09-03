@@ -11,9 +11,12 @@ import Badge from '@/app/components/ui/Badge'
 import Avatar from '@/app/components/ui/Avatar'
 import { AlertCircle, ArrowLeft, Briefcase, Calendar, Mail, Phone, User, Building2, Edit } from 'lucide-react'
 import { staffService } from '@/services/staff.service'
+import { roleService } from '@/services/role.service'
+import { apiClient } from '@/services/api/client'
 import { transformApiStaffToStaff } from '../../staff/utils/transformations'
 import type { Staff } from '@/services/types/staff.types'
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal'
+import EditStaffModal from '@/components/staff/EditStaffModal'
 import { ShieldAlert } from 'lucide-react'
 import { usePermissionCheck } from '@/hooks/usePermissionCheck'
 import { UPDATE_STAFF_PERMISSION_ID, DELETE_STAFF_PERMISSION_ID } from '@/app/components/ui/Sidebar'
@@ -29,6 +32,7 @@ export default function StaffDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   // Permission checks
   const { hasPermission } = usePermissionCheck()
@@ -41,6 +45,8 @@ export default function StaffDetailPage() {
       try {
         setLoading(true)
         setError(null)
+        
+        // Fetch staff details
         const res = await staffService.getAdminStaffById(staffId)
         if (!isMounted) return
         // Unwrap possible ApiResponse shapes then transform
@@ -48,6 +54,16 @@ export default function StaffDetailPage() {
         const raw = payload?.data ?? payload?.result ?? payload
         const transformed = transformApiStaffToStaff(raw as any)
         setStaff(transformed)
+        
+        // Fetch non-admin roles - this will call /api/admin/roles/non-admin
+        await roleService.getNonAdminRoles()
+        
+        // Fetch departments - this will call /api/enums/departments
+        await apiClient.get('/api/enums/departments')
+        
+        // Fetch positions - this will call /api/enums/positions
+        await apiClient.get('/api/enums/positions')
+        
       } catch (err: any) {
         if (!isMounted) return
         setError(err?.message || 'Personel yüklenemedi')
@@ -126,6 +142,20 @@ export default function StaffDetailPage() {
     }
   }
 
+  const handleSaveStaff = async (updatedStaff: Partial<Staff>) => {
+    if (!staff?.id) return
+    try {
+      // Here you would call the update API
+      // await staffService.updateAdminStaff(staff.id, updatedStaff)
+      console.log('Updating staff with:', updatedStaff)
+      // For now, just update local state
+      setStaff(prev => prev ? { ...prev, ...updatedStaff } : null)
+    } catch (error) {
+      console.error('Update staff failed:', error)
+      throw error
+    }
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background-primary">
@@ -142,7 +172,7 @@ export default function StaffDetailPage() {
             {/* Right Actions */}
             <div className="mb-4 flex justify-end gap-3">
               {hasUpdateStaffPermission && (
-                <Button variant="secondary" size="md" icon={Edit} onClick={() => { /* TODO: edit modal or route */ }}>
+                <Button variant="secondary" size="md" icon={Edit} onClick={() => setShowEditModal(true)}>
                   Düzenle
                 </Button>
               )}
@@ -342,6 +372,12 @@ export default function StaffDetailPage() {
         cancelText="Vazgeç"
         variant="danger"
         loading={deleting}
+      />
+      <EditStaffModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        staff={staff}
+        onSave={handleSaveStaff}
       />
     </ProtectedRoute>
   )
