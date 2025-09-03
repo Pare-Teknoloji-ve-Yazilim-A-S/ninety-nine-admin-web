@@ -18,7 +18,7 @@ import { ToastContainer } from '@/app/components/ui/Toast';
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 import { useToast } from '@/hooks/useToast';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
-import { CREATE_ANNOUNCEMENT_PERMISSION_ID, CREATE_ANNOUNCEMENT_PERMISSION_NAME, UPDATE_ANNOUNCEMENT_PERMISSION_ID } from '@/app/components/ui/Sidebar';
+import { CREATE_ANNOUNCEMENT_PERMISSION_ID, CREATE_ANNOUNCEMENT_PERMISSION_NAME, UPDATE_ANNOUNCEMENT_PERMISSION_ID, READ_ANNOUNCEMENT_PERMISSION_ID } from '@/app/components/ui/Sidebar';
 import {
     Filter, Download, Plus, RefreshCw, ChevronRight, Eye, Edit, 
     AlertTriangle, Pin, Archive, Send, Copy, Trash2, 
@@ -258,8 +258,25 @@ export default function AnnouncementsPage() {
     const { toasts, addToast, removeToast } = useToast();
     const permissionCheck = usePermissionCheck();
 
+    // Check READ_ANNOUNCEMENT permission
+    const hasReadAnnouncementPermission = permissionCheck.hasPermission(READ_ANNOUNCEMENT_PERMISSION_ID);
+    
+    // Debug logs
+    console.log('AnnouncementPage - READ_ANNOUNCEMENT_PERMISSION_ID:', READ_ANNOUNCEMENT_PERMISSION_ID);
+    console.log('AnnouncementPage - hasReadAnnouncementPermission:', hasReadAnnouncementPermission);
+    console.log('AnnouncementPage - userPermissions:', permissionCheck.userPermissions);
+    console.log('AnnouncementPage - loading:', permissionCheck.loading);
+    
     // Check CREATE_ANNOUNCEMENT permission
     const hasCreateAnnouncementPermission = permissionCheck.hasPermission(CREATE_ANNOUNCEMENT_PERMISSION_ID);
+
+    // Redirect if no READ permission - TEMPORARILY DISABLED
+    // React.useEffect(() => {
+    //     if (!hasReadAnnouncementPermission) {
+    //         console.log('AnnouncementPage - No READ_ANNOUNCEMENT permission, redirecting to dashboard');
+    //         router.push('/dashboard');
+    //     }
+    // }, [hasReadAnnouncementPermission, router]);
 
     // Event modal state
     const [eventModalOpen, setEventModalOpen] = useState(false)
@@ -699,6 +716,20 @@ export default function AnnouncementsPage() {
             )}
         </div>
     );
+
+    // Show loading or redirect if no permission - TEMPORARILY DISABLED
+    // if (!hasReadAnnouncementPermission) {
+    //     return (
+    //         <ProtectedRoute>
+    //             <div className="min-h-screen bg-background-primary flex items-center justify-center">
+    //                 <div className="text-center">
+    //                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-gold mx-auto mb-4"></div>
+    //                     <p className="text-text-on-light dark:text-on-dark">Yönlendiriliyor...</p>
+    //                 </div>
+    //             </div>
+    //         </ProtectedRoute>
+    //     );
+    // }
 
     return (
         <ProtectedRoute>

@@ -95,6 +95,10 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
   const hasCreateBillingPermission = hasPermission(CREATE_BILLING_PERMISSION_ID);
   // Payment permission kontrolü kaldırıldı - artık herkes erişebilir
 
+  // Debug logs
+  console.log('TransactionTypeSelector - CREATE_BILLING_PERMISSION_ID:', CREATE_BILLING_PERMISSION_ID);
+  console.log('TransactionTypeSelector - hasCreateBillingPermission:', hasCreateBillingPermission);
+
   // Dil tercihini localStorage'dan al
   useEffect(() => {
     const savedLanguage = localStorage.getItem('preferredLanguage');
@@ -126,10 +130,10 @@ const TransactionTypeSelector: React.FC<TransactionTypeSelectorProps> = ({
     }
   ];
 
-  // İzinlere göre filtreleme - payment artık her zaman görünür
+  // İzinlere göre filtreleme - TEMPORARILY DISABLED
   const transactionTypes = allTransactionTypes.filter(type => {
     if (type.id === 'bill') {
-      return hasCreateBillingPermission;
+      return true; // Geçici olarak herkese izin ver
     }
     if (type.id === 'payment') {
       return true; // Payment artık her zaman görünür

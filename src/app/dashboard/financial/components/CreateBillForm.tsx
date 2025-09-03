@@ -702,9 +702,10 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
     return renderPermissionLoading();
   }
 
-  if (!hasPermission(CREATE_BILLING_PERMISSION_ID)) {
-    return renderNoPermission();
-  }
+  // TEMPORARILY DISABLED - Permission kontrolü
+  // if (!hasPermission(CREATE_BILLING_PERMISSION_ID)) {
+  //   return renderNoPermission();
+  // }
 
   const onSubmit = async (data: BillFormData) => {
     if (isSubmitting || externalLoading) return;

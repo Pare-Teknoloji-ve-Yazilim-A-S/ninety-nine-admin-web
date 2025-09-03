@@ -146,7 +146,7 @@ const UPDATE_ANNOUNCEMENT_PERMISSION_NAME = 'Update Announcement'; // Name for b
 const DELETE_ANNOUNCEMENT_PERMISSION_ID = '832841a0-5891-4e93-b164-cb94355e2fce'; // UUID for Delete Announcement permission
 const DELETE_ANNOUNCEMENT_PERMISSION_NAME = 'Delete Announcement'; // Name for backward compatibility
 
-const READ_ROLE_PERMISSION_ID = 'g6h7i8j9-0k1l-2m3n-4o5p-6q7r8s9t0u1v'; // UUID for Read Role permission
+const READ_ROLE_PERMISSION_ID = '816d6f35-3089-4c36-955c-3a195ae7bb63'; // UUID for Read Role permission
 const READ_ROLE_PERMISSION_NAME = 'Read Role'; // Name for backward compatibility
 
 const CREATE_TICKET_PERMISSION_ID = 'h7i8j9k0-1l2m-3n4o-5p6q-7r8s9t0u1v2w'; // UUID for Create Ticket permission
