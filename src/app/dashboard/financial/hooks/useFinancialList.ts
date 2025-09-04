@@ -105,8 +105,8 @@ const transformApiDataToFinancialTransaction = (apiBill: ApiBillResponse): Finan
   // Create apartment info: use property.name in the table as requested
   const apartment: TransactionApartment = {
     number: apiBill.property?.name || 'N/A',
-    block: (apiBill.property as any)?.blockNumber?.toString?.() || '',
-    floor: 0,
+    block: apiBill.property?.propertyNumber || '',
+    floor: apiBill.property?.floor || 0,
     owner: 'Bilinmiyor',
     tenant: null
   };
@@ -128,6 +128,8 @@ const transformApiDataToFinancialTransaction = (apiBill: ApiBillResponse): Finan
     title: apiBill.title,
     apartment,
     resident,
+    // Store original API data for modal access
+    _originalData: apiBill,
     transactionType: getTransactionType(apiBill.billType),
     serviceType: getServiceType(apiBill.billType),
     amount: amountData,

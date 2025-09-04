@@ -248,6 +248,8 @@ export interface FinancialTransaction {
   status: TransactionStatus;
   transactionDate: string;
   dueDate: string;
+  // Store original API data for modal access
+  _originalData?: any;
   paidDate?: string | null;
   period: string;
   description: string;

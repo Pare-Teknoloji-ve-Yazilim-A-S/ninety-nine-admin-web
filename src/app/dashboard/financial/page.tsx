@@ -46,7 +46,7 @@ import BulkActionsBar from '@/app/components/ui/BulkActionsBar';
 import TablePagination from '@/app/components/ui/TablePagination';
 import Checkbox from '@/app/components/ui/Checkbox';
 import Avatar from '@/app/components/ui/Avatar';
-import Portal from '@/app/components/ui/Portal';
+import Modal from '@/app/components/ui/Modal';
 import { useRouter } from 'next/navigation';
 import { useFinancialList } from './hooks/useFinancialList';
 import billingService from '@/services/billing.service';
@@ -75,6 +75,16 @@ const translations = {
     overdueHeader: 'Gecikmiş',
     refresh: 'Yenile',
     newTransaction: 'Yeni İşlem',
+    makePayment: 'Ödeme Yap',
+    paymentModal: 'Ödeme Modalı',
+    paymentMethod: 'Ödeme Şekli',
+    selectPaymentMethod: 'Ödeme şekli seçiniz',
+    cash: 'Nakit',
+    creditCard: 'Kredi Kartı',
+    bankTransfer: 'Banka Havalesi',
+    processPayment: 'Ödemeyi İşle',
+    cancel: 'İptal',
+    apartmentInfo: 'Konut Bilgisi',
     
     // Stats cards
     totalRevenueCard: 'Toplam Gelir',
@@ -152,6 +162,16 @@ const translations = {
     overdueHeader: 'Overdue',
     refresh: 'Refresh',
     newTransaction: 'New Transaction',
+    makePayment: 'Make Payment',
+    paymentModal: 'Payment Modal',
+    paymentMethod: 'Payment Method',
+    selectPaymentMethod: 'Select payment method',
+    cash: 'Cash',
+    creditCard: 'Credit Card',
+    bankTransfer: 'Bank Transfer',
+    processPayment: 'Process Payment',
+    cancel: 'Cancel',
+    apartmentInfo: 'Apartment Info',
     
     // Stats cards
     totalRevenueCard: 'Total Revenue',
@@ -229,6 +249,16 @@ const translations = {
     overdueHeader: 'متأخر',
     refresh: 'تحديث',
     newTransaction: 'معاملة جديدة',
+    makePayment: 'دفع',
+    paymentModal: 'نافذة الدفع',
+    paymentMethod: 'طريقة الدفع',
+    selectPaymentMethod: 'اختر طريقة الدفع',
+    cash: 'نقداً',
+    creditCard: 'بطاقة ائتمان',
+    bankTransfer: 'تحويل بنكي',
+    processPayment: 'معالجة الدفع',
+    cancel: 'إلغاء',
+    apartmentInfo: 'معلومات الشقة',
     
     // Stats cards
     totalRevenueCard: 'إجمالي الإيرادات',
@@ -313,6 +343,11 @@ export default function FinancialListPage() {
     const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
+    
+    // Payment Modal State
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
 
     const router = useRouter();
 
@@ -501,6 +536,41 @@ export default function FinancialListPage() {
         }
     }, [router]);
 
+    // Handle payment action
+    const handlePayment = useCallback((transaction: any) => {
+        setSelectedTransaction(transaction);
+        setSelectedPaymentMethod('');
+        setShowPaymentModal(true);
+    }, []);
+
+    // Handle payment processing
+    const processPayment = useCallback(() => {
+        if (!selectedPaymentMethod) {
+            alert('Lütfen ödeme şekli seçiniz!');
+            return;
+        }
+        
+        console.log('Processing payment:', {
+            transaction: selectedTransaction,
+            paymentMethod: selectedPaymentMethod
+        });
+        
+        // TODO: Implement actual payment processing API call
+        alert(`Ödeme işlemi başlatılıyor: ${selectedTransaction?.title} - ${selectedPaymentMethod}`);
+        
+        // Close modal
+        setShowPaymentModal(false);
+        setSelectedTransaction(null);
+        setSelectedPaymentMethod('');
+    }, [selectedTransaction, selectedPaymentMethod]);
+
+    // Close payment modal
+    const closePaymentModal = useCallback(() => {
+        setShowPaymentModal(false);
+        setSelectedTransaction(null);
+        setSelectedPaymentMethod('');
+    }, []);
+
     // Helper functions to translate backend values
     const getTranslatedTransactionType = useCallback((transactionType: any) => {
         if (!transactionType || !transactionType.label) return '';
@@ -649,6 +719,27 @@ export default function FinancialListPage() {
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(transaction.transactionDate).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                     </div>
+                </div>
+            ),
+        },
+        {
+            key: 'payment',
+            header: t.makePayment,
+            render: (_value: any, transaction: any) => (
+                <div className="flex justify-center">
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handlePayment(transaction)}
+                        disabled={transaction.status.id === 'paid'}
+                        className={`px-3 py-1 text-sm ${
+                            transaction.status.id === 'paid' 
+                                ? 'opacity-50 cursor-not-allowed' 
+                                : ''
+                        }`}
+                    >
+                        {t.makePayment}
+                    </Button>
                 </div>
             ),
         },
@@ -1057,6 +1148,118 @@ export default function FinancialListPage() {
                 </div>
 
             </div>
+
+            {/* Payment Modal */}
+            <Modal
+                isOpen={showPaymentModal}
+                onClose={closePaymentModal}
+                title={t.paymentModal}
+                icon={CreditCard}
+                size="md"
+                footer={
+                    <div className="flex gap-3">
+                        <Button
+                            variant="outline"
+                            onClick={closePaymentModal}
+                            className="flex-1"
+                        >
+                            {t.cancel}
+                        </Button>
+                        <Button
+                            onClick={processPayment}
+                            disabled={!selectedPaymentMethod}
+                            className="flex-1"
+                        >
+                            {t.processPayment}
+                        </Button>
+                    </div>
+                }
+            >
+                {selectedTransaction && (
+                    <div className="space-y-4">
+                        {/* Apartment Info - Read Only */}
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-3">
+                                {t.apartmentInfo}
+                            </label>
+                            <div className="p-4 bg-gradient-to-r from-background-secondary to-background-secondary/80 rounded-lg border border-primary-gold/30 shadow-sm">
+                                {/* Property Header */}
+                                <div className="flex items-center gap-3 mb-4 pb-3 border-b border-primary-gold/20">
+                                    <div className="w-10 h-10 bg-primary-gold/10 rounded-lg flex items-center justify-center">
+                                        <Building className="w-5 h-5 text-primary-gold" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-text-primary text-lg">
+                                            {selectedTransaction.apartment?.number || 'N/A'}
+                                        </h3>
+                                        <p className="text-sm text-text-secondary">
+                                            {selectedTransaction._originalData?.property?.name || selectedTransaction.transactionType?.label || 'Property Type'}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {/* Property Details Grid */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-primary-gold rounded-full"></div>
+                                            <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">Alan</span>
+                                        </div>
+                                        <p className="text-sm font-semibold text-text-primary ml-4">
+                                             {selectedTransaction._originalData?.property?.area || selectedTransaction.apartment?.floor || 0} m²
+                                         </p>
+                                    </div>
+                                    
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 bg-primary-gold rounded-full"></div>
+                                            <span className="text-xs font-medium text-text-secondary uppercase tracking-wide">Blok No</span>
+                                        </div>
+                                        <p className="text-sm font-semibold text-text-primary ml-4">
+                                            {selectedTransaction._originalData?.property?.propertyNumber || selectedTransaction.apartment?.block || 'N/A'}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {/* Assigned Person */}
+                                <div className="mt-4 pt-3 border-t border-primary-gold/20">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-primary-gold/10 rounded-full flex items-center justify-center">
+                                            <User className="w-4 h-4 text-primary-gold" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-medium text-text-secondary uppercase tracking-wide">Sorumlu Kişi</p>
+                                            <p className="text-sm font-semibold text-text-primary">
+                                                {selectedTransaction._originalData?.assignedTo ? 
+                                                    `${selectedTransaction._originalData.assignedTo.firstName} ${selectedTransaction._originalData.assignedTo.lastName}` : 
+                                                    selectedTransaction.resident?.name || 'Belirtilmemiş'
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Payment Method Selection */}
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-2">
+                                {t.paymentMethod}
+                            </label>
+                            <select
+                                value={selectedPaymentMethod}
+                                onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                                className="w-full p-3 border border-primary-gold/30 rounded-md bg-background-secondary text-text-primary focus:ring-2 focus:ring-primary-gold focus:border-primary-gold"
+                            >
+                                <option value="">{t.selectPaymentMethod}</option>
+                                <option value="cash">{t.cash}</option>
+                                <option value="creditCard">{t.creditCard}</option>
+                                <option value="bankTransfer">{t.bankTransfer}</option>
+                            </select>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </ProtectedRoute>
     );
 }

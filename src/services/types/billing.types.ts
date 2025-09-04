@@ -53,6 +53,7 @@ export interface ResponseBillDto {
     name: string;
     propertyNumber: string;
     floor?: number | null;
+    area?: string;
   };
   assignedTo?: {
     id: string;
