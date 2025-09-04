@@ -62,7 +62,9 @@ export interface Staff extends Omit<User, 'status'> {
   avatar?: string
   notes?: string
   isManager: boolean
+  isActive?: boolean
   isOnDuty?: boolean
+  isOnLeave?: boolean
   
   // Override status to use StaffStatus
   status: StaffStatus

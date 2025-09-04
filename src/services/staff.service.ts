@@ -999,6 +999,55 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
       throw error
     }
   }
+
+  // Toggle Methods
+  async toggleActiveStatus(id: string | number): Promise<ApiResponse<Staff>> {
+    try {
+      this.logger.info('Toggling staff active status', { staffId: id })
+
+      const response = await apiClient.patch<Staff>(
+        `${this.baseEndpoint}/${id}/toggle-active`
+      )
+
+      this.logger.info('Staff active status toggled successfully')
+      return response
+    } catch (error) {
+      this.logger.error('Failed to toggle staff active status', error)
+      throw error
+    }
+  }
+
+  async toggleDutyStatus(id: string | number): Promise<ApiResponse<Staff>> {
+    try {
+      this.logger.info('Toggling staff duty status', { staffId: id })
+
+      const response = await apiClient.patch<Staff>(
+        `${this.baseEndpoint}/${id}/toggle-duty`
+      )
+
+      this.logger.info('Staff duty status toggled successfully')
+      return response
+    } catch (error) {
+      this.logger.error('Failed to toggle staff duty status', error)
+      throw error
+    }
+  }
+
+  async toggleLeaveStatus(id: string | number): Promise<ApiResponse<Staff>> {
+    try {
+      this.logger.info('Toggling staff leave status', { staffId: id })
+
+      const response = await apiClient.patch<Staff>(
+        `${this.baseEndpoint}/${id}/toggle-leave`
+      )
+
+      this.logger.info('Staff leave status toggled successfully')
+      return response
+    } catch (error) {
+      this.logger.error('Failed to toggle staff leave status', error)
+      throw error
+    }
+  }
 }
 
 export const staffService = new StaffService()

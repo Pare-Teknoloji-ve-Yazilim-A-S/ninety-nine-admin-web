@@ -17,7 +17,8 @@ import { transformApiStaffToStaff } from '../../staff/utils/transformations'
 import type { Staff, UpdateStaffDto } from '@/services/types/staff.types'
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal'
 import EditStaffModal from '@/components/staff/EditStaffModal'
-import { ShieldAlert } from 'lucide-react'
+import Modal from '@/app/components/ui/Modal'
+import { ShieldAlert, Clock } from 'lucide-react'
 import { usePermissionCheck } from '@/hooks/usePermissionCheck'
 import { UPDATE_STAFF_PERMISSION_ID, DELETE_STAFF_PERMISSION_ID } from '@/app/components/ui/Sidebar'
 
@@ -33,6 +34,7 @@ export default function StaffDetailPage() {
   const [deleting, setDeleting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showPermissionModal, setShowPermissionModal] = useState(false)
 
   // Permission checks
   const { hasPermission } = usePermissionCheck()
@@ -128,6 +130,11 @@ export default function StaffDetailPage() {
 
   const fullName = `${staff.firstName ?? ''} ${staff.lastName ?? ''}`.trim()
 
+  // Handle permission modal open
+  const handlePermissionModalOpen = () => {
+    setShowPermissionModal(true)
+  }
+
   const handleConfirmDelete = async () => {
     if (!staff?.id) return
     try {
@@ -221,6 +228,9 @@ export default function StaffDetailPage() {
 
             {/* Right Actions */}
             <div className="mb-4 flex justify-end gap-3">
+              <Button variant="outline" size="md" icon={Clock} onClick={handlePermissionModalOpen}>
+                İzin İşlemleri
+              </Button>
               {hasUpdateStaffPermission && (
                 <Button variant="secondary" size="md" icon={Edit} onClick={() => setShowEditModal(true)}>
                   Düzenle
@@ -426,6 +436,195 @@ export default function StaffDetailPage() {
         staff={staff}
         onSave={handleSaveStaff}
       />
+      
+      {/* Permission Modal */}
+      <Modal
+        isOpen={showPermissionModal}
+        onClose={() => setShowPermissionModal(false)}
+        title="İzin ve Mesai İşlemleri"
+        size="md"
+      >
+        <div className="space-y-6">
+          {/* Staff Info */}
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+            <h4 className="font-medium text-text-on-light dark:text-text-on-dark mb-3">Personel Bilgileri</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-text-light-muted dark:text-text-muted">Ad Soyad:</span>
+                <span className="ml-2 font-medium text-text-on-light dark:text-text-on-dark">
+                  {staff?.firstName} {staff?.lastName}
+                </span>
+              </div>
+              <div>
+                <span className="text-text-light-muted dark:text-text-muted">Email:</span>
+                <span className="ml-2 font-medium text-text-on-light dark:text-text-on-dark">
+                  {staff?.email}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Information */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-text-on-light dark:text-text-on-dark">Durum Bilgileri</h4>
+            
+            {/* Is Active Status */}
+            <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${
+                  staff?.isActive ? 'bg-green-500' : 'bg-red-500'
+                }`}></div>
+                <span className="text-text-on-light dark:text-text-on-dark">Aktif Durumu</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  staff?.isActive 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                }`}>
+                  {staff?.isActive ? 'Aktif' : 'Pasif'}
+                </span>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={async () => {
+                    try {
+                      // Optimistic update - immediately update UI
+                      const newActiveStatus = !staff?.isActive
+                      setStaff(prev => prev ? { 
+                        ...prev, 
+                        isActive: newActiveStatus,
+                        // If becoming inactive, also set duty to false
+                        isOnDuty: newActiveStatus ? prev.isOnDuty : false
+                      } : prev)
+                      
+                      await staffService.toggleActiveStatus(staff?.id!)
+                      
+                      // Refresh staff data to ensure consistency
+                      const response = await staffService.getAdminStaffById(params.id as string)
+                      if (response.success && response.data) {
+                        const transformedStaff = transformApiStaffToStaff(response.data)
+                        setStaff(transformedStaff)
+                      }
+                    } catch (error) {
+                      console.error('Failed to toggle active status:', error)
+                      // Revert optimistic update on error
+                      setStaff(prev => prev ? { ...prev, isActive: !prev.isActive } : prev)
+                    }
+                  }}
+                >
+                  {staff?.isActive ? 'Pasif Yap' : 'Aktif Yap'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Is On Duty */}
+            <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${
+                  staff?.isOnDuty ? 'bg-green-500' : 'bg-red-500'
+                }`}></div>
+                <span className="text-text-on-light dark:text-text-on-dark">Görev Durumu</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  staff?.isOnDuty 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                }`}>
+                  {staff?.isOnDuty ? 'Görevde' : 'Görevde Değil'}
+                </span>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={async () => {
+                    try {
+                      // Optimistic update - immediately update UI
+                      setStaff(prev => prev ? { ...prev, isOnDuty: !prev.isOnDuty } : prev)
+                      
+                      await staffService.toggleDutyStatus(staff?.id!)
+                      
+                      // Refresh staff data to ensure consistency
+                      const response = await staffService.getAdminStaffById(params.id as string)
+                      if (response.success && response.data) {
+                        const transformedStaff = transformApiStaffToStaff(response.data)
+                        setStaff(transformedStaff)
+                      }
+                    } catch (error) {
+                      console.error('Failed to toggle duty status:', error)
+                      // Revert optimistic update on error
+                      setStaff(prev => prev ? { ...prev, isOnDuty: !prev.isOnDuty } : prev)
+                    }
+                  }}
+                >
+                  {staff?.isOnDuty ? 'Görevden Al' : 'Göreve Ver'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Is On Leave */}
+            <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${
+                  staff?.isOnLeave ? 'bg-green-500' : 'bg-red-500'
+                }`}></div>
+                <span className="text-text-on-light dark:text-text-on-dark">İzin Durumu</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  staff?.isOnLeave 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                }`}>
+                  {staff?.isOnLeave ? 'İzinde' : 'İzinde Değil'}
+                </span>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={async () => {
+                    try {
+                      // Optimistic update - immediately update UI
+                      const newLeaveStatus = !staff?.isOnLeave
+                      setStaff(prev => prev ? { 
+                        ...prev, 
+                        isOnLeave: newLeaveStatus,
+                        // If going on leave, also set duty to false
+                        isOnDuty: newLeaveStatus ? false : prev.isOnDuty
+                      } : prev)
+                      
+                      await staffService.toggleLeaveStatus(staff?.id!)
+                      
+                      // Refresh staff data to ensure consistency
+                      const response = await staffService.getAdminStaffById(params.id as string)
+                      if (response.success && response.data) {
+                        const transformedStaff = transformApiStaffToStaff(response.data)
+                        setStaff(transformedStaff)
+                      }
+                    } catch (error) {
+                      console.error('Failed to toggle leave status:', error)
+                      // Revert optimistic update on error
+                      setStaff(prev => prev ? { ...prev, isOnLeave: !prev.isOnLeave } : prev)
+                    }
+                  }}
+                >
+                  {staff?.isOnLeave ? 'İzni Bitir' : 'İzin Ver'}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 pt-4 border-t border-border-light dark:border-border">
+            <Button
+              onClick={() => setShowPermissionModal(false)}
+              variant="outline"
+              size="md"
+            >
+              Kapat
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </ProtectedRoute>
   )
 }
