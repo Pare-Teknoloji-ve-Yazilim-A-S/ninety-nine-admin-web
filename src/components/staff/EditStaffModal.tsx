@@ -35,7 +35,7 @@ export default function EditStaffModal({ isOpen, onClose, staff, onSave }: EditS
         phone: staff.phone || '',
         nationalId: staff.nationalId || '',
         dateOfBirth: staff.dateOfBirth || '',
-        address: staff.address || '',
+
         salary: staff.salary || 0,
         startDate: staff.startDate || '',
         department: staff.department,
@@ -241,7 +241,17 @@ function PersonalInfoTab({ formData, onChange }: { formData: Partial<Staff>, onC
           />
         </div>
         
-
+        <div>
+          <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
+            TC Kimlik No
+          </label>
+          <input
+            type="text"
+            value={formData.nationalId || ''}
+            onChange={(e) => onChange('nationalId', e.target.value)}
+            className="w-full px-3 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold"
+          />
+        </div>
         
         <div>
           <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
@@ -256,17 +266,7 @@ function PersonalInfoTab({ formData, onChange }: { formData: Partial<Staff>, onC
         </div>
       </div>
       
-      <div>
-        <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-          Adres
-        </label>
-        <textarea
-          value={formData.address || ''}
-          onChange={(e) => onChange('address', e.target.value)}
-          rows={3}
-          className="w-full px-3 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold"
-        />
-      </div>
+
     </div>
   )
 }
@@ -293,7 +293,7 @@ function DepartmentTab({
             Departman
           </label>
           <select
-            value={formData.department || ''}
+            value={typeof formData.department === 'string' ? formData.department : formData.department?.code || ''}
             onChange={(e) => onChange('department', e.target.value)}
             disabled={loading}
             className="w-full px-3 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold disabled:opacity-50"
@@ -301,7 +301,7 @@ function DepartmentTab({
             <option value="">{loading ? 'Yükleniyor...' : 'Departman Seçin'}</option>
             {departments.map((dept) => (
               <option key={dept} value={dept}>
-                {dept.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                {dept.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}
               </option>
             ))}
           </select>
@@ -312,7 +312,7 @@ function DepartmentTab({
             Pozisyon
           </label>
           <select
-            value={formData.position || ''}
+            value={typeof formData.position === 'string' ? formData.position : formData.position?.code || ''}
             onChange={(e) => onChange('position', e.target.value)}
             disabled={loading}
             className="w-full px-3 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold disabled:opacity-50"
@@ -320,7 +320,7 @@ function DepartmentTab({
             <option value="">{loading ? 'Yükleniyor...' : 'Pozisyon Seçin'}</option>
             {positions.map((pos) => (
               <option key={pos} value={pos}>
-                {pos.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                {pos.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}
               </option>
             ))}
           </select>
@@ -378,7 +378,7 @@ function RolesTab({
               Rol Seçin
             </label>
             <select
-              value={formData.role || ''}
+              value={typeof formData.role === 'string' ? formData.role : formData.role?.id || ''}
               onChange={(e) => onChange('role', e.target.value)}
               className="w-full px-3 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold"
             >

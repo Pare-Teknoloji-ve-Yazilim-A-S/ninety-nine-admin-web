@@ -42,7 +42,7 @@ export interface Staff extends Omit<User, 'status'> {
   // Personal Information
   nationalId?: string
   dateOfBirth?: string
-  address?: string
+
   emergencyContact?: EmergencyContact
   
   // Employment Information
@@ -116,7 +116,7 @@ export interface CreateStaffDto {
   phone?: string
   nationalId?: string
   dateOfBirth?: string
-  address?: string
+
   emergencyContact?: EmergencyContact
   
   // Employment Information
@@ -149,17 +149,19 @@ export interface UpdateStaffDto {
   phone?: string
   nationalId?: string
   dateOfBirth?: string
-  address?: string
+
   emergencyContact?: EmergencyContact
   
   // Employment Information
   employeeId?: string
   departmentId?: string
   positionId?: string
+  positionTitle?: string
   employmentType?: EmploymentType
   startDate?: string
   endDate?: string
   salary?: number
+  monthlySalary?: number
   managerId?: string
   
   // Additional Fields
@@ -167,10 +169,12 @@ export interface UpdateStaffDto {
   notes?: string
   isManager?: boolean
   status?: StaffStatus
+  employmentStatus?: StaffStatus
   
   // User fields
   username?: string
   role?: UserRole
+  roleId?: string
   permissions?: Permission[]
 }
 
@@ -209,7 +213,7 @@ export interface StaffProfileDto {
   phone?: string
   nationalId?: string
   dateOfBirth?: string
-  address?: string
+
   emergencyContact?: EmergencyContact
   avatar?: string
   notes?: string

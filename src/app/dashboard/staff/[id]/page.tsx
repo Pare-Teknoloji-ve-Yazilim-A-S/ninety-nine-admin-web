@@ -14,7 +14,7 @@ import { staffService } from '@/services/staff.service'
 import { roleService } from '@/services/role.service'
 import { apiClient } from '@/services/api/client'
 import { transformApiStaffToStaff } from '../../staff/utils/transformations'
-import type { Staff } from '@/services/types/staff.types'
+import type { Staff, UpdateStaffDto } from '@/services/types/staff.types'
 import ConfirmationModal from '@/app/components/ui/ConfirmationModal'
 import EditStaffModal from '@/components/staff/EditStaffModal'
 import { ShieldAlert } from 'lucide-react'
@@ -145,11 +145,61 @@ export default function StaffDetailPage() {
   const handleSaveStaff = async (updatedStaff: Partial<Staff>) => {
     if (!staff?.id) return
     try {
-      // Here you would call the update API
-      // await staffService.updateAdminStaff(staff.id, updatedStaff)
-      console.log('Updating staff with:', updatedStaff)
-      // For now, just update local state
-      setStaff(prev => prev ? { ...prev, ...updatedStaff } : null)
+      // Combine all data into a single UpdateStaffDto object
+      const updateData: UpdateStaffDto = {}
+      
+      // Personal information fields
+      if (updatedStaff.firstName !== undefined) updateData.firstName = updatedStaff.firstName
+      if (updatedStaff.lastName !== undefined) updateData.lastName = updatedStaff.lastName
+      if (updatedStaff.email !== undefined) updateData.email = updatedStaff.email
+      if (updatedStaff.phone !== undefined) updateData.phone = updatedStaff.phone
+      if (updatedStaff.nationalId !== undefined) updateData.nationalId = updatedStaff.nationalId
+      if (updatedStaff.dateOfBirth !== undefined) updateData.dateOfBirth = updatedStaff.dateOfBirth
+
+      if (updatedStaff.emergencyContact !== undefined) updateData.emergencyContact = updatedStaff.emergencyContact
+      
+      // Employment data
+      if (updatedStaff.employeeId !== undefined) updateData.employeeId = updatedStaff.employeeId
+      if (updatedStaff.department !== undefined) {
+        updateData.departmentId = typeof updatedStaff.department === 'string' ? updatedStaff.department : String(updatedStaff.department?.id || '')
+      }
+      if (updatedStaff.position !== undefined) {
+        // ÖNEMLİ: position alanı backend'de positionTitle olarak saklanıyor
+        updateData.positionTitle = typeof updatedStaff.position === 'string' ? updatedStaff.position : updatedStaff.position?.title
+      }
+      if (updatedStaff.employmentType !== undefined) updateData.employmentType = updatedStaff.employmentType
+      if (updatedStaff.startDate !== undefined) updateData.startDate = updatedStaff.startDate
+      if (updatedStaff.endDate !== undefined) updateData.endDate = updatedStaff.endDate
+      // ÖNEMLİ: salary alanı backend'de monthlySalary olarak saklanıyor
+      if (updatedStaff.salary !== undefined) updateData.monthlySalary = updatedStaff.salary
+      if (updatedStaff.managerId !== undefined) updateData.managerId = updatedStaff.managerId
+      if (updatedStaff.isManager !== undefined) updateData.isManager = updatedStaff.isManager
+      // ÖNEMLİ: status alanı backend'de employmentStatus olarak saklanıyor
+      if (updatedStaff.status !== undefined) updateData.employmentStatus = updatedStaff.status
+      if (updatedStaff.role !== undefined) updateData.roleId = updatedStaff.role.id
+      
+      console.log('Updating staff with:', updateData)
+      
+      // Update staff data using the single endpoint
+      const response = await staffService.updateStaff(staff.id, updateData)
+      if (!response.success) {
+        throw new Error('Failed to update staff')
+      }
+      
+      // Fetch updated staff data
+      const updatedResponse = await staffService.getStaffById(staff.id)
+      if (updatedResponse.success && updatedResponse.data) {
+        // Transform the response data before updating local state
+        const transformedStaff = transformApiStaffToStaff(updatedResponse.data as any)
+        
+        // Ensure salary is properly updated from the local form data
+        if (updatedStaff.salary !== undefined) {
+          transformedStaff.salary = updatedStaff.salary
+        }
+        
+        setStaff(transformedStaff)
+        console.log('Staff updated successfully')
+      }
     } catch (error) {
       console.error('Update staff failed:', error)
       throw error
@@ -266,10 +316,7 @@ export default function StaffDetailPage() {
                         <p className="text-text-light-muted dark:text-text-muted">Doğum Tarihi</p>
                         <p className="font-medium text-text-on-light dark:text-text-on-dark">{staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString('tr-TR') : '-'}</p>
                       </div>
-                      <div>
-                        <p className="text-text-light-muted dark:text-text-muted">Adres</p>
-                        <p className="font-medium text-text-on-light dark:text-text-on-dark">{staff.address || '-'}</p>
-                      </div>
+
                     </div>
                   </div>
                 </Card>

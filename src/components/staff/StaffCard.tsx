@@ -202,12 +202,7 @@ export function StaffCard({
                   <span>{staff.phone}</span>
                 </div>
               )}
-              {staff.address && (
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">{staff.address}</span>
-                </div>
-              )}
+
             </div>
 
             {/* Employment Details */}

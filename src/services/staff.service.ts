@@ -39,7 +39,7 @@ import { ApiResponse, PaginatedResponse } from './core/types'
 import { User } from './types/user.types'
 
 class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
-  protected baseEndpoint = '/api/staff'
+  protected baseEndpoint = '/admin/staff'
 
   constructor() {
     super('StaffService')

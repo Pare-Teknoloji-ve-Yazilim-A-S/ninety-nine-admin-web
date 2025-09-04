@@ -60,7 +60,7 @@ const translations = {
     phone: 'Telefon',
     dateOfBirth: 'Doğum Tarihi',
     nationalId: 'TC Kimlik No',
-    address: 'Adres',
+
     department: 'Departman',
     role: 'Rol',
     position: 'Pozisyon',
@@ -80,7 +80,7 @@ const translations = {
     emailPlaceholder: 'ornek@email.com',
     phonePlaceholder: '+90 555 123 45 67',
     nationalIdPlaceholder: '12345678901',
-    addressPlaceholder: 'Tam adres',
+
     departmentPlaceholder: 'Departman seçiniz',
     rolePlaceholder: 'Rol seçiniz',
     positionPlaceholder: 'Pozisyon seçiniz',
@@ -132,7 +132,7 @@ const translations = {
     phone: 'Phone',
     dateOfBirth: 'Date of Birth',
     nationalId: 'National ID',
-    address: 'Address',
+
     department: 'Department',
     role: 'Role',
     position: 'Position',
@@ -152,7 +152,7 @@ const translations = {
     emailPlaceholder: 'example@email.com',
     phonePlaceholder: '+90 555 123 45 67',
     nationalIdPlaceholder: '12345678901',
-    addressPlaceholder: 'Full address',
+
     departmentPlaceholder: 'Select department',
     rolePlaceholder: 'Select role',
     positionPlaceholder: 'Select position',
@@ -204,7 +204,7 @@ const translations = {
     phone: 'الهاتف',
     dateOfBirth: 'تاريخ الميلاد',
     nationalId: 'رقم الهوية الوطنية',
-    address: 'العنوان',
+
     department: 'القسم',
     role: 'الدور',
     position: 'المنصب',
@@ -224,7 +224,7 @@ const translations = {
     emailPlaceholder: 'example@email.com',
     phonePlaceholder: '+90 555 123 45 67',
     nationalIdPlaceholder: '12345678901',
-    addressPlaceholder: 'العنوان الكامل',
+
     departmentPlaceholder: 'اختر القسم',
     rolePlaceholder: 'اختر الدور',
     positionPlaceholder: 'اختر المنصب',
@@ -266,7 +266,7 @@ const createStaffFormSchema = (t: any) => z.object({
   lastName: z.string().min(1, t.lastNameRequired),
   email: z.string().email(t.validEmail),
   phone: z.string().optional(),
-  address: z.string().optional(),
+
   dateOfBirth: z.string().optional(),
   nationalId: z.string().optional(),
   department: z.string().min(1, t.departmentRequired), // Department enum code
@@ -347,7 +347,7 @@ export function StaffForm({
       lastName: staff?.lastName || '',
       email: staff?.email || '',
       phone: staff?.phone || '',
-      address: staff?.address || '',
+
       dateOfBirth: staff?.dateOfBirth || '',
       nationalId: staff?.nationalId || '',
       department: staff?.department?.id?.toString() || '',
@@ -422,7 +422,6 @@ export function StaffForm({
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
-        address: data.address,
         dateOfBirth: data.dateOfBirth,
         nationalId: data.nationalId,
         // enum-based mapping for admin API
@@ -613,23 +612,7 @@ export function StaffForm({
                 />
               </div>
               
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                      <FormLabel>{t.address}</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder={t.addressPlaceholder} 
-                          value={field.value || ''}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                )}
-              />
+
             </div>
 
             <Separator />

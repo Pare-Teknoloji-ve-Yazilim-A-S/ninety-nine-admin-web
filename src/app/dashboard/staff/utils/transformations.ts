@@ -82,9 +82,9 @@ export function transformApiStaffToStaff(apiStaff: any): Staff {
     permissions: [] as any,
 
     // Personal Information
-    nationalId: user?.tcKimlikNo || undefined,
+    nationalId: apiStaff?.nationalId || user?.tcKimlikNo || undefined,
     dateOfBirth: user?.dateOfBirth || undefined,
-    address: undefined,
+
     emergencyContact: undefined,
 
     // Employment Information
