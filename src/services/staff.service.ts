@@ -951,6 +951,21 @@ class StaffService extends BaseService<Staff, CreateStaffDto, UpdateStaffDto> {
     }
   }
 
+  // Get maintenance technicians on duty
+  async getMaintenanceTechniciansOnDuty(): Promise<ApiResponse<Staff[]>> {
+    try {
+      this.logger.info('Fetching maintenance technicians on duty')
+
+      const response = await apiClient.get<Staff[]>(`${this.baseEndpoint}/maintenance/on-duty`)
+
+      this.logger.info('Maintenance technicians fetched successfully')
+      return response
+    } catch (error) {
+      this.logger.error('Failed to fetch maintenance technicians', error)
+      throw error
+    }
+  }
+
   // Integration with User Service
   async convertUserToStaff(userId: string | number, staffData: Omit<CreateStaffDto, 'userId'>): Promise<ApiResponse<Staff>> {
     try {

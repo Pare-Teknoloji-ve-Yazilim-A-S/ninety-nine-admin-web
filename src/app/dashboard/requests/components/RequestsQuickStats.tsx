@@ -50,11 +50,13 @@ const translations = {
 interface RequestsQuickStatsProps {
   summary: TicketSummary | null;
   loading: boolean;
+  onCardClick?: (filterType: string, filterValue: string) => void;
 }
 
 export default function RequestsQuickStats({
   summary,
-  loading = false
+  loading = false,
+  onCardClick
 }: RequestsQuickStatsProps) {
   // Dil tercihini localStorage'dan al
   const [currentLanguage, setCurrentLanguage] = useState('tr');
@@ -118,35 +120,45 @@ export default function RequestsQuickStats({
       value: summary.openTickets,
       icon: <Clock className="h-6 w-6" />,
       color: '#3B82F6', // Blue
-      bgColor: '#DBEAFE'
+      bgColor: '#DBEAFE',
+      filterType: 'status',
+      filterValue: 'open'
     },
     {
       label: t.inProgress,
       value: summary.inProgressTickets,
       icon: <AlertTriangle className="h-6 w-6" />,
       color: '#F59E0B', // Amber
-      bgColor: '#FEF3C7'
+      bgColor: '#FEF3C7',
+      filterType: 'status',
+      filterValue: 'in_progress'
     },
     {
       label: t.pending,
       value: summary.waitingTickets,
       icon: <Calendar className="h-6 w-6" />,
       color: '#8B5CF6', // Purple
-      bgColor: '#EDE9FE'
+      bgColor: '#EDE9FE',
+      filterType: 'status',
+      filterValue: 'waiting'
     },
     {
       label: t.resolved,
       value: summary.resolvedTickets,
       icon: <CheckCircle className="h-6 w-6" />,
       color: '#10B981', // Green
-      bgColor: '#D1FAE5'
+      bgColor: '#D1FAE5',
+      filterType: 'status',
+      filterValue: 'resolved'
     },
     {
       label: t.overdue,
       value: summary.overdueTickets,
       icon: <AlertCircle className="h-6 w-6" />,
       color: '#DC2626', // Red
-      bgColor: '#FEE2E2'
+      bgColor: '#FEE2E2',
+      filterType: 'status',
+      filterValue: 'overdue'
     }
   ];
 
@@ -154,7 +166,11 @@ export default function RequestsQuickStats({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-6">
       {stats.map((stat, index) => {
         return (
-          <Card key={index} className="p-8 hover:shadow-lg transition-shadow">
+          <Card 
+            key={index} 
+            className="p-8 hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            onClick={() => onCardClick && onCardClick(stat.filterType, stat.filterValue)}
+          >
             <div className="space-y-6">
               {/* Header with Icon and Value */}
               <div className="flex items-center justify-between">

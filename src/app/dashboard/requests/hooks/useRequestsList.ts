@@ -410,6 +410,7 @@ export function useRequestsList(): UseRequestsListResult {
       
       console.log('API filters:', apiFilters);
       console.log('Priority filter being sent:', apiFilters.priority);
+      console.log('AssigneeId filter being sent:', apiFilters.assigneeId);
       // Build URL params manually to handle array values
       const urlParams = new URLSearchParams();
       if (apiFilters.page) urlParams.append('page', apiFilters.page.toString());
@@ -423,8 +424,11 @@ export function useRequestsList(): UseRequestsListResult {
         }
       }
       if (apiFilters.type) urlParams.append('type', apiFilters.type);
+      if (apiFilters.assigneeId) urlParams.append('assigneeId', apiFilters.assigneeId);
+      if (apiFilters.propertyId) urlParams.append('propertyId', apiFilters.propertyId);
       if (apiFilters.orderColumn) urlParams.append('orderColumn', apiFilters.orderColumn);
       if (apiFilters.orderBy) urlParams.append('orderBy', apiFilters.orderBy);
+      if (apiFilters.search) urlParams.append('search', apiFilters.search);
       
       console.log('URL params:', urlParams.toString());
       

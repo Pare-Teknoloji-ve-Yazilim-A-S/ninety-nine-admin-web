@@ -6,6 +6,7 @@ import ViewToggle from '@/app/components/ui/ViewToggle';
 import Badge from '@/app/components/ui/Badge';
 import Select from '@/app/components/ui/Select';
 import { RequestsFiltersBarProps } from '@/services/types/request-list.types';
+import { useMaintenanceTechnicians } from '@/hooks/useMaintenanceTechnicians';
 import { Filter, List, Grid3X3, X, Search } from 'lucide-react';
 
 // Dil çevirileri
@@ -189,6 +190,9 @@ export default function RequestsFiltersBar({
     }
   }, []);
 
+  // Fetch maintenance technicians
+  const { technicians, loading: techniciansLoading } = useMaintenanceTechnicians();
+
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
 
@@ -325,12 +329,13 @@ export default function RequestsFiltersBar({
               onChange={(e: any) => handleFilterChange('assignee', e.target.value)}
               placeholder={t.allTechnicians}
               options={[
-                { value: '', label: t.allTechnicians },
-                { value: 'unassigned', label: t.unassigned },
-                { value: 'tech1', label: t.tech1 },
-                { value: 'tech2', label: t.tech2 },
-                { value: 'tech3', label: t.tech3 }
-              ]}
+                  { value: '', label: t.allTechnicians },
+                  ...(technicians?.map(tech => ({
+                    value: tech.value,
+                    label: tech.label
+                  })) || [])
+                ]}
+                disabled={techniciansLoading}
             />
           </div>
         </div>

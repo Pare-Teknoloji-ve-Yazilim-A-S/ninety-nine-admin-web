@@ -243,6 +243,17 @@ export default function RequestsListPage() {
     setSelectedRequests([]);
   };
 
+  // Kart tıklama handler'ı
+  const handleCardClick = (filterType: string, filterValue: string) => {
+    // Filtreleri güncelle
+    const newFilters = {
+      [filterType]: filterValue
+    };
+    
+    // Filtreleri uygula
+    handleApplyFilters(newFilters);
+  };
+
 
 
   const getActiveFiltersCount = () => {
@@ -289,6 +300,7 @@ export default function RequestsListPage() {
             <RequestsQuickStats
               summary={ticketSummary}
               loading={summaryLoading}
+              onCardClick={handleCardClick}
             />
 
             {/* Filters Bar */}
