@@ -12,6 +12,7 @@ export interface StaffFilters {
   employmentStatus?: StaffStatus[]
   positionTitle?: string
   search?: string
+  isOnDuty?: boolean
 }
 
 export interface StaffPagination {

@@ -107,6 +107,7 @@ export function transformApiStaffToStaff(apiStaff: any): Staff {
 
     // Status overrides
     status: toStaffStatus(apiStaff?.employmentStatus, apiStaff?.isActive),
+    isOnDuty: apiStaff?.isOnDuty || false,
   } as unknown as Staff
 }
 

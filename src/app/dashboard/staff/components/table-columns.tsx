@@ -17,6 +17,7 @@ const translations = {
     status: 'Durum',
     employmentType: 'İstihdam Türü',
     startDate: 'İşe Başlama',
+    isOnDuty: 'Görevde',
     
     // Tooltips
     detail: 'Detay'
@@ -29,6 +30,7 @@ const translations = {
     status: 'Status',
     employmentType: 'Employment Type',
     startDate: 'Start Date',
+    isOnDuty: 'On Duty',
     
     // Tooltips
     detail: 'Detail'
@@ -41,6 +43,7 @@ const translations = {
     status: 'الحالة',
     employmentType: 'نوع التوظيف',
     startDate: 'تاريخ البدء',
+    isOnDuty: 'في الخدمة',
     
     // Tooltips
     detail: 'التفاصيل'
@@ -118,6 +121,17 @@ export function getTableColumns({ onView, canViewDetail = true }: { onView: (s: 
       accessor: (row: Staff) => row.startDate,
       render: (value: string) => formatDate(value),
       minWidth: '100px'
+    },
+    {
+      id: 'isOnDuty',
+      header: t.isOnDuty,
+      accessor: (row: Staff) => row.isOnDuty,
+      render: (value: boolean) => (
+        <Badge variant={value ? 'success' : 'secondary'}>
+          {value ? (currentLanguage === 'tr' ? 'Görevde' : currentLanguage === 'en' ? 'On Duty' : 'في الخدمة') : (currentLanguage === 'tr' ? 'Görevde Değil' : currentLanguage === 'en' ? 'Off Duty' : 'خارج الخدمة')}
+        </Badge>
+      ),
+      minWidth: '120px'
     },
     {
       id: 'actions',

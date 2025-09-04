@@ -86,6 +86,7 @@ export function useStaffData({ initialData }: UseStaffDataProps = {}) {
         employmentStatus: (filters.employmentStatus && filters.employmentStatus[0]) || undefined,
         isActive: filters.status?.includes(StaffStatus.ACTIVE) ? true : undefined,
         isOnLeave: filters.status?.includes(StaffStatus.ON_LEAVE) ? true : undefined,
+        isOnDuty: filters.isOnDuty,
         department: (filters.department && filters.department[0]) || undefined,
         page: pagination.page,
         limit: pagination.limit,
