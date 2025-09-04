@@ -52,6 +52,7 @@ import { useFinancialList } from './hooks/useFinancialList';
 import billingService from '@/services/billing.service';
 import { unitPricesService, UnitPrice } from '@/services/unit-prices.service';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
+import { useToast } from '@/hooks/useToast';
 
 // New Transaction butonu için permission
 const CREATE_TRANSACTION_PERMISSION_ID = '8d8f0454-7d81-4903-9106-d64a73ba9dc6';
@@ -325,6 +326,9 @@ const translations = {
 };
 
 export default function FinancialListPage() {
+    // Toast hook
+    const toast = useToast();
+    
     // Dil tercihini localStorage'dan al
     const [currentLanguage, setCurrentLanguage] = useState('tr');
     useEffect(() => {
@@ -544,25 +548,48 @@ export default function FinancialListPage() {
     }, []);
 
     // Handle payment processing
-    const processPayment = useCallback(() => {
+    const processPayment = useCallback(async () => {
         if (!selectedPaymentMethod) {
-            alert('Lütfen ödeme şekli seçiniz!');
+            toast.warning('Lütfen ödeme şekli seçiniz!');
             return;
         }
         
-        console.log('Processing payment:', {
-            transaction: selectedTransaction,
-            paymentMethod: selectedPaymentMethod
-        });
-        
-        // TODO: Implement actual payment processing API call
-        alert(`Ödeme işlemi başlatılıyor: ${selectedTransaction?.title} - ${selectedPaymentMethod}`);
-        
-        // Close modal
-        setShowPaymentModal(false);
-        setSelectedTransaction(null);
-        setSelectedPaymentMethod('');
-    }, [selectedTransaction, selectedPaymentMethod]);
+        if (!selectedTransaction) {
+            toast.error('Seçili işlem bulunamadı!');
+            return;
+        }
+
+        try {
+            // Prepare payment data - only send what the API expects
+            const paymentData = {
+                billIds: [selectedTransaction.id],
+                paidAt: new Date().toISOString()
+            };
+
+            console.log('Processing payment:', paymentData);
+            console.log('Payment method:', selectedPaymentMethod);
+
+            // Call the API to mark bill as paid
+            await billingService.markBillsAsPaidBulk(paymentData);
+            
+            // Show success message
+            toast.success(`Ödeme başarıyla kaydedildi: ${selectedTransaction?.title} - ${selectedPaymentMethod}`);
+            
+            // Refresh the data
+            if (typeof refetch === 'function') {
+                refetch();
+            }
+            
+        } catch (error) {
+            console.error('Payment processing error:', error);
+            toast.error('Ödeme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+        } finally {
+            // Close modal
+            setShowPaymentModal(false);
+            setSelectedTransaction(null);
+            setSelectedPaymentMethod('');
+        }
+    }, [selectedTransaction, selectedPaymentMethod, refetch, toast]);
 
     // Close payment modal
     const closePaymentModal = useCallback(() => {
