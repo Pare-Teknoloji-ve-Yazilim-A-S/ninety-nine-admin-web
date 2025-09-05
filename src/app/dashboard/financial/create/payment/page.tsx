@@ -31,6 +31,7 @@ import type { ResponseBillDto } from '@/services/types/billing.types';
 import TablePagination from '@/app/components/ui/TablePagination';
 import { PAYMENT_METHOD_OPTIONS, PaymentMethod } from '@/services/types/billing.types';
 import { enumsService } from '@/services/enums.service';
+import ConfirmationModal from '@/app/components/ui/ConfirmationModal';
 
 
 // Dil çevirileri
@@ -232,6 +233,8 @@ export default function CreatePaymentPage() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | undefined>(undefined);
   const [appEnums, setAppEnums] = useState<Record<string, any> | null>(null);
+  const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+  const [pendingBill, setPendingBill] = useState<ResponseBillDto | null>(null);
   const router = useRouter();
 
   // Dil tercihini localStorage'dan al
@@ -290,6 +293,43 @@ export default function CreatePaymentPage() {
 
   const handleGoBack = () => {
     router.back();
+  };
+
+  // Check if the new bill has a different property than existing selected bills
+  const checkPropertyConflict = (newBill: ResponseBillDto, existingBills: ResponseBillDto[]): boolean => {
+    if (existingBills.length === 0) return false;
+    
+    const newPropertyId = newBill.property?.id;
+    const existingPropertyIds = existingBills.map(bill => bill.property?.id).filter(Boolean);
+    
+    return existingPropertyIds.length > 0 && !existingPropertyIds.includes(newPropertyId);
+  };
+
+  // Handle bill selection with property conflict check
+  const handleBillSelection = (bill: ResponseBillDto) => {
+    const hasConflict = checkPropertyConflict(bill, selectedBills);
+    
+    if (hasConflict) {
+      setPendingBill(bill);
+      setIsWarningModalOpen(true);
+    } else {
+      setSelectedBills(prev => [...prev, bill]);
+    }
+  };
+
+  // Handle warning modal confirmation
+  const handleWarningConfirm = () => {
+    if (pendingBill) {
+      setSelectedBills(prev => [...prev, pendingBill]);
+    }
+    setIsWarningModalOpen(false);
+    setPendingBill(null);
+  };
+
+  // Handle warning modal cancel
+  const handleWarningCancel = () => {
+    setIsWarningModalOpen(false);
+    setPendingBill(null);
   };
 
   // Initial fetch
@@ -536,7 +576,7 @@ export default function CreatePaymentPage() {
                                   type="button"
                                   variant="secondary"
                                   size="sm"
-                                  onClick={() => setSelectedBills(prev => [...prev, b])}
+                                  onClick={() => handleBillSelection(b)}
                                 >
                                   {t.select}
                                 </Button>
@@ -658,6 +698,18 @@ export default function CreatePaymentPage() {
             </div>
           </main>
         </div>
+
+        {/* Warning Modal */}
+         <ConfirmationModal
+           isOpen={isWarningModalOpen}
+           onClose={handleWarningCancel}
+           onConfirm={handleWarningConfirm}
+           title="Farklı Konut Uyarısı"
+           description={`WF0103 başka bir konut. Eklemek istediğinize emin misiniz?`}
+           confirmText="Ekle"
+           cancelText="İptal"
+           variant="warning"
+         />
       </div>
     </ProtectedRoute>
   );

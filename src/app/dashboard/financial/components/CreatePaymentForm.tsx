@@ -273,7 +273,22 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
       // Bulk mark as paid
       const paidAtIso = new Date().toISOString();
       const billIds = bills.map(b => b.id);
-      const bulkResult = await billingService.markBillsAsPaidBulk({ billIds, paidAt: paidAtIso });
+      
+      // Birden çok fatura için ek parametreler
+      const bulkParams: any = {
+        billIds, 
+        paidAt: paidAtIso,
+        paymentMethod: selectedPaymentMethod || data.paymentMethod || 'CASH'
+      };
+      
+      // Birden çok fatura varsa bulk endpoint için ek parametreler ekle
+      if (billIds.length > 1) {
+        bulkParams.processedBy = 'admin-user-id'; // TODO: Gerçek kullanıcı ID'si kullanılmalı
+        bulkParams.notes = 'Toplu ödeme';
+        bulkParams.batchReference = `BATCH-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+      }
+      
+      const bulkResult = await billingService.markBillsAsPaidBulk(bulkParams);
       onSuccess(bulkResult);
       reset();
     } catch (error: any) {

@@ -438,20 +438,54 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
 
   /**
    * Birden çok faturayı ödenmiş olarak işaretle
-   * PATCH /admin/billing/mark-as-paid
+   * PATCH /admin/billing/mark-as-paid (tek fatura için)
+   * POST /admin/billing/mark-bills-as-paid-bulk (birden çok fatura için)
    */
-  async markBillsAsPaidBulk(params: { billIds: string[]; paidAt: string }): Promise<{ updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> }> {
+  async markBillsAsPaidBulk(params: { 
+    billIds: string[]; 
+    paidAt: string; 
+    paymentMethod?: string;
+    processedBy?: string;
+    notes?: string;
+    batchReference?: string;
+  }): Promise<{ updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> }> {
     this.logger.info('Marking bills as paid (bulk)', params);
+    
     try {
-      const response = await apiClient.patch<{ data: { updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> } }>(
-        `${this.baseEndpoint}/mark-as-paid`,
-        params
-      );
-      const root = (response as any)?.data || {};
-      return {
-        updatedCount: root?.updatedCount ?? root?.data?.updatedCount ?? 0,
-        updatedBills: root?.updatedBills ?? root?.data?.updatedBills ?? [],
-      };
+      // Tek fatura için mevcut endpoint kullan
+      if (params.billIds.length === 1) {
+        const response = await apiClient.patch<{ data: { updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> } }>(
+          `${this.baseEndpoint}/mark-as-paid`,
+          {
+            billIds: params.billIds,
+            paidAt: params.paidAt,
+            paymentMethod: params.paymentMethod
+          }
+        );
+        const root = (response as any)?.data || {};
+        return {
+          updatedCount: root?.updatedCount ?? root?.data?.updatedCount ?? 0,
+          updatedBills: root?.updatedBills ?? root?.data?.updatedBills ?? [],
+        };
+      } else {
+        // Birden çok fatura için bulk endpoint kullan
+        const response = await apiClient.post<{ data: { updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> } }>(
+          `${this.baseEndpoint}/mark-bills-as-paid-bulk`,
+          {
+            billIds: params.billIds,
+            paidAt: params.paidAt,
+            paymentMethod: params.paymentMethod,
+            processedBy: params.processedBy,
+            notes: params.notes,
+            batchReference: params.batchReference
+          }
+        );
+        const root = (response as any)?.data || {};
+        return {
+          updatedCount: root?.updatedCount ?? root?.data?.updatedCount ?? 0,
+          updatedBills: root?.updatedBills ?? root?.data?.updatedBills ?? [],
+        };
+      }
     } catch (error) {
       this.logger.error('Failed to mark bills as paid (bulk):', error);
       return { updatedCount: 0, updatedBills: [] };
