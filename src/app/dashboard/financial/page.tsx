@@ -485,42 +485,47 @@ export default function FinancialListPage() {
     const [unitPricesLoading, setUnitPricesLoading] = useState(true);
     
     useEffect(() => {
-        let isActive = true;
+        const abortController = new AbortController();
+        const signal = abortController.signal;
+        
         (async () => {
             try {
-                const res = await billingService.getPendingPaymentsSummary();
-                if (isActive) setPendingSummary(res.totalPendingAmount ?? 0);
+                const res = await billingService.getPendingPaymentsSummary({ signal });
+                if (!signal.aborted) setPendingSummary(res.totalPendingAmount ?? 0);
             } catch (e) {
-                if (isActive) setPendingSummary(0);
+                if (!signal.aborted) setPendingSummary(0);
             }
             try {
-                const res2 = await billingService.getPaidPaymentsSummary();
-                if (isActive) setPaidSummary(res2.totalPaidAmount ?? 0);
+                const res2 = await billingService.getPaidPaymentsSummary({ signal });
+                if (!signal.aborted) setPaidSummary(res2.totalPaidAmount ?? 0);
             } catch (e) {
-                if (isActive) setPaidSummary(0);
+                if (!signal.aborted) setPaidSummary(0);
             }
             try {
-                const res3 = await billingService.getOverduePendingPaymentsSummary();
-                if (isActive) setOverduePendingSummary(res3.totalOverduePendingAmount ?? 0);
+                const res3 = await billingService.getOverduePendingPaymentsSummary({ signal });
+                if (!signal.aborted) setOverduePendingSummary(res3.totalOverduePendingAmount ?? 0);
             } catch (e) {
-                if (isActive) setOverduePendingSummary(0);
+                if (!signal.aborted) setOverduePendingSummary(0);
             }
             
             // Fetch unit prices
             try {
-                const prices = await unitPricesService.getAllUnitPrices();
-                if (isActive) {
+                const prices = await unitPricesService.getAllUnitPrices({ signal });
+                if (!signal.aborted) {
                     setUnitPrices(prices);
                     setUnitPricesLoading(false);
                 }
             } catch (e) {
-                if (isActive) {
+                if (!signal.aborted) {
                     setUnitPrices([]);
                     setUnitPricesLoading(false);
                 }
             }
         })();
-        return () => { isActive = false };
+        
+        return () => {
+            abortController.abort();
+        };
     }, []);
 
     // Handle actions

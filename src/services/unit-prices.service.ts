@@ -24,9 +24,9 @@ export interface UnitPricesResponse {
 class UnitPricesService {
     private baseUrl = apiConfig.endpoints.unitPrices.base;
 
-    async getUnitPrices(): Promise<UnitPrice[]> {
+    async getUnitPrices(params?: { signal?: AbortSignal }): Promise<UnitPrice[]> {
         try {
-            const response = await apiClient.get<UnitPrice[]>(this.baseUrl);
+            const response = await apiClient.get<UnitPrice[]>(this.baseUrl, params?.signal ? { signal: params.signal } : undefined);
             console.log('🔧 Service response:', response);
             console.log('🔧 Response data:', response.data);
             console.log('🔧 Is response array:', Array.isArray(response));
@@ -38,8 +38,8 @@ class UnitPricesService {
         }
     }
 
-    async getAllUnitPrices(): Promise<UnitPrice[]> {
-        return this.getUnitPrices();
+    async getAllUnitPrices(params?: { signal?: AbortSignal }): Promise<UnitPrice[]> {
+        return this.getUnitPrices(params);
     }
 
     async updateUnitPrice(id: string, updateData: Partial<UnitPrice>): Promise<UnitPrice> {

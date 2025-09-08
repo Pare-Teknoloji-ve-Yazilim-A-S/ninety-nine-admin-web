@@ -114,6 +114,7 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     sortOrder?: string;
     orderColumn?: string;
     orderBy?: 'ASC' | 'DESC';
+    signal?: AbortSignal;
   }): Promise<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> {
     this.logger.info('Fetching all bills', params);
     
@@ -144,7 +145,7 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     console.log('📋 Query Parameters:', params);
     
     try {
-      const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url);
+      const response = await apiClient.get<{ data: ResponseBillDto[]; pagination: { total: number; page: number; limit: number; totalPages: number } }>(url, params?.signal ? { signal: params.signal } : undefined);
 
       // Normalize possible shapes
       const root: any = (response as any) ?? {};
@@ -376,10 +377,10 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
    * Bekleyen ödemeler toplamını getirir (içinde bulunulan ay için)
    * GET /admin/billing/pending-payments
    */
-  async getPendingPaymentsSummary(): Promise<{ totalPendingAmount: number }> {
+  async getPendingPaymentsSummary(signal?: AbortSignal): Promise<{ totalPendingAmount: number }> {
     this.logger.info('Fetching pending payments summary');
     try {
-      const response = await apiClient.get<{ data: { totalPendingAmount: number } }>(`${this.baseEndpoint}/pending-payments`);
+      const response = await apiClient.get<{ data: { totalPendingAmount: number } }>(`${this.baseEndpoint}/pending-payments`, signal ? { signal } : undefined);
       const totalPendingAmount = (response as any)?.data?.totalPendingAmount ?? 0;
       this.logger.info('Pending payments summary fetched', { totalPendingAmount });
       return { totalPendingAmount };
@@ -393,10 +394,10 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
    * Ödenen toplam tutarı getirir (içinde bulunulan ay için)
    * GET /admin/billing/paid-payments
    */
-  async getPaidPaymentsSummary(): Promise<{ totalPaidAmount: number }> {
+  async getPaidPaymentsSummary(signal?: AbortSignal): Promise<{ totalPaidAmount: number }> {
     this.logger.info('Fetching paid payments summary');
     try {
-      const response = await apiClient.get<{ data: { totalPaidAmount: number } }>(`${this.baseEndpoint}/paid-payments`);
+      const response = await apiClient.get<{ data: { totalPaidAmount: number } }>(`${this.baseEndpoint}/paid-payments`, signal ? { signal } : undefined);
       const totalPaidAmount = (response as any)?.data?.totalPaidAmount ?? 0;
       this.logger.info('Paid payments summary fetched', { totalPaidAmount });
       return { totalPaidAmount };
@@ -410,10 +411,10 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
    * Gecikmiş bekleyen ödemeler toplamını getirir (dueDate < now ve status=PENDING)
    * GET /admin/billing/overdue-pending-payments
    */
-  async getOverduePendingPaymentsSummary(): Promise<{ totalOverduePendingAmount: number }> {
+  async getOverduePendingPaymentsSummary(signal?: AbortSignal): Promise<{ totalOverduePendingAmount: number }> {
     this.logger.info('Fetching overdue pending payments summary');
     try {
-      const response = await apiClient.get<{ data: { totalOverduePendingAmount: number } }>(`${this.baseEndpoint}/overdue-pending-payments`);
+      const response = await apiClient.get<{ data: { totalOverduePendingAmount: number } }>(`${this.baseEndpoint}/overdue-pending-payments`, signal ? { signal } : undefined);
       const totalOverduePendingAmount = (response as any)?.data?.totalOverduePendingAmount ?? 0;
       this.logger.info('Overdue pending payments summary fetched', { totalOverduePendingAmount });
       return { totalOverduePendingAmount };
@@ -438,8 +439,7 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
 
   /**
    * Birden çok faturayı ödenmiş olarak işaretle
-   * PATCH /admin/billing/mark-as-paid (tek fatura için)
-   * POST /admin/billing/mark-bills-as-paid-bulk (birden çok fatura için)
+   * PATCH /api/admin/billing/mark-as-paid (hem tek hem çok fatura için)
    */
   async markBillsAsPaidBulk(params: { 
     billIds: string[]; 
@@ -452,40 +452,20 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     this.logger.info('Marking bills as paid (bulk)', params);
     
     try {
-      // Tek fatura için mevcut endpoint kullan
-      if (params.billIds.length === 1) {
-        const response = await apiClient.patch<{ data: { updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> } }>(
-          `${this.baseEndpoint}/mark-as-paid`,
-          {
-            billIds: params.billIds,
-            paidAt: params.paidAt,
-            paymentMethod: params.paymentMethod
-          }
-        );
-        const root = (response as any)?.data || {};
-        return {
-          updatedCount: root?.updatedCount ?? root?.data?.updatedCount ?? 0,
-          updatedBills: root?.updatedBills ?? root?.data?.updatedBills ?? [],
-        };
-      } else {
-        // Birden çok fatura için bulk endpoint kullan
-        const response = await apiClient.post<{ data: { updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> } }>(
-          `${this.baseEndpoint}/mark-bills-as-paid-bulk`,
-          {
-            billIds: params.billIds,
-            paidAt: params.paidAt,
-            paymentMethod: params.paymentMethod,
-            processedBy: params.processedBy,
-            notes: params.notes,
-            batchReference: params.batchReference
-          }
-        );
-        const root = (response as any)?.data || {};
-        return {
-          updatedCount: root?.updatedCount ?? root?.data?.updatedCount ?? 0,
-          updatedBills: root?.updatedBills ?? root?.data?.updatedBills ?? [],
-        };
-      }
+      // Hem tek hem çok fatura için aynı endpoint kullan
+      const response = await apiClient.patch<{ data: { updatedCount: number; updatedBills: Array<{ id: string; status: string; paidAt: string }> } }>(
+        '/api/admin/billing/mark-as-paid',
+        {
+          billIds: params.billIds,
+          paidAt: params.paidAt,
+          paymentMethod: params.paymentMethod || 'CASH'
+        }
+      );
+      const root = (response as any)?.data || {};
+      return {
+        updatedCount: root?.updatedCount ?? root?.data?.updatedCount ?? 0,
+        updatedBills: root?.updatedBills ?? root?.data?.updatedBills ?? [],
+      };
     } catch (error) {
       this.logger.error('Failed to mark bills as paid (bulk):', error);
       return { updatedCount: 0, updatedBills: [] };
@@ -547,6 +527,42 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     } catch (error) {
       this.logger.error('Failed to fetch dues monthly paid totals', error);
       return [];
+    }
+  }
+
+  /**
+   * Fatura kalemi oluştur (birden fazla fatura için)
+   * POST /api/v1/bill-items
+   */
+  async createBillItem(params: {
+    billIds: string[];
+    title: string;
+    amount: number;
+  }): Promise<{
+    id: string;
+    billIds: string[];
+    title: string;
+    amount: number;
+    createdAt: string;
+    updatedAt: string;
+  }> {
+    this.logger.info('Creating bill item', params);
+    try {
+      // Use direct API endpoint instead of proxy for local development
+      const response = await apiClient.post<{
+         id: string;
+         billIds: string[];
+         title: string;
+         amount: number;
+         createdAt: string;
+         updatedAt: string;
+       }>('/api/v1/bill-items', params);
+      
+      this.logger.info('Bill item created successfully', { id: (response as any)?.id });
+      return response as any;
+    } catch (error) {
+      this.logger.error('Failed to create bill item:', error);
+      throw error;
     }
   }
 }

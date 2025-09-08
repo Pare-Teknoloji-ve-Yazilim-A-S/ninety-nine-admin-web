@@ -288,7 +288,27 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
         bulkParams.batchReference = `BATCH-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
       }
       
+      // Mark bills as paid
       const bulkResult = await billingService.markBillsAsPaidBulk(bulkParams);
+      
+      // Birden fazla fatura varsa bill-items endpoint'ine de istek at
+      if (billIds.length > 1) {
+        const totalAmount = bills.reduce((sum, bill) => sum + (bill.amount || 0), 0);
+        const billItemParams = {
+          billIds,
+          title: `Toplu Ödeme - ${bills.length} Fatura`,
+          amount: totalAmount
+        };
+        
+        try {
+          await billingService.createBillItem(billItemParams);
+          console.log('Bill item created successfully for bulk payment');
+        } catch (billItemError) {
+          console.error('Error creating bill item:', billItemError);
+          // Bill item hatası ödeme işlemini durdurmaz, sadece log'larız
+        }
+      }
+      
       onSuccess(bulkResult);
       reset();
     } catch (error: any) {

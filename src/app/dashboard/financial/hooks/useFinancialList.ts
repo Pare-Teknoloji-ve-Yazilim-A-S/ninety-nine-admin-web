@@ -747,7 +747,7 @@ export const useFinancialList = (): UseFinancialListReturn => {
   ]);
 
   // Fetch financial data
-  const fetchFinancialData = useCallback(async () => {
+  const fetchFinancialData = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
@@ -762,6 +762,7 @@ export const useFinancialList = (): UseFinancialListReturn => {
         // propertyId can be added when UI provides it
         orderColumn,
         orderBy,
+        signal,
       } as any);
 
       // Normalize API response shapes defensively
@@ -852,19 +853,30 @@ export const useFinancialList = (): UseFinancialListReturn => {
       // Update data with real transactions (server paginated or client-sliced)
       baseData.transactions = pagedTransactions;
 
-      setData(baseData);
+      if (!signal?.aborted) {
+        setData(baseData);
+      }
     } catch (err) {
-      console.error('Error fetching financial data:', err);
-      setError('Finansal veriler yüklenirken bir hata oluştu');
-      setData(null);
+      if (!signal?.aborted) {
+        console.error('Error fetching financial data:', err);
+        setError('Finansal veriler yüklenirken bir hata oluştu');
+        setData(null);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
   }, [memoizedFilters, page, limit, orderColumn, orderBy]);
 
   // Initial data fetch
   useEffect(() => {
-    fetchFinancialData();
+    const abortController = new AbortController();
+    fetchFinancialData(abortController.signal);
+    
+    return () => {
+      abortController.abort();
+    };
   }, [fetchFinancialData]);
 
   // Update filter
@@ -891,7 +903,8 @@ export const useFinancialList = (): UseFinancialListReturn => {
       // TODO: Implement bulk action API calls
       
       // Refresh data after action
-      await fetchFinancialData();
+      const abortController = new AbortController();
+      await fetchFinancialData(abortController.signal);
       setSelectedTransactions([]);
     } catch (err) {
       console.error('Bulk action error:', err);
@@ -946,7 +959,7 @@ export const useFinancialList = (): UseFinancialListReturn => {
     setSelectedTransactions,
     handleBulkAction,
     handleExport,
-    refetch: fetchFinancialData,
+    refetch: () => fetchFinancialData(),
     page,
     limit,
     setPage,

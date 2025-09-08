@@ -43,6 +43,7 @@ export interface RequestConfig {
     retries?: number;
     cache?: boolean;
     skipAuth?: boolean;
+    signal?: AbortSignal;
 }
 
 export interface FilterParams {
@@ -69,4 +70,4 @@ export type Repository<TEntity, TCreateDto = Partial<TEntity>, TUpdateDto = Part
     create: (data: TCreateDto) => Promise<ApiResponse<TEntity>>;
     update: (id: string | number, data: TUpdateDto) => Promise<ApiResponse<TEntity>>;
     delete: (id: string | number) => Promise<ApiResponse<void>>;
-}; 
+};
