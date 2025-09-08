@@ -31,7 +31,8 @@ import {
     Building,
     Zap,
     Droplets,
-    Flame
+    Flame,
+    FileText
 } from 'lucide-react';
 import GenericListView from '@/app/components/templates/GenericListView';
 import GenericGridView from '@/app/components/templates/GenericGridView';
@@ -147,7 +148,10 @@ const translations = {
     daysOverdue: 'gün gecikmiş',
     
     // Currency
-    iqd: 'IQD'
+    iqd: 'IQD',
+    billItems: 'Fatura Kalemleri',
+    showBillItems: 'Toplu Ödemeler',
+    hideBillItems: 'Toplu Ödemeleri Gizle'
   },
   en: {
     // Page titles
@@ -234,7 +238,10 @@ const translations = {
     daysOverdue: 'days overdue',
     
     // Currency
-    iqd: 'IQD'
+    iqd: 'IQD',
+    billItems: 'Bill Items',
+    showBillItems: 'Show Bill Items',
+    hideBillItems: 'Hide Bill Items'
   },
   ar: {
     // Page titles
@@ -321,7 +328,10 @@ const translations = {
     daysOverdue: 'أيام متأخرة',
     
     // Currency
-    iqd: 'دينار عراقي'
+    iqd: 'دينار عراقي',
+    billItems: 'بنود الفاتورة',
+    showBillItems: 'إظهار بنود الفاتورة',
+    hideBillItems: 'إخفاء بنود الفاتورة'
   }
 };
 
@@ -352,6 +362,12 @@ export default function FinancialListPage() {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+    
+    // Bill Items State
+    const [showBillItems, setShowBillItems] = useState(false);
+    const [billItemsData, setBillItemsData] = useState<any[]>([]);
+    const [billItemsLoading, setBillItemsLoading] = useState(false);
+    const [billItemsError, setBillItemsError] = useState<string | null>(null);
 
     const router = useRouter();
 
@@ -971,6 +987,32 @@ export default function FinancialListPage() {
     const handleNewTransactionClick = useCallback(() => {
         router.push('/dashboard/financial/create');
     }, [router]);
+    
+    // Bill Items Handler
+    const handleBillItemsToggle = useCallback(async () => {
+        if (showBillItems) {
+            // Hide bill items
+            setShowBillItems(false);
+            setBillItemsData([]);
+            setBillItemsError(null);
+        } else {
+            // Show bill items - fetch data
+            setBillItemsLoading(true);
+            setBillItemsError(null);
+            
+            try {
+                const data = await billingService.getBillItems();
+                setBillItemsData(data);
+                setShowBillItems(true);
+            } catch (error) {
+                console.error('Bill items fetch error:', error);
+                setBillItemsError(error instanceof Error ? error.message : 'Bir hata oluştu');
+                toast.error('Fatura kalemleri yüklenirken hata oluştu');
+            } finally {
+                setBillItemsLoading(false);
+            }
+        }
+    }, [showBillItems, toast]);
 
     return (
         <ProtectedRoute>
@@ -1079,6 +1121,15 @@ export default function FinancialListPage() {
                                         >
                                             {t.filters}
                                         </Button>
+                                        <Button 
+                                            variant={showBillItems ? "primary" : "secondary"}
+                                            size="md"
+                                            icon={FileText}
+                                            onClick={handleBillItemsToggle}
+                                            loading={billItemsLoading}
+                                        >
+                                            {showBillItems ? t.hideBillItems : t.showBillItems}
+                                        </Button>
                                         <ViewToggle
                                             options={[
                                                 { id: 'table', label: t.table, icon: List },
@@ -1124,7 +1175,38 @@ export default function FinancialListPage() {
                         {/* Data Display */}
                         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                             <div className="lg:col-span-1">
-                                {viewMode === 'table' && (
+                                {showBillItems ? (
+                                    <GenericListView
+                                        data={billItemsData || []}
+                                        loading={billItemsLoading}
+                                        error={billItemsError}
+                                        columns={[
+                                            {
+                                                id: 'title',
+                                                header: t.title,
+                                                accessor: 'title',
+                                                sortable: true,
+                                                render: (value: any, item: any) => item?.title || '-'
+                                            },
+                                            {
+                                                id: 'amount',
+                                                header: t.amount,
+                                                accessor: 'amount',
+                                                sortable: true,
+                                                render: (value: any, item: any) => item?.amount ? `${item.amount} ${t.iqd}` : '-'
+                                            },
+                                            {
+                                                id: 'createdAt',
+                                                header: 'Oluşturulma Tarihi',
+                                                accessor: 'createdAt',
+                                                sortable: true,
+                                                render: (value: any, item: any) => item?.createdAt ? new Date(item.createdAt).toLocaleDateString('tr-TR') : '-'
+                                            }
+                                        ]}
+                                        emptyStateMessage="Henüz fatura kalemi bulunmuyor"
+                                        showPagination={false}
+                                    />
+                                ) : viewMode === 'table' && (
                                         <GenericListView
                                         data={data?.transactions || []}
                                         loading={loading}

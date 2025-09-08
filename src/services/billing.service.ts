@@ -377,10 +377,11 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
    * Bekleyen ödemeler toplamını getirir (içinde bulunulan ay için)
    * GET /admin/billing/pending-payments
    */
-  async getPendingPaymentsSummary(signal?: AbortSignal): Promise<{ totalPendingAmount: number }> {
+  async getPendingPaymentsSummary(params?: { signal?: AbortSignal }): Promise<{ totalPendingAmount: number }> {
     this.logger.info('Fetching pending payments summary');
     try {
-      const response = await apiClient.get<{ data: { totalPendingAmount: number } }>(`${this.baseEndpoint}/pending-payments`, signal ? { signal } : undefined);
+      // Use direct API endpoint instead of proxy
+      const response = await apiClient.get<{ data: { totalPendingAmount: number } }>('/api/admin/billing/pending-payments', params?.signal ? { signal: params.signal } : undefined);
       const totalPendingAmount = (response as any)?.data?.totalPendingAmount ?? 0;
       this.logger.info('Pending payments summary fetched', { totalPendingAmount });
       return { totalPendingAmount };
@@ -394,10 +395,11 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
    * Ödenen toplam tutarı getirir (içinde bulunulan ay için)
    * GET /admin/billing/paid-payments
    */
-  async getPaidPaymentsSummary(signal?: AbortSignal): Promise<{ totalPaidAmount: number }> {
+  async getPaidPaymentsSummary(params?: { signal?: AbortSignal }): Promise<{ totalPaidAmount: number }> {
     this.logger.info('Fetching paid payments summary');
     try {
-      const response = await apiClient.get<{ data: { totalPaidAmount: number } }>(`${this.baseEndpoint}/paid-payments`, signal ? { signal } : undefined);
+      // Use direct API endpoint instead of proxy
+      const response = await apiClient.get<{ data: { totalPaidAmount: number } }>('/api/admin/billing/paid-payments', params?.signal ? { signal: params.signal } : undefined);
       const totalPaidAmount = (response as any)?.data?.totalPaidAmount ?? 0;
       this.logger.info('Paid payments summary fetched', { totalPaidAmount });
       return { totalPaidAmount };
@@ -411,10 +413,11 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
    * Gecikmiş bekleyen ödemeler toplamını getirir (dueDate < now ve status=PENDING)
    * GET /admin/billing/overdue-pending-payments
    */
-  async getOverduePendingPaymentsSummary(signal?: AbortSignal): Promise<{ totalOverduePendingAmount: number }> {
+  async getOverduePendingPaymentsSummary(params?: { signal?: AbortSignal }): Promise<{ totalOverduePendingAmount: number }> {
     this.logger.info('Fetching overdue pending payments summary');
     try {
-      const response = await apiClient.get<{ data: { totalOverduePendingAmount: number } }>(`${this.baseEndpoint}/overdue-pending-payments`, signal ? { signal } : undefined);
+      // Use direct API endpoint instead of proxy
+      const response = await apiClient.get<{ data: { totalOverduePendingAmount: number } }>('/api/admin/billing/overdue-pending-payments', params?.signal ? { signal: params.signal } : undefined);
       const totalOverduePendingAmount = (response as any)?.data?.totalOverduePendingAmount ?? 0;
       this.logger.info('Overdue pending payments summary fetched', { totalOverduePendingAmount });
       return { totalOverduePendingAmount };
@@ -527,6 +530,40 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
     } catch (error) {
       this.logger.error('Failed to fetch dues monthly paid totals', error);
       return [];
+    }
+  }
+
+  /**
+   * Fatura kalemlerini getir
+   * GET /api/v1/bill-items
+   */
+  async getBillItems(): Promise<Array<{
+    id: string;
+    billIds: string[];
+    title: string;
+    amount: string;
+    createdAt: string;
+    updatedAt: string;
+  }>> {
+    this.logger.info('Fetching bill items');
+    try {
+      const response = await apiClient.get<Array<{
+         id: string;
+         billIds: string[];
+         title: string;
+         amount: string;
+         createdAt: string;
+         updatedAt: string;
+       }>>('/api/v1/bill-items');
+      
+      // Backend response might be wrapped in a data property
+      const data = (response as any)?.data || response;
+      
+      this.logger.info('Bill items fetched successfully', { count: data?.length || 0 });
+      return data;
+    } catch (error) {
+      this.logger.error('Failed to fetch bill items:', error);
+      throw error;
     }
   }
 
