@@ -1126,7 +1126,7 @@ export default function FinancialListPage() {
                                             size="md"
                                             icon={FileText}
                                             onClick={handleBillItemsToggle}
-                                            loading={billItemsLoading}
+                                            isLoading={billItemsLoading}
                                         >
                                             {showBillItems ? t.hideBillItems : t.showBillItems}
                                         </Button>
