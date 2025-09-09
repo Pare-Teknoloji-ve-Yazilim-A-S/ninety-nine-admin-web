@@ -172,7 +172,10 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
     if (isBillTransaction(transaction)) {
       return transaction.data.status !== 'PAID';
     }
-    return transaction.data.status === 'PENDING';
+    if (isPaymentTransaction(transaction)) {
+      return transaction.data.status === 'PENDING';
+    }
+    return false; // BillItem cannot be edited
   };
 
   // Check if transaction can be deleted
@@ -180,7 +183,10 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
     if (isBillTransaction(transaction)) {
       return transaction.data.status === 'PENDING';
     }
-    return transaction.data.status === 'PENDING';
+    if (isPaymentTransaction(transaction)) {
+      return transaction.data.status === 'PENDING';
+    }
+    return true; // BillItem can be deleted
   };
 
   // Check if bill can be marked as paid

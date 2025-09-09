@@ -10,6 +10,7 @@ export interface GenericListViewProps<T> {
   columns: any[];
   sortConfig?: { key: string; direction: 'asc' | 'desc' };
   onSortChange?: (key: string, direction: 'asc' | 'desc') => void;
+  onRowClick?: (row: T) => void;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -33,6 +34,7 @@ function GenericListView<T>({
   columns,
   sortConfig,
   onSortChange,
+  onRowClick,
   pagination,
   emptyStateMessage = 'Kayıt bulunamadı.',
   ActionMenuComponent,
@@ -68,6 +70,7 @@ function GenericListView<T>({
       rowActions={[]}
       sortConfig={sortConfig}
       onSortChange={onSortChange}
+      onRowClick={onRowClick}
       pagination={showPagination ? pagination : undefined}
       emptyStateMessage={emptyStateMessage}
       ActionMenuComponent={ActionMenuComponent}

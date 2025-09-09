@@ -380,7 +380,8 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Current Status */}
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-            {transaction.data.status === 'PAID' || transaction.data.status === 'COMPLETED' ? (
+            {(isBillTransaction(transaction) && transaction.data.status === 'PAID') || 
+             (isPaymentTransaction(transaction) && transaction.data.status === 'COMPLETED') ? (
               <CheckCircle className="h-5 w-5 text-green-500" />
             ) : (
               <Clock className="h-5 w-5 text-orange-500" />
@@ -390,7 +391,10 @@ const FinancialSummaryCard: React.FC<FinancialSummaryCardProps> = ({
                 {t.status}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                {getStatusLabel(transaction.data.status)}
+                {isBillTransaction(transaction) || isPaymentTransaction(transaction) 
+                  ? getStatusLabel(transaction.data.status)
+                  : 'N/A'
+                }
               </div>
             </div>
           </div>

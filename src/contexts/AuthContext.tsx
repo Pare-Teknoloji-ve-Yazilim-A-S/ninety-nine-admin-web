@@ -61,20 +61,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true)
       setError(null)
       
-      // Burada gerçek login API çağrısı yapılacak
-      // Şimdilik mock data kullanıyoruz
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: 'Test User',
-        role: 'admin',
-        permissions: ['CREATE_BILLING', 'UPDATE_BILLING', 'READ_BILLING']
-      }
-      
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('user', JSON.stringify(mockUser))
-      }
-      setUser(mockUser)
+      // Gerçek login API çağrısı - AuthProvider.tsx'teki gerçek authentication kullanılmalı
+      // Bu context sadece basit state management için kullanılıyor
+      // Gerçek authentication için /src/app/components/auth/AuthProvider.tsx kullanın
+      throw new Error('Bu context mock amaçlı. Gerçek authentication için AuthProvider.tsx kullanın.')
     } catch (err) {
       setError('Giriş yapılırken hata oluştu')
       throw err

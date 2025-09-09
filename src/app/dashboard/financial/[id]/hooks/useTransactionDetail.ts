@@ -3,13 +3,22 @@ import { billingService } from '@/services';
 import { paymentService } from '@/services';
 import { ResponseBillDto, ResponsePaymentDto } from '@/services/types/billing.types';
 
-export type TransactionType = 'bill' | 'payment';
+export type TransactionType = 'bill' | 'payment' | 'bill-item';
+
+export interface BillItemDto {
+  id: string;
+  billIds: string[];
+  title: string;
+  amount: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface TransactionDetail {
   id: string;
   type: TransactionType;
-  data: ResponseBillDto | ResponsePaymentDto;
-  relatedTransactions?: ResponsePaymentDto[] | ResponseBillDto;
+  data: ResponseBillDto | ResponsePaymentDto | BillItemDto;
+  relatedTransactions?: ResponsePaymentDto[] | ResponseBillDto | ResponseBillDto[];
 }
 
 export interface UseTransactionDetailReturn {
@@ -93,13 +102,55 @@ export const useTransactionDetail = (id: string): UseTransactionDetailReturn => 
           return;
         }
       } catch (paymentError: any) {
-        // If it's not found as a payment either, it doesn't exist
+        // If it's not found as a payment either, continue to try as bill-item
         if (paymentError?.response?.status !== 404) {
           throw paymentError;
         }
       }
 
-      // If we reach here, transaction wasn't found in either endpoint
+      // If not found as a payment, try to fetch as a bill-item
+      try {
+        const billItemResponse = await billingService.getBillItemById(id);
+        const billItemData = (billItemResponse as any)?.data ?? billItemResponse;
+        if (billItemData && billItemData.id) {
+          let relatedBills: ResponseBillDto[] = [];
+          
+          // If bill-item has billIds, fetch the related bills
+          if (billItemData.billIds && Array.isArray(billItemData.billIds)) {
+            try {
+              const billPromises = billItemData.billIds.map(async (billId: string) => {
+                try {
+                  const billResp = await billingService.getBillById(billId);
+                  return (billResp as any)?.data ?? billResp;
+                } catch (error) {
+                  console.warn(`Could not fetch bill ${billId}:`, error);
+                  return null;
+                }
+              });
+              
+              const bills = await Promise.all(billPromises);
+              relatedBills = bills.filter(bill => bill !== null);
+            } catch (error) {
+              console.warn('Could not fetch related bills:', error);
+            }
+          }
+          
+          setTransaction({
+            id,
+            type: 'bill-item',
+            data: billItemData,
+            relatedTransactions: relatedBills
+          });
+          return;
+        }
+      } catch (billItemError: any) {
+        // If it's not found as a bill-item either, it doesn't exist
+        if (billItemError?.response?.status !== 404) {
+          throw billItemError;
+        }
+      }
+
+      // If we reach here, transaction wasn't found in any endpoint
       throw new Error('Transaction not found');
       
     } catch (err: any) {
@@ -131,10 +182,14 @@ export const useTransactionDetail = (id: string): UseTransactionDetailReturn => 
 };
 
 // Helper functions to check transaction type
-export const isBillTransaction = (transaction: TransactionDetail): transaction is TransactionDetail & { data: ResponseBillDto } => {
+export const isBillTransaction = (transaction: TransactionDetail): transaction is TransactionDetail & { type: 'bill'; data: ResponseBillDto } => {
   return transaction.type === 'bill';
 };
 
-export const isPaymentTransaction = (transaction: TransactionDetail): transaction is TransactionDetail & { data: ResponsePaymentDto } => {
+export const isPaymentTransaction = (transaction: TransactionDetail): transaction is TransactionDetail & { type: 'payment'; data: ResponsePaymentDto } => {
   return transaction.type === 'payment';
+};
+
+export const isBillItemTransaction = (transaction: TransactionDetail): transaction is TransactionDetail & { type: 'bill-item'; data: BillItemDto } => {
+  return transaction.type === 'bill-item';
 };

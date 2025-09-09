@@ -1180,6 +1180,9 @@ export default function FinancialListPage() {
                                         data={billItemsData || []}
                                         loading={billItemsLoading}
                                         error={billItemsError}
+                                        onRowClick={(item: any) => {
+                                            router.push(`/dashboard/financial/bill-items/${item.id}`);
+                                        }}
                                         columns={[
                                             {
                                                 id: 'title',

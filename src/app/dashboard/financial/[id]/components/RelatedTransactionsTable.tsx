@@ -300,21 +300,27 @@ const RelatedTransactionsTable: React.FC<RelatedTransactionsTableProps> = ({
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <span className="text-sm">
-                          {getPaymentMethodInfo(payment.paymentMethod).icon}
+                          {isPaymentTransaction({ type: 'payment', data: payment, id: '' }) 
+                            ? getPaymentMethodInfo((payment as any).paymentMethod).icon
+                            : '-'
+                          }
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {getPaymentMethodInfo(payment.paymentMethod).label}
+                          {isPaymentTransaction({ type: 'payment', data: payment, id: '' })
+                            ? getPaymentMethodInfo((payment as any).paymentMethod).label
+                            : '-'
+                          }
                         </span>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="font-semibold text-gray-900 dark:text-white">
-                        {formatCurrency(payment.amount)} IQD
+                        {formatCurrency(Number(payment.amount))} IQD
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="text-sm text-gray-600 dark:text-gray-400">
-                        {formatDate(payment.paymentDate || payment.createdAt)}
+                        {formatDate((payment as any).paymentDate || payment.createdAt)}
                       </div>
                     </td>
                     <td className="py-4 px-4">

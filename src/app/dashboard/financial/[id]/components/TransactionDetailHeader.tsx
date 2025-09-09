@@ -13,7 +13,7 @@ import {
   Building,
   User
 } from 'lucide-react';
-import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../hooks/useTransactionDetail';
+import { TransactionDetail, isBillTransaction, isPaymentTransaction, isBillItemTransaction } from '../hooks/useTransactionDetail';
 import { BILL_TYPE_OPTIONS, PAYMENT_METHOD_OPTIONS } from '@/services/types/billing.types';
 import Avatar from '@/app/components/ui/Avatar';
 
@@ -24,6 +24,9 @@ const translations = {
     transactionId: 'İşlem ID',
     billAmount: 'Fatura Tutarı',
     paymentAmount: 'Ödeme Tutarı',
+    billItemAmount: 'Toplu Ödeme Tutarı',
+    billItemTitle: 'Başlık',
+    relatedBills: 'İlgili Faturalar',
     creationDate: 'Oluşturulma Tarihi',
     dueDate: 'Vade Tarihi',
     paymentDate: 'Ödeme Tarihi',
@@ -50,6 +53,9 @@ const translations = {
     transactionId: 'Transaction ID',
     billAmount: 'Bill Amount',
     paymentAmount: 'Payment Amount',
+    billItemAmount: 'Bulk Payment Amount',
+    billItemTitle: 'Title',
+    relatedBills: 'Related Bills',
     creationDate: 'Creation Date',
     dueDate: 'Due Date',
     paymentDate: 'Payment Date',
@@ -76,6 +82,9 @@ const translations = {
     transactionId: 'معرف المعاملة',
     billAmount: 'مبلغ الفاتورة',
     paymentAmount: 'مبلغ الدفع',
+    billItemAmount: 'مبلغ الدفع المجمع',
+    billItemTitle: 'العنوان',
+    relatedBills: 'الفواتير ذات الصلة',
     creationDate: 'تاريخ الإنشاء',
     dueDate: 'تاريخ الاستحقاق',
     paymentDate: 'تاريخ الدفع',
@@ -202,7 +211,11 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
     return methodInfo || { icon: '💳', label: paymentMethod, description: '' };
   };
 
-  const StatusIcon = getStatusIcon(transaction.data.status);
+  const StatusIcon = getStatusIcon(
+    (isBillTransaction(transaction) || isPaymentTransaction(transaction)) 
+      ? transaction.data.status 
+      : 'PENDING'
+  );
 
   return (
     <Card className="p-6">
@@ -239,15 +252,32 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 </span>
               </div>
             )}
+            
+            {isBillItemTransaction(transaction) && (
+              <div className="flex items-center gap-3">
+                💳
+                <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {transaction.data.title}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
             <Badge 
-              variant={getStatusVariant(transaction.data.status)}
+              variant={getStatusVariant(
+                (isBillTransaction(transaction) || isPaymentTransaction(transaction)) 
+                  ? transaction.data.status 
+                  : 'PENDING'
+              )}
               className="flex items-center gap-1"
             >
               <StatusIcon className="h-3 w-3" />
-              {getStatusLabel(transaction.data.status)}
+              {getStatusLabel(
+                (isBillTransaction(transaction) || isPaymentTransaction(transaction)) 
+                  ? transaction.data.status 
+                  : 'PENDING'
+              )}
             </Badge>
           </div>
         </div>
@@ -259,7 +289,9 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
               {formatCurrency(Number(transaction.data.amount))} IQD
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {isBillTransaction(transaction) ? t.billAmount : t.paymentAmount}
+              {isBillTransaction(transaction) ? t.billAmount : 
+               isPaymentTransaction(transaction) ? t.paymentAmount : 
+               isBillItemTransaction(transaction) ? t.billItemAmount : t.billAmount}
             </div>
           </div>
         </div>
@@ -373,11 +405,38 @@ const TransactionDetailHeader: React.FC<TransactionDetailHeaderProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Related Bills for Bill Items */}
+            {isBillItemTransaction(transaction) && transaction.relatedTransactions && Array.isArray(transaction.relatedTransactions) && transaction.relatedTransactions.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t.relatedBills} ({transaction.relatedTransactions.length})
+                  </div>
+                </div>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {transaction.relatedTransactions.map((bill: any, index: number) => (
+                    <div key={bill.id || index} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-mono">
+                        {bill.id}
+                      </div>
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {bill.title || 'Fatura'}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatCurrency(Number(bill.amount))} IQD
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Description */}
-        {transaction.data.description && (
+        {(isBillTransaction(transaction) || isPaymentTransaction(transaction)) && transaction.data.description && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
             <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">
               {t.description}

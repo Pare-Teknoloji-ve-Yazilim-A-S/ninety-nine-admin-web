@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 import { authService } from '@/services/auth.service';
 import { User } from '@/services/types/user.types';
 import { AuthTokens, AuthState } from '@/services/types/auth.types';
@@ -37,29 +37,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [tokens, setTokens] = useState<AuthTokens | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const hasCheckedAuth = useRef(false);
+    const lastCheckedUserId = useRef<string | number | null>(null);
 
-    // Check authentication status on mount
-    useEffect(() => {
-        checkAuthStatus();
-    }, []);
-
-    const checkAuthStatus = async () => {
+    const checkAuthStatus = useCallback(async () => {
+        // If we already have a user and we've checked for this user, skip
+        if (user && lastCheckedUserId.current === user.id) {
+            return;
+        }
+        
+        // If we don't have a user but we've already checked auth, skip
+        if (!user && hasCheckedAuth.current) {
+            return;
+        }
+        
+        hasCheckedAuth.current = true;
+        if (user) {
+            lastCheckedUserId.current = String(user.id);
+        }
+        
         setIsLoading(true);
         try {
             if (authService.isAuthenticated()) {
-                // Try to get current user
-                const currentUser = await authService.getCurrentUser();
-                setUser(currentUser);
-
-                // Save user permissions to localStorage
-                if (currentUser?.role?.permissions) {
-                    localStorage.setItem('userPermissions', JSON.stringify(currentUser.role.permissions));
-                    console.log('User permissions saved to localStorage:', currentUser.role.permissions);
-                    // Permission değişikliğini tetikle
-                    triggerPermissionChange();
-                }
-
-                // Set tokens from storage
+                // Set tokens from storage first
                 const accessToken = authService.getAccessToken();
                 const refreshToken = authService.getRefreshToken();
 
@@ -71,6 +71,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
                         expiresIn: 3600
                     });
                 }
+
+                // Only fetch user if we don't have user data
+                if (!user) {
+                    try {
+                        const currentUser = await authService.getCurrentUser();
+                        setUser(currentUser);
+
+                        // Save user permissions to localStorage
+                        if (currentUser?.role?.permissions) {
+                            localStorage.setItem('userPermissions', JSON.stringify(currentUser.role.permissions));
+                            console.log('User permissions saved to localStorage:', currentUser.role.permissions);
+                            // Permission değişikliğini tetikle
+                            triggerPermissionChange();
+                        }
+                    } catch (userError) {
+                        console.error('Failed to fetch user data:', userError);
+                        // Don't logout on user fetch failure, just log the error
+                    }
+                }
             }
         } catch (error) {
             console.error('Auth check failed:', error);
@@ -79,7 +98,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    // Check authentication status on mount
+    useEffect(() => {
+        checkAuthStatus();
+    }, [checkAuthStatus]);
 
     const login = async (email: string, password: string) => {
         setIsLoading(true);
@@ -266,4 +290,4 @@ export function withAuth<P extends object>(Component: React.ComponentType<P>) {
 
         return <Component {...props} />;
     };
-} 
+}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
+import { useAuth } from '@/app/components/auth/AuthProvider';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import Card from '@/app/components/ui/Card';
@@ -17,7 +18,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTransactionDetail, isBillTransaction, isPaymentTransaction } from './hooks/useTransactionDetail';
+import { useTransactionDetail, isBillTransaction, isPaymentTransaction, isBillItemTransaction } from './hooks/useTransactionDetail';
 import TransactionDetailHeader from './components/TransactionDetailHeader';
 import FinancialSummaryCard from './components/FinancialSummaryCard';
 import RelatedTransactionsTable from './components/RelatedTransactionsTable';
@@ -31,6 +32,7 @@ const translations = {
     transactionDetail: 'İşlem Detayı',
     billDetail: 'Fatura Detayı',
     paymentDetail: 'Ödeme Detayı',
+    billItemDetail: 'Toplu Ödeme Detayı',
     
     // Breadcrumbs
     home: 'Ana Sayfa',
@@ -56,6 +58,7 @@ const translations = {
     transactionDetail: 'Transaction Detail',
     billDetail: 'Bill Detail',
     paymentDetail: 'Payment Detail',
+    billItemDetail: 'Bulk Payment Detail',
     
     // Breadcrumbs
     home: 'Home',
@@ -81,6 +84,7 @@ const translations = {
     transactionDetail: 'تفاصيل المعاملة',
     billDetail: 'تفاصيل الفاتورة',
     paymentDetail: 'تفاصيل الدفع',
+    billItemDetail: 'تفاصيل الدفع المجمع',
     
     // Breadcrumbs
     home: 'الرئيسية',
@@ -111,6 +115,9 @@ export default function TransactionDetailPage() {
       setCurrentLanguage(savedLanguage);
     }
   }, []);
+
+  // Auth context'ten tokens al
+  const { tokens } = useAuth();
 
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
@@ -300,7 +307,9 @@ export default function TransactionDetailPage() {
         
         <div className="lg:ml-72">
           <DashboardHeader
-            title={isBillTransaction(transaction) ? t.billDetail : t.paymentDetail}
+            title={isBillTransaction(transaction) ? t.billDetail : 
+                   isPaymentTransaction(transaction) ? t.paymentDetail : 
+                   isBillItemTransaction(transaction) ? t.billItemDetail : t.transactionDetail}
             breadcrumbItems={getBreadcrumbItems()}
           />
 
@@ -318,14 +327,14 @@ export default function TransactionDetailPage() {
                 <div className={`p-2 rounded-lg ${
                   isBillTransaction(transaction) 
                     ? 'bg-primary-gold/10' 
+                    : isBillItemTransaction(transaction)
+                    ? 'bg-blue-100 dark:bg-blue-900/20'
                     : 'bg-green-100 dark:bg-green-900/20'
                 }`}>
                   {isBillTransaction(transaction) ? (
-                    <FileText className={`h-5 w-5 ${
-                      isBillTransaction(transaction) 
-                        ? 'text-primary-gold' 
-                        : 'text-green-600 dark:text-green-400'
-                    }`} />
+                    <FileText className="h-5 w-5 text-primary-gold" />
+                  ) : isBillItemTransaction(transaction) ? (
+                    <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   ) : (
                     <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
                   )}

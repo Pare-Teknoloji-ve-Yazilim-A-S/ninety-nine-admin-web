@@ -602,6 +602,37 @@ class BillingService extends BaseService<ResponseBillDto, CreateBillDto, UpdateB
       throw error;
     }
   }
+
+  /**
+   * Fatura kalemi detayını getir
+   * GET /api/v1/bill-items/{id}
+   */
+  async getBillItemById(billItemId: string): Promise<{
+    id: string;
+    billIds: string[];
+    title: string;
+    amount: string;
+    createdAt: string;
+    updatedAt: string;
+  }> {
+    this.logger.info(`Fetching bill item details: ${billItemId}`);
+    try {
+      const response = await apiClient.get<{
+         id: string;
+         billIds: string[];
+         title: string;
+         amount: string;
+         createdAt: string;
+         updatedAt: string;
+       }>(`/api/v1/bill-items/${billItemId}`);
+      
+      this.logger.info(`Fetched bill item ${billItemId} details`);
+      return response as any;
+    } catch (error) {
+      this.logger.error('Failed to fetch bill item:', error);
+      throw error;
+    }
+  }
 }
 
 const billingService = new BillingService();
