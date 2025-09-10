@@ -189,6 +189,10 @@ export const ticketService = {
     const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.close(id), {});
     return response.data;
   },
+  async reopen(id: string): Promise<Ticket> {
+    const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.reopen(id), {});
+    return response.data;
+  },
   async cancel(id: string): Promise<Ticket> {
     const response: ApiResponse<Ticket> = await apiClient.put<Ticket>(apiConfig.endpoints.tickets.cancel(id), {});
     return response.data;
@@ -286,4 +290,4 @@ export const ticketService = {
     // API returns direct TicketSummary object, not wrapped in ApiResponse
     return response.data;
   },
-}; 
+};

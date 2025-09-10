@@ -159,6 +159,7 @@ export const apiConfig = {
             cancel: (ticketId: string) => `/admin/tickets/${ticketId}/cancel`,
             startProgress: (ticketId: string) => `/admin/tickets/${ticketId}/start-progress`,
             markWaiting: (ticketId: string) => `/admin/tickets/${ticketId}/mark-waiting`,
+            reopen: (ticketId: string) => `/admin/tickets/${ticketId}/reopen`,
         },
         announcements: {
             // Admin Panel - Announcement Management (API-99CLUB Compatible)
@@ -201,4 +202,4 @@ export const features = {
     enableCache: process.env.NEXT_PUBLIC_ENABLE_CACHE === 'true',
     enableMocking: process.env.NEXT_PUBLIC_ENABLE_MOCKING === 'true',
     enableDebugLogs: isDevelopment,
-} as const; 
+} as const;

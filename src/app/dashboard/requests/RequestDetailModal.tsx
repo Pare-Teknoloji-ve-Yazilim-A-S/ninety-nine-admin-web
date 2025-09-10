@@ -345,6 +345,7 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
       'resolve': () => ticketService.resolve(currentItem.id),
       'close': () => ticketService.close(currentItem.id),
       'cancel': () => ticketService.cancel(currentItem.id),
+      'reopen': () => ticketService.reopen(currentItem.id),
     };
     const apiAction = actionMap[action];
     if (!apiAction) return;
@@ -361,40 +362,59 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
   // Button visibility logic
   const status = statusKey;
   
-
-  
-  const actionButtons = [
-    hasUpdateTicketPermission && status === 'OPEN' && {
+  // All possible status transitions - show buttons for all statuses except current one
+  const allStatusActions = [
+    {
+      status: 'IN_PROGRESS', 
       label: t.startProgress,
       action: 'start-progress',
       toastLabel: t.request,
       variant: 'primary',
+      permission: hasUpdateTicketPermission
     },
-    hasUpdateTicketPermission && status === 'IN_PROGRESS' && {
+    {
+      status: 'WAITING',
       label: t.markWaiting,
-      action: 'mark-waiting',
+      action: 'mark-waiting', 
       toastLabel: t.request,
       variant: 'secondary',
+      permission: hasUpdateTicketPermission
     },
-    hasUpdateTicketPermission && (status === 'IN_PROGRESS' || status === 'OPEN') && {
+    {
+      status: 'COMPLETED',
       label: t.complete,
       action: 'resolve',
       toastLabel: t.approval,
       variant: 'success',
+      permission: hasUpdateTicketPermission
     },
-    hasUpdateTicketPermission && (status === 'IN_PROGRESS' || status === 'OPEN') && {
+    {
+      status: 'CLOSED',
       label: t.closeButton,
       action: 'close',
       toastLabel: t.request,
       variant: 'warning',
+      permission: hasUpdateTicketPermission
     },
-    hasCancelTicketPermission && (status !== 'COMPLETED' && status !== 'CLOSED' && status !== 'CANCELLED') && {
+    {
+      status: 'CANCELLED',
       label: t.cancel,
       action: 'cancel',
       toastLabel: t.reject,
       variant: 'danger',
-    },
-  ].filter(Boolean);
+      permission: hasCancelTicketPermission
+    }
+  ];
+  
+  // Filter out current status and check permissions
+  const actionButtons = allStatusActions
+    .filter(action => action.status !== status && action.permission)
+    .map(action => ({
+      label: action.label,
+      action: action.action,
+      toastLabel: action.toastLabel,
+      variant: action.variant
+    }));
 
 
 
