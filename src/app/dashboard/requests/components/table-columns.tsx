@@ -461,10 +461,10 @@ export const getTableColumns = (
                     </div>
                 ) : (
                     <Button
-                        variant="primary"
+                        variant="default"
                         size="sm"
                         onClick={() => actionHandlers.handleAssignTechnician?.(row)}
-                        className="h-9 px-4 text-sm font-medium border border-primary-gold/20"
+                        className="h-9 px-4 text-sm font-medium border border-primary-gold/20 bg-primary-gold text-white hover:bg-primary-gold/90"
                     >
                         <UserPlus className="h-4 w-4 mr-2" />
                         {t.assignTechnician}

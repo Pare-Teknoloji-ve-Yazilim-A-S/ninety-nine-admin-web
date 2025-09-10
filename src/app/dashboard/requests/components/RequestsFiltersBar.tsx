@@ -191,7 +191,7 @@ export default function RequestsFiltersBar({
   }, []);
 
   // Fetch maintenance technicians
-  const { technicians, loading: techniciansLoading } = useMaintenanceTechnicians();
+  const { data: technicians, isLoading: techniciansLoading } = useMaintenanceTechnicians();
 
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
