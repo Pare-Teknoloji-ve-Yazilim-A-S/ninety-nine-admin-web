@@ -10,7 +10,7 @@ import EmptyState from '@/app/components/ui/EmptyState'
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute'
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader'
 import Sidebar from '@/app/components/ui/Sidebar'
-import { apiClient } from '@/services/api/client'
+import billingService from '@/services/billing.service'
 
 // Import detail components
 import { BillItemDetailHeader } from '@/components/financial/BillItemDetailHeader'
@@ -54,8 +54,15 @@ function BillItemDetailPage() {
         setLoading(true)
         setError(null)
         
-        const data = await apiClient.get<BillItemDetail>(`/api/v1/bill-items/${billItemId}`)
-        setBillItem(data.data)
+        const resp = await billingService.getBillItemById(billItemId)
+        // ...
+        const root: any = resp as any
+        const item = root?.data?.data ?? root?.data ?? root
+         if (item && item.id) {
+           setBillItem(item as BillItemDetail)
+         } else {
+           setError('Aradığınız fatura bulunamadı veya erişim yetkiniz bulunmuyor.')
+         }
       } catch (err) {
         console.error('Error fetching bill item detail:', err)
         setError(err instanceof Error ? err.message : 'Bir hata oluştu')
