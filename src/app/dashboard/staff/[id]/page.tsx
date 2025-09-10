@@ -183,7 +183,13 @@ export default function StaffDetailPage() {
       if (updatedStaff.isManager !== undefined) updateData.isManager = updatedStaff.isManager
       // ÖNEMLİ: status alanı backend'de employmentStatus olarak saklanıyor
       if (updatedStaff.status !== undefined) updateData.employmentStatus = updatedStaff.status
-      if (updatedStaff.role !== undefined) updateData.roleId = updatedStaff.role.id
+      
+      // Role handling - prioritize roleId if available, otherwise extract from role object
+      if (updatedStaff.roleId !== undefined) {
+        updateData.roleId = updatedStaff.roleId
+      } else if (updatedStaff.role !== undefined) {
+        updateData.roleId = typeof updatedStaff.role === 'string' ? updatedStaff.role : updatedStaff.role?.id
+      }
       
       console.log('Updating staff with:', updateData)
       

@@ -40,7 +40,10 @@ export default function EditStaffModal({ isOpen, onClose, staff, onSave }: EditS
         startDate: staff.startDate || '',
         department: staff.department,
         position: staff.position,
-        // roles will be handled separately
+        
+        // Role information
+        role: staff.role,
+        roleId: staff.roleId || staff.role?.id || ''
       })
     }
   }, [staff])
@@ -358,6 +361,9 @@ function RolesTab({
   roles: any[],
   loading: boolean
 }) {
+  // Get current role ID - either from formData.roleId or staff.role.id
+  const currentRoleId = formData.roleId || (typeof formData.role === 'string' ? formData.role : formData.role?.id) || staff?.role?.id || ''
+  
   return (
     <div className="space-y-6">
       <div className="bg-background-light-card dark:bg-background-card rounded-lg p-4">
@@ -368,6 +374,15 @@ function RolesTab({
           Bu personele atanacak rolleri seçin. Roller, personelin sistemde hangi işlemleri yapabileceğini belirler.
         </p>
         
+        {/* Current Role Display */}
+        {staff?.role && (
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="text-sm text-blue-800 dark:text-blue-200">
+              <strong>Mevcut Rol:</strong> {staff.role.name}
+            </div>
+          </div>
+        )}
+        
         {loading ? (
           <div className="text-text-light-muted dark:text-text-muted">
             Roller yükleniyor...
@@ -375,20 +390,46 @@ function RolesTab({
         ) : (
           <div className="space-y-2">
             <label className="block text-sm font-medium text-text-on-light dark:text-text-on-dark mb-2">
-              Rol Seçin
+              Yeni Rol Seçin
             </label>
             <select
-              value={typeof formData.role === 'string' ? formData.role : formData.role?.id || ''}
-              onChange={(e) => onChange('role', e.target.value)}
+              value={currentRoleId}
+              onChange={(e) => {
+                const selectedRoleId = e.target.value
+                // Store both roleId and role object for compatibility
+                onChange('roleId', selectedRoleId)
+                const selectedRole = roles.find(role => role.id === selectedRoleId)
+                if (selectedRole) {
+                  onChange('role', selectedRole)
+                }
+              }}
               className="w-full px-3 py-2 border border-border-light dark:border-border-dark rounded-lg bg-background-light-card dark:bg-background-card text-text-on-light dark:text-text-on-dark focus:outline-none focus:ring-2 focus:ring-primary-gold"
             >
               <option value="">Rol Seçin</option>
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
                   {role.name}
+                  {role.description && ` - ${role.description}`}
                 </option>
               ))}
             </select>
+            
+            {/* Selected Role Info */}
+            {currentRoleId && (() => {
+              const selectedRole = roles.find(role => role.id === currentRoleId)
+              return selectedRole ? (
+                <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="text-sm text-green-800 dark:text-green-200">
+                    <strong>Seçilen Rol:</strong> {selectedRole.name}
+                    {selectedRole.description && (
+                      <div className="mt-1 text-green-700 dark:text-green-300">
+                        {selectedRole.description}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null
+            })()}
           </div>
         )}
       </div>

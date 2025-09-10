@@ -66,6 +66,9 @@ export interface Staff extends Omit<User, 'status'> {
   isOnDuty?: boolean
   isOnLeave?: boolean
   
+  // Role Information
+  roleId?: string
+  
   // Override status to use StaffStatus
   status: StaffStatus
 }
