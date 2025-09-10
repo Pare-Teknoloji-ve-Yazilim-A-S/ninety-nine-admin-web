@@ -294,6 +294,7 @@ export function useRequestsList(): UseRequestsListResult {
           const statusMap: { [key: string]: string } = {
             'open': 'OPEN',
             'in_progress': 'IN_PROGRESS',
+            'waiting': 'WAITING',
             'waiting_for_info': 'WAITING_FOR_INFO',
             'resolved': 'RESOLVED',
             'closed': 'CLOSED',
@@ -301,6 +302,7 @@ export function useRequestsList(): UseRequestsListResult {
             // Direct enum values
             'OPEN': 'OPEN',
             'IN_PROGRESS': 'IN_PROGRESS',
+            'WAITING': 'WAITING',
             'WAITING_FOR_INFO': 'WAITING_FOR_INFO',
             'RESOLVED': 'RESOLVED',
             'CLOSED': 'CLOSED',
