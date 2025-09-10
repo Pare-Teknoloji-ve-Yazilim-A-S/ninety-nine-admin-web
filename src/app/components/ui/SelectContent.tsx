@@ -43,7 +43,7 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
           }
         }}
         className={cn(
-          'absolute z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95',
+          'absolute z-[9999] max-h-60 w-full overflow-y-auto rounded-md border bg-background-light-card dark:bg-background-card border-border-light-primary dark:border-border-primary text-text-light-primary dark:text-text-primary shadow-lg animate-in fade-in-0 zoom-in-95',
           side === 'bottom' && 'top-full mt-1',
           side === 'top' && 'bottom-full mb-1',
           className

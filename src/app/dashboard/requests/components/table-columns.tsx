@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ServiceRequest } from '@/services/types/request-list.types';
 import Badge from '@/app/components/ui/Badge';
+import { Button } from '@/components/ui/button';
 import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { 
     Eye, 
@@ -12,7 +13,8 @@ import {
     MapPin,
     User,
     Phone,
-    Calendar
+    Calendar,
+    UserPlus
 } from 'lucide-react';
 
 // Ticket action menu için permission
@@ -35,6 +37,7 @@ const translations = {
     urgentLabel: 'Acil',
     block: 'Blok',
     unassigned: 'Atanmamış',
+    assignTechnician: 'Teknisyen Ata',
     overdue: 'Gecikmiş',
     
     // Action menu
@@ -80,6 +83,7 @@ const translations = {
     urgentLabel: 'Urgent',
     block: 'Block',
     unassigned: 'Unassigned',
+    assignTechnician: 'Assign Technician',
     overdue: 'Overdue',
     
     // Action menu
@@ -125,6 +129,7 @@ const translations = {
     urgentLabel: 'عاجل',
     block: 'البلوك',
     unassigned: 'غير محدد',
+    assignTechnician: 'تعيين فني',
     overdue: 'متأخر',
     
     // Action menu
@@ -335,6 +340,7 @@ const formatDate = (dateString: string) => {
 export const getTableColumns = (
     actionHandlers: {
         handleViewRequest: (request: ServiceRequest) => void;
+        handleAssignTechnician?: (request: ServiceRequest) => void;
     },
     ActionMenuComponent?: React.ComponentType<{ row: ServiceRequest }>
 ) => {
@@ -454,9 +460,15 @@ export const getTableColumns = (
                         </div>
                     </div>
                 ) : (
-                    <Badge variant="soft" color="secondary" className="text-xs">
-                        {t.unassigned}
-                    </Badge>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => actionHandlers.handleAssignTechnician?.(row)}
+                        className="h-9 px-4 text-sm font-medium border border-primary-gold/20"
+                    >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        {t.assignTechnician}
+                    </Button>
                 )
             ),
         },
@@ -507,4 +519,4 @@ export const getTableColumns = (
     }
 
     return columns;
-}; 
+};

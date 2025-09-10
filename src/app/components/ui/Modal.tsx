@@ -156,7 +156,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
         if (!isOpen) return null
 
         return (
-            <div className="fixed inset-0 z-[3000] flex items-center justify-center">
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center">
                 {/* Overlay */}
                 <div
                     className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
@@ -235,4 +235,4 @@ export const ModalSubtitle = ({ children, className = '', ...props }: HTMLAttrib
     <p className={`text-sm text-text-secondary font-inter ${className}`} {...props}>
         {children}
     </p>
-) 
+)

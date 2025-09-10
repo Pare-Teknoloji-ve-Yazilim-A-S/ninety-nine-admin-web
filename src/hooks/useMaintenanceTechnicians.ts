@@ -9,12 +9,12 @@ export interface TechnicianOption {
 }
 
 export function useMaintenanceTechnicians() {
-  const [technicians, setTechnicians] = useState<TechnicianOption[]>([])
-  const [loading, setLoading] = useState(false)
+  const [data, setData] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchTechnicians = async () => {
-    setLoading(true)
+    setIsLoading(true)
     setError(null)
     
     try {
@@ -54,8 +54,8 @@ export function useMaintenanceTechnicians() {
           label: `${staff.firstName} ${staff.lastName}`
         }))
         
-        console.log('Technician options:', technicianOptions)
-        setTechnicians(technicianOptions)
+        console.log('Staff data:', staffArray)
+        setData(staffArray)
       } else {
         console.log('API call failed with status:', response.status)
         const errorText = await response.text()
@@ -66,7 +66,7 @@ export function useMaintenanceTechnicians() {
       console.error('Failed to fetch maintenance technicians:', err)
       setError('Teknisyenler alınırken hata oluştu')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -75,8 +75,8 @@ export function useMaintenanceTechnicians() {
   }, [])
 
   return {
-    technicians,
-    loading,
+    data,
+    isLoading,
     error,
     refetch: fetchTechnicians
   }

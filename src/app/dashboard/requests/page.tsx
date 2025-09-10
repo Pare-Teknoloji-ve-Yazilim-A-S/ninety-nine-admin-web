@@ -86,10 +86,12 @@ import { getTableColumns } from './components/table-columns';
 import { useRequestsList } from './hooks/useRequestsList';
 import { useTicketSummary } from './hooks/useTicketSummary';
 import { ServiceRequest } from '@/services/types/request-list.types';
+import { ticketService } from '@/services/ticket.service';
 
 // Existing modals
 import RequestDetailModal from './RequestDetailModal';
 import CreateTicketModal from '@/app/dashboard/components/CreateTicketModal';
+import AssignTechnicianModal from './components/AssignTechnicianModal';
 
 export default function RequestsListPage() {
   const toast = useToast();
@@ -106,6 +108,8 @@ export default function RequestsListPage() {
     item: null
   });
   const [createTicketModal, setCreateTicketModal] = useState(false);
+  const [isAssignTechnicianModalOpen, setIsAssignTechnicianModalOpen] = useState(false);
+  const [requestToAssign, setRequestToAssign] = useState<ServiceRequest | null>(null);
 
   // Dil tercihini localStorage'dan al
   const [currentLanguage, setCurrentLanguage] = useState('tr');
@@ -236,6 +240,49 @@ export default function RequestsListPage() {
     setDetailModal({ open: true, item: request });
   };
 
+  const handleAssignTechnician = (request: ServiceRequest) => {
+    setRequestToAssign(request);
+    setIsAssignTechnicianModalOpen(true);
+  };
+
+  const handleAssignTechnicianToRequest = async (technicianId: string) => {
+    if (!requestToAssign) {
+      console.error('No request selected for assignment');
+      return;
+    }
+
+    try {
+      console.log('Assigning technician:', technicianId, 'to request:', requestToAssign.id);
+      
+      // Use new admin endpoint to assign technician
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`/api/proxy/admin/tickets/${requestToAssign.id}/assign/${technicianId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API call failed:', response.status, errorText);
+        throw new Error(`Teknisyen ataması başarısız: ${response.status}`);
+      }
+      
+      console.log('Technician assigned successfully');
+      
+      // Close modal and refresh data
+      setIsAssignTechnicianModalOpen(false);
+      setRequestToAssign(null);
+      refetch();
+      refetchSummary();
+    } catch (error) {
+      console.error('Failed to assign technician:', error);
+      throw error; // Re-throw to let modal handle the error
+    }
+  };
+
   const handleBulkAction = (actionId: string) => {
     console.log('Bulk action:', actionId, 'for', selectedRequests.length, 'requests');
     // Handle bulk actions
@@ -336,7 +383,8 @@ export default function RequestsListPage() {
                 {viewMode === 'table' ? (
                                      <DataTable
                      columns={getTableColumns({
-                       handleViewRequest
+                       handleViewRequest,
+                       handleAssignTechnician
                      })}
                     data={data.requests}
                     loading={tableLoading}
@@ -400,6 +448,17 @@ export default function RequestsListPage() {
             refetch();
             refetchSummary(); // Summary kartlarını da güncelle
           }}
+        />
+
+        {/* Assign Technician Modal */}
+        <AssignTechnicianModal
+          isOpen={isAssignTechnicianModalOpen}
+          onClose={() => {
+            setIsAssignTechnicianModalOpen(false);
+            setRequestToAssign(null);
+          }}
+          request={requestToAssign}
+          onAssign={handleAssignTechnicianToRequest}
         />
 
 
