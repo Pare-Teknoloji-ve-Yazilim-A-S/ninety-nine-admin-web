@@ -563,10 +563,15 @@ export default function FinancialListPage() {
 
     // Handle payment action
     const handlePayment = useCallback((transaction: any) => {
-        setSelectedTransaction(transaction);
-        setSelectedPaymentMethod('');
-        setShowPaymentModal(true);
-    }, []);
+        // Payment sayfasına yönlendir ve transaction bilgisini URL parametresi olarak geç
+        const queryParams = new URLSearchParams({
+            transactionId: transaction.id || transaction._id,
+            apartmentId: transaction.apartment?.id || transaction.apartment?._id || '',
+            amount: transaction.amount?.toString() || '0',
+            transactionType: transaction.transactionType?.id || transaction.transactionType?.value || ''
+        });
+        router.push(`/dashboard/financial/create/payment?${queryParams.toString()}`);
+    }, [router]);
 
     // Handle payment processing
     const processPayment = useCallback(async () => {

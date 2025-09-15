@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ProtectedRoute } from '@/app/components/auth/ProtectedRoute';
 import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
@@ -236,6 +236,7 @@ export default function CreatePaymentPage() {
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [pendingBill, setPendingBill] = useState<ResponseBillDto | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Dil tercihini localStorage'dan al
   useEffect(() => {
@@ -360,6 +361,33 @@ export default function CreatePaymentPage() {
     const cached = enumsService.getFromCache();
     if (cached) setAppEnums(cached);
   }, []);
+
+  // URL parametrelerini okuyup ilgili transaction'ı otomatik seç
+  useEffect(() => {
+    const transactionId = searchParams.get('transactionId');
+    const apartmentId = searchParams.get('apartmentId');
+    const amount = searchParams.get('amount');
+    const transactionType = searchParams.get('transactionType');
+
+    if (transactionId && pendingBills.length > 0) {
+      // Transaction ID'ye göre ilgili bill'i bul
+       const targetBill = pendingBills.find(bill => 
+      bill.id === transactionId || 
+      (apartmentId && bill.property?.id === apartmentId)
+    );
+
+      if (targetBill) {
+        // Bill'i otomatik seç
+        setSelectedBills([targetBill]);
+        setIsConfirmed(true);
+        
+        // Transaction type'a göre ödeme yöntemini otomatik seç (opsiyonel)
+        if (transactionType) {
+          setBillType(transactionType);
+        }
+      }
+    }
+  }, [searchParams, pendingBills]);
 
   // Build dynamic payment method options from appEnums (fallback to constants)
   const dynamicPaymentMethodOptions = (() => {
