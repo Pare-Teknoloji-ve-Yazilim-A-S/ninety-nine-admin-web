@@ -1,5 +1,4 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+// jsPDF removed - using HTML-only rendering
 
 // Company information
 const COMPANY_INFO = {
@@ -96,216 +95,11 @@ interface Translations {
 /**
  * Generate PDF for payment receipt
  */
-export const generatePaymentPDF = async (
-  paymentDetails: PaymentDetails,
-  translations: Translations
-): Promise<void> => {
-  try {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    
-    // Set font
-    pdf.setFont('helvetica');
-    
-    // Header with company name and logo area
-    pdf.setFillColor(212, 175, 55); // Gold color
-    pdf.rect(0, 0, pageWidth, 40, 'F');
-    
-    // Company name
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(24);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(COMPANY_INFO.name, 20, 25);
-    
-    // Document title
-    pdf.setTextColor(31, 41, 55);
-    pdf.setFontSize(18);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(translations.payments?.detail.invoice || 'Payment Receipt', 20, 60);
-    
-    // Company information section
-    let yPos = 80;
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(55, 65, 81);
-    
-    pdf.text(`${translations.payments?.detail.companyInfo || 'Company Information'}:`, 20, yPos);
-    yPos += 8;
-    pdf.text(COMPANY_INFO.name, 20, yPos);
-    yPos += 6;
-    pdf.text(COMPANY_INFO.address, 20, yPos);
-    yPos += 6;
-    pdf.text(`${translations.payments?.detail.taxOffice || 'Tax Office'}: ${COMPANY_INFO.taxOffice}`, 20, yPos);
-    yPos += 6;
-    pdf.text(`${translations.payments?.detail.taxNumber || 'Tax Number'}: ${COMPANY_INFO.taxNumber}`, 20, yPos);
-    
-    // Payment details section
-    yPos += 20;
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Payment Details:', 20, yPos);
-    yPos += 10;
-    
-    pdf.setFont('helvetica', 'normal');
-    const details = [
-      [`${translations.payments?.detail.invoiceDate || 'Date'}:`, paymentDetails.date],
-      [`${translations.payments?.detail.transactionId || 'Transaction ID'}:`, paymentDetails.transactionId],
-      [`${translations.payments?.detail.receiptNumber || 'Receipt Number'}:`, paymentDetails.receiptNumber],
-      [`${translations.payments?.detail.paymentStatus || 'Status'}:`, translations.payments?.status[paymentDetails.status.toLowerCase() as keyof typeof translations.payments.status] || paymentDetails.status],
-      [`${translations.payments?.detail.paymentMethod || 'Payment Method'}:`, paymentDetails.paymentMethod],
-      ['Description:', paymentDetails.description]
-    ];
-    
-    details.forEach(([label, value]) => {
-      pdf.text(label, 20, yPos);
-      pdf.text(value, 100, yPos);
-      yPos += 8;
-    });
-    
-    if (paymentDetails.notes) {
-      yPos += 5;
-      pdf.text('Notes:', 20, yPos);
-      yPos += 8;
-      pdf.text(paymentDetails.notes, 20, yPos);
-      yPos += 10;
-    }
-    
-    // Amount section with background
-    yPos += 10;
-    pdf.setFillColor(249, 250, 251);
-    pdf.rect(15, yPos - 5, pageWidth - 30, 25, 'F');
-    
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(212, 175, 55);
-    pdf.text(`${translations.payments?.detail.totalAmount || 'Total Amount'}:`, 20, yPos + 8);
-    pdf.text(`${paymentDetails.amount} ${paymentDetails.currency}`, pageWidth - 80, yPos + 8);
-    
-    // Footer
-    yPos = pageHeight - 40;
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(107, 114, 128);
-    pdf.text(translations.payments?.detail.invoiceFooter || 'Thank you for your business!', 20, yPos);
-    yPos += 6;
-    pdf.text(`${translations.payments?.detail.contactInfo || 'Contact'}: ${COMPANY_INFO.phone} | ${COMPANY_INFO.email}`, 20, yPos);
-    
-    // Save the PDF
-    const fileName = `payment-receipt-${paymentDetails.receiptNumber}-${new Date().toISOString().slice(0, 10)}.pdf`;
-    pdf.save(fileName);
-    
-  } catch (error) {
-    console.error('Error generating payment PDF:', error);
-    throw new Error('Failed to generate payment PDF');
-  }
-};
+// generatePaymentPDF removed - use generateHTMLReceiptPDF instead
+// This function used jsPDF which has been replaced with HTML-only rendering
 
-/**
- * Generate PDF for bill invoice
- */
-export const generateBillPDF = async (
-  billDetails: BillDetails,
-  translations: Translations
-): Promise<void> => {
-  try {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    
-    // Set font
-    pdf.setFont('helvetica');
-    
-    // Header with company name and logo area
-    pdf.setFillColor(212, 175, 55); // Gold color
-    pdf.rect(0, 0, pageWidth, 40, 'F');
-    
-    // Company name
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(24);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(COMPANY_INFO.name, 20, 25);
-    
-    // Document title
-    pdf.setTextColor(31, 41, 55);
-    pdf.setFontSize(18);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(translations.bills?.detail.invoice || 'Bill Invoice', 20, 60);
-    
-    // Company information section
-    let yPos = 80;
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(55, 65, 81);
-    
-    pdf.text(`${translations.bills?.detail.companyInfo || 'Company Information'}:`, 20, yPos);
-    yPos += 8;
-    pdf.text(COMPANY_INFO.name, 20, yPos);
-    yPos += 6;
-    pdf.text(COMPANY_INFO.address, 20, yPos);
-    yPos += 6;
-    pdf.text(`${translations.bills?.detail.taxOffice || 'Tax Office'}: ${COMPANY_INFO.taxOffice}`, 20, yPos);
-    yPos += 6;
-    pdf.text(`${translations.bills?.detail.taxNumber || 'Tax Number'}: ${COMPANY_INFO.taxNumber}`, 20, yPos);
-    
-    // Bill details section
-    yPos += 20;
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Bill Details:', 20, yPos);
-    yPos += 10;
-    
-    pdf.setFont('helvetica', 'normal');
-    const details = [
-      [`${translations.bills?.detail.documentNumber || 'Document Number'}:`, billDetails.invoiceNumber],
-      [`${translations.bills?.detail.dueDate || 'Due Date'}:`, billDetails.dueDate],
-      [`${translations.bills?.detail.billType || 'Bill Type'}:`, billDetails.billType],
-      [`${translations.bills?.detail.billStatus || 'Status'}:`, translations.bills?.status[billDetails.status.toLowerCase() as keyof typeof translations.bills.status] || billDetails.status],
-      ['Title:', billDetails.title],
-      ['Description:', billDetails.description]
-    ];
-    
-    if (billDetails.propertyName) {
-      details.push([`${translations.bills?.detail.property || 'Property'}:`, billDetails.propertyName]);
-    }
-    
-    if (billDetails.assignedToName) {
-      details.push([`${translations.bills?.detail.assignedTo || 'Assigned To'}:`, billDetails.assignedToName]);
-    }
-    
-    details.forEach(([label, value]) => {
-      pdf.text(label, 20, yPos);
-      pdf.text(value, 100, yPos);
-      yPos += 8;
-    });
-    
-    // Amount section with background
-    yPos += 10;
-    pdf.setFillColor(249, 250, 251);
-    pdf.rect(15, yPos - 5, pageWidth - 30, 25, 'F');
-    
-    pdf.setFontSize(16);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setTextColor(212, 175, 55);
-    pdf.text(`${translations.bills?.detail.totalAmount || 'Total Amount'}:`, 20, yPos + 8);
-    pdf.text(`${billDetails.amount} ${billDetails.currency}`, pageWidth - 80, yPos + 8);
-    
-    // Footer
-    yPos = pageHeight - 40;
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(107, 114, 128);
-    pdf.text(translations.bills?.detail.invoiceFooter || 'Please pay this bill by the due date', 20, yPos);
-    yPos += 6;
-    pdf.text(`${translations.bills?.detail.contactInfo || 'Contact'}: ${COMPANY_INFO.phone} | ${COMPANY_INFO.email}`, 20, yPos);
-    
-    // Save the PDF
-    const fileName = `bill-invoice-${billDetails.invoiceNumber}-${new Date().toISOString().slice(0, 10)}.pdf`;
-    pdf.save(fileName);
-    
-  } catch (error) {
-    console.error('Error generating bill PDF:', error);
-    throw new Error('Failed to generate bill PDF');
-  }
-};
+// generateBillPDF removed - use generateHTMLBillPDF instead
+// This function used jsPDF which has been replaced with HTML-only rendering
 
 /**
  * Generate HTML for payment printing
@@ -712,76 +506,8 @@ export const generateBillPDFForPrint = async (
   }
 };
 
-/**
- * Generate a generic PDF document
- * This is a more flexible function that can be used for various document types
- */
-export const generateGenericPDF = async (
-  title: string,
-  content: { label: string; value: string }[],
-  options?: {
-    fileName?: string;
-    headerColor?: string;
-    companyInfo?: typeof COMPANY_INFO;
-    footer?: string;
-  }
-): Promise<void> => {
-  try {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const companyInfo = options?.companyInfo || COMPANY_INFO;
-    
-    // Set font
-    pdf.setFont('helvetica');
-    
-    // Header with company name
-    const headerColor = options?.headerColor || COLORS.primary;
-    const [r, g, b] = headerColor.match(/\w\w/g)?.map(x => parseInt(x, 16)) || [212, 175, 55];
-    pdf.setFillColor(r, g, b);
-    pdf.rect(0, 0, pageWidth, 40, 'F');
-    
-    // Company name
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(24);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(companyInfo.name, 20, 25);
-    
-    // Document title
-    pdf.setTextColor(31, 41, 55);
-    pdf.setFontSize(18);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(title, 20, 60);
-    
-    // Content
-    let yPos = 80;
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setTextColor(55, 65, 81);
-    
-    content.forEach(({ label, value }) => {
-      pdf.text(`${label}:`, 20, yPos);
-      pdf.text(value, 100, yPos);
-      yPos += 8;
-    });
-    
-    // Footer
-    if (options?.footer) {
-      const footerY = pageHeight - 20;
-      pdf.setFontSize(10);
-      pdf.setTextColor(107, 114, 128);
-      pdf.text(options.footer, 20, footerY);
-    }
-    
-    // Save the PDF
-    const fileName = options?.fileName || `document-${new Date().toISOString().slice(0, 10)}.pdf`;
-    pdf.save(fileName);
-    
-  } catch (error) {
-    console.error('Error generating generic PDF:', error);
-    throw new Error('Failed to generate PDF');
-  }
-};
+// generateGenericPDF removed - use HTML-based alternatives instead
+// This function used jsPDF which has been replaced with HTML-only rendering
 
 /**
  * Generate HTML-based PDF for payment receipt with professional styling
@@ -1106,40 +832,46 @@ export const generateHTMLReceiptPDF = async (
         }
 
         if (opt.download) {
-          // For download, use html2canvas and jsPDF
-          const canvas = await html2canvas(receiptDiv, {
-            useCORS: true,
-            allowTaint: true,
-            background: '#ffffff',
-            width: receiptDiv.scrollWidth * 2,
-            height: receiptDiv.scrollHeight * 2
-          });
-
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-          });
-
-          const imgWidth = 210;
-          const pageHeight = 295;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let heightLeft = imgHeight;
-
-          let position = 0;
-
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
-
-          while (heightLeft >= 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
+          // For download, create a new window with download functionality
+          const downloadWindow = window.open('', '_blank');
+          if (downloadWindow) {
+            downloadWindow.document.write(`
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <title>Receipt Download</title>
+                  <style>
+                    body { margin: 0; background: white; }
+                    .download-container { padding: 20px; text-align: center; }
+                    .download-btn { 
+                      background: #007bff; 
+                      color: white; 
+                      padding: 10px 20px; 
+                      border: none; 
+                      border-radius: 5px; 
+                      cursor: pointer; 
+                      margin: 10px;
+                    }
+                    @media print {
+                      .download-container { display: none; }
+                      body { margin: 0; background: white; }
+                      * { box-shadow: none !important; }
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="download-container">
+                    <button class="download-btn" onclick="window.print()">Print as PDF</button>
+                    <button class="download-btn" onclick="window.close()">Close</button>
+                  </div>
+                  ${html}
+                </body>
+              </html>
+            `);
+            downloadWindow.document.close();
+            downloadWindow.focus();
           }
-
-          pdf.save(opt.fileName || 'receipt.pdf');
         }
       } catch (error) {
         console.error('Error generating PDF:', error);
@@ -1305,35 +1037,46 @@ export const generateHTMLBillPDF = async (
           printWindow.close();
         };
       } else if (options?.download !== false) {
-        // For downloading, use html2canvas and jsPDF
-        const canvas = await html2canvas(tempDiv, {
-          useCORS: true,
-          allowTaint: true,
-          background: '#ffffff',
-          width: tempDiv.scrollWidth * 2,
-          height: tempDiv.scrollHeight * 2
-        });
-        
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgWidth = 210;
-        const pageHeight = 295;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        let heightLeft = imgHeight;
-        let position = 0;
-
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        while (heightLeft >= 0) {
-          position = heightLeft - imgHeight;
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
+        // For downloading, create a new window with download functionality
+        const downloadWindow = window.open('', '_blank');
+        if (downloadWindow) {
+          downloadWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="utf-8">
+                <title>Bill Invoice Download - ${billDetails.invoiceNumber}</title>
+                <style>
+                  body { margin: 0; background: white; }
+                  .download-container { padding: 20px; text-align: center; }
+                  .download-btn { 
+                    background: #007bff; 
+                    color: white; 
+                    padding: 10px 20px; 
+                    border: none; 
+                    border-radius: 5px; 
+                    cursor: pointer; 
+                    margin: 10px;
+                  }
+                  @media print {
+                    .download-container { display: none; }
+                    body { margin: 0; background: white; }
+                    * { box-shadow: none !important; }
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="download-container">
+                  <button class="download-btn" onclick="window.print()">Print as PDF</button>
+                  <button class="download-btn" onclick="window.close()">Close</button>
+                </div>
+                ${tempDiv.innerHTML}
+              </body>
+            </html>
+          `);
+          downloadWindow.document.close();
+          downloadWindow.focus();
         }
-
-        const fileName = options?.fileName || `bill-invoice-${billDetails.invoiceNumber}.pdf`;
-        pdf.save(fileName);
       }
     } catch (error) {
       console.error('Error generating bill PDF:', error);

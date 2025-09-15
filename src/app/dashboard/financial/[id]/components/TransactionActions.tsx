@@ -18,7 +18,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../hooks/useTransactionDetail';
 import { billingService, paymentService } from '@/services';
-import { generatePaymentPDF, generateBillPDF, generatePaymentPDFForPrint, generateBillPDFForPrint, generateHTMLReceiptPDF, generateHTMLBillPDF } from '@/lib/pdf-generator';
+import { generatePaymentPDFForPrint, generateBillPDFForPrint, generateHTMLReceiptPDF, generateHTMLBillPDF } from '@/lib/pdf-generator';
 
 // Dil çevirileri
 const translations = {

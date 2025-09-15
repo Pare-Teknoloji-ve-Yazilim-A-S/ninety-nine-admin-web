@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Button from '@/app/components/ui/Button';
 import { Download } from 'lucide-react';
-import { generatePaymentPDF, generateBillPDF, generatePaymentPDFForPrint, generateBillPDFForPrint, generateHTMLReceiptPDF, generateHTMLBillPDF } from '@/lib/pdf-generator';
+import { generatePaymentPDFForPrint, generateBillPDFForPrint, generateHTMLReceiptPDF, generateHTMLBillPDF } from '@/lib/pdf-generator';
 
 export default function TestPDFPage() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -24,7 +24,7 @@ export default function TestPDFPage() {
         currency: 'IQD'
       };
 
-      await generatePaymentPDF(testPaymentDetails, {
+      await generateHTMLReceiptPDF(testPaymentDetails, {
         payments: {
           detail: {
             invoice: 'Invoice',
@@ -71,7 +71,7 @@ export default function TestPDFPage() {
         assignedToName: 'John Doe'
       };
 
-      await generateBillPDF(testBillDetails, {
+      await generateHTMLBillPDF(testBillDetails, {
         bills: {
           detail: {
             invoice: 'Bill',
