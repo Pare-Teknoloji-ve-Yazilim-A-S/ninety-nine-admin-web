@@ -6,6 +6,7 @@ import {
   Calendar,
   FileText,
   DollarSign,
+  Coins,
   Building,
   Hash,
   AlertCircle,
@@ -1259,7 +1260,7 @@ const CreateBillForm: React.FC<CreateBillFormProps> = ({
                  min: { value: 0.01, message: t.amountMin }
                })}
                placeholder={t.amountPlaceholder}
-               icon={DollarSign}
+               icon={Coins}
                error={errors.amount?.message}
                disabled={isLoading}
              />

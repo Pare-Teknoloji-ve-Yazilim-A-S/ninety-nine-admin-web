@@ -6,6 +6,7 @@ import {
   Calendar,
   CreditCard,
   DollarSign,
+  Coins,
   Receipt,
   FileText,
   AlertCircle,
@@ -466,7 +467,7 @@ const CreatePaymentForm: React.FC<CreatePaymentFormProps> = ({
               type="text"
               value={`${totalSelectedAmount.toLocaleString('tr-TR')} IQD`}
               readOnly
-              icon={DollarSign}
+              icon={Coins}
               disabled={isSubmitting || externalLoading || loadingBills}
             />
           </div>
