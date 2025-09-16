@@ -385,8 +385,8 @@ const DataTable: React.FC<DataTableProps> = ({
     };
 
     const tableContent = (
-        <div className="w-full">
-            <table className="w-full">
+        <div className="w-full overflow-x-auto table-scroll">
+            <table className="w-full min-w-max">
                 {renderTableHeader()}
                 {renderTableBody()}
             </table>

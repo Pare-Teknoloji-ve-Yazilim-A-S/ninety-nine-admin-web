@@ -23,11 +23,11 @@ const Table = forwardRef<HTMLTableElement, TableProps>(
     }
 
     return (
-      <div className={cn('relative w-full overflow-auto', className)}>
+      <div className={cn('relative w-full overflow-x-auto table-scroll', className)}>
         <table
           ref={ref}
           className={cn(
-            'w-full caption-bottom border-collapse',
+            'w-full min-w-max caption-bottom border-collapse',
             bordered && 'border border-border',
             sizeClasses[size]
           )}
