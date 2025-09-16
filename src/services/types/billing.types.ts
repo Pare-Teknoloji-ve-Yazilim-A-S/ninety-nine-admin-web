@@ -84,6 +84,7 @@ export interface CreatePaymentDto {
 
 export interface ResponsePaymentDto extends CreatePaymentDto {
   id: string;
+  invoiceNumber?: string;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string;

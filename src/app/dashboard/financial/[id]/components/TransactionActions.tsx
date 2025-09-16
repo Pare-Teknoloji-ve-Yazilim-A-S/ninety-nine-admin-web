@@ -18,7 +18,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { TransactionDetail, isBillTransaction, isPaymentTransaction } from '../hooks/useTransactionDetail';
 import { billingService, paymentService } from '@/services';
-import { generatePaymentPDFForPrint, generateBillPDFForPrint, generateHTMLReceiptPDF, generateHTMLBillPDF } from '@/lib/pdf-generator';
+import { generatePaymentPDFForPrint, generateBillPDFForPrint, generateHTMLReceiptPDF, generateHTMLBillPDF, generateDualReceiptPDF } from '@/lib/pdf-generator';
 
 // Dil çevirileri
 const translations = {
@@ -31,6 +31,7 @@ const translations = {
     edit: 'Düzenle',
     markAsPaid: 'Ödendi Olarak İşaretle',
     downloadReceipt: 'Makbuz İndir',
+    downloadDualReceipt: 'Makbuz İndir',
     printReceipt: 'Makbuz Yazdır',
     emailReceipt: 'E-posta Gönder',
     refresh: 'Yenile',
@@ -70,6 +71,7 @@ const translations = {
     edit: 'Edit',
     markAsPaid: 'Mark as Paid',
     downloadReceipt: 'Download Receipt',
+    downloadDualReceipt: 'Download Receipt',
     printReceipt: 'Print Receipt',
     emailReceipt: 'Email Receipt',
     refresh: 'Refresh',
@@ -109,6 +111,7 @@ const translations = {
     edit: 'تعديل',
     markAsPaid: 'تحديد كمدفوع',
     downloadReceipt: 'تحميل الإيصال',
+    downloadDualReceipt: 'تحميل الإيصال',
     printReceipt: 'طباعة الإيصال',
     emailReceipt: 'إرسال الإيصال بالبريد',
     refresh: 'تحديث',
@@ -165,6 +168,7 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingDual, setIsDownloadingDual] = useState(false);
   const [showMoreActions, setShowMoreActions] = useState(false);
 
   // Check if transaction can be edited
@@ -342,6 +346,84 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
     }
   };
 
+  // Handle download dual receipt (landscape A4 with two receipts)
+  const handleDownloadDualReceipt = async () => {
+    setIsDownloadingDual(true);
+    try {
+      let receiptDetails;
+      
+      if (isPaymentTransaction(transaction)) {
+        receiptDetails = {
+          invoiceNumber: transaction.data.invoiceNumber || transaction.id,
+          receiptNumber: transaction.data.receiptNumber || transaction.id,
+          transactionId: transaction.id,
+          date: new Date(transaction.data.createdAt).toLocaleDateString('tr-TR'),
+          description: transaction.data.description || 'Ödeme',
+          amount: (typeof transaction.data.amount === 'string' ? parseFloat(transaction.data.amount) : transaction.data.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+          currency: 'TL',
+          status: transaction.data.status,
+          paymentMethod: transaction.data.paymentMethod || 'Kredi Kartı',
+          notes: transaction.data.notes || ''
+        };
+      } else if (isBillTransaction(transaction)) {
+        receiptDetails = {
+          invoiceNumber: transaction.data.documentNumber || transaction.id,
+          receiptNumber: transaction.data.documentNumber || transaction.id,
+          transactionId: transaction.id,
+          date: new Date(transaction.data.createdAt).toLocaleDateString('tr-TR'),
+          description: transaction.data.title || transaction.data.description || 'Fatura',
+          amount: (typeof transaction.data.amount === 'string' ? parseFloat(transaction.data.amount) : transaction.data.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+          currency: 'IQD',
+          status: transaction.data.status,
+          paymentMethod: 'Fatura',
+          notes: transaction.data.description || ''
+        };
+      } else {
+        throw new Error('Desteklenmeyen işlem türü');
+      }
+
+      const translationsForPDF = {
+        payments: {
+          detail: {
+            invoice: currentLanguage === 'tr' ? 'Makbuz' : currentLanguage === 'ar' ? 'إيصال' : 'Receipt',
+            companyInfo: currentLanguage === 'tr' ? 'Şirket Bilgileri' : currentLanguage === 'ar' ? 'معلومات الشركة' : 'Company Information',
+            taxOffice: currentLanguage === 'tr' ? 'Vergi Dairesi' : currentLanguage === 'ar' ? 'مكتب الضرائب' : 'Tax Office',
+            taxNumber: currentLanguage === 'tr' ? 'Vergi No' : currentLanguage === 'ar' ? 'الرقم الضريبي' : 'Tax Number',
+            invoiceDate: currentLanguage === 'tr' ? 'Fatura Tarihi' : currentLanguage === 'ar' ? 'تاريخ الفاتورة' : 'Invoice Date',
+            transactionId: currentLanguage === 'tr' ? 'İşlem No' : currentLanguage === 'ar' ? 'رقم المعاملة' : 'Transaction ID',
+            receiptNumber: currentLanguage === 'tr' ? 'Makbuz No' : currentLanguage === 'ar' ? 'رقم الإيصال' : 'Receipt Number',
+            paymentStatus: currentLanguage === 'tr' ? 'Ödeme Durumu' : currentLanguage === 'ar' ? 'حالة الدفع' : 'Payment Status',
+            paymentMethod: currentLanguage === 'tr' ? 'Ödeme Yöntemi' : currentLanguage === 'ar' ? 'طريقة الدفع' : 'Payment Method',
+            totalAmount: currentLanguage === 'tr' ? 'Toplam Tutar' : currentLanguage === 'ar' ? 'المبلغ الإجمالي' : 'Total Amount',
+            invoiceFooter: currentLanguage === 'tr' ? 'İşiniz için teşekkür ederiz!' : currentLanguage === 'ar' ? 'شكرا لك على عملك!' : 'Thank you for your business!',
+            contactInfo: currentLanguage === 'tr' ? 'Sorularınız için bizimle iletişime geçin' : currentLanguage === 'ar' ? 'للأسئلة، يرجى الاتصال بنا' : 'For any questions, please contact us',
+            customerService: currentLanguage === 'tr' ? 'Müşteri Hizmetleri' : currentLanguage === 'ar' ? 'خدمة العملاء' : 'Customer Service'
+          },
+          status: {
+            completed: currentLanguage === 'tr' ? 'Tamamlandı' : currentLanguage === 'ar' ? 'مكتمل' : 'Completed',
+            pending: currentLanguage === 'tr' ? 'Bekliyor' : currentLanguage === 'ar' ? 'في الانتظار' : 'Pending'
+          }
+        }
+      };
+
+      await generateDualReceiptPDF(receiptDetails, translationsForPDF, { 
+        print: false, 
+        download: true,
+        fileName: `dual-receipt-${transaction.id}.pdf`
+      });
+    } catch (error) {
+      console.error('Error generating dual receipt PDF:', error);
+      const errorMessage = currentLanguage === 'tr' 
+        ? 'Çift makbuz oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'
+        : currentLanguage === 'ar'
+        ? 'حدث خطأ أثناء إنشاء الإيصال المزدوج. يرجى المحاولة مرة أخرى.'
+        : 'An error occurred while generating the dual receipt. Please try again.';
+      alert(errorMessage);
+    } finally {
+      setIsDownloadingDual(false);
+    }
+  };
+
   // Handle download receipt
   const handleDownloadReceipt = async () => {
     setIsDownloading(true);
@@ -492,32 +574,24 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
             </Button>
           )}
 
+          {/* Dual Receipt Download - For both payments and bills */}
           <Button
             variant="secondary"
             size="md"
             icon={Download}
-            onClick={handleDownloadReceipt}
-            disabled={isSubmitting || isDownloading}
-            isLoading={isDownloading}
+            onClick={handleDownloadDualReceipt}
+            disabled={isSubmitting || isDownloading || isDownloadingDual}
+            isLoading={isDownloadingDual}
             className="w-full justify-start"
           >
-            {t.downloadReceipt}
+            {t.downloadDualReceipt}
           </Button>
         </div>
 
         {/* Secondary Actions */}
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <div className="space-y-3">
-            <Button
-              variant="ghost"
-              size="md"
-              icon={Printer}
-              onClick={handlePrintReceipt}
-              disabled={isSubmitting}
-              className="w-full justify-start"
-            >
-              {t.printReceipt}
-            </Button>
+
 
             <Button
               variant="ghost"

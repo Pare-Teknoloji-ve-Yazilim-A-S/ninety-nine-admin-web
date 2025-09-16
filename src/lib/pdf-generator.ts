@@ -889,6 +889,381 @@ export const generateHTMLReceiptPDF = async (
 /**
  * Generate HTML-based PDF for bill invoice with professional styling
  */
+/**
+ * Generate HTML-based PDF for payment receipt in landscape A4 format with two receipts side by side
+ */
+export const generateDualReceiptPDF = async (
+  paymentDetails: PaymentDetails,
+  translations: Translations,
+  options?: {
+    download?: boolean;
+    print?: boolean;
+    fileName?: string;
+  }
+): Promise<void> => {
+  try {
+    const t = translations.payments?.detail || {};
+    
+    // Create receipt HTML template for single receipt
+    const createReceiptHTML = () => `
+      <div style="
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: white;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        font-size: 12px;
+        margin: 0;
+      ">
+        <!-- Header -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 15px;
+          border-bottom: 2px solid #FFD700;
+        ">
+          <div style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          ">
+            <div style="
+              width: 40px;
+              height: 40px;
+              background: linear-gradient(135deg, #FFD700, #FFA500);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 16px;
+              font-weight: bold;
+              color: #000;
+            ">99</div>
+            <div>
+              <div style="
+                font-size: 18px;
+                font-weight: bold;
+                color: #333;
+                margin: 0;
+              ">${COMPANY_INFO.name}</div>
+              <div style="
+                font-size: 10px;
+                color: #666;
+                margin: 0;
+              ">Premium Property Management</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="
+              font-size: 20px;
+              font-weight: bold;
+              color: #333;
+              margin: 0;
+            ">${(t as any).invoice || 'Invoice'}</div>
+            <div style="
+              font-size: 10px;
+              color: #666;
+              margin: 2px 0 0 0;
+            ">#${paymentDetails.invoiceNumber}</div>
+          </div>
+        </div>
+
+        <!-- Company Info -->
+        <div style="
+          background: #f8f9fa;
+          padding: 12px;
+          border-radius: 6px;
+          margin-bottom: 15px;
+          font-size: 10px;
+        ">
+          <div style="font-weight: bold; margin-bottom: 5px; color: #000;">${(t as any).companyInfo || 'Company Information'}</div>
+          <div style="color: #000; font-weight: 500;">${COMPANY_INFO.address}</div>
+          <div style="color: #000; font-weight: 500;">${(t as any).taxOffice || 'Tax Office'}: ${COMPANY_INFO.taxOffice}</div>
+          <div style="color: #000; font-weight: 500;">${(t as any).taxNumber || 'Tax Number'}: ${COMPANY_INFO.taxNumber}</div>
+          <div style="color: #000; font-weight: 500;">Phone: ${COMPANY_INFO.phone}</div>
+          <div style="color: #000; font-weight: 500;">Email: ${COMPANY_INFO.email}</div>
+        </div>
+
+        <!-- Payment Details -->
+        <div style="
+          background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+          padding: 12px;
+          border-radius: 6px;
+          margin-bottom: 15px;
+          border-left: 3px solid #FFD700;
+        ">
+          <div style="
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+          ">${paymentDetails.description}</div>
+          <div style="
+            font-size: 10px;
+            color: #666;
+            font-style: italic;
+          ">Payment Receipt</div>
+        </div>
+
+        <!-- Transaction Info -->
+        <div style="margin-bottom: 15px;">
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+          ">
+            <span style="font-weight: bold; color: #333;">${(t as any).invoiceDate || 'Invoice Date'}:</span>
+            <span style="color: #666;">${paymentDetails.date}</span>
+          </div>
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+          ">
+            <span style="font-weight: bold; color: #333;">${(t as any).transactionId || 'Transaction ID'}:</span>
+            <span style="color: #666;">${paymentDetails.transactionId}</span>
+          </div>
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+          ">
+            <span style="font-weight: bold; color: #333;">${(t as any).receiptNumber || 'Receipt Number'}:</span>
+            <span style="color: #666;">${paymentDetails.receiptNumber}</span>
+          </div>
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+          ">
+            <span style="font-weight: bold; color: #333;">${(t as any).paymentStatus || 'Payment Status'}:</span>
+            <span style="
+              color: ${paymentDetails.status === 'COMPLETED' ? '#10B981' : '#F59E0B'};
+              font-weight: bold;
+            ">${paymentDetails.status === 'COMPLETED' ? (translations.payments?.status?.completed || 'Completed') : (translations.payments?.status?.pending || 'Pending')}</span>
+          </div>
+          <div style="
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+          ">
+            <span style="font-weight: bold; color: #333;">${(t as any).paymentMethod || 'Payment Method'}:</span>
+            <span style="color: #666;">${paymentDetails.paymentMethod}</span>
+          </div>
+        </div>
+
+        <!-- Total Amount -->
+        <div style="
+          background: linear-gradient(135deg, #FFD700, #FFA500);
+          padding: 15px;
+          border-radius: 8px;
+          text-align: center;
+          margin-bottom: 15px;
+        ">
+          <div style="
+            font-size: 12px;
+            color: #000;
+            margin-bottom: 5px;
+            font-weight: bold;
+          ">${(t as any).totalAmount || 'Total Amount'}</div>
+          <div style="
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            margin: 0;
+          ">${paymentDetails.amount} ${paymentDetails.currency}</div>
+        </div>
+
+        <!-- Notes -->
+        ${paymentDetails.notes ? `
+          <div style="
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 10px;
+          ">
+            <div style="font-weight: bold; margin-bottom: 5px;">Notes:</div>
+            <div style="color: #666;">${paymentDetails.notes}</div>
+          </div>
+        ` : ''}
+
+        <!-- Footer -->
+        <div style="
+          text-align: center;
+          padding-top: 15px;
+          border-top: 1px solid #eee;
+          font-size: 10px;
+          color: #666;
+        ">
+          <div style="margin-bottom: 5px; font-weight: bold;">${(t as any).invoiceFooter || 'Thank you for your business!'}</div>
+          <div>${(t as any).contactInfo || 'For any questions, please contact us'}</div>
+          <div>${(t as any).customerService || 'Customer Service'}: ${COMPANY_INFO.phone}</div>
+        </div>
+      </div>
+    `;
+
+    // Create the full HTML with two receipts side by side in landscape format
+    const fullHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Receipt - ${paymentDetails.receiptNumber}</title>
+          <style>
+            @page {
+              size: A4 landscape;
+              margin: 10mm;
+            }
+            @media print {
+              body { 
+                margin: 0; 
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+              * { 
+                box-shadow: none !important; 
+              }
+              .no-print { 
+                display: none !important; 
+              }
+            }
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              margin: 0;
+              padding: 10px;
+              background: white;
+            }
+            .container {
+              display: flex;
+              gap: 30px;
+              width: 100%;
+              height: 100vh;
+              max-height: 190mm;
+              padding: auto;
+              margin: 40px auto auto auto;
+            }
+            .receipt {
+              flex: 1;
+              height: 100%;
+              width: 50%;
+              max-width: 50%;
+            }
+            .print-button {
+              background: #FFD700;
+              color: #000;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              margin: 10px auto 20px;
+              display: block;
+              font-weight: bold;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="receipt">
+              ${createReceiptHTML()}
+            </div>
+            <div class="receipt">
+              ${createReceiptHTML()}
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const opt = options || {};
+    
+    if (opt.print) {
+      // For printing, create a new window with the content
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(fullHTML);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          printWindow.print();
+        }, 500);
+      }
+    }
+
+    if (opt.download) {
+      // For download, convert HTML to PDF using jsPDF and html2canvas
+      const { jsPDF } = await import('jspdf');
+      const html2canvas = (await import('html2canvas')).default;
+      
+      // Create a temporary div to render the HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = fullHTML;
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '-9999px';
+      tempDiv.style.width = '1082px'; // A4 landscape width with margins
+      tempDiv.style.height = '794px'; // A4 landscape height in pixels at 96 DPI (210mm)
+      tempDiv.style.backgroundColor = 'white';
+      tempDiv.style.padding = '0';
+      tempDiv.style.margin = '0';
+      document.body.appendChild(tempDiv);
+      
+      try {
+        // Convert HTML to canvas
+        const canvas = await html2canvas(tempDiv, {
+          useCORS: true,
+          allowTaint: true,
+          background: '#ffffff',
+          width: 1082,
+          height: 794
+        });
+        
+        // Create PDF
+        const pdf = new jsPDF({
+          orientation: 'landscape',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = 297; // A4 landscape width in mm
+        const pdfHeight = 210; // A4 landscape height in mm
+        
+        // Fill the entire A4 landscape page
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        
+        // Download the PDF
+        const fileName = opt.fileName || `receipt-dual-${paymentDetails.receiptNumber}.pdf`;
+        pdf.save(fileName);
+        
+      } finally {
+        // Clean up
+        document.body.removeChild(tempDiv);
+      }
+    }
+
+  } catch (error) {
+    console.error('Error generating dual receipt PDF:', error);
+    throw new Error('Failed to generate dual receipt PDF');
+  }
+};
+
 export const generateHTMLBillPDF = async (
   billDetails: BillDetails,
   translations: Translations,
