@@ -312,8 +312,8 @@ export default function AddOwnerModal({ isOpen, onClose, onSuccess, propertyId }
       onClose={onClose}
       title={formData.searchType === 'new' ? "Yeni Sakin Oluştur" : "Malik Ekle"}
       icon={UserPlus}
-      size="lg"
-      className={formData.searchType === 'existing' ? (dropdownOpen ? "max-h-[95vh]" : "max-h-[90vh]") : ""}
+      size="full"
+      className="max-w-6xl w-[35vw]"
     >
       <div className="space-y-6">
         {/* Search Type Selection */}
@@ -569,4 +569,4 @@ export default function AddOwnerModal({ isOpen, onClose, onSuccess, propertyId }
       </div>
     </Modal>
   );
-} 
+}

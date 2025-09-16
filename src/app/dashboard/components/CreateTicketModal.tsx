@@ -846,7 +846,8 @@ export default function CreateTicketModal({
             title={t.modalTitle}
             subtitle={t.modalSubtitle}
             icon={FileText}
-            size="xl"
+            size="full"
+            className="max-w-6xl w-[40vw]"
             closable={!isLoading}
         >
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">

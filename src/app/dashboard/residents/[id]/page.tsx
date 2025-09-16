@@ -1903,7 +1903,8 @@ export default function ResidentViewPage() {
                 onClose={() => setShowAddFamilyModal(false)}
                 title={t.addFamilyMemberTitle}
                 icon={User}
-                size="lg"
+                size="full"
+                className="max-w-6xl w-[45vw]"
             >
                 <div className="space-y-6">
                     {/* Ulusal kimlik numarası - En üstte tek başına */}
