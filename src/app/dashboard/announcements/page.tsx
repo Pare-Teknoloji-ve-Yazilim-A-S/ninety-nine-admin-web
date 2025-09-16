@@ -1041,7 +1041,8 @@ export default function AnnouncementsPage() {
                   isOpen={newAnnouncementModalOpen}
                   onClose={handleCancelNewAnnouncement}
                   title={t.createNewAnnouncement}
-                  size="lg"
+                  size="full"
+                  className="max-w-6xl w-[40vw]"
                 >
                   <AnnouncementForm
                     mode="create"
