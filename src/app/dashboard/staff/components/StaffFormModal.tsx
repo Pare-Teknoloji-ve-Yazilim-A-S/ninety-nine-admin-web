@@ -151,8 +151,8 @@ export default function StaffFormModal({
       isOpen={open}
       onClose={onClose}
       title={editingStaff ? t.editStaff : t.addNewStaff}
-      size="xl"
-      className="max-w-5xl"
+      size="full"
+        className="max-w-6xl w-[55vw]"
     >
       <StaffForm
         staff={editingStaff as Staff}
