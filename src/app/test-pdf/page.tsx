@@ -43,7 +43,9 @@ export default function TestPDFPage() {
           },
           status: {
             completed: 'Completed',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            paid: 'Paid'
           }
         }
       });
@@ -91,7 +93,9 @@ export default function TestPDFPage() {
           },
           status: {
             paid: 'Paid',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            completed: 'Completed'
           }
         }
       });
@@ -137,7 +141,9 @@ export default function TestPDFPage() {
           },
           status: {
             completed: 'Completed',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            paid: 'Paid'
           }
         }
       });
@@ -182,7 +188,9 @@ export default function TestPDFPage() {
           },
           status: {
             paid: 'Paid',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            completed: 'Completed'
           }
         }
       });
@@ -226,7 +234,9 @@ export default function TestPDFPage() {
           },
           status: {
             completed: 'Completed',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            paid: 'Paid'
           }
         }
       }, { download: true });
@@ -270,7 +280,9 @@ export default function TestPDFPage() {
           },
           status: {
             completed: 'Completed',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            paid: 'Paid'
           }
         }
       }, { print: true });
@@ -315,7 +327,9 @@ export default function TestPDFPage() {
           },
           status: {
             paid: 'Paid',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            completed: 'Completed'
           }
         }
       }, { download: true });
@@ -360,7 +374,9 @@ export default function TestPDFPage() {
           },
           status: {
             paid: 'Paid',
-            pending: 'Pending'
+            pending: 'Pending',
+            dues: 'Dues',
+            completed: 'Completed'
           }
         }
       }, { print: true });

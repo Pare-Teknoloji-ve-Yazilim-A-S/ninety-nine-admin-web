@@ -165,6 +165,34 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
   // Çevirileri al
   const t = translations[currentLanguage as keyof typeof translations];
 
+  // Function to get translated status based on API response
+  const getTranslatedStatus = (status: string, language: string = currentLanguage) => {
+    const statusMap: { [key: string]: { [lang: string]: string } } = {
+      'PAID': {
+        'tr': 'Ödendi',
+        'en': 'Paid',
+        'ar': 'مدفوع'
+      },
+      'PENDING': {
+        'tr': 'Bekliyor',
+        'en': 'Pending',
+        'ar': 'في الانتظار'
+      },
+      'DUES': {
+        'tr': 'Borçlar',
+        'en': 'Dues',
+        'ar': 'المستحقات'
+      },
+      'COMPLETED': {
+        'tr': 'Tamamlandı',
+        'en': 'Completed',
+        'ar': 'مكتمل'
+      }
+    };
+    
+    return statusMap[status]?.[language] || status;
+  };
+
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -289,8 +317,10 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               customerService: 'Customer Service'
             },
             status: {
-              completed: 'Completed',
-              pending: 'Pending'
+              completed: getTranslatedStatus('COMPLETED'),
+              pending: getTranslatedStatus('PENDING'),
+              dues: getTranslatedStatus('DUES'),
+              paid: getTranslatedStatus('PAID')
             }
           }
         }, { print: true, download: false });
@@ -329,8 +359,10 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               customerService: 'Customer Service'
             },
             status: {
-              paid: 'Paid',
-              pending: 'Pending'
+              paid: getTranslatedStatus('PAID'),
+              pending: getTranslatedStatus('PENDING'),
+              dues: getTranslatedStatus('DUES'),
+              completed: getTranslatedStatus('COMPLETED')
             }
           }
         }, { print: true, download: false });
@@ -400,15 +432,17 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
             customerService: currentLanguage === 'tr' ? 'Müşteri Hizmetleri' : currentLanguage === 'ar' ? 'خدمة العملاء' : 'Customer Service'
           },
           status: {
-            completed: currentLanguage === 'tr' ? 'Tamamlandı' : currentLanguage === 'ar' ? 'مكتمل' : 'Completed',
-            pending: currentLanguage === 'tr' ? 'Bekliyor' : currentLanguage === 'ar' ? 'في الانتظار' : 'Pending'
+            completed: getTranslatedStatus('COMPLETED'),
+            pending: getTranslatedStatus('PENDING'),
+            dues: getTranslatedStatus('DUES'),
+            paid: getTranslatedStatus('PAID')
           }
         }
       };
 
       await generateDualReceiptPDF(receiptDetails, translationsForPDF, { 
-        print: false, 
-        download: true,
+        print: true, 
+        download: false,
         fileName: `dual-receipt-${transaction.id}.pdf`
       });
     } catch (error) {
@@ -462,8 +496,10 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
               customerService: 'Customer Service'
             },
             status: {
-              completed: 'Completed',
-              pending: 'Pending'
+              completed: getTranslatedStatus('COMPLETED'),
+              pending: getTranslatedStatus('PENDING'),
+              dues: getTranslatedStatus('DUES'),
+              paid: getTranslatedStatus('PAID')
             }
           }
         }, { print: false, download: true });
@@ -503,7 +539,9 @@ const TransactionActions: React.FC<TransactionActionsProps> = ({
             },
             status: {
               paid: 'Paid',
-              pending: 'Pending'
+              pending: 'Pending',
+              dues: 'Dues',
+              completed: 'Completed'
             }
           }
         }, { print: false, download: true });

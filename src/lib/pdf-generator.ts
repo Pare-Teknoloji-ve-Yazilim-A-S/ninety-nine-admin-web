@@ -66,6 +66,8 @@ interface Translations {
     status: {
       completed: string;
       pending: string;
+      dues: string;
+      paid: string;
     };
   };
   bills?: {
@@ -88,6 +90,8 @@ interface Translations {
     status: {
       paid: string;
       pending: string;
+      dues: string;
+      completed: string;
     };
   };
 }
@@ -535,7 +539,7 @@ export const generateHTMLReceiptPDF = async (
     const html = `
       <div style="
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 20px;
+        margin: 40px 80px;
         background-color: #f5f5f5;
         color: #333;
       ">
@@ -544,7 +548,7 @@ export const generateHTMLReceiptPDF = async (
           padding: 40px;
           border-radius: 12px;
           box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-          max-width: 650px;
+          max-width: 550px;
           margin: 0 auto;
         ">
           <div style="
@@ -609,10 +613,10 @@ export const generateHTMLReceiptPDF = async (
                 font-size: 12px;
                 font-weight: bold;
                 margin-top: 10px;
-                background-color: ${paymentDetails.status === 'COMPLETED' ? '#d4edda' : '#f8d7da'};
-                color: ${paymentDetails.status === 'COMPLETED' ? '#155724' : '#721c24'};
-                border: 2px solid ${paymentDetails.status === 'COMPLETED' ? '#c3e6cb' : '#f5c6cb'};
-              ">${paymentDetails.status}</div>
+                background-color: ${paymentDetails.status === 'PAID' || paymentDetails.status === 'COMPLETED' ? '#d4edda' : paymentDetails.status === 'PENDING' ? '#fff3cd' : '#f8d7da'};
+                color: ${paymentDetails.status === 'PAID' || paymentDetails.status === 'COMPLETED' ? '#155724' : paymentDetails.status === 'PENDING' ? '#856404' : '#721c24'};
+                border: 2px solid ${paymentDetails.status === 'PAID' || paymentDetails.status === 'COMPLETED' ? '#c3e6cb' : paymentDetails.status === 'PENDING' ? '#ffeaa7' : '#f5c6cb'};
+              ">${translations.payments?.status[paymentDetails.status.toLowerCase() as keyof typeof translations.payments.status] || paymentDetails.status}</div>
             </div>
           </div>
           
@@ -1051,9 +1055,9 @@ export const generateDualReceiptPDF = async (
           ">
             <span style="font-weight: bold; color: #333;">${(t as any).paymentStatus || 'Payment Status'}:</span>
             <span style="
-              color: ${paymentDetails.status === 'COMPLETED' ? '#10B981' : '#F59E0B'};
+              color: ${paymentDetails.status === 'PAID' || paymentDetails.status === 'COMPLETED' ? '#10B981' : paymentDetails.status === 'PENDING' ? '#F59E0B' : '#EF4444'};
               font-weight: bold;
-            ">${paymentDetails.status === 'COMPLETED' ? (translations.payments?.status?.completed || 'Completed') : (translations.payments?.status?.pending || 'Pending')}</span>
+            ">${translations.payments?.status[paymentDetails.status.toLowerCase() as keyof typeof translations.payments.status] || paymentDetails.status}</span>
           </div>
           <div style="
             display: flex;
@@ -1124,13 +1128,14 @@ export const generateDualReceiptPDF = async (
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Receipt - ${paymentDetails.receiptNumber}</title>
+          <title>Receipt</title>
           <style>
             @page {
               size: A4 landscape;
-              margin: 10mm;
+              margin: 0;
             }
             @media print {
+              @page { margin: 0; }
               body { 
                 margin: 0; 
                 background: white;
@@ -1207,54 +1212,46 @@ export const generateDualReceiptPDF = async (
     }
 
     if (opt.download) {
-      // For download, convert HTML to PDF using jsPDF and html2canvas
-      const { jsPDF } = await import('jspdf');
-      const html2canvas = (await import('html2canvas')).default;
-      
-      // Create a temporary div to render the HTML
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = fullHTML;
-      tempDiv.style.position = 'absolute';
-      tempDiv.style.left = '-9999px';
-      tempDiv.style.top = '-9999px';
-      tempDiv.style.width = '1082px'; // A4 landscape width with margins
-      tempDiv.style.height = '794px'; // A4 landscape height in pixels at 96 DPI (210mm)
-      tempDiv.style.backgroundColor = 'white';
-      tempDiv.style.padding = '0';
-      tempDiv.style.margin = '0';
-      document.body.appendChild(tempDiv);
-      
-      try {
-        // Convert HTML to canvas
-        const canvas = await html2canvas(tempDiv, {
-          useCORS: true,
-          allowTaint: true,
-          background: '#ffffff',
-          width: 1082,
-          height: 794
-        });
-        
-        // Create PDF
-        const pdf = new jsPDF({
-          orientation: 'landscape',
-          unit: 'mm',
-          format: 'a4'
-        });
-        
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = 297; // A4 landscape width in mm
-        const pdfHeight = 210; // A4 landscape height in mm
-        
-        // Fill the entire A4 landscape page
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        
-        // Download the PDF
-        const fileName = opt.fileName || `receipt-dual-${paymentDetails.receiptNumber}.pdf`;
-        pdf.save(fileName);
-        
-      } finally {
-        // Clean up
-        document.body.removeChild(tempDiv);
+      // For download, create a new window with download functionality
+      const downloadWindow = window.open('', '_blank');
+      if (downloadWindow) {
+        downloadWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Dual Receipt Download</title>
+              <style>
+                body { margin: 0; background: white; }
+                .download-container { padding: 20px; text-align: center; }
+                .download-btn { 
+                  background: #FFD700; 
+                  color: #000; 
+                  padding: 10px 20px; 
+                  border: none; 
+                  border-radius: 5px; 
+                  cursor: pointer; 
+                  margin: 10px;
+                  font-weight: bold;
+                }
+                @media print {
+                  .download-container { display: none; }
+                  body { margin: 0; background: white; }
+                  * { box-shadow: none !important; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="download-container">
+                <button class="download-btn" onclick="window.print()">Print as PDF</button>
+                <button class="download-btn" onclick="window.close()">Close</button>
+              </div>
+              ${fullHTML.replace('<!DOCTYPE html><html><head>', '').replace('</head><body>', '').replace('</body></html>', '')}
+            </body>
+          </html>
+        `);
+        downloadWindow.document.close();
+        downloadWindow.focus();
       }
     }
 
@@ -1285,8 +1282,8 @@ export const generateHTMLBillPDF = async (
     
     // Inline CSS styles for the bill
     tempDiv.innerHTML = `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f5f5f5; color: #333;">
-        <div style="background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 650px; margin: 0 auto;">
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px 80px; background-color: #f5f5f5; color: #333;">
+        <div style="background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 550px; margin: 0 auto;">
           <!-- Company Header -->
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #FFD700;">
             <div style="display: flex; align-items: center; gap: 15px;">
@@ -1299,7 +1296,7 @@ export const generateHTMLBillPDF = async (
             <div style="text-align: right;">
               <h2 style="font-size: 32px; font-weight: bold; color: #333; margin: 0; letter-spacing: 2px;">${translations.bills?.detail?.invoice || 'INVOICE'}</h2>
               <p style="font-size: 14px; color: #666; margin: 5px 0;">#${billDetails.invoiceNumber}</p>
-              <span style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; ${billDetails.status === 'paid' ? 'background-color: #10B981; color: white;' : 'background-color: #F59E0B; color: white;'}">${billDetails.status === 'paid' ? (translations.bills?.status?.paid || 'PAID') : (translations.bills?.status?.pending || 'PENDING')}</span>
+              <span style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; ${billDetails.status === 'PAID' || billDetails.status === 'paid' ? 'background-color: #10B981; color: white;' : billDetails.status === 'DUES' ? 'background-color: #3B82F6; color: white;' : 'background-color: #F59E0B; color: white;'}">${billDetails.status === 'PAID' || billDetails.status === 'paid' ? (translations.bills?.status?.paid || 'PAID') : billDetails.status === 'DUES' ? (translations.bills?.status?.dues || 'DUES') : (translations.bills?.status?.pending || 'PENDING')}</span>
             </div>
           </div>
 
