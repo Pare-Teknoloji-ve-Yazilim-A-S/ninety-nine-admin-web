@@ -366,6 +366,79 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
     }
 
     /**
+     * Get extended resident documents by type
+     */
+    async getPurchaseContract(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching purchase contract for resident ID: ${id}`);
+            return await apiClient.get<any>(apiConfig.endpoints.residents.admin.purchaseContract(id));
+        } catch (error) {
+            this.logger.error('Failed to fetch purchase contract', error);
+            throw error;
+        }
+    }
+
+    async getServiceContract(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching service contract for resident ID: ${id}`);
+            return await apiClient.get<any>(apiConfig.endpoints.residents.admin.serviceContract(id));
+        } catch (error) {
+            this.logger.error('Failed to fetch service contract', error);
+            throw error;
+        }
+    }
+
+    async getDocumentsIds(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching documents/ids for resident ID: ${id}`);
+            return await apiClient.get<any>(apiConfig.endpoints.residents.admin.documentsIds(id));
+        } catch (error) {
+            this.logger.error('Failed to fetch documents/ids', error);
+            throw error;
+        }
+    }
+
+    async getHandoverReport(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching handover report for resident ID: ${id}`);
+            return await apiClient.get<any>(apiConfig.endpoints.residents.admin.handoverReport(id));
+        } catch (error) {
+            this.logger.error('Failed to fetch handover report', error);
+            throw error;
+        }
+    }
+
+    async getSecurityForm(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching security form for resident ID: ${id}`);
+            return await apiClient.get<any>(apiConfig.endpoints.residents.admin.securityForm(id));
+        } catch (error) {
+            this.logger.error('Failed to fetch security form', error);
+            throw error;
+        }
+    }
+
+    async getVehicleSticker(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching vehicle sticker for resident ID: ${id}`);
+            return await apiClient.get<any>(apiConfig.endpoints.residents.admin.vehicleSticker(id));
+        } catch (error) {
+            this.logger.error('Failed to fetch vehicle sticker', error);
+            throw error;
+        }
+    }
+
+    async getOtherDocument(id: string): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Fetching other document for resident ID: ${id}`);
+            return await apiClient.get<any>(apiConfig.endpoints.residents.admin.otherDocument(id));
+        } catch (error) {
+            this.logger.error('Failed to fetch other document', error);
+            throw error;
+        }
+    }
+
+    /**
      * Upload resident's national ID document
      * POST /admin/users/{id}/documents/national_id/upload
      */
@@ -415,6 +488,76 @@ class AdminResidentService extends BaseService<Resident, CreateResidentDto, Upda
             return response;
         } catch (error) {
             this.logger.error('Failed to upload ownership document', error);
+            throw error;
+        }
+    }
+
+    async uploadPurchaseContract(id: string, file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading purchase contract for resident ID: ${id}`);
+            return await apiClient.uploadFile<any>(apiConfig.endpoints.residents.admin.uploadPurchaseContract(id), file, onProgress);
+        } catch (error) {
+            this.logger.error('Failed to upload purchase contract', error);
+            throw error;
+        }
+    }
+
+    async uploadServiceContract(id: string, file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading service contract for resident ID: ${id}`);
+            return await apiClient.uploadFile<any>(apiConfig.endpoints.residents.admin.uploadServiceContract(id), file, onProgress);
+        } catch (error) {
+            this.logger.error('Failed to upload service contract', error);
+            throw error;
+        }
+    }
+
+    async uploadDocumentsIds(id: string, file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading documents/ids for resident ID: ${id}`);
+            return await apiClient.uploadFile<any>(apiConfig.endpoints.residents.admin.uploadDocumentsIds(id), file, onProgress);
+        } catch (error) {
+            this.logger.error('Failed to upload documents/ids', error);
+            throw error;
+        }
+    }
+
+    async uploadHandoverReport(id: string, file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading handover report for resident ID: ${id}`);
+            return await apiClient.uploadFile<any>(apiConfig.endpoints.residents.admin.uploadHandoverReport(id), file, onProgress);
+        } catch (error) {
+            this.logger.error('Failed to upload handover report', error);
+            throw error;
+        }
+    }
+
+    async uploadSecurityForm(id: string, file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading security form for resident ID: ${id}`);
+            return await apiClient.uploadFile<any>(apiConfig.endpoints.residents.admin.uploadSecurityForm(id), file, onProgress);
+        } catch (error) {
+            this.logger.error('Failed to upload security form', error);
+            throw error;
+        }
+    }
+
+    async uploadVehicleSticker(id: string, file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading vehicle sticker for resident ID: ${id}`);
+            return await apiClient.uploadFile<any>(apiConfig.endpoints.residents.admin.uploadVehicleSticker(id), file, onProgress);
+        } catch (error) {
+            this.logger.error('Failed to upload vehicle sticker', error);
+            throw error;
+        }
+    }
+
+    async uploadOtherDocument(id: string, file: File, onProgress?: (progress: number) => void): Promise<ApiResponse<any>> {
+        try {
+            this.logger.info(`Uploading other document for resident ID: ${id}`);
+            return await apiClient.uploadFile<any>(apiConfig.endpoints.residents.admin.uploadOtherDocument(id), file, onProgress);
+        } catch (error) {
+            this.logger.error('Failed to upload other document', error);
             throw error;
         }
     }

@@ -643,7 +643,17 @@ export default function ResidentViewPage() {
     const [showAddFamilyModal, setShowAddFamilyModal] = useState(false);
     const [showDocumentUploadModal, setShowDocumentUploadModal] = useState(false);
     const [showUploadPopup, setShowUploadPopup] = useState(false);
-    const [uploadDocumentType, setUploadDocumentType] = useState<'national_id' | 'ownership_document' | null>(null);
+    const [uploadDocumentType, setUploadDocumentType] = useState<
+        'national_id' |
+        'ownership_document' |
+        'purchase_contract' |
+        'service_contract' |
+        'documents_ids' |
+        'handover_report' |
+        'security_form' |
+        'vehicle_sticker' |
+        'other'
+    | null>(null);
     const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0, arrowLeft: 0 });
     const [showCreateTicketModal, setShowCreateTicketModal] = useState(false);
     const [showTicketDetailModal, setShowTicketDetailModal] = useState(false);
@@ -684,9 +694,23 @@ export default function ResidentViewPage() {
     const {
         nationalIdDoc,
         ownershipDoc,
+        purchaseContractDoc,
+        serviceContractDoc,
+        documentsIdsDoc,
+        handoverReportDoc,
+        securityFormDoc,
+        vehicleStickerDoc,
+        otherDoc,
         uploadStates,
         uploadNationalIdDocument,
         uploadOwnershipDocument,
+        uploadPurchaseContract,
+        uploadServiceContract,
+        uploadDocumentsIds,
+        uploadHandoverReport,
+        uploadSecurityForm,
+        uploadVehicleSticker,
+        uploadOtherDocument,
         refreshDocuments
     } = useResidentDocuments({
         residentId,
@@ -1243,6 +1267,7 @@ export default function ResidentViewPage() {
                                                                 </div>
                                                             )}
                                                         </div>
+                                                        
 
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                                             <div>
@@ -1562,6 +1587,461 @@ export default function ResidentViewPage() {
                                                                                 onError={(e) => {
                                                                                     e.currentTarget.style.display = 'none';
                                                                                 }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Purchase Contract */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <FileText className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Satın Alma Sözleşmesi</h5>
+                                                                    {purchaseContractDoc.url ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {!purchaseContractDoc.url && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('purchase_contract');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={purchaseContractDoc.loading}
+                                                                        >
+                                                                            {t.upload}
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!purchaseContractDoc.url}
+                                                                        onClick={() => purchaseContractDoc.url && window.open(purchaseContractDoc.url, '_blank')}
+                                                                    >
+                                                                        {t.view}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                            {purchaseContractDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            Satın Alma Sözleşmesi
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={purchaseContractDoc.url}
+                                                                                alt="Satın Alma Sözleşmesi"
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Service Contract */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <FileText className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Hizmet Sözleşmesi</h5>
+                                                                    {serviceContractDoc.url ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {!serviceContractDoc.url && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('service_contract');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={serviceContractDoc.loading}
+                                                                        >
+                                                                            {t.upload}
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!serviceContractDoc.url}
+                                                                        onClick={() => serviceContractDoc.url && window.open(serviceContractDoc.url, '_blank')}
+                                                                    >
+                                                                        {t.view}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                            {serviceContractDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            Hizmet Sözleşmesi
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={serviceContractDoc.url}
+                                                                                alt="Hizmet Sözleşmesi"
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Documents / IDs */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <IdCard className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Belgeler / Kimlikler</h5>
+                                                                    {documentsIdsDoc.url ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {!documentsIdsDoc.url && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('documents_ids');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={documentsIdsDoc.loading}
+                                                                        >
+                                                                            {t.upload}
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!documentsIdsDoc.url}
+                                                                        onClick={() => documentsIdsDoc.url && window.open(documentsIdsDoc.url, '_blank')}
+                                                                    >
+                                                                        {t.view}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                            {documentsIdsDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            Belgeler / Kimlikler
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={documentsIdsDoc.url}
+                                                                                alt="Belgeler / Kimlikler"
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Handover Report */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <FileText className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Teslim Tutanağı</h5>
+                                                                    {handoverReportDoc.url ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {!handoverReportDoc.url && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('handover_report');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={handoverReportDoc.loading}
+                                                                        >
+                                                                            {t.upload}
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!handoverReportDoc.url}
+                                                                        onClick={() => handoverReportDoc.url && window.open(handoverReportDoc.url, '_blank')}
+                                                                    >
+                                                                        {t.view}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                            {handoverReportDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            Teslim Tutanağı
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={handoverReportDoc.url}
+                                                                                alt="Teslim Tutanağı"
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Security Form */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <FileText className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Güvenlik Formu</h5>
+                                                                    {securityFormDoc.url ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {!securityFormDoc.url && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('security_form');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={securityFormDoc.loading}
+                                                                        >
+                                                                            {t.upload}
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!securityFormDoc.url}
+                                                                        onClick={() => securityFormDoc.url && window.open(securityFormDoc.url, '_blank')}
+                                                                    >
+                                                                        {t.view}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                            {securityFormDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            Güvenlik Formu
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={securityFormDoc.url}
+                                                                                alt="Güvenlik Formu"
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Vehicle Sticker */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <QrCode className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Araç Sticker’ı</h5>
+                                                                    {vehicleStickerDoc.url ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {!vehicleStickerDoc.url && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('vehicle_sticker');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={vehicleStickerDoc.loading}
+                                                                        >
+                                                                            {t.upload}
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!vehicleStickerDoc.url}
+                                                                        onClick={() => vehicleStickerDoc.url && window.open(vehicleStickerDoc.url, '_blank')}
+                                                                    >
+                                                                        {t.view}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                            {vehicleStickerDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            Araç Sticker’ı
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={vehicleStickerDoc.url}
+                                                                                alt="Araç Sticker’ı"
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                                                                            {t.preview}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {/* Other */}
+                                                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 group">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <FileText className="h-5 w-5 text-primary-gold" />
+                                                                    <h5 className="font-medium text-text-on-light dark:text-text-on-dark">Diğer</h5>
+                                                                    {otherDoc.url ? (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-green-500 inline-block" title={t.loaded}></span>
+                                                                    ) : (
+                                                                        <span className="ml-2 w-3 h-3 rounded-full bg-red-500 inline-block" title={t.missing}></span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    {!otherDoc.url && (
+                                                                        <Button
+                                                                            variant="primary"
+                                                                            size="sm"
+                                                                            icon={Upload}
+                                                                            onClick={(e) => {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                const buttonCenter = rect.width / 2;
+                                                                                setPopupPosition({
+                                                                                    top: rect.top - 200,
+                                                                                    left: rect.left,
+                                                                                    arrowLeft: buttonCenter - 8
+                                                                                });
+                                                                                setUploadDocumentType('other');
+                                                                                setShowUploadPopup(true);
+                                                                            }}
+                                                                            disabled={otherDoc.loading}
+                                                                        >
+                                                                            {t.upload}
+                                                                        </Button>
+                                                                    )}
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        disabled={!otherDoc.url}
+                                                                        onClick={() => otherDoc.url && window.open(otherDoc.url, '_blank')}
+                                                                    >
+                                                                        {t.view}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                            {otherDoc.url && (
+                                                                <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                                                                            Diğer
+                                                                        </div>
+                                                                        <div className="flex justify-center">
+                                                                            <img
+                                                                                src={otherDoc.url}
+                                                                                alt="Diğer"
+                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
+                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                                             />
                                                                         </div>
                                                                         <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
@@ -2115,7 +2595,15 @@ export default function ResidentViewPage() {
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-4">
                                 <h4 className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
-                                    {uploadDocumentType === 'national_id' ? t.identityDocument : t.ownershipDocument}
+                                    {uploadDocumentType === 'national_id' ? t.identityDocument :
+                                     uploadDocumentType === 'ownership_document' ? t.ownershipDocument :
+                                     uploadDocumentType === 'purchase_contract' ? 'Satın Alma Sözleşmesi' :
+                                     uploadDocumentType === 'service_contract' ? 'Hizmet Sözleşmesi' :
+                                     uploadDocumentType === 'documents_ids' ? 'Belgeler / Kimlikler' :
+                                     uploadDocumentType === 'handover_report' ? 'Teslim Tutanağı' :
+                                     uploadDocumentType === 'security_form' ? 'Güvenlik Formu' :
+                                     uploadDocumentType === 'vehicle_sticker' ? 'Araç Sticker’ı' :
+                                     'Diğer'}
                                 </h4>
                                 <button
                                     onClick={() => {
@@ -2150,6 +2638,34 @@ export default function ResidentViewPage() {
                                                 } else if (uploadDocumentType === 'ownership_document') {
                                                     uploadOwnershipDocument(file)
                                                         .then(() => toast.success(`${t.ownershipDocument} ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
+                                                } else if (uploadDocumentType === 'purchase_contract') {
+                                                    uploadPurchaseContract(file)
+                                                        .then(() => toast.success(`Satın Alma Sözleşmesi ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
+                                                } else if (uploadDocumentType === 'service_contract') {
+                                                    uploadServiceContract(file)
+                                                        .then(() => toast.success(`Hizmet Sözleşmesi ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
+                                                } else if (uploadDocumentType === 'documents_ids') {
+                                                    uploadDocumentsIds(file)
+                                                        .then(() => toast.success(`Belgeler / Kimlikler ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
+                                                } else if (uploadDocumentType === 'handover_report') {
+                                                    uploadHandoverReport(file)
+                                                        .then(() => toast.success(`Teslim Tutanağı ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
+                                                } else if (uploadDocumentType === 'security_form') {
+                                                    uploadSecurityForm(file)
+                                                        .then(() => toast.success(`Güvenlik Formu ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
+                                                } else if (uploadDocumentType === 'vehicle_sticker') {
+                                                    uploadVehicleSticker(file)
+                                                        .then(() => toast.success(`Araç Sticker’ı ${t.uploadSuccess}`))
+                                                        .catch((err: any) => toast.error(err?.message || t.uploadFailed));
+                                                } else if (uploadDocumentType === 'other') {
+                                                    uploadOtherDocument(file)
+                                                        .then(() => toast.success(`Diğer ${t.uploadSuccess}`))
                                                         .catch((err: any) => toast.error(err?.message || t.uploadFailed));
                                                 }
                                                 setShowUploadPopup(false);

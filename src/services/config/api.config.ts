@@ -79,6 +79,21 @@ export const apiConfig = {
                 ownershipDocument: (id: string) => `/admin/users/${id}/documents/ownership_document`,
                 uploadNationalId: (id: string) => `/admin/users/${id}/documents/national_id/upload`,
                 uploadOwnershipDocument: (id: string) => `/admin/users/${id}/documents/ownership_document/upload`,
+                // Extended document endpoints
+                purchaseContract: (id: string) => `/admin/users/${id}/documents/purchase_contract`,
+                serviceContract: (id: string) => `/admin/users/${id}/documents/service_contract`,
+                documentsIds: (id: string) => `/admin/users/${id}/documents/documents_ids`,
+                handoverReport: (id: string) => `/admin/users/${id}/documents/handover_report`,
+                securityForm: (id: string) => `/admin/users/${id}/documents/security_form`,
+                vehicleSticker: (id: string) => `/admin/users/${id}/documents/vehicle_sticker`,
+                otherDocument: (id: string) => `/admin/users/${id}/documents/other`,
+                uploadPurchaseContract: (id: string) => `/admin/users/${id}/documents/purchase_contract/upload`,
+                uploadServiceContract: (id: string) => `/admin/users/${id}/documents/service_contract/upload`,
+                uploadDocumentsIds: (id: string) => `/admin/users/${id}/documents/documents_ids/upload`,
+                uploadHandoverReport: (id: string) => `/admin/users/${id}/documents/handover_report/upload`,
+                uploadSecurityForm: (id: string) => `/admin/users/${id}/documents/security_form/upload`,
+                uploadVehicleSticker: (id: string) => `/admin/users/${id}/documents/vehicle_sticker/upload`,
+                uploadOtherDocument: (id: string) => `/admin/users/${id}/documents/other/upload`,
             },
             // Mobile/Resident Panel - Resident Operations
             mobile: {
