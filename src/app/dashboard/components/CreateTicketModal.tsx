@@ -307,6 +307,9 @@ interface CreateTicketModalProps {
     onSuccess?: () => void;
     defaultAssigneeId?: string; // Varsayılan atanacak kişi ID'si
     defaultAssigneeName?: string; // Varsayılan atanacak kişi adı
+    // Modal genişliği ve boyutu için opsiyonel ayarlar
+    widthVariant?: 'narrow' | 'default' | 'comfortable' | 'wide' | 'extraWide' | 'full';
+    modalSize?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
 }
 
 interface PropertyOption {
@@ -353,7 +356,9 @@ export default function CreateTicketModal({
     onClose, 
     onSuccess, 
     defaultAssigneeId, 
-    defaultAssigneeName 
+    defaultAssigneeName,
+    widthVariant = 'wide', // Varsayılanı 42vw yap
+    modalSize = 'full'
 }: CreateTicketModalProps) {
     const { user } = useAuth();
     const toast = useToast();
@@ -846,8 +851,17 @@ export default function CreateTicketModal({
             title={t.modalTitle}
             subtitle={t.modalSubtitle}
             icon={FileText}
-            size="full"
-            className="max-w-6xl w-[40vw]"
+            size={modalSize}
+            className={`${
+                {
+                    narrow: 'w-full lg:w-[32vw]',
+                    default: 'w-full lg:w-[36vw]',
+                    comfortable: 'w-full lg:w-[38vw]',
+                    wide: 'w-full lg:w-[42vw]',
+                    extraWide: 'w-full lg:w-[50vw]',
+                    full: 'w-full lg:w-[60vw]'
+                }[widthVariant]
+            }`}
             closable={!isLoading}
         >
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">

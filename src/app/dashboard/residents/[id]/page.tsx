@@ -2284,7 +2284,7 @@ export default function ResidentViewPage() {
                 title={t.addFamilyMemberTitle}
                 icon={User}
                 size="full"
-                className="max-w-6xl w-[45vw]"
+                className="w-full lg:w-[42vw]"
             >
                 <div className="space-y-6">
                     {/* Ulusal kimlik numarası - En üstte tek başına */}

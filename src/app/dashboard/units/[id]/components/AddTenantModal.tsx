@@ -317,7 +317,7 @@ export default function AddTenantModal({ isOpen, onClose, onSuccess, propertyId 
       title={formData.searchType === 'new' ? "Yeni Sakin Oluştur" : "Kiracı Ekle"}
       icon={UserPlus}
       size="full"
-      className="max-w-6xl w-[35vw]"
+      className="w-full lg:w-[42vw]"
     >
       <div className="space-y-6">
         {/* Search Type Selection */}

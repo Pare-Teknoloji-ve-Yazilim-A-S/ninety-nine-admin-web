@@ -1042,7 +1042,7 @@ export default function AnnouncementsPage() {
                   onClose={handleCancelNewAnnouncement}
                   title={t.createNewAnnouncement}
                   size="full"
-                  className="max-w-6xl w-[40vw]"
+                  className="w-full lg:w-[42vw]"
                 >
                   <AnnouncementForm
                     mode="create"
