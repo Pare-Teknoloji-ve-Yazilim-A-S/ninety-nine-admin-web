@@ -345,6 +345,7 @@ interface CreateTicketFormData {
     creatorId: string;
     assigneeId: string;
     propertyId: string;
+    serviceId?: string;
     initialComment: string;
     isInternalComment: boolean;
 }
@@ -424,6 +425,7 @@ export default function CreateTicketModal({
     const [users, setUsers] = useState<{ value: string; label: string }[]>([]);
     const [loadingProperties, setLoadingProperties] = useState(false);
     const [loadingUsers, setLoadingUsers] = useState(false);
+    const [loadingServices, setLoadingServices] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     
     // Property dropdown states
@@ -435,6 +437,17 @@ export default function CreateTicketModal({
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    // Service catalog dropdown states
+    const serviceDropdownRef = useRef<HTMLDivElement>(null);
+    const serviceInputRef = useRef<HTMLInputElement>(null);
+    const [serviceDropdownOpen, setServiceDropdownOpen] = useState(false);
+    const [serviceSearchQuery, setServiceSearchQuery] = useState('');
+    const [services, setServices] = useState<Array<{ id: string; name: string; category?: string; priceFixed?: number | null; priceMin?: number | null; priceMax?: number | null; }>>([]);
+    const [filteredServices, setFilteredServices] = useState<typeof services>([]);
+    const [servicePage, setServicePage] = useState(1);
+    const [serviceHasMore, setServiceHasMore] = useState(true);
+    const [isLoadingMoreServices, setIsLoadingMoreServices] = useState(false);
 
     const {
         register,
@@ -456,6 +469,7 @@ export default function CreateTicketModal({
             creatorId: '',
             assigneeId: '',
             propertyId: '',
+            serviceId: '',
             initialComment: '',
             isInternalComment: false
         }
@@ -596,6 +610,62 @@ export default function CreateTicketModal({
             }
         }
     }, [propertyDropdownOpen, properties, propertySearchQuery]);
+
+    // Close service dropdown on outside click
+    useEffect(() => {
+        const onClick = (e: MouseEvent) => {
+            if (serviceDropdownRef.current && !serviceDropdownRef.current.contains(e.target as Node)) {
+                setServiceDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', onClick);
+        return () => document.removeEventListener('mousedown', onClick);
+    }, []);
+
+    // Fetch services when dropdown open or search changes (debounced)
+    useEffect(() => {
+        let active = true;
+        const timeoutId = setTimeout(async () => {
+            try {
+                if (!serviceDropdownOpen) return;
+                setLoadingServices(true);
+                const requestedLimit = 100;
+                const params = new URLSearchParams({ page: '1', limit: String(requestedLimit) });
+                if (serviceSearchQuery) params.set('search', serviceSearchQuery);
+                const response = await fetch(`/api/proxy/admin/services?${params.toString()}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+                });
+                if (!response.ok) throw new Error('Service listesi alınamadı');
+                const data = await response.json();
+                const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+                const mapped = list.map((s: any) => ({
+                    id: s.id,
+                    name: s.name,
+                    category: s.category,
+                    priceFixed: s.priceFixed ?? null,
+                    priceMin: s.priceMin ?? null,
+                    priceMax: s.priceMax ?? null,
+                }));
+                if (!active) return;
+                setServices(mapped);
+                setFilteredServices(mapped);
+                const current = data?.pagination?.page ?? 1;
+                const totalPages = data?.pagination?.totalPages;
+                setServicePage(current);
+                const serverHasMore = typeof totalPages === 'number' ? current < totalPages : false;
+                const filledPage = list.length === requestedLimit;
+                setServiceHasMore(serverHasMore || filledPage);
+            } catch (e) {
+                if (!active) return;
+                setServices([]);
+                setFilteredServices([]);
+                setServiceHasMore(false);
+            } finally {
+                if (active) setLoadingServices(false);
+            }
+        }, 150);
+        return () => { active = false; clearTimeout(timeoutId); };
+    }, [serviceDropdownOpen, serviceSearchQuery]);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -922,6 +992,156 @@ export default function CreateTicketModal({
                                     <p className="text-sm text-primary-red mt-1">{errors.description.message}</p>
                                 )}
                             </div>
+
+                            {/* Service Catalog Selection - Searchable dropdown */}
+                            <div>
+                                <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                                    Servis Kataloğu (opsiyonel)
+                                </label>
+                                <div ref={serviceDropdownRef} className="relative">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted dark:text-text-muted" />
+                                        <input
+                                            ref={serviceInputRef}
+                                            type="text"
+                                            autoComplete="off"
+                                            placeholder={loadingServices ? t.loading : 'Servis ara...'}
+                                            value={serviceSearchQuery}
+                                            onChange={(e) => {
+                                                setServiceSearchQuery(e.target.value);
+                                                setServicePage(1);
+                                                setServiceHasMore(true);
+                                                if (!serviceDropdownOpen) setServiceDropdownOpen(true);
+                                            }}
+                                            onBlur={(e) => {
+                                                const relatedTarget = e.relatedTarget as HTMLElement;
+                                                if (serviceDropdownRef.current?.contains(relatedTarget)) {
+                                                    e.preventDefault();
+                                                    setTimeout(() => { serviceInputRef.current?.focus(); }, 0);
+                                                }
+                                            }}
+                                            onFocus={() => setServiceDropdownOpen(true)}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); setServiceDropdownOpen(false); } }}
+                                            disabled={loadingServices || isLoading}
+                                            className="w-full pl-10 pr-10 py-2 text-sm rounded-lg border border-primary-gold/30 hover:border-primary-gold/50 focus:border-primary-gold focus:outline-none focus:ring-2 focus:ring-primary-gold/50 bg-background-secondary text-text-primary transition-colors"
+                                        />
+                                        <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted transition-transform ${serviceDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </div>
+
+                                    {/* Selected Service Display with remove */}
+                                    {watch('serviceId') && !serviceDropdownOpen && (
+                                        <div className="mt-2 p-2 bg-primary-gold/10 border border-primary-gold/30 rounded-lg">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText className="h-4 w-4 text-primary-gold" />
+                                                    <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
+                                                        {services.find(s => s.id === watch('serviceId'))?.name || 'Seçili servis'}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { 
+                                                        setValue('serviceId', '', { shouldValidate: true }); 
+                                                        setServiceDropdownOpen(false); 
+                                                    }}
+                                                    className="inline-flex items-center px-2 py-1 text-xs rounded-md border border-primary-gold/40 text-primary-gold hover:bg-primary-gold/10"
+                                                    title={t.removeSelection}
+                                                >
+                                                    <X className="h-3 w-3 mr-1" /> {t.removeSelection}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Dropdown List */}
+                                    {serviceDropdownOpen && (
+                                        <div
+                                            className="absolute z-[9999] w-full mt-1 bg-background-secondary border border-primary-gold/30 rounded-lg shadow-lg max-h-64 overflow-auto"
+                                            onScroll={async (e) => {
+                                                const el = e.currentTarget;
+                                                const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24;
+                                                if (nearBottom && serviceHasMore && !isLoadingMoreServices && !loadingServices) {
+                                                    setIsLoadingMoreServices(true);
+                                                    const next = servicePage + 1;
+                                                    try {
+                                                        const requestedLimit = 100;
+                                                        const params = new URLSearchParams({ page: String(next), limit: String(requestedLimit) });
+                                                        if (serviceSearchQuery) params.set('search', serviceSearchQuery);
+                                                        const res = await fetch(`/api/proxy/admin/services?${params.toString()}`, {
+                                                            headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+                                                        });
+                                                        const data = await res.json();
+                                                        const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+                                                        const mapped = list.map((s: any) => ({
+                                                            id: s.id,
+                                                            name: s.name,
+                                                            category: s.category,
+                                                            priceFixed: s.priceFixed ?? null,
+                                                            priceMin: s.priceMin ?? null,
+                                                            priceMax: s.priceMax ?? null,
+                                                        }));
+                                                        setServices(prev => [...prev, ...mapped]);
+                                                        setFilteredServices(prev => [...prev, ...mapped]);
+                                                        const totalPages = data?.pagination?.totalPages;
+                                                        setServicePage(next);
+                                                        const serverHasMore = typeof totalPages === 'number' ? next < totalPages : false;
+                                                        const filledPage = list.length === requestedLimit;
+                                                        setServiceHasMore(serverHasMore || filledPage);
+                                                    } catch (err) {
+                                                        setServiceHasMore(false);
+                                                    } finally {
+                                                        setIsLoadingMoreServices(false);
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            {loadingServices ? (
+                                                <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{t.loading}</div>
+                                            ) : filteredServices.length === 0 ? (
+                                                <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{serviceSearchQuery ? t.noMatchingProperties : 'Servis bulunamadı'}</div>
+                                            ) : (
+                                                <>
+                                                    <div className="p-2 text-xs font-medium text-text-light-muted dark:text-text-muted">{filteredServices.length} servis bulundu</div>
+                                                    {filteredServices.map((s) => (
+                                                        <button
+                                                            key={s.id}
+                                                            type="button"
+                                                            onMouseDown={(e) => { e.preventDefault(); }}
+                                                            onClick={() => {
+                                                                setValue('serviceId', s.id, { shouldValidate: true });
+                                                                setValue('category', '', { shouldValidate: true }); // Clear category when service selected
+                                                                setServiceDropdownOpen(false);
+                                                                setServiceSearchQuery('');
+                                                            }}
+                                                            className="w-full text-left p-3 hover:bg-primary-gold/10 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 bg-primary-gold/20 rounded-full flex items-center justify-center">
+                                                                    <span className="text-xs font-medium text-primary-gold">{s.name.slice(0,2).toUpperCase()}</span>
+                                                                </div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="font-medium text-text-on-light dark:text-text-on-dark truncate">{s.name}</div>
+                                                                    <div className="text-xs text-text-light-muted dark:text-text-muted truncate">{s.category || 'Genel'}</div>
+                                                                    {(s.priceFixed != null || s.priceMin != null) && (
+                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-1">
+                                                                            {s.priceFixed != null ? `Fiyat: ${s.priceFixed} IQD` : s.priceMax != null ? `Aralık: ${s.priceMin ?? '?'} - ${s.priceMax} IQD` : `Minimum: ${s.priceMin} IQD`}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                    {isLoadingMoreServices && (
+                                                        <div className="p-3 text-center text-text-light-muted dark:text-text-muted">{t.loadingMore}</div>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                                {/* Hidden input for validation error display */}
+                                <input type="hidden" {...register('serviceId')} />
+                            </div>
                         </div>
 
                         {/* Opsiyonel Alanlar */}
@@ -975,7 +1195,19 @@ export default function CreateTicketModal({
                                     {...register('category')}
                                     options={categories}
                                     error={errors.category?.message}
+                                    disabled={!!watch('serviceId')}
+                                    onChange={(e) => {
+                                        setValue('category', e.target.value, { shouldValidate: true });
+                                        if (e.target.value) {
+                                            setValue('serviceId', '', { shouldValidate: true }); // Clear service when category selected
+                                        }
+                                    }}
                                 />
+                                {watch('serviceId') && (
+                                    <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
+                                        Servis kataloğundan seçim yapıldığı için kategori alanı devre dışı
+                                    </p>
+                                )}
                             </div>
 
                             {/* Property Selection - Expanded with search and dropdown */}
