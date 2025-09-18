@@ -544,6 +544,35 @@ const translations = {
 };
 
 export default function ResidentViewPage() {
+    const renderDocumentPreview = (url: string, title: string) => {
+        const isPdf = typeof url === 'string' && /\.pdf(\?|$)/i.test(url);
+        return (
+            <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
+                <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
+                    {title}
+                </div>
+                <div className="flex justify-center">
+                    {isPdf ? (
+                        <object data={url} type="application/pdf" className="w-full h-80 rounded-lg">
+                            <a href={url} target="_blank" rel="noreferrer" className="text-primary-gold underline">
+                                PDF açılmıyor, yeni sekmede görüntüle
+                            </a>
+                        </object>
+                    ) : (
+                        <img
+                            src={url}
+                            alt={title}
+                            className="w-full h-auto max-h-80 object-contain rounded-lg"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                    )}
+                </div>
+                <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
+                    {t.preview}
+                </div>
+            </div>
+        );
+    };
     const params = useParams();
     const residentId = params.id as string;
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1297,7 +1326,17 @@ export default function ResidentViewPage() {
                                             <nav className="flex space-x-4" aria-label="Tabs">
                                                 {[
                                                     { label: `${t.familyMembers} (${familyMembers.length})`, key: "family" },
-                                                    { label: `${t.documents} (${[nationalIdDoc.url, ownershipDoc.url].filter(Boolean).length})`, key: "documents" },
+                                                    { label: `${t.documents} (${[
+                                                        nationalIdDoc.url,
+                                                        ownershipDoc.url,
+                                                        purchaseContractDoc.url,
+                                                        serviceContractDoc.url,
+                                                        documentsIdsDoc.url,
+                                                        handoverReportDoc.url,
+                                                        securityFormDoc.url,
+                                                        vehicleStickerDoc.url,
+                                                        otherDoc.url
+                                                    ].filter(Boolean).length})`, key: "documents" },
                                                     { label: `${t.requests} (${residentTickets.length})`, key: "requests" },
                                                     { label: `${t.activity} (${qrAuditLogs.length})`, key: "activity" }
                                                 ].map((tab, idx) => (
@@ -1502,24 +1541,7 @@ export default function ResidentViewPage() {
                                                             {/* Image Preview - Shows when hovering over the card */}
                                                             {nationalIdDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            {t.identityDocument}
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={nationalIdDoc.url}
-                                                                                alt={t.identityDocument}
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => {
-                                                                                    e.currentTarget.style.display = 'none';
-                                                                                }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(nationalIdDoc.url, t.identityDocument)}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1575,24 +1597,7 @@ export default function ResidentViewPage() {
                                                             {/* Image Preview - Shows when hovering over the card */}
                                                             {ownershipDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            {t.ownershipDocument}
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={ownershipDoc.url}
-                                                                                alt={t.ownershipDocument}
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => {
-                                                                                    e.currentTarget.style.display = 'none';
-                                                                                }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(ownershipDoc.url, t.ownershipDocument)}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1642,22 +1647,7 @@ export default function ResidentViewPage() {
                                                             </div>
                                                             {purchaseContractDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            Satın Alma Sözleşmesi
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={purchaseContractDoc.url}
-                                                                                alt="Satın Alma Sözleşmesi"
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(purchaseContractDoc.url, 'Satın Alma Sözleşmesi')}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1707,22 +1697,7 @@ export default function ResidentViewPage() {
                                                             </div>
                                                             {serviceContractDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            Hizmet Sözleşmesi
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={serviceContractDoc.url}
-                                                                                alt="Hizmet Sözleşmesi"
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(serviceContractDoc.url, 'Hizmet Sözleşmesi')}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1772,22 +1747,7 @@ export default function ResidentViewPage() {
                                                             </div>
                                                             {documentsIdsDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            Belgeler / Kimlikler
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={documentsIdsDoc.url}
-                                                                                alt="Belgeler / Kimlikler"
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(documentsIdsDoc.url, 'Belgeler / Kimlikler')}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1837,22 +1797,7 @@ export default function ResidentViewPage() {
                                                             </div>
                                                             {handoverReportDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            Teslim Tutanağı
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={handoverReportDoc.url}
-                                                                                alt="Teslim Tutanağı"
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(handoverReportDoc.url, 'Teslim Tutanağı')}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1902,22 +1847,7 @@ export default function ResidentViewPage() {
                                                             </div>
                                                             {securityFormDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            Güvenlik Formu
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={securityFormDoc.url}
-                                                                                alt="Güvenlik Formu"
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(securityFormDoc.url, 'Güvenlik Formu')}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -1967,22 +1897,7 @@ export default function ResidentViewPage() {
                                                             </div>
                                                             {vehicleStickerDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            Araç Sticker’ı
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={vehicleStickerDoc.url}
-                                                                                alt="Araç Sticker’ı"
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(vehicleStickerDoc.url, 'Araç Sticker’ı')}
                                                                 </div>
                                                             )}
                                                         </div>
@@ -2032,22 +1947,7 @@ export default function ResidentViewPage() {
                                                             </div>
                                                             {otherDoc.url && (
                                                                 <div className="fixed inset-0 flex items-center justify-center z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                                                                    <div className="bg-background-card border border-primary-gold/30 rounded-xl shadow-2xl p-6 max-w-md mx-4">
-                                                                        <div className="text-sm font-medium text-text-on-light dark:text-text-on-dark mb-3 text-center">
-                                                                            Diğer
-                                                                        </div>
-                                                                        <div className="flex justify-center">
-                                                                            <img
-                                                                                src={otherDoc.url}
-                                                                                alt="Diğer"
-                                                                                className="w-full h-auto max-h-80 object-contain rounded-lg"
-                                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                            />
-                                                                        </div>
-                                                                        <div className="text-xs text-text-light-muted dark:text-text-muted mt-3 text-center">
-                                                                            {t.preview}
-                                                                        </div>
-                                                                    </div>
+                                                                    {renderDocumentPreview(otherDoc.url, 'Diğer')}
                                                                 </div>
                                                             )}
                                                         </div>
