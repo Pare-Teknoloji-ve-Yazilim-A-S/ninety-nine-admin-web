@@ -73,6 +73,7 @@ const translations = {
     user: 'Kullanıcı',
     addComment: 'Yorum ekle...',
     send: 'Gönder',
+    serviceItems: 'Hizmet Detayları',
     
     // Attachments section
     attachments: 'Ekler',
@@ -137,6 +138,7 @@ const translations = {
     user: 'User',
     addComment: 'Add comment...',
     send: 'Send',
+    serviceItems: 'Service Details',
     
     // Attachments section
     attachments: 'Attachments',
@@ -201,6 +203,7 @@ const translations = {
     user: 'المستخدم',
     addComment: 'أضف تعليق...',
     send: 'إرسال',
+    serviceItems: 'تفاصيل الخدمة',
     
     // Attachments section
     attachments: 'المرفقات',
@@ -524,6 +527,61 @@ const RequestDetailModal: React.FC<RequestDetailModalProps> = ({ open, onClose, 
                   </div>
                 </div>
               </div>
+
+              {/* Service Items */}
+              {(() => {
+                console.log('🔍 Current Item:', currentItem);
+                console.log('🔍 Service Items:', (currentItem as any).serviceItems);
+                return null;
+              })()}
+              {(currentItem as any).serviceItems && (currentItem as any).serviceItems.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Wrench className="h-5 w-5 text-primary-gold" />
+                    <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
+                      {t.serviceItems || 'Hizmet Detayları'}
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {(currentItem as any).serviceItems.map((item: any, index: number) => (
+                      <div key={index} className="bg-background-light-soft dark:bg-background-soft rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-2 h-2 bg-primary-gold rounded-full"></div>
+                              <h4 className="font-medium text-text-on-light dark:text-text-on-dark">
+                                {item.service?.name || item.title}
+                              </h4>
+                            </div>
+                            
+                            {item.service?.description && (
+                              <p className="text-sm text-text-light-secondary dark:text-text-secondary mb-2">
+                                {item.service.description}
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center gap-4 text-sm text-text-light-muted dark:text-text-muted">
+                              <span>Miktar: {item.quantity}</span>
+                              <span>Birim Fiyat: {item.unitPrice} {item.currency}</span>
+                              <span className="font-medium text-text-on-light dark:text-text-on-dark">
+                                Toplam: {(parseFloat(item.unitPrice) * item.quantity).toFixed(2)} {item.currency}
+                              </span>
+                            </div>
+                            
+                            {item.note && (
+                              <div className="mt-2 p-2 bg-primary-gold/10 rounded border-l-2 border-primary-gold">
+                                <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                                  <strong>Not:</strong> {item.note}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Comments */}
               <div className="mt-4">

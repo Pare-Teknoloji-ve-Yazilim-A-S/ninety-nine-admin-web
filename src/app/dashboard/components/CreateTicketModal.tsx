@@ -335,6 +335,15 @@ interface PropertyOption {
   __raw?: any;
 }
 
+interface ServiceItem {
+    serviceId?: string;
+    title: string;
+    quantity: number;
+    unitPrice: number;
+    currency: 'IQD';
+    note?: string;
+}
+
 interface CreateTicketFormData {
     title: string;
     description: string;
@@ -348,6 +357,7 @@ interface CreateTicketFormData {
     serviceId?: string;
     initialComment: string;
     isInternalComment: boolean;
+    serviceItems?: ServiceItem[];
 }
 
 // Enum değerleri dokümantasyona göre - dinamik olarak çevirilerle oluşturulacak
@@ -448,6 +458,115 @@ export default function CreateTicketModal({
     const [servicePage, setServicePage] = useState(1);
     const [serviceHasMore, setServiceHasMore] = useState(true);
     const [isLoadingMoreServices, setIsLoadingMoreServices] = useState(false);
+    
+    // Selected services state
+    const [selectedServices, setSelectedServices] = useState<ServiceItem[]>([]);
+
+    // Service category to ticket type mapping
+    const getTicketTypeFromCategory = (category: string): string => {
+        const categoryMapping: { [key: string]: string } = {
+            'Elektrik': 'MAINTENANCE',
+            'Su Tesisatı': 'FAULT_REPAIR',
+            'Tesisat': 'FAULT_REPAIR',
+            'Temizlik': 'CLEANING',
+            'Güvenlik': 'MAINTENANCE',
+            'Asansör': 'FAULT_REPAIR',
+            'Isıtma': 'MAINTENANCE',
+            'Soğutma': 'MAINTENANCE',
+            'Havalandırma': 'MAINTENANCE',
+            'Bakım': 'MAINTENANCE',
+            'Onarım': 'FAULT_REPAIR',
+            'Genel': 'REQUEST',
+            'Diğer': 'OTHER'
+        };
+        
+        // Türkçe kategori isimlerini kontrol et
+        const normalizedCategory = category?.toLowerCase() || '';
+        
+        for (const [key, value] of Object.entries(categoryMapping)) {
+            if (normalizedCategory.includes(key.toLowerCase())) {
+                return value;
+            }
+        }
+        
+        // Varsayılan olarak MAINTENANCE döndür
+        return 'MAINTENANCE';
+    };
+
+    // Service management functions
+    const addService = (service: { id: string; name: string; category?: string; priceFixed?: number | string | null; priceMin?: number | string | null; priceMax?: number | string | null; }) => {
+        try {
+            console.log('🔍 Adding service:', service);
+            
+            // Fiyat hesaplama - 2 ondalık basamakla
+            let calculatedUnitPrice = 1.00; // Varsayılan değer
+            
+            if (service.priceFixed) {
+                // priceFixed string olarak gelebilir, number'a çevir
+                const priceFixedNum = typeof service.priceFixed === 'string' ? parseFloat(service.priceFixed) : service.priceFixed;
+                calculatedUnitPrice = parseFloat(priceFixedNum.toFixed(2));
+            } else if (service.priceMin && service.priceMax) {
+                // priceMin ve priceMax da string olabilir
+                const priceMinNum = typeof service.priceMin === 'string' ? parseFloat(service.priceMin) : service.priceMin;
+                const priceMaxNum = typeof service.priceMax === 'string' ? parseFloat(service.priceMax) : service.priceMax;
+                calculatedUnitPrice = parseFloat(((priceMinNum + priceMaxNum) / 2).toFixed(2));
+            } else if (service.priceMin) {
+                // priceMin da string olabilir
+                const priceMinNum = typeof service.priceMin === 'string' ? parseFloat(service.priceMin) : service.priceMin;
+                calculatedUnitPrice = parseFloat(priceMinNum.toFixed(2));
+            }
+            
+            console.log('🔍 Service Price Calculation:', {
+                service: service,
+                priceFixed: service.priceFixed,
+                priceMin: service.priceMin,
+                priceMax: service.priceMax,
+                calculatedUnitPrice: calculatedUnitPrice,
+                type: typeof calculatedUnitPrice
+            });
+            
+            const serviceItem: ServiceItem = {
+                serviceId: service.id,
+                title: service.name,
+                quantity: 1,
+                currency: 'IQD',
+                unitPrice: calculatedUnitPrice
+            };
+            
+            console.log('🔍 Created ServiceItem:', serviceItem);
+            
+            setSelectedServices(prev => {
+                const newServices = [...prev, serviceItem];
+                console.log('🔍 Updated selectedServices:', newServices);
+                return newServices;
+            });
+            
+            // Service kategorisine göre ticket type'ını otomatik ata
+            if (service.category) {
+                const suggestedType = getTicketTypeFromCategory(service.category);
+                console.log('🔍 Setting type to:', suggestedType);
+                setValue('type', suggestedType, { shouldValidate: true });
+            }
+            
+            setServiceDropdownOpen(false);
+            setServiceSearchQuery('');
+            
+            console.log('🔍 Service added successfully');
+        } catch (error) {
+            console.error('🔍 Error adding service:', error);
+        }
+    };
+
+    const removeService = (index: number) => {
+        setSelectedServices(prev => prev.filter((_, i) => i !== index));
+    };
+
+
+    const updateServiceNote = (index: number, note: string) => {
+        setSelectedServices(prev => prev.map((service, i) => 
+            i === index ? { ...service, note } : service
+        ));
+    };
 
     const {
         register,
@@ -830,6 +949,13 @@ export default function CreateTicketModal({
             if (data.initialComment) ticketPayload.initialComment = data.initialComment;
             if (data.isInternalComment !== undefined) ticketPayload.isInternalComment = data.isInternalComment;
 
+            // Add serviceItems if any services are selected
+            if (selectedServices.length > 0) {
+                console.log('🔍 Selected Services before payload:', selectedServices);
+                ticketPayload.serviceItems = selectedServices;
+                console.log('🔍 ServiceItems added to payload:', ticketPayload.serviceItems);
+            }
+
             console.log('Creating ticket with payload:', ticketPayload);
 
             // Create ticket
@@ -878,6 +1004,7 @@ export default function CreateTicketModal({
                 isInternalComment: false
             });
             setSelectedFiles([]);
+            setSelectedServices([]); // Clear selected services
             onSuccess?.();
             onClose();
 
@@ -1028,28 +1155,51 @@ export default function CreateTicketModal({
                                         <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-light-muted transition-transform ${serviceDropdownOpen ? 'rotate-180' : ''}`} />
                                     </div>
 
-                                    {/* Selected Service Display with remove */}
-                                    {watch('serviceId') && !serviceDropdownOpen && (
-                                        <div className="mt-2 p-2 bg-primary-gold/10 border border-primary-gold/30 rounded-lg">
-                                            <div className="flex items-center justify-between gap-2">
+                                    {/* Selected Services Display */}
+                                    {selectedServices.length > 0 && !serviceDropdownOpen && (
+                                        <div className="mt-2 space-y-2">
+                                            {/* Auto type assignment info */}
+                                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                                                 <div className="flex items-center gap-2">
-                                                    <FileText className="h-4 w-4 text-primary-gold" />
-                                                    <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
-                                                        {services.find(s => s.id === watch('serviceId'))?.name || 'Seçili servis'}
+                                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                                    <span className="text-xs text-blue-700 dark:text-blue-300">
+                                                        Servis seçimine göre ticket tipi otomatik olarak atandı: <strong>{watch('type')}</strong>
                                                     </span>
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { 
-                                                        setValue('serviceId', '', { shouldValidate: true }); 
-                                                        setServiceDropdownOpen(false); 
-                                                    }}
-                                                    className="inline-flex items-center px-2 py-1 text-xs rounded-md border border-primary-gold/40 text-primary-gold hover:bg-primary-gold/10"
-                                                    title={t.removeSelection}
-                                                >
-                                                    <X className="h-3 w-3 mr-1" /> {t.removeSelection}
-                                                </button>
                                             </div>
+                                            
+                                            {selectedServices.map((service, index) => (
+                                                <div key={index} className="p-3 bg-primary-gold/10 border border-primary-gold/30 rounded-lg">
+                                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <FileText className="h-4 w-4 text-primary-gold" />
+                                                            <span className="text-sm font-medium text-text-on-light dark:text-text-on-dark">
+                                                                {service.title}
+                                                            </span>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeService(index)}
+                                                            className="inline-flex items-center px-2 py-1 text-xs rounded-md border border-primary-gold/40 text-primary-gold hover:bg-primary-gold/10"
+                                                            title="Servisi kaldır"
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    
+                                                    <div className="mt-2">
+                                                        <label className="text-xs text-text-light-muted dark:text-text-muted">Not</label>
+                                                        <input
+                                                            type="text"
+                                                            value={service.note || ''}
+                                                            onChange={(e) => updateServiceNote(index, e.target.value)}
+                                                            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:border-primary-gold focus:outline-none"
+                                                            placeholder="Ek notlar..."
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
 
@@ -1108,10 +1258,9 @@ export default function CreateTicketModal({
                                                             type="button"
                                                             onMouseDown={(e) => { e.preventDefault(); }}
                                                             onClick={() => {
-                                                                setValue('serviceId', s.id, { shouldValidate: true });
+                                                                addService(s);
+                                                                setValue('serviceId', '', { shouldValidate: true }); // Clear single service selection
                                                                 setValue('category', '', { shouldValidate: true }); // Clear category when service selected
-                                                                setServiceDropdownOpen(false);
-                                                                setServiceSearchQuery('');
                                                             }}
                                                             className="w-full text-left p-3 hover:bg-primary-gold/10 transition-colors border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                                                         >
@@ -1195,7 +1344,7 @@ export default function CreateTicketModal({
                                     {...register('category')}
                                     options={categories}
                                     error={errors.category?.message}
-                                    disabled={!!watch('serviceId')}
+                                    disabled={selectedServices.length > 0}
                                     onChange={(e) => {
                                         setValue('category', e.target.value, { shouldValidate: true });
                                         if (e.target.value) {
@@ -1203,7 +1352,7 @@ export default function CreateTicketModal({
                                         }
                                     }}
                                 />
-                                {watch('serviceId') && (
+                                {selectedServices.length > 0 && (
                                     <p className="text-xs text-text-light-muted dark:text-text-muted mt-1">
                                         Servis kataloğundan seçim yapıldığı için kategori alanı devre dışı
                                     </p>
