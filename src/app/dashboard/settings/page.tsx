@@ -6,13 +6,14 @@ import DashboardHeader from '@/app/dashboard/components/DashboardHeader';
 import Sidebar from '@/app/components/ui/Sidebar';
 import { unitPricesService } from '@/services/unit-prices.service';
 import enumsService from '@/services/enums.service';
+import { servicesService, Service, CreateServiceRequest, UpdateServiceRequest } from '@/services/services.service';
 import { useRoles } from '@/hooks/useRoles';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useRolePermissions } from '@/hooks/useRolePermissions';
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher';
 import Tabs from '@/app/components/ui/Tabs';
 import RolePermissionsModal from '@/app/components/ui/RolePermissionsModal';
-import { DollarSign, Settings, Shield, Users, Lock, Eye, Edit, Trash2, Plus, UserCheck, Building, CreditCard, FileText, Bell, QrCode, Home, ChevronDown, Key } from 'lucide-react';
+import { DollarSign, Settings, Shield, Users, Lock, Eye, Edit, Trash2, Plus, UserCheck, Building, CreditCard, FileText, Bell, QrCode, Home, ChevronDown, Key, X } from 'lucide-react';
 
 // Dil çevirileri
 const translations = {
@@ -213,7 +214,34 @@ const translations = {
     qrCodeSettings: 'QR Kod Ayarları',
     familyMemberSettings: 'Aile Üyesi Ayarları',
     userPropertySettings: 'Kullanıcı Mülk Ayarları',
-    roleSettings: 'Rol Ayarları'
+    roleSettings: 'Rol Ayarları',
+    
+    // Request Settings
+    requestSettings: 'Talep Ayarları',
+    requestSettingsDescription: 'Talep süreçlerini yapılandırın ve yönetin',
+    requestWorkflow: 'Talep İş Akışı',
+    requestCategories: 'Talep Kategorileri',
+    requestPriorities: 'Talep Öncelikleri',
+    requestStatuses: 'Talep Durumları',
+    requestTypes: 'Talep Türleri',
+    autoAssignment: 'Otomatik Atama',
+    escalationRules: 'Yükseltme Kuralları',
+    responseTime: 'Yanıt Süresi',
+    resolutionTime: 'Çözüm Süresi',
+    notificationSettings: 'Bildirim Ayarları',
+    emailNotifications: 'E-posta Bildirimleri',
+    smsNotifications: 'SMS Bildirimleri',
+    pushNotifications: 'Push Bildirimleri',
+    defaultAssignee: 'Varsayılan Atanan',
+    enableAutoAssignment: 'Otomatik Atamayı Etkinleştir',
+    enableEscalation: 'Yükseltmeyi Etkinleştir',
+    enableNotifications: 'Bildirimleri Etkinleştir',
+    maxResponseTime: 'Maksimum Yanıt Süresi (saat)',
+    maxResolutionTime: 'Maksimum Çözüm Süresi (saat)',
+    escalationAfterHours: 'Yükseltme Sonrası (saat)',
+    saveSettings: 'Ayarları Kaydet',
+    settingsSaved: 'Ayarlar başarıyla kaydedildi',
+    settingsError: 'Ayarlar kaydedilirken hata oluştu'
   },
   en: {
     // Page titles
@@ -412,7 +440,34 @@ const translations = {
     qrCodeSettings: 'QR Code Settings',
     familyMemberSettings: 'Family Member Settings',
     userPropertySettings: 'User Property Settings',
-    roleSettings: 'Role Settings'
+    roleSettings: 'Role Settings',
+    
+    // Request Settings
+    requestSettings: 'Request Settings',
+    requestSettingsDescription: 'Configure and manage request processes',
+    requestWorkflow: 'Request Workflow',
+    requestCategories: 'Request Categories',
+    requestPriorities: 'Request Priorities',
+    requestStatuses: 'Request Statuses',
+    requestTypes: 'Request Types',
+    autoAssignment: 'Auto Assignment',
+    escalationRules: 'Escalation Rules',
+    responseTime: 'Response Time',
+    resolutionTime: 'Resolution Time',
+    notificationSettings: 'Notification Settings',
+    emailNotifications: 'Email Notifications',
+    smsNotifications: 'SMS Notifications',
+    pushNotifications: 'Push Notifications',
+    defaultAssignee: 'Default Assignee',
+    enableAutoAssignment: 'Enable Auto Assignment',
+    enableEscalation: 'Enable Escalation',
+    enableNotifications: 'Enable Notifications',
+    maxResponseTime: 'Max Response Time (hours)',
+    maxResolutionTime: 'Max Resolution Time (hours)',
+    escalationAfterHours: 'Escalation After (hours)',
+    saveSettings: 'Save Settings',
+    settingsSaved: 'Settings saved successfully',
+    settingsError: 'Error saving settings'
   },
   ar: {
     // Page titles
@@ -611,7 +666,34 @@ const translations = {
     qrCodeSettings: 'إعدادات رمز QR',
     familyMemberSettings: 'إعدادات أفراد العائلة',
     userPropertySettings: 'إعدادات عقارات المستخدم',
-    roleSettings: 'إعدادات الأدوار'
+    roleSettings: 'إعدادات الأدوار',
+    
+    // Request Settings
+    requestSettings: 'إعدادات الطلبات',
+    requestSettingsDescription: 'تكوين وإدارة عمليات الطلبات',
+    requestWorkflow: 'سير عمل الطلبات',
+    requestCategories: 'فئات الطلبات',
+    requestPriorities: 'أولويات الطلبات',
+    requestStatuses: 'حالات الطلبات',
+    requestTypes: 'أنواع الطلبات',
+    autoAssignment: 'التعيين التلقائي',
+    escalationRules: 'قواعد التصعيد',
+    responseTime: 'وقت الاستجابة',
+    resolutionTime: 'وقت الحل',
+    notificationSettings: 'إعدادات الإشعارات',
+    emailNotifications: 'إشعارات البريد الإلكتروني',
+    smsNotifications: 'إشعارات الرسائل النصية',
+    pushNotifications: 'إشعارات الدفع',
+    defaultAssignee: 'المعين الافتراضي',
+    enableAutoAssignment: 'تفعيل التعيين التلقائي',
+    enableEscalation: 'تفعيل التصعيد',
+    enableNotifications: 'تفعيل الإشعارات',
+    maxResponseTime: 'الحد الأقصى لوقت الاستجابة (ساعات)',
+    maxResolutionTime: 'الحد الأقصى لوقت الحل (ساعات)',
+    escalationAfterHours: 'التصعيد بعد (ساعات)',
+    saveSettings: 'حفظ الإعدادات',
+    settingsSaved: 'تم حفظ الإعدادات بنجاح',
+    settingsError: 'خطأ في حفظ الإعدادات'
   }
 };
 
@@ -699,6 +781,41 @@ export default function DashboardSettingsPage() {
   // Role Permissions Modal states
   const [showRolePermissionsModal, setShowRolePermissionsModal] = useState<boolean>(false);
   const [selectedRoleForPermissions, setSelectedRoleForPermissions] = useState<any>(null);
+  
+  // Request Settings states
+  const [requestSettings, setRequestSettings] = useState({
+    enableAutoAssignment: false,
+    enableEscalation: false,
+    enableNotifications: true,
+    maxResponseTime: 24,
+    maxResolutionTime: 72,
+    escalationAfterHours: 48,
+    defaultAssignee: '',
+    emailNotifications: true,
+    smsNotifications: false,
+    pushNotifications: true
+  });
+  const [isSavingSettings, setIsSavingSettings] = useState<boolean>(false);
+  
+  // Services states
+  const [services, setServices] = useState<Service[]>([]);
+  const [servicesLoading, setServicesLoading] = useState<boolean>(true);
+  const [servicesError, setServicesError] = useState<string | null>(null);
+  const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [serviceForm, setServiceForm] = useState<CreateServiceRequest>({
+    name: '',
+    description: '',
+    category: 'MAINTENANCE',
+    priceFixed: 0,
+    priceMin: 0,
+    priceMax: 0,
+    currency: 'IQD',
+    isActive: true
+  });
+  const [isSavingService, setIsSavingService] = useState<boolean>(false);
+  const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const [isDeletingService, setIsDeletingService] = useState<boolean>(false);
   
   // Breadcrumb Items
   const breadcrumbItems = [
@@ -861,6 +978,11 @@ export default function DashboardSettingsPage() {
     // Cache'i temizle ve yeniden yükle
     enumsService.clearCache();
     loadSystemEnums();
+  }, []);
+
+  // Load services on component mount
+  useEffect(() => {
+    loadServices();
   }, []);
 
   // Edit functions
@@ -1367,6 +1489,208 @@ export default function DashboardSettingsPage() {
   const handleCloseRolePermissionsModal = () => {
     setShowRolePermissionsModal(false);
     setSelectedRoleForPermissions(null);
+  };
+
+  // Request Settings Functions
+  const handleSaveRequestSettings = async () => {
+    try {
+      setIsSavingSettings(true);
+      
+      // Here you would typically save to your backend API
+      // For now, we'll just simulate a save operation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setActionMessage(t.settingsSaved);
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+      
+      console.log('Request settings saved:', requestSettings);
+    } catch (error) {
+      console.error('Error saving request settings:', error);
+      setActionMessage(t.settingsError);
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
+  const handleRequestSettingChange = (key: string, value: any) => {
+    setRequestSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  // Services Functions
+  const loadServices = async () => {
+    try {
+      setServicesLoading(true);
+      setServicesError(null);
+      
+      const response = await servicesService.getServices({ 
+        page: 1, 
+        limit: 100
+      });
+      
+      console.log('🔧 Services API Response:', response);
+      console.log('🔧 Response type:', typeof response);
+      console.log('🔧 Response keys:', Object.keys(response || {}));
+      console.log('🔧 Response.data:', response?.data);
+      console.log('🔧 Response.data type:', typeof response?.data);
+      
+      // Handle different response structures
+      let servicesData: Service[] = [];
+      
+      if (Array.isArray(response)) {
+        // Direct array response
+        servicesData = response;
+        console.log('✅ Direct array response detected');
+      } else if (response && response.data) {
+        if (Array.isArray(response.data)) {
+          // { data: [...] }
+          servicesData = response.data;
+          console.log('✅ Array in data property detected');
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          // { data: { data: [...] } }
+          servicesData = response.data.data;
+          console.log('✅ Nested data structure detected');
+        } else if ((response.data as any).services && Array.isArray((response.data as any).services)) {
+          // { data: { services: [...] } }
+          servicesData = (response.data as any).services;
+          console.log('✅ Services array in data detected');
+        } else {
+          console.log('❌ Unknown data structure:', response.data);
+        }
+      } else {
+        console.log('❌ No data property found in response');
+      }
+      
+      console.log('🔧 Final services data:', servicesData);
+      console.log('🔧 Services count:', servicesData.length);
+      
+      if (servicesData.length > 0) {
+        setServices(servicesData);
+        
+        // Set first category as selected if no category is selected
+        if (!selectedCategory) {
+          const categories = Array.from(new Set(servicesData.map(s => s.category || 'Diğer')));
+          if (categories.length > 0) {
+            setSelectedCategory(categories[0]);
+          }
+        }
+      } else {
+        console.log('⚠️ No services found in response');
+        setServices([]);
+      }
+    } catch (error) {
+      console.error('❌ Error loading services:', error);
+      setServicesError('Servisler yüklenirken hata oluştu');
+    } finally {
+      setServicesLoading(false);
+    }
+  };
+
+  const handleCreateService = () => {
+    setEditingService(null);
+    setServiceForm({
+      name: '',
+      description: '',
+      category: 'MAINTENANCE',
+      priceFixed: 0,
+      priceMin: 0,
+      priceMax: 0,
+      currency: 'IQD',
+      isActive: true
+    });
+    setShowServiceModal(true);
+  };
+
+  const handleEditService = (service: Service) => {
+    console.log('🔧 Editing service:', service);
+    setEditingService(service);
+    setServiceForm({
+      name: service.name,
+      description: service.description || '',
+      category: service.category,
+      priceFixed: service.priceFixed || 0,
+      priceMin: service.priceMin || 0,
+      priceMax: service.priceMax || 0,
+      currency: service.currency,
+      isActive: service.isActive
+    });
+    setShowServiceModal(true);
+  };
+
+  const handleDeleteService = (service: Service) => {
+    setServiceToDelete(service);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!serviceToDelete) return;
+
+    try {
+      setIsDeletingService(true);
+      await servicesService.deleteService(serviceToDelete.id);
+      setActionMessage('Servis başarıyla silindi');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+      await loadServices();
+      setShowDeleteConfirmModal(false);
+      setServiceToDelete(null);
+    } catch (error) {
+      console.error('Error deleting service:', error);
+      setActionMessage('Servis silinirken hata oluştu');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } finally {
+      setIsDeletingService(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirmModal(false);
+    setServiceToDelete(null);
+  };
+
+  const handleSaveService = async () => {
+    try {
+      setIsSavingService(true);
+      
+      if (editingService) {
+        // Update existing service
+        console.log('🔧 Updating service:', editingService.id, serviceForm);
+        await servicesService.updateService(editingService.id, serviceForm);
+        setActionMessage('Servis başarıyla güncellendi');
+      } else {
+        // Create new service
+        console.log('🔧 Creating service:', serviceForm);
+        await servicesService.createService(serviceForm);
+        setActionMessage('Servis başarıyla oluşturuldu');
+      }
+      
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+      
+      setShowServiceModal(false);
+      setEditingService(null);
+      await loadServices();
+    } catch (error) {
+      console.error('Error saving service:', error);
+      setActionMessage('Servis kaydedilirken hata oluştu');
+      setShowActionMessage(true);
+      setTimeout(() => setShowActionMessage(false), 3000);
+    } finally {
+      setIsSavingService(false);
+    }
+  };
+
+  const handleServiceFormChange = (key: keyof CreateServiceRequest, value: any) => {
+    setServiceForm(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
 
@@ -1952,6 +2276,7 @@ export default function DashboardSettingsPage() {
                onClose={handleCloseRolePermissionsModal}
                role={selectedRoleForPermissions}
              />
+
          </div>
        )
      },
@@ -2253,6 +2578,214 @@ export default function DashboardSettingsPage() {
            )}
          </div>
        )
+    },
+    {
+      id: 'request-settings',
+      label: t.requestSettings,
+      icon: FileText,
+      content: (
+        <div className="space-y-6 p-6">
+          {/* Header with Create Button */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-text-on-light dark:text-text-on-dark mb-2">
+                {t.requestSettings}
+              </h3>
+              <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                {t.requestSettingsDescription}
+              </p>
+            </div>
+            <button
+              onClick={handleCreateService}
+              className="inline-flex items-center px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Yeni Servis Oluştur
+            </button>
+          </div>
+
+          {/* Services List */}
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+            <h4 className="text-md font-medium text-text-on-light dark:text-text-on-dark mb-4">
+              Mevcut Servisler
+            </h4>
+            
+            {servicesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-gold"></div>
+                <span className="ml-2 text-text-light-secondary dark:text-text-secondary">Servisler yükleniyor...</span>
+              </div>
+            ) : servicesError ? (
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
+                <p className="text-red-800 dark:text-red-200 text-sm">{servicesError}</p>
+                <button
+                  onClick={loadServices}
+                  className="mt-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                >
+                  Tekrar Dene
+                </button>
+              </div>
+            ) : services.length > 0 ? (
+              (() => {
+                // Group services by category
+                const groupedServices = services.reduce((acc, service) => {
+                  const category = service.category || 'Diğer';
+                  if (!acc[category]) {
+                    acc[category] = [];
+                  }
+                  acc[category].push(service);
+                  return acc;
+                }, {} as Record<string, Service[]>);
+
+                const categories = Object.keys(groupedServices);
+
+                return (
+                  <div className="space-y-4">
+                    {/* Category Dropdown */}
+                    {categories.length > 1 && (
+                      <div className="flex items-center space-x-4">
+                        <label className="text-sm font-medium text-text-light-secondary dark:text-text-secondary">
+                          Kategori:
+                        </label>
+                        <select
+                          value={selectedCategory}
+                          onChange={(e) => setSelectedCategory(e.target.value)}
+                          className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-600 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 appearance-none cursor-pointer hover:border-primary-gold/50 dark:hover:border-primary-gold/50 min-w-[200px]"
+                          style={{
+                            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                            backgroundPosition: 'right 12px center',
+                            backgroundRepeat: 'no-repeat',
+                            backgroundSize: '16px'
+                          }}
+                        >
+                          {categories.map((category) => {
+                            const categoryEmojis: Record<string, string> = {
+                              'FAULT_REPAIR': '🔧',
+                              'COMPLAINT': '📢',
+                              'REQUEST': '📋',
+                              'SUGGESTION': '💡',
+                              'QUESTION': '❓',
+                              'MAINTENANCE': '🛠️',
+                              'OTHER': '📁',
+                              'Diğer': '📁'
+                            };
+                            
+                            const categoryNames: Record<string, string> = {
+                              'FAULT_REPAIR': 'Arıza Tamiri',
+                              'COMPLAINT': 'Şikayet',
+                              'REQUEST': 'Talep',
+                              'SUGGESTION': 'Öneri',
+                              'QUESTION': 'Soru',
+                              'MAINTENANCE': 'Bakım',
+                              'OTHER': 'Diğer',
+                              'Diğer': 'Diğer'
+                            };
+                            
+                            const emoji = categoryEmojis[category] || '📁';
+                            const displayName = categoryNames[category] || category;
+                            
+                            return (
+                              <option key={category} value={category}>
+                                {emoji} {displayName} ({groupedServices[category].length} servis)
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Services Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {groupedServices[selectedCategory]?.map((service) => (
+                        <div key={service.id} className="bg-white dark:bg-gray-600 p-4 rounded-lg border border-gray-200 dark:border-gray-500 hover:shadow-md transition-shadow">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center space-x-3">
+                              <div 
+                                className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-medium bg-primary-gold"
+                              >
+                                {service.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <h5 className="text-sm font-semibold text-text-on-light dark:text-text-on-dark">
+                                  {service.name}
+                                </h5>
+                                <p className="text-xs text-text-light-secondary dark:text-text-secondary">
+                                  {service.category}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={() => handleEditService(service)}
+                                className="p-1.5 text-primary-blue hover:text-primary-blue/80 hover:bg-primary-blue/10 rounded-md transition-colors"
+                                title="Düzenle"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteService(service)}
+                                className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                title="Sil"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {service.description && (
+                            <p className="text-xs text-text-light-muted dark:text-text-muted mb-3 line-clamp-2">
+                              {service.description}
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2 py-1 rounded-full ${
+                                service.isActive 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              }`}>
+                                {service.isActive ? 'Aktif' : 'Pasif'}
+                              </span>
+                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-full">
+                                {service.category}
+                              </span>
+                            </div>
+                            {service.priceFixed && service.priceFixed > 0 && (
+                              <span className="text-primary-gold font-medium">
+                                {service.priceFixed} {service.currency}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {(service.priceMin && service.priceMin > 0) && (
+                            <div className="mt-2 text-xs text-text-light-muted dark:text-text-muted">
+                              Fiyat: {service.priceMin} - {service.priceMax} {service.currency}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="text-center py-8">
+                <FileText className="w-12 h-12 text-text-light-secondary dark:text-text-secondary mx-auto mb-3" />
+                <p className="text-text-light-secondary dark:text-text-secondary mb-4">
+                  Henüz servis bulunmuyor
+                </p>
+                <button
+                  onClick={handleCreateService}
+                  className="px-4 py-2 bg-primary-gold text-white text-sm font-medium rounded-md hover:bg-primary-gold/80 transition-colors"
+                >
+                  İlk Servisi Oluştur
+                </button>
+              </div>
+            )}
+          </div>
+         </div>
+       )
     }
   ];
 
@@ -2303,6 +2836,268 @@ export default function DashboardSettingsPage() {
           </main>
             </div>
       </div>
+
+      {/* Service Modal */}
+      {showServiceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
+                  {editingService ? 'Servis Düzenle' : 'Yeni Servis Oluştur'}
+                </h3>
+                <button
+                  onClick={() => setShowServiceModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  {/* Service Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Servis Adı *
+                    </label>
+                    <input
+                      type="text"
+                      value={serviceForm.name}
+                      onChange={(e) => handleServiceFormChange('name', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 hover:border-primary-gold/50 dark:hover:border-primary-gold/50"
+                      placeholder="Servis adını girin"
+                    />
+                  </div>
+
+                  {/* Service Description */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Açıklama
+                    </label>
+                    <textarea
+                      value={serviceForm.description}
+                      onChange={(e) => handleServiceFormChange('description', e.target.value)}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 hover:border-primary-gold/50 dark:hover:border-primary-gold/50 resize-none"
+                      placeholder="Servis açıklamasını girin"
+                    />
+                  </div>
+
+                  {/* Service Category */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Kategori *
+                    </label>
+                    <select
+                      value={serviceForm.category}
+                      onChange={(e) => handleServiceFormChange('category', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 appearance-none cursor-pointer hover:border-primary-gold/50 dark:hover:border-primary-gold/50"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: 'right 12px center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: '16px'
+                      }}
+                    >
+                      <option value="">Kategori seçin</option>
+                      <option value="FAULT_REPAIR">🔧 Arıza Tamiri</option>
+                      <option value="COMPLAINT">📢 Şikayet</option>
+                      <option value="REQUEST">📋 Talep</option>
+                      <option value="SUGGESTION">💡 Öneri</option>
+                      <option value="QUESTION">❓ Soru</option>
+                      <option value="MAINTENANCE">🛠️ Bakım</option>
+                      <option value="OTHER">📁 Diğer</option>
+                    </select>
+                  </div>
+
+                  {/* Service Active Status */}
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={serviceForm.isActive}
+                      onChange={(e) => handleServiceFormChange('isActive', e.target.checked)}
+                      className="h-4 w-4 text-primary-gold focus:ring-primary-gold border-gray-300 rounded"
+                    />
+                    <label htmlFor="isActive" className="ml-2 block text-sm text-text-light-secondary dark:text-text-secondary">
+                      Servis aktif
+                    </label>
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-4">
+                  {/* Price Fixed */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Sabit Fiyat ({serviceForm.currency})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={serviceForm.priceFixed === 0 ? '' : serviceForm.priceFixed}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
+                        handleServiceFormChange('priceFixed', value);
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 hover:border-primary-gold/50 dark:hover:border-primary-gold/50"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  {/* Price Min */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Minimum Fiyat ({serviceForm.currency})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={serviceForm.priceMin === 0 ? '' : serviceForm.priceMin}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
+                        handleServiceFormChange('priceMin', value);
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 hover:border-primary-gold/50 dark:hover:border-primary-gold/50"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  {/* Price Max */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Maksimum Fiyat ({serviceForm.currency})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={serviceForm.priceMax === 0 ? '' : serviceForm.priceMax}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? 0 : parseFloat(e.target.value) || 0;
+                        handleServiceFormChange('priceMax', value);
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 hover:border-primary-gold/50 dark:hover:border-primary-gold/50"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  {/* Currency */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-light-secondary dark:text-text-secondary mb-2">
+                      Para Birimi
+                    </label>
+                    <select
+                      value={serviceForm.currency}
+                      onChange={(e) => handleServiceFormChange('currency', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-text-on-light dark:text-text-on-dark focus:ring-2 focus:ring-primary-gold focus:border-primary-gold transition-all duration-200 appearance-none cursor-pointer hover:border-primary-gold/50 dark:hover:border-primary-gold/50"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: 'right 12px center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundSize: '16px'
+                      }}
+                    >
+                      <option value="IQD">🇮🇶 IQD - Irak Dinarı</option>
+                      <option value="USD">🇺🇸 USD - Amerikan Doları</option>
+                      <option value="EUR">🇪🇺 EUR - Euro</option>
+                      <option value="TRY">🇹🇷 TRY - Türk Lirası</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowServiceModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-md transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleSaveService}
+                  disabled={isSavingService}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary-gold hover:bg-primary-gold/80 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
+                >
+                  {isSavingService ? 'Kaydediliyor...' : editingService ? 'Güncelle' : 'Oluştur'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && serviceToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-text-on-light dark:text-text-on-dark">
+                    Servisi Sil
+                  </h3>
+                  <p className="text-sm text-text-light-secondary dark:text-text-secondary">
+                    Bu işlem geri alınamaz
+                  </p>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="mb-6">
+                <p className="text-text-on-light dark:text-text-on-dark mb-2">
+                  <span className="font-medium">"{serviceToDelete.name}"</span> servisini silmek istediğinizden emin misiniz?
+                </p>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                  <div className="text-sm text-text-light-secondary dark:text-text-secondary">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="font-medium">Kategori:</span>
+                      <span className="px-2 py-1 bg-primary-gold/10 text-primary-gold rounded-full text-xs">
+                        {serviceToDelete.category}
+                      </span>
+                    </div>
+                    {serviceToDelete.description && (
+                      <div className="text-xs text-text-light-muted dark:text-text-muted">
+                        {serviceToDelete.description}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleCancelDelete}
+                  disabled={isDeletingService}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  disabled={isDeletingService}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                >
+                  {isDeletingService ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Siliniyor...</span>
+                    </div>
+                  ) : (
+                    'Evet, Sil'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   );
 }

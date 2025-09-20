@@ -176,6 +176,10 @@ export const apiConfig = {
             markWaiting: (ticketId: string) => `/admin/tickets/${ticketId}/mark-waiting`,
             reopen: (ticketId: string) => `/admin/tickets/${ticketId}/reopen`,
         },
+        services: {
+            base: '/admin/services',
+            byId: (id: string) => `/admin/services/${id}`,
+        },
         announcements: {
             // Admin Panel - Announcement Management (API-99CLUB Compatible)
             admin: {
